@@ -20,7 +20,7 @@ Those aspects are detailed in: Cegarra, J., Valéry, B., Avril, E., Calmettes, C
 
 The program requires Python 2.x (tested on version 2.7) and the corresponding version of the Pygame, PySide and rstr libraries, freely available online. Make sure you install the matching (32- or 64-bit) version of Pygame as your Python installation, and the one compatible with your Python version number.
 
-The program was tested under Windows and Linux systems. Some minimal code update are expected to run under mac.
+The program was tested under Windows and Linux systems. Some minimal code updates are expected to run under mac.
 
 To run perfectly, the software requires only a personal computer and a joystick for the tracking task. 
 
