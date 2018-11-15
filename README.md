@@ -4,7 +4,7 @@ The program requires Python 2.x (tested on version 2.7) and the corresponding ve
 The program was tested under Windows and Linux systems. Some minimal code update are expected to run under mac.
 
 
-It is covered by a GPL-2 license to promote exchange between researchers, granting them the permission not only to run and to study the source code, but also to share their software modifications.
+It is covered by a GPL v3 license to promote exchange between researchers, granting them the permission not only to run and to study the source code, but also to share their software modifications.
 
 To run perfectly, the software requires only a personal computer and a joystick for the tracking task. 
 
