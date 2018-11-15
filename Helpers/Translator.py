@@ -1,0 +1,34 @@
+import os
+# This class is a simplified alternative to gettext in unicode
+
+# translations are stored as key=values in a text language file.
+# language is set by the config file
+# If a translation is not available, the default language is used
+
+
+
+_translations = {}
+
+_lang = ""
+
+def translate(s):
+    if len(_translations)==0 and _lang!='':
+        translation_filename = os.path.join('Translations', _lang + ".txt")
+
+        if not os.path.exists(translation_filename):
+            print "There is no translation in the "+lang+" language!"
+            return
+        try:
+            with open(translation_filename, 'r') as lines:
+                for line in lines:
+                    split = line.decode('utf-8').split('=')
+                    if len(split)==2:
+                        _translations[split[0]]=''.join(split[1].splitlines()) #remove carriage return
+        except:
+            OSCriticalErrorMessage("Error",
+            "Unable to open the translation. Please ensure it is saved as an UTF-8 file!")
+
+    if _translations.has_key(unicode(s)):
+        return unicode(_translations[unicode(s)])
+
+    return unicode(s)

@@ -1,0 +1,13 @@
+# This is a scale template
+
+# For each item, you must indicate the question, the name of the minimal scale value (e.g., Very Low), the name of the maximal scale value (e.g., Very high), as well as the minimum, maximum and default value for each question.
+
+# Each item must be formatted like the following :
+
+# Question1;minimumName/maximumName;minimumValue/maximumValue/defaultValue
+Short title;Question;Minimum/Maximum;0/50/25
+
+# Question2;minimumName/maximumName;minimumValue/maximumValue/defaultValue
+Short title;Question;Minimum/Maximum;0/50/25
+
+# ...

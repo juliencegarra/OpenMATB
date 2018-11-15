@@ -1,0 +1,6 @@
+Mental demand;Mental demand;Low/High;0/10/5
+Physical demand;Physical demand;Low/High;0/10/5
+Temporal demand;Temporal demand;Low/High;0/10/5
+Performance;Performance;Good/Poor;0/10/5
+Effort;Effort;Low/High;0/10/5
+Frustration;Frustration;Low/High;0/10/5

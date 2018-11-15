@@ -1,0 +1,13 @@
+*.log
+*.pyc
+*.orig
+Data/
+Sounds/output/
+testunitaire.py
+Plugins/automationmode.py
+Plugins/feedback.py
+Plugins/eyetracker.py
+generateSequence
+computeData.py
+eyetrackerDetector.*
+build/

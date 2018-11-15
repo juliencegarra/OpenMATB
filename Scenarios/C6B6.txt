@@ -1,0 +1,12 @@
+0:00:10;end
+
+
+0:00:00;smieyetracker;start
+0:00:00;participantinfo;start
+0:00:00;pumpstatus;start
+0:00:01;sysmon;alerttimeout;10000
+0:00:01;track;alerttimeout;1000
+0:00:05;genericscales;filename;scales.txt
+0:00:06;genericscales;start
+0:00:07;genericscales;filename;tlx.txt
+0:00:08;genericscales;start
