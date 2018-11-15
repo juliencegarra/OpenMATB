@@ -1,4 +1,5 @@
-OpenMATB is an open-source - under a GPL license - version of the Multi-Attribute Task Battery (MATB).
+<center><img src="https://raw.githubusercontent.com/juliencegarra/OpenMATB/master/OpenMATBscreenshot.png"></center>
+<h1>OpenMATB is an open-source - under a GPL license - version of the Multi-Attribute Task Battery (MATB)</h1>
 
 The program requires Python 2.x (tested on version 2.7) and the corresponding version of the Pygame, PySide and rstr libraries, freely available online. Make sure you install the matching (32- or 64-bit) version of Pygame as your Python installation, and the one compatible with your Python version number.
 The program was tested under Windows and Linux systems. Some minimal code update are expected to run under mac.
