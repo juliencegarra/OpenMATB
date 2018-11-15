@@ -1,5 +1,5 @@
 
-<h1>OpenMATB is an open-source - under a GPL license - version of the Multi-Attribute Task Battery (MATB)</h1>
+<h1>OpenMATB: An open-source version of the Multi-Attribute Task Battery (MATB)</h1>
 
 <b><a href="">Click here to download the last binary for Windows (v1.0)</a></b>
 
