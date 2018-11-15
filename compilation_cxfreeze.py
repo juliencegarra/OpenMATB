@@ -19,11 +19,11 @@ for lineBuf in open('OpenMATB.py', 'r'):
 def includedirectory(d):
     for file in os.listdir(d):
         if file.endswith(".py"):
-            includes.extend([os.path.join("d", file)])
+            includes.extend([os.path.join(d, file)])
 
 #############################################################################
-includes = ["PySide", "pygame", 'wave']
-excludes = ["tcl"]
+includes = ['PySide', 'pygame', 'wave', 'numpy']
+excludes = ['collections.abc', 'tcl']
 packages = []
 path = []
 
@@ -35,16 +35,8 @@ GUI2Exe_Target_1 = Executable(
        script = "OpenMATB.py",
        initScript = None,
        base = 'Win32GUI',  # Hide the console
-       #targetDir = r"OpenMATB",
-       targetName = "OpenMATB.exe",
-       #compress = False,
-       #copyDependentFiles = True,
-       #appendScriptToExe = False,
-       #appendScriptToLibrary = False,
-       icon = None
+       targetName = "OpenMATB.exe"
        )
-
-
 
 setup(
     name = "OpenMATB",
@@ -56,7 +48,9 @@ setup(
                              "excludes": excludes,
                               "packages": packages,
                               "path": path,
-                              #"create_shared_zip": False
+                              "build_exe" : "OpenMATB"
+                              #"create_shared_zip": False,
+
                               }
                 },
 

@@ -1,7 +1,7 @@
 from PySide import QtCore, QtGui
-import numpy as np
 from math import sin, pi
 import random
+import numpy
 
 class WTrack (QtGui.QWidget):
 
@@ -10,6 +10,7 @@ class WTrack (QtGui.QWidget):
     def __init__(self, parent, equalproportions):
         super(WTrack, self).__init__(parent)
 
+        self.targetArea = None
         self.equalproportions = equalproportions
         self.occupiedSpace = 0.9
 
@@ -42,13 +43,13 @@ class WTrack (QtGui.QWidget):
         # Range of movements amplitude around the center. e.g., [0,0] = fixed target, [0,1] = wide range, [1,1] = maximum amplitude
         self.amplitudeRange = [0.2, 0.6]
 
-        self.phase = {'x': np.linspace(0, 2 * pi, self.howManySinusoide), 'y': np.linspace(
+        self.phase = {'x': self.linspace(0, 2 * pi, self.howManySinusoide), 'y': self.linspace(
             pi / 5, pi / 5 + 2 * pi, self.howManySinusoide)}
 
-        self.amplitude = {'x': np.linspace(max(self.amplitudeRange), min(self.amplitudeRange), self.howManySinusoide), 'y': np.linspace(
+        self.amplitude = {'x': self.linspace(max(self.amplitudeRange), min(self.amplitudeRange), self.howManySinusoide), 'y': self.linspace(
             max(self.amplitudeRange), min(self.amplitudeRange), self.howManySinusoide)}
 
-        self.frequencies = {'x': np.linspace(0.01, self.cutoffFrequency, self.howManySinusoide), 'y': np.linspace(
+        self.frequencies = {'x': self.linspace(0.01, self.cutoffFrequency, self.howManySinusoide), 'y': self.linspace(
             self.cutoffFrequency, 0.02, self.howManySinusoide)}
 
         self.cursorPos = {'x': 0, 'y': 0}
@@ -59,6 +60,9 @@ class WTrack (QtGui.QWidget):
 
         random.seed(None)
         self.refreshCursorPosition(self.cursorPos['x'], self.cursorPos['y'])
+
+    def linspace(self, lower, upper, length):
+        return [lower + x*(upper-lower)/length for x in range(length)]
 
     def getXY(self):
         return self.cursorPos['x'], self.cursorPos['y']
@@ -85,7 +89,7 @@ class WTrack (QtGui.QWidget):
                     current_time_ms / 1000.) + self.phase[thisCoord][thisPhase]) % 2 * pi
                 currentSinus.append(sin(phase_value))
 
-            currentPos = np.mean([self.amplitude[thisCoord][thisPhase] * currentSinus[thisPhase]
+            currentPos = numpy.mean([self.amplitude[thisCoord][thisPhase] * currentSinus[thisPhase]
                                  for thisPhase in range(0, self.howManySinusoide)])
 
             translation = currentPos - self.previousPos[thisCoord]
@@ -97,9 +101,9 @@ class WTrack (QtGui.QWidget):
     def getAutoCompensation(self):
         auto_x, auto_y = 0, 0
         if abs(self.cursorPos['x']) > 0.02:
-            auto_x = np.sign(-self.cursorPos['x']) * self.compensationForce
+            auto_x = numpy.sign(-self.cursorPos['x']) * self.compensationForce
         if abs(self.cursorPos['y']) > 0.02:
-            auto_y = np.sign(-self.cursorPos['y']) * self.compensationForce
+            auto_y = numpy.sign(-self.cursorPos['y']) * self.compensationForce
         return auto_x, auto_y
 
     def refreshCursorPosition(self, x, y):
@@ -141,9 +145,9 @@ class WTrack (QtGui.QWidget):
 
         # X and Y tickz
         howManyTicks = 7
-        coordinates_prop = np.linspace(0, 1, howManyTicks + 2)
+        coordinates_prop = self.linspace(0, 1, howManyTicks + 2)
 
-        for t, thisTick in enumerate(coordinates_prop.tolist()):
+        for t, thisTick in enumerate(coordinates_prop):
             tickLength = self.tickLength if t % 2 == 0 else self.tickLength / 2
 
             # X tikz
@@ -179,6 +183,8 @@ class WTrack (QtGui.QWidget):
             # Draw target border
             qp.setPen(self.dashedPen)
             qp.drawRect(self.targetArea)
+        else:
+            self.targetArea = None
 
         # Draw cursor in pixels positions
         if self.isRelativePosInTarget(self.cursorPos['x'], self.cursorPos['y']):

@@ -1,5 +1,4 @@
 from PySide import QtGui, QtCore
-from numpy import linspace
 
 class Communicate(QtCore.QObject):
 
@@ -41,7 +40,8 @@ class WScale(QtGui.QWidget):
         self.label.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
         self.position = self.middle
         self.feedback = 0
-        self.tickposition_list = linspace(1, 0, self.nbsteps + 2).tolist()
+        length = self.nbsteps + 2
+        self.tickposition_list = [1 + x*(-1)/length for x in range(length)]
 
         self.pen = QtGui.QPen(QtGui.QColor('#000000'), self.borderSize, QtCore.Qt.SolidLine)
 

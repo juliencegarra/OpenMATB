@@ -1,5 +1,4 @@
 from PySide import QtCore, QtGui
-from numpy import mean
 
 tankdict = {'1': {'fromtank': 'c', 'totank': 'a' },
             '2': {'fromtank': 'e', 'totank': 'a' },
@@ -15,10 +14,10 @@ class WPump(QtGui.QWidget):
     def __init__(self, parent, pumpNumber):
         '''Draw a tank, based on its upper left coordinates, and on its nature (target, source, limited or not) which define its size ratio'''
         super(WPump, self).__init__(parent)
-        
+
         self.toTank_label = tankdict[pumpNumber]['totank']
         self.fromTank_label = tankdict[pumpNumber]['fromtank']
-        
+
         self.pumpLabel = QtGui.QLabel(self)
         self.pumpLabel.setText("<b>%s</b>" % pumpNumber)
 

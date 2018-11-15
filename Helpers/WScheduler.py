@@ -1,5 +1,4 @@
 from PySide import QtGui, QtCore
-import numpy as np
 
 class WScheduler (QtGui.QWidget):
 
@@ -25,7 +24,10 @@ class WScheduler (QtGui.QWidget):
         self.time_height = 0.15 * self.parent().height()
         self.axeWidth = 0.25 * self.parent().width()
 
-        self.breaks_list = np.linspace(self.task_uly + 20, self.task_uly + self.task_height - 40, self.schedule_duration_mn * 2 + 1).tolist()
+        lowerspace = self.task_uly + 20
+        upperspace = self.task_uly + self.task_height - 40
+        length =self.schedule_duration_mn * 2 + 1
+        self.breaks_list = [lowerspace + x*(upperspace-lowerspace)/length for x in range(length)]
 
         self.tracking_ulx = self.task_ulx + 0.8 * self.task_width
         self.communication_ulx = self.task_ulx + 0.2 * self.task_width
