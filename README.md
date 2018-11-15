@@ -27,13 +27,12 @@ To run perfectly, the software requires only a personal computer and a joystick 
 It is covered by a GPL v3 license to promote exchange between researchers, granting them the permission not only to run and to study the source code, but also to share their software modifications.
 
 
-<h3>Complementary respources</h3>
-<a href="https://github.com/juliencegarra/OpenMATB/wiki/How-to-build-a-scenario-file">Wiki page on the way to develop scenario with OpenMATB</a>
-
-<a href="Appendix.doc">More detailed about customization of the tasks is available in the appendix</a>
-
-<a href="https://github.com/juliencegarra/OpenMATB/wiki/Internationalization">Wiki page about internationalization of the software</a>
-
+<h3>Complementary resources</h3>
+<ul>
+<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/How-to-build-a-scenario-file">Wiki page on the way to develop scenario with OpenMATB</a></li>
+<li><a href="Appendix.doc">More detailed about customization of the tasks is available in the appendix</a></li>
+<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Internationalization">Wiki page about internationalization of the software</a></li>
+</ul>
 
 
 
