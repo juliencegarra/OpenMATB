@@ -16,6 +16,8 @@ OpenMATB aims to provide an open-source re-implementation of the multi-attribute
 Those aspects are detailed in: Cegarra, J., Valéry, B., Avril, E., Calmettes, C. & Navarro, J. (<i>Submitted</i>). OpenMATB: An open source implementation of the Multi-Attribute Task Battery.
 
 
+Contact : <a href="mailto:julien.cegarra@univ-jfc.fr">julien.cegarra AT univ-jfc.fr</a>
+
 
 <h2>Installation</h2>
 
