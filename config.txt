@@ -1,1 +1,1 @@
-language=fr_FR
+language=
