@@ -7,7 +7,8 @@ First presented at a NASA Technical memorandum (Comstock & Arnegard, 1992), the 
 
 <center><img src="https://raw.githubusercontent.com/juliencegarra/OpenMATB/master/OpenMATBscreenshot.png" width=400></center>
 
-Since almost twenty years have passed since the last iteration of the MATB implementation (Comstock & Arnegard, 1992), different requirements for up to date research are no longer satisfied. More precisely, OpenMATB promote three aspects: 
+Almost twenty years have passed since the last iteration of the MATB implementation (Comstock & Arnegard, 1992), different requirements for up to date research are no longer satisfied. 
+OpenMATB aims to provide an open-source re-implementation of the multi-attribute task battery. It promotes three aspects: 
 (1) tasks customization for full adaptation of the battery,
 (2) software extendability to easily add new features, 
 (3) experiment replicability to provide significant results.
@@ -30,7 +31,7 @@ It is covered by a GPL v3 license to promote exchange between researchers, grant
 <h3>Complementary resources</h3>
 <ul>
 <li><a href="https://github.com/juliencegarra/OpenMATB/wiki/How-to-build-a-scenario-file">Wiki page on the way to develop scenario with OpenMATB</a></li>
-<li><a href="Appendix.doc">More detailed about customization of the tasks is available in the appendix</a></li>
+<li><a href="Appendix.doc?raw=true">More detailed informations about customization of the tasks is available in the appendix (Word file)</a></li>
 <li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Internationalization">Wiki page about internationalization of the software</a></li>
 </ul>
 
