@@ -34,7 +34,7 @@ It is covered by a GPL v3 license to promote exchange between researchers, grant
 <ul>
 <li><a href="https://github.com/juliencegarra/OpenMATB/wiki/How-to-build-a-scenario-file">Wiki page on the way to develop scenario with OpenMATB</a></li>
 <li><a href="Appendix.doc?raw=true">More detailed informations about customization of the tasks is available in the appendix (Word file)</a></li>
-<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Internationalization">Wiki page about internationalization of the software</a></li>
+<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Internationalization">Wiki page about internationalization of the software [TO BE UPLOADED]</a></li>
 </ul>
 
 
