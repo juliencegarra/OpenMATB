@@ -16,16 +16,28 @@ for lineBuf in open('OpenMATB.py', 'r'):
 
 
 
-def includedirectory(d):
-    for file in os.listdir(d):
-        if file.endswith(".py"):
-            includes.extend([os.path.join(d, file)])
+def includedirectory(rootdir, extension):
+    for subdir, dirs, files in os.walk(rootdir):
+        for file in files:
+
+            filepath = os.path.join(subdir, file)
+
+            if filepath.endswith(extension):
+                include_files.extend([(filepath, filepath)])
+
+
 
 #############################################################################
-includes = ['PySide', 'pygame', 'wave', 'numpy']
-excludes = ['collections.abc', 'tcl']
+include_files = []
+includes = ['PySide', 'pygame', 'wave', 'numpy', 'numpy.core._methods', 'numpy.lib.format', 'email']
+excludes = ['collections.abc', 'tcl', 'Tkconstants', 'Tkinter']
 packages = []
 path = []
+
+includedirectory('Plugins', '.py')
+includedirectory('Scales', '.txt')
+includedirectory('Sounds', '.wav')
+includedirectory('Translations', '.txt')
 
 
 
@@ -45,7 +57,8 @@ setup(
     author = "Julien Cegarra & Benoit Valery",
 
     options = {"build_exe": {"includes": includes,
-                             "excludes": excludes,
+                              "include_files": include_files,
+                              "excludes": excludes,
                               "packages": packages,
                               "path": path,
                               "build_exe" : "OpenMATB"

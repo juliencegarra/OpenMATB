@@ -31,6 +31,8 @@ import os
 import platform
 from Helpers import Logger, Translator
 from Helpers.Translator import translate as _
+# Force import for cxfreeze:
+from Helpers import QTExtensions, WLight, WPump, WCom, WScale, WScheduler, WTank, WTrack, xeger
 
 def OSCriticalErrorMessage(title, msg):
     if platform.system() == "Windows":
