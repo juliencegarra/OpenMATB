@@ -27,7 +27,7 @@
 0:00:00;communications;callsignregex;[A-Z][A-Z]\d\d
 0:00:00;communications;othercallsignnumber;5
 0:00:00;communications;voicegender;male
-0:00:00;communications;voiceidiom;french
+0:00:00;communications;voiceidiom;english
 
 
 # 2. Start appropriate tasks
@@ -45,7 +45,7 @@
 # Retrieve participant information :
 
 0:00:00;participantinfo;start
-0:00:00;genericscales;filename;nasatlx_fr.txt
+0:00:00;genericscales;filename;nasatlx_en.txt
 0:00:00;genericscales;start
 
 

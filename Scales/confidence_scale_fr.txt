@@ -1,5 +1,0 @@
-Confiance cible;Quelle confiance aviez-vous dans votre capacité à résoudre la tâche de cible ?;Faible/Forte;0/10/5
-Confiance ressources;Quelle confiance aviez-vous dans votre capacité à résoudre la tâche de ressources ?;Faible/Forte;0/10/5
-Confiance surveillance;Quelle confiance aviez-vous dans votre capacité à résoudre la tâche de surveillance ?;Faible/Forte;0/10/5
-Confiance résolution de pannes;Quelle confiance aviez-vous dans l'automatisation de la tâche de surveillance pour résoudre les pannes ?;Faible/Forte;0/10/5
-Confiance voyant;Quelle confiance aviez-vous dans le voyant "panne" pour dâtecter les pannes ?;Faible/Forte;0/10/5
