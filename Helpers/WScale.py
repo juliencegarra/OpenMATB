@@ -1,4 +1,5 @@
 from PySide import QtGui, QtCore
+import pdb
 
 class Communicate(QtCore.QObject):
 
@@ -41,7 +42,8 @@ class WScale(QtGui.QWidget):
         self.position = self.middle
         self.feedback = 0
         length = self.nbsteps + 2
-        self.tickposition_list = [1 + x*(-1)/length for x in range(length)]
+        self.tickposition_list = [this_tick/float(length-1) for this_tick in reversed(range(length))]
+        #~ self.tickposition_list = [1 + x*(-1)/length for x in range(length)]
 
         self.pen = QtGui.QPen(QtGui.QColor('#000000'), self.borderSize, QtCore.Qt.SolidLine)
 

@@ -2,6 +2,7 @@ from PySide import QtCore, QtGui
 from math import sin, pi
 import random
 import numpy
+import pdb
 
 class WTrack (QtGui.QWidget):
 
@@ -62,7 +63,7 @@ class WTrack (QtGui.QWidget):
         self.refreshCursorPosition(self.cursorPos['x'], self.cursorPos['y'])
 
     def linspace(self, lower, upper, length):
-        return [lower + x*(upper-lower)/length for x in range(length)]
+        return [lower + x*(upper-lower)/(length-1) for x in range(length)]
 
     def getXY(self):
         return self.cursorPos['x'], self.cursorPos['y']
@@ -130,7 +131,6 @@ class WTrack (QtGui.QWidget):
         qp.setRenderHint(QtGui.QPainter.Antialiasing)
 
         # Centering
-        # ~ pdb.set_trace()
         qp.translate(abs(self.parent().width() - self.task_width) / 2, (self.parent().height() - self.task_height) / 3)
 
         # Draw the tracking environment (crosses)
