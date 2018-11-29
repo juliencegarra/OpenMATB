@@ -30,11 +30,16 @@ To run perfectly, the software requires only a personal computer and a joystick 
 It is covered by a GPL v3 license to promote exchange between researchers, granting them the permission not only to run and to study the source code, but also to share their software modifications.
 
 
-<h3>Complementary resources</h3>
+<h3>Main complementary resources in the wiki:</h3>
 <ul>
-<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/How-to-build-a-scenario-file">Wiki page on the way to develop scenario with OpenMATB</a></li>
-<li><a href="Appendix.doc?raw=true">More detailed informations about customization of the tasks is available in the appendix (Word file)</a></li>
-<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Internationalization">Wiki page about internationalization of the software</a></li>
+  
+<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/How-to-build-a-scenario-file">How to develop a scenario script file</a></li>
+<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/List-of-task-parameters">List of available parameters in the scenario files</a></li>
+<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Internationalization">How to add a new translation</a></li>
+<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Write-a-questionnaire">How to add custom rating scales</a></li>
+<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/How-to-compile-to-binary">How to compile the source code to a binary version (Windows)</a></li>
+<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Technical-documentation">Misc technical aspects (in progress)</a></li>
+
 </ul>
 
 
