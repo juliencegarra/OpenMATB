@@ -1,6 +1,7 @@
 *.log
 *.pyc
 *.orig
+*.zip
 Data/
 Sounds/output/
 testunitaire.py
