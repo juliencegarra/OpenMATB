@@ -14,3 +14,4 @@ build/
 OpenMATB/
 compilation_cxfreeze.py
 compilation_cxfreeze.bat
+.Rhistory
