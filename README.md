@@ -5,7 +5,7 @@
 
 First presented at a NASA Technical memorandum (Comstock & Arnegard, 1992), the Multi-Attribute Task Battery (MATB) contained a set of interactive tasks that were representative of those performed in aircraft piloting. The MATB requires participants to engage in four tasks presented simultaneously on a computer screen. They consist of (1) a monitoring task, (2) a tracking task, (3) an auditory communication task, and (4) a resource management task. The display screen also encompasses a scheduling view (5) for displaying a chart of incoming task events
 
-<center><img src="https://raw.githubusercontent.com/juliencegarra/OpenMATB/master/OpenMATBscreenshot.png" width=400></center>
+<center><img src="https://user-images.githubusercontent.com/10955668/49248376-d6ce3c80-f419-11e8-9416-7e0fe3e11d45.png" width=400></center>
 
 Almost twenty years have passed since the last iteration of the MATB implementation (Comstock & Arnegard, 1992), different requirements for up to date research are no longer satisfied. 
 OpenMATB aims to provide an open-source re-implementation of the multi-attribute task battery. It promotes three aspects: 
