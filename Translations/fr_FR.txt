@@ -1,0 +1,69 @@
+﻿# Tasks titles
+System monitoring=Surveillance
+Tracking=Poursuite
+Scheduling=Planification
+Communications=Communications
+Resources management=Gestion des ressources
+Pump status=Etat des pompes
+
+# Generic items
+AUTO ON=AUTO ON
+ASSIST ON=ASSIST ON
+MANUAL=MANUEL
+Select a scenario=Choisissez un scénario
+Participant ID:=Code participant :
+Start=Démarrer
+Elapsed Time=Temps écoulé
+
+# Following items are error messages.
+
+# ERROR MESSAGES : Eye tracking 
+Unable to load the eyetracker library!=Impossible de charger la bibliothèque de l'eyetracker !
+Unable to find the eyetracker computer in the network!=Impossible de trouver l'ordinateur de l'eyetracker dans le réseau !
+Unable to connect to the eyetracker!=Impossible de se connecter à l'eyetracker !
+Too many bad samples during the last %s seconds=Trop de mauvaises données pendant les %s dernières secondes
+Unable to start recording the eyetracker!=Impossible de démarrer l'enregistrement de l'eye tracker !
+
+# ERROR MESSAGES : Communication task
+'%s' is problematic in the regular expression for callsign. It should only contains letters ([A-Z]) and/or digits (\d)=
+The '%s' file is missing from the '%s' directory=
+prompt required but mixer already busy! Check that your prompts are spaced with a sufficient duration=
+
+# ERROR MESSAGES : Generic scales
+No file to load!=Aucun fichier à télécharger !
+Unable to find the scale file: '%s'=Impossible de trouver le fichier de l'échelle : '%s'
+Error in scales. Default value must be comprised between minimum and maximum. See in file: '%s'=Erreur d'échelle. Les valeurs par défaut doivent être comprises entre les valeurs minimale et maximale. Voir : '%s'
+Error in scales. No correctly formatted line found in the following file: '%s'=Erreur d'échelle. Aucune ligne correctement formatée n'a été trouvée dans le fichier suivant : '%s'
+Validate=Valider
+
+# ERROR MESSAGES : Tracking
+Please plug a joystick for the '%s' task!=Veuillez connecter un joystick pour utiliser la tâche '%s'
+
+# ERROR MESSAGES : Trigger
+The file '%s' was not found in the current directory. It will not be possible to send trigger events. Do you want to continue?=Le fichier '%' n'est pas dans le dossier courant. Il sera impossible d'envoyer les triggers, voulez-vous vraiment continuer ?
+
+# ERROR MESSAGES : OpenMATB main file
+Error=Erreur
+Please check that all required libraries are installed=Veuillez vérifier que toutes les librairies nécessaires sont installées
+Plugins directory does not exist. Check that its name is correct=Le répertoire des plugins n'existe pas. Vérifiez l'exactitude de son nom
+Plugin '%s' is invalid (no parameters data)=Le plugin '%s' est invalide (pas de 'parameters')
+Plugin '%s' is not recognized=Le plugin '%s' n'est pas reconnu
+Plugin '%s' has no placement data. It will not be displayed=Le plugin '%s' n'a pas de données de positionnement. Il ne sera pas affiché.
+Placement '%s' is not recognized!=Le positionnement '%' n'est pas reconnu !
+No entry has been found for the '%s' plugin. Check the scenario file=Aucune entrée n'a été trouvée pour le plugin '%s'. Vérifiez le scénario
+The %s plugin does not admit a %s command. Please fix that=Le plugin '%s' n'accepte pas la commande '%s'. Veuillez corrigez cela
+The scenario should terminate with a 'end' command=Le scénario devrait se terminer par une commande 'end'
+No task is started!=Aucune tâche n'est démarrée !
+Error. Number of value is incorrect. See line=Erreur. Le nombre de valeurs est incorrect. Vérifiez la ligne
+'%s' plugin: unknown\n\nLINE: %s=Plugin '%s': inconnu\n\nLIGNE : %s
+'%s' not found!\n\nLINE: %s='%s' non trouvé !
+The main script parameters should not be called, use a task instead!\n\nLINE: %s=Les paramètres du script principal ne devraient pas ête appelés. Utiliser plutôt une tâche !
+'%s' should have a parameters dictionary!\n\nLINE: %s= '%s' devrait contenir un dictionnaire parameters !\n\nLIGNE: %s
+Variable '%s' unknown in task '%s'\n\nLINE: %s=La variable '%s' n'est pas reconnue dans le plugin '%s'\n\nLIGNE: %s
+Variable '%s' unknown in task '%s'=La variable '%s' n'est pas reconnue dans le plugin '%s'
+Plugin '%s' has a malformed '%s' variable=Le plugin '%s' contient une variable '%s' défectueuse
+Warning: None Value in self.parameters. This should not happen!=Attention: Valeur nulle dans le self.parameters. Cela ne devrait pas arriver !
+Unable to evaluate a value! This should not happen!=Impossible d'évaluer une valeur. Cela ne devrait pas arriver !
+Timing overflow. This should not happen!=Dépassement de valeur pour le timing. Cela ne devrait pas arriver !
+Plugin '%s' requires an onUpdate() function!=Le plugin '%s' doit intégrer une fonction onUpdate() !
+No scenario selected!=Pas de scénario sélectionné!
