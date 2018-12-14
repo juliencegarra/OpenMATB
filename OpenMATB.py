@@ -107,15 +107,14 @@ class Main(QtGui.QMainWindow):
         # (just click on it before running application) is also the widest.
 
         self.screen_width = self.width()
-        self.screen_height= self.height()
-        print self.screen_width
-        print self.screen_height
+        self.screen_height = self.height()
+
         #screen_widths = [QtGui.QApplication.desktop().screenGeometry(i).width()
-        #                 for i in range(0, QtGui.QApplication.desktop().screenCount())]
+                         #for i in range(0, QtGui.QApplication.desktop().screenCount())]
         #self.screen_width = max(screen_widths)
         #self.screen_index = screen_widths.index(self.screen_width)
         #self.screen_height = QtGui.QApplication.desktop().screenGeometry(
-        #    self.screen_index).height()
+            #self.screen_index).height()
 
         # Get current screen
         #current_screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
@@ -852,7 +851,7 @@ if __name__ == '__main__':
         window = Main(scenario_FullPath)
         window.setWindowTitle(VERSIONTITLE)
 
-        window.show()
+        window.showFullScreen()
         app.installEventFilter(window)
         window.runExperiment()
 

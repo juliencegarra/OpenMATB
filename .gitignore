@@ -1,6 +1,7 @@
 *.log
 *.pyc
 *.orig
+*.zip
 Data/
 Sounds/output/
 testunitaire.py
@@ -12,3 +13,8 @@ computeData.py
 eyetrackerDetector.*
 build/
 OpenMATB/
+compilation_cxfreeze.py
+compilation_cxfreeze.bat
+.Rhistory
+Audacity.png
+OpenMATBscreenshot.png
