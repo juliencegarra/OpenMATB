@@ -71,16 +71,13 @@ class Task(QtGui.QWidget):
 
     def onStart(self):
 
-        if self.parameters['displayautomationstate']:
-            # Define a QLabel object to display mode
-            self.modeFont = QtGui.QFont("sans-serif", int(self.height() / 35.), QtGui.QFont.Bold)
-            self.modeLabel = QtGui.QLabel(self)
-            self.modeLabel.setGeometry(QtCore.QRect(0, 0.2 * self.height(), self.width(), 0.08 * self.height()))
-            self.modeLabel.setAlignment(QtCore.Qt.AlignCenter)
-            self.modeLabel.setFont(self.modeFont)
-            self.refreshModeLabel()
-            self.update()
-
+        # Define a QLabel object to display mode
+        self.modeFont = QtGui.QFont("sans-serif", int(self.height() / 35.), QtGui.QFont.Bold)
+        self.modeLabel = QtGui.QLabel(self)
+        self.modeLabel.setGeometry(QtCore.QRect(0, 0.2 * self.height(), self.width(), 0.08 * self.height()))
+        self.modeLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.modeLabel.setFont(self.modeFont)
+        
         # For each light button
         for index, k in enumerate(self.parameters['lights'].keys()):
 
@@ -115,6 +112,9 @@ class Task(QtGui.QWidget):
 
         if self.parameters['displayautomationstate']:
             self.refreshModeLabel()
+        else:
+            self.modeLabel.hide()
+            
 
         # 1. Check failures only if no failure is already occuring
         # (currently prevents double-failure !)
