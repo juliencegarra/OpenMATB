@@ -32,10 +32,6 @@ class Task(QtGui.QWidget):
         self.LoadScales(self.parameters['filename'])
         self.setLayout(self.layout)
         self.show()
-        # for this_scale in self.scales.keys():
-        #     for this_element in self.scales[this_scale]['uis'].keys():
-        #         self.scales[this_scale]['uis'][this_element].show()
-        # self.show()
 
     def LoadScales(self, file):
 
@@ -84,22 +80,23 @@ class Task(QtGui.QWidget):
         scale_height = min(40, scale_height) # Minimal height is 40
         current_y = 0
 
+
         self.layout = QtGui.QVBoxLayout()
 
         for scale_number in self.scales.keys():
             self.scales[scale_number]['uis'] = dict()
             chaine_unicode = self.scales[scale_number]['title'].decode('utf8')
-            self.scales[scale_number]['uis']['questionLabel'] = QtGui.QLabel(chaine_unicode, self)
+            self.scales[scale_number]['uis']['questionLabel'] = QtGui.QLabel(chaine_unicode)
             self.scales[scale_number]['uis']['questionLabel'].setFont(self.mainFont)
             self.scales[scale_number]['uis']['questionLabel'].setWordWrap(True)
             self.scales[scale_number]['uis']['questionLabel'].setAlignment(QtCore.Qt.AlignCenter)
 
-            self.scales[scale_number]['uis']['minimumLabel'] = QtGui.QLabel(self.scales[scale_number]['minimumLabel'], self)
+            self.scales[scale_number]['uis']['minimumLabel'] = QtGui.QLabel(self.scales[scale_number]['minimumLabel'])
             self.scales[scale_number]['uis']['minimumLabel'].setAlignment(QtCore.Qt.AlignRight)
             self.scales[scale_number]['uis']['minimumLabel'].setFont(self.scaleFont)
 
 
-            self.scales[scale_number]['uis']['slider'] = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+            self.scales[scale_number]['uis']['slider'] = QtGui.QSlider(QtCore.Qt.Horizontal)
             self.scales[scale_number]['uis']['slider'].setMinimum(self.scales[scale_number]['minimumValue'])
             self.scales[scale_number]['uis']['slider'].setMaximum(self.scales[scale_number]['maximumValue'])
             self.scales[scale_number]['uis']['slider'].setTickInterval(1)
@@ -109,7 +106,7 @@ class Task(QtGui.QWidget):
             self.scales[scale_number]['uis']['slider'].setMaximumWidth(0.5 * self.screen_width)
 
 
-            self.scales[scale_number]['uis']['maximumLabel'] = QtGui.QLabel(self.scales[scale_number]['maximumLabel'],self)
+            self.scales[scale_number]['uis']['maximumLabel'] = QtGui.QLabel(self.scales[scale_number]['maximumLabel'])
             self.scales[scale_number]['uis']['maximumLabel'].setAlignment(QtCore.Qt.AlignLeft)
             self.scales[scale_number]['uis']['maximumLabel'].setFont(self.scaleFont)
 
@@ -127,7 +124,7 @@ class Task(QtGui.QWidget):
             self.layout.addStretch(1)
 
 
-        self.questionnairebtn = QtGui.QPushButton(_('Validate'), self)
+        self.questionnairebtn = QtGui.QPushButton(_('Validate'))
         self.questionnairebtn.setMaximumWidth(0.25 * self.screen_width)
         self.questionnairebtn.clicked.connect(self.onClick)
 
@@ -142,12 +139,8 @@ class Task(QtGui.QWidget):
         for this_scale in self.scales.keys():
             self.buildLog(["INPUT", self.scales[this_scale]['label'], str(self.scales[this_scale]['uis']['slider'].value())])
 
-        for this_scale in self.scales.keys():
-            for this_element in self.scales[this_scale]['uis'].keys():
-                self.scales[this_scale]['uis'][this_element].hide()
-
-        self.questionnairebtn.hide()
         self.parent().onResume()
+        self.close()
 
     def buildLog(self, thisList):
         thisList = ["SCALES"] + thisList
