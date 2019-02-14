@@ -83,14 +83,14 @@ class Task(QtGui.QWidget):
         self.layout = QtGui.QVBoxLayout(self)
         for scale_number in self.scales.keys():
             self.scales[scale_number]['uis'] = dict()
-            chaine_unicode = self.scales[scale_number]['title'].decode('utf8')
-            self.scales[scale_number]['uis']['questionLabel'] = QtGui.QLabel(chaine_unicode)
+            unicode_string = self.scales[scale_number]['title'].decode('utf8')
+            self.scales[scale_number]['uis']['questionLabel'] = QtGui.QLabel(unicode_string)
             self.scales[scale_number]['uis']['questionLabel'].setFont(self.mainFont)
             self.scales[scale_number]['uis']['questionLabel'].setWordWrap(True)
             self.scales[scale_number]['uis']['questionLabel'].setAlignment(QtCore.Qt.AlignCenter)
 
-            chaine_unicode = self.scales[scale_number]['minimumLabel'].decode('utf8')
-            self.scales[scale_number]['uis']['minimumLabel'] = QtGui.QLabel(chaine_unicode)
+            unicode_string = self.scales[scale_number]['minimumLabel'].decode('utf8')
+            self.scales[scale_number]['uis']['minimumLabel'] = QtGui.QLabel(unicode_string)
             self.scales[scale_number]['uis']['minimumLabel'].setAlignment(QtCore.Qt.AlignRight)
             self.scales[scale_number]['uis']['minimumLabel'].setFont(self.scaleFont)
 
@@ -105,8 +105,8 @@ class Task(QtGui.QWidget):
             self.scales[scale_number]['uis']['slider'].setMaximumWidth(0.5 * self.screen_width)
 
 
-            chaine_unicode = self.scales[scale_number]['maximumLabel'].decode('utf8')
-            self.scales[scale_number]['uis']['maximumLabel'] = QtGui.QLabel(chaine_unicode)
+            unicode_string = self.scales[scale_number]['maximumLabel'].decode('utf8')
+            self.scales[scale_number]['uis']['maximumLabel'] = QtGui.QLabel(unicode_string)
             self.scales[scale_number]['uis']['maximumLabel'].setAlignment(QtCore.Qt.AlignLeft)
             self.scales[scale_number]['uis']['maximumLabel'].setFont(self.scaleFont)
 
