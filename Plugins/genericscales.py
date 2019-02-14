@@ -80,7 +80,7 @@ class Task(QtGui.QWidget):
         scale_height = min(40, scale_height) # Minimal height is 40
         current_y = 0
 
-        self.layout = QtGui.QVBoxLayout()
+        self.layout = QtGui.QVBoxLayout(self)
         for scale_number in self.scales.keys():
             self.scales[scale_number]['uis'] = dict()
             chaine_unicode = self.scales[scale_number]['title'].decode('utf8')
@@ -139,8 +139,10 @@ class Task(QtGui.QWidget):
         for this_scale in self.scales.keys():
             self.buildLog(["INPUT", self.scales[this_scale]['label'], str(self.scales[this_scale]['uis']['slider'].value())])
 
+        # Force to reparent and destroy the layout
+        QtGui.QWidget().setLayout(self.layout)
+
         self.parent().onResume()
-        self.close()
 
     def buildLog(self, thisList):
         thisList = ["SCALES"] + thisList
