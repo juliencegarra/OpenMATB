@@ -37,17 +37,17 @@ class Task(QtGui.QWidget):
         #         self.scales[this_scale]['uis'][this_element].show()
         # self.show()
 
-    def LoadScales(self, file):
+    def LoadScales(self, scalefile):
 
         # Create dictionary to store scales information
         self.scales = {}
 
         # Load scales from file
-        if not file:
+        if not scalefile:
             self.parent().showCriticalMessage("No file to load!")
             return
 
-        filename = os.path.join(self.parent().scales_directory, file)
+        filename = os.path.join(self.parent().scales_directory, scalefile)
 
         if not os.path.exists(filename):
             self.parent().showCriticalMessage(
@@ -83,9 +83,8 @@ class Task(QtGui.QWidget):
         scale_height = (self.screen_height - (len(self.scales) * (50 + 30 + 40))) / 2
         scale_height = min(40, scale_height) # Minimal height is 40
         current_y = 0
-
+        
         self.layout = QtGui.QVBoxLayout()
-
         for scale_number in self.scales.keys():
             self.scales[scale_number]['uis'] = dict()
             chaine_unicode = self.scales[scale_number]['title'].decode('utf8')
@@ -93,8 +92,9 @@ class Task(QtGui.QWidget):
             self.scales[scale_number]['uis']['questionLabel'].setFont(self.mainFont)
             self.scales[scale_number]['uis']['questionLabel'].setWordWrap(True)
             self.scales[scale_number]['uis']['questionLabel'].setAlignment(QtCore.Qt.AlignCenter)
-
-            self.scales[scale_number]['uis']['minimumLabel'] = QtGui.QLabel(self.scales[scale_number]['minimumLabel'], self)
+            
+            chaine_unicode = self.scales[scale_number]['minimumLabel'].decode('utf8')
+            self.scales[scale_number]['uis']['minimumLabel'] = QtGui.QLabel(chaine_unicode, self)
             self.scales[scale_number]['uis']['minimumLabel'].setAlignment(QtCore.Qt.AlignRight)
             self.scales[scale_number]['uis']['minimumLabel'].setFont(self.scaleFont)
 
@@ -108,8 +108,8 @@ class Task(QtGui.QWidget):
             self.scales[scale_number]['uis']['slider'].setSingleStep(1)
             self.scales[scale_number]['uis']['slider'].setMaximumWidth(0.5 * self.screen_width)
 
-
-            self.scales[scale_number]['uis']['maximumLabel'] = QtGui.QLabel(self.scales[scale_number]['maximumLabel'],self)
+            chaine_unicode = self.scales[scale_number]['maximumLabel'].decode('utf8')
+            self.scales[scale_number]['uis']['maximumLabel'] = QtGui.QLabel(chaine_unicode,self)
             self.scales[scale_number]['uis']['maximumLabel'].setAlignment(QtCore.Qt.AlignLeft)
             self.scales[scale_number]['uis']['maximumLabel'].setFont(self.scaleFont)
 
