@@ -39,6 +39,9 @@ Validate=Valider
 # ERROR MESSAGES : Tracking
 Please plug a joystick for the '%s' task!=Veuillez connecter un joystick pour utiliser la tâche '%s'
 
+# ERROR MESSAGES : Scheduling
+Can't compute schedule. No 'stop' signal found in scenario for the '%s' task=Impossible de calculer la planification. Aucun signal 'stop' n'a été trouvé dans le scénario pour la tâche de '%s'
+
 # ERROR MESSAGES : Trigger
 The file '%s' was not found in the current directory. It will not be possible to send trigger events. Do you want to continue?=Le fichier '%' n'est pas dans le dossier courant. Il sera impossible d'envoyer les triggers, voulez-vous vraiment continuer ?
 

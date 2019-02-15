@@ -56,7 +56,10 @@ class Task(QtGui.QWidget):
             if any([['start'] in value[this_task] for key, value in this_dict.iteritems()]):
                 starttime = [key for key, value in this_dict.iteritems() if ['start'] in value[this_task]][0]
                 this_start = [key for key, value in this_dict.iteritems() if ['start'] in value[this_task]][0]
-                endtime = [key for key, value in this_dict.iteritems() if 'stop' in value[this_task][0]][0]
+                try:
+                    endtime = [key for key, value in this_dict.iteritems() if 'stop' in value[this_task][0]][0]
+                except:
+                    self.parent().showCriticalMessage(_("Can't compute schedule. No 'stop' signal found in scenario for the %s task") % (this_task))
 
                 # Browse scenario content in sorted order
                 # While automaticsolver is OFF : manual/assisted mode is ON
