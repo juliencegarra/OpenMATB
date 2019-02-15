@@ -71,7 +71,7 @@ class Task(QtGui.QWidget):
 
     def onStart(self):
 
-        # Define a QLabel object to display mode
+        # Define a QLabel object to potentially display automation mode
         self.modeFont = QtGui.QFont("sans-serif", int(self.height() / 35.), QtGui.QFont.Bold)
         self.modeLabel = QtGui.QLabel(self)
         self.modeLabel.setGeometry(QtCore.QRect(0, 0.2 * self.height(), self.width(), 0.08 * self.height()))
