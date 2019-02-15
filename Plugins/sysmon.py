@@ -115,6 +115,14 @@ class Task(QtGui.QWidget):
         else:
             self.modeLabel.hide()
             
+        # For each light button, refresh name
+        for index, k in enumerate(self.parameters['lights'].keys()):
+            self.parameters['lights'][k]['ui'].light.setText(self.parameters['lights'][k]['name'])
+
+        # For each scale gauge, refresh name
+        for k in sorted(self.parameters['scales'].keys()):
+            self.parameters['scales'][k]['ui'].label.setText(self.parameters['scales'][k]['name'])
+
 
         # 1. Check failures only if no failure is already occuring
         # (currently prevents double-failure !)
