@@ -20,7 +20,7 @@ MAIN_SCHEDULER_INTERVAL = 0.001
 global CONFIG
 CONFIG = {}
 
-
+import pdb
 import ctypes
 import time
 import datetime
@@ -31,6 +31,7 @@ import os
 import platform
 from Helpers import Logger, Translator
 from Helpers.Translator import translate as _
+
 # Force import for cxfreeze:
 from Helpers import QTExtensions, WLight, WPump, WCom, WScale, WScheduler, WTank, WTrack, xeger
 
@@ -175,8 +176,6 @@ class Main(QtGui.QMainWindow):
         # Load scenario file
         self.scenariocontents = self.loadScenario(scenario_fullpath)
 
-        if self.parameters['showlabels']:
-            self.showlabels()
 
     def turnOffKey(self, k):
         """On Windows, use this method to turn off a key defined by the k variable"""
@@ -190,47 +189,7 @@ class Main(QtGui.QMainWindow):
             dll.keybd_event(
                 k, 0x45, KEYEVENTF_EXTENTEDKEY | KEYEVENTF_KEYUP, 0)
 
-
-    def runExperiment(self):
-        # Initialize a general timer
-        if sys.platform == 'win32':
-            self.default_timer = time.clock
-        else:
-            self.default_timer = time.time
-
-        # Update time once to take first scenario instructions (0:00:00) into account
-        self.scenarioUpdateTime()
-        self.last_time = self.default_timer()
-
-        # Launch experiment
-        while self.experiment_running:
-            self.scheduler()
-            QtCore.QCoreApplication.processEvents()
-
-        sys.exit()
-
-    def showCriticalMessage(self, msg):
-        """Display a critical message (msg) in a QMessageBox Qt object before exiting"""
-
-        flags = QtGui.QMessageBox.Abort
-        flags |= QtGui.QMessageBox.StandardButton.Ignore
-
-        result = QtGui.QMessageBox.critical(self, VERSIONTITLE + " "+_("Error"),
-                                            msg,
-                                            flags)
-
-        if result == QtGui.QMessageBox.Abort:
-            self.onEnd()
-            sys.exit()
-
-
-    def getPluginClass(self, plugin):
-        """Return the Task instance of the given plugin"""
-        if plugin == "__main__":
-            return self
-        else:
-            return self.PLUGINS_TASK[plugin]["class"]
-
+    
     def load_plugins(self):
         """Inform the Main() class with plugins information"""
 
@@ -242,8 +201,7 @@ class Main(QtGui.QMainWindow):
 
                 # Retrieve the plugin name
                 plugin_name = thisfile.replace(".py", "")
-                module = imp.load_source(plugin_name, os.path.join(
-                    self.working_directory, DIRECTORY_NAME_PLUGINS, thisfile))
+                module = imp.load_source(plugin_name, os.path.join(self.working_directory, DIRECTORY_NAME_PLUGINS, thisfile))
 
                 # If the plugin has defined a Task class, log it
                 if hasattr(module, "Task"):
@@ -261,11 +219,11 @@ class Main(QtGui.QMainWindow):
                     self.PLUGINS_TASK[plugin_name]['TIME_SINCE_UPDATE'] = 0
                     self.PLUGINS_TASK[plugin_name]['taskRunning'] = False
                     self.PLUGINS_TASK[plugin_name]['taskPaused'] = False
+                    self.PLUGINS_TASK[plugin_name]['taskVisible'] = False
 
                     # Store potential plugin information
                     if 'taskupdatetime' in task.parameters:
-                        self.PLUGINS_TASK[plugin_name][
-                            "UPDATE_TIME"] = task.parameters['taskupdatetime']
+                        self.PLUGINS_TASK[plugin_name]["UPDATE_TIME"] = task.parameters['taskupdatetime']
                     else:
                         self.PLUGINS_TASK[plugin_name]["UPDATE_TIME"] = None
 
@@ -278,14 +236,8 @@ class Main(QtGui.QMainWindow):
                     task.hide()
                 else:
                     print _("Plugin '%s' is not recognized") % plugin_name
-
-    def showlabels(self):
-        # If loaded plugins have an ui_label, display it
-        for plugin_name in self.loadedTasks:
-            if plugin_name != "__main__":
-                if 'ui_label' in self.PLUGINS_TASK[plugin_name]:
-                    self.PLUGINS_TASK[plugin_name]['ui_label'].show()
-
+                    
+                
     def place_plugins_on_screen(self):
         """Compute size and position of each plugin, in a 2 x 3 canvas,
         as a function of the taskplacement variable of each plugin"""
@@ -336,13 +288,11 @@ class Main(QtGui.QMainWindow):
 
                     # For each non-fullscreen plugin, show its label if needed
                     if self.parameters['showlabels']:
-                        self.PLUGINS_TASK[plugin_name]['ui_label'] = QtGui.QLabel(plugin.parameters['title'].upper(), self)
-
+                        self.PLUGINS_TASK[plugin_name]['ui_label'] = QtGui.QLabel(self)
                         self.PLUGINS_TASK[plugin_name]['ui_label'].setStyleSheet("font: " + str(font_size_pt) + "pt \"MS Shell Dlg 2\"; background-color: black; color: white;")
                         self.PLUGINS_TASK[plugin_name]['ui_label'].setAlignment(QtCore.Qt.AlignCenter)
                         self.PLUGINS_TASK[plugin_name]['ui_label'].resize(self.control_width, LABEL_HEIGHT)
                         self.PLUGINS_TASK[plugin_name]['ui_label'].move(self.control_left, self.control_top - LABEL_HEIGHT)
-                        self.PLUGINS_TASK[plugin_name]['ui_label'].hide()
 
             else:
                 self.showCriticalMessage(
@@ -353,6 +303,59 @@ class Main(QtGui.QMainWindow):
             plugin.move(self.control_left, self.control_top)
             plugin.show()
 
+
+    def runExperiment(self):
+        # Initialize a general timer
+        if sys.platform == 'win32':
+            self.default_timer = time.clock
+        else:
+            self.default_timer = time.time
+
+        # Update time once to take first scenario instructions (0:00:00) into account
+        self.scenarioUpdateTime()
+        self.last_time = self.default_timer()
+
+        # Launch experiment
+        while self.experiment_running:
+            self.scheduler()
+            QtCore.QCoreApplication.processEvents()
+
+        sys.exit()
+
+    def showCriticalMessage(self, msg):
+        """Display a critical message (msg) in a QMessageBox Qt object before exiting"""
+
+        flags = QtGui.QMessageBox.Abort
+        flags |= QtGui.QMessageBox.StandardButton.Ignore
+
+        result = QtGui.QMessageBox.critical(self, VERSIONTITLE + " "+_("Error"),
+                                            msg,
+                                            flags)
+
+        if result == QtGui.QMessageBox.Abort:
+            self.onEnd()
+            sys.exit()
+
+
+    def getPluginClass(self, plugin):
+        """Return the Task instance of the given plugin"""
+        if plugin == "__main__":
+            return self
+        else:
+            return self.PLUGINS_TASK[plugin]["class"]
+
+
+    def updateLabels(self):
+        # If loaded plugins have an ui_label, display it
+        for plugin_name in self.loadedTasks:
+            if plugin_name != "__main__":
+                if 'ui_label' in self.PLUGINS_TASK[plugin_name]:
+                    if not self.PLUGINS_TASK[plugin_name]['taskVisible']:
+                        self.PLUGINS_TASK[plugin_name]['ui_label'].setText('')
+                    else:
+                        self.PLUGINS_TASK[plugin_name]['ui_label'].setText(self.PLUGINS_TASK[plugin_name]['class'].parameters['title'].upper())
+                    
+                    self.PLUGINS_TASK[plugin_name]['ui_label'].show()
 
     def timerRegister(self, timer):
         self.registeredTaskTimer.append(timer)
@@ -493,8 +496,7 @@ class Main(QtGui.QMainWindow):
             functionname = "on" + command[0].capitalize()
 
             # If the onCommand does not exist...
-            if not hasattr(taskclass, functionname) and functionname not in ["onStart", "onStop", "onPause",
-                                                                             "onResume"]:
+            if not hasattr(taskclass, functionname) and functionname not in ["onStart", "onStop", "onHide","onPause", "onShow","onResume"]:
 
                 # signal it.
                 errorcaller = ""
@@ -616,18 +618,24 @@ class Main(QtGui.QMainWindow):
                         functionname = "on" + command[0].capitalize()
 
                         msg = ''
-                        if functionname == "onStart":
+                        if functionname == "onStart": # = onResume + onShow 
                             self.PLUGINS_TASK[task]['taskRunning'] = True
+                            self.PLUGINS_TASK[task]['taskVisible'] = True
                             self.PLUGINS_TASK[task]['taskPaused'] = False
                             taskclass.show()
                             msg = 'START'
-                        elif functionname == "onStop":
+                        elif functionname == "onStop": # = onPause + onHide
                             self.PLUGINS_TASK[task]['taskRunning'] = False
+                            self.PLUGINS_TASK[task]['taskPaused'] = False
+                            self.PLUGINS_TASK[task]['taskVisible'] = False
+                            taskclass.hide()
                             msg = 'STOP'
                         elif functionname == "onShow":
+                            self.PLUGINS_TASK[task]['taskVisible'] = True
                             taskclass.show()
                             msg = 'SHOW'
                         elif functionname == "onHide":
+                            self.PLUGINS_TASK[task]['taskVisible'] = False
                             taskclass.hide()
                             msg = 'HIDE'
                         elif functionname == "onPause":
@@ -646,6 +654,9 @@ class Main(QtGui.QMainWindow):
                             self.mainLog.addLine(['MAIN', 'STATE', task.upper(), msg])
 
                         self.waitEndofPause()
+                        
+                        if self.parameters['showlabels']:
+                            self.updateLabels()
 
                     else:
                         # If longer command, set as a parameter variable (see setParameterVariable above)
@@ -698,18 +709,14 @@ class Main(QtGui.QMainWindow):
         # If experiment is effectively running, browse plugins and refresh them (execute their onUpdate() method) as a function of their own UPDATE_TIME
         for plugin_name in self.PLUGINS_TASK:
             if plugin_name in self.loadedTasks:
-                if self.PLUGINS_TASK[plugin_name]["UPDATE_TIME"] is not None and self.PLUGINS_TASK[plugin_name][
-                    'taskRunning']:
-                    self.PLUGINS_TASK[plugin_name][
-                        "TIME_SINCE_UPDATE"] += elapsed_time
-                    if self.PLUGINS_TASK[plugin_name]["TIME_SINCE_UPDATE"] >= self.PLUGINS_TASK[plugin_name][
-                        "UPDATE_TIME"]:
+                if self.PLUGINS_TASK[plugin_name]["UPDATE_TIME"] is not None and not self.PLUGINS_TASK[plugin_name]['taskPaused']:
+                    self.PLUGINS_TASK[plugin_name]["TIME_SINCE_UPDATE"] += elapsed_time
+                    if self.PLUGINS_TASK[plugin_name]["TIME_SINCE_UPDATE"] >= self.PLUGINS_TASK[plugin_name]["UPDATE_TIME"]:
                         self.PLUGINS_TASK[plugin_name]["TIME_SINCE_UPDATE"] = 0
                         if hasattr(self.PLUGINS_TASK[plugin_name]["class"], "onUpdate"):
                             self.PLUGINS_TASK[plugin_name]["class"].onUpdate()
                         else:
-                            self.showCriticalMessage(
-                                _("Plugin '%s' requires an onUpdate() function!") % plugin_name)
+                            self.showCriticalMessage(_("Plugin '%s' requires an onUpdate() function!") % plugin_name)
 
         self.scenarioUpdateTime()
 
@@ -784,13 +791,13 @@ class Main(QtGui.QMainWindow):
 
                 if not self.PLUGINS_TASK[plugin]['taskPaused']:
                     self.PLUGINS_TASK[plugin]['taskPaused'] = True
-                    if 'ui_label' in self.PLUGINS_TASK[plugin]:
-                        self.PLUGINS_TASK[plugin]['ui_label'].hide()
 
                     if hasattr(self.getPluginClass(plugin), "onPause"):
                         self.getPluginClass(plugin).onPause()
-
-                # Also, the plugin in itself is hidden
+                        
+                # Running plugins must be hidden
+                if 'ui_label' in self.PLUGINS_TASK[plugin]:
+                    self.PLUGINS_TASK[plugin]['ui_label'].hide()
                 classplugin.hide()
 
     def onResume(self):
@@ -807,17 +814,14 @@ class Main(QtGui.QMainWindow):
             if plugin != '__main__':
                 classplugin = self.getPluginClass(plugin)
 
-                if self.PLUGINS_TASK[plugin]['taskPaused']:
+                # Finally, the plugin is displayed back if running                
+                if self.PLUGINS_TASK[plugin]['taskRunning']:
                     self.PLUGINS_TASK[plugin]['taskPaused'] = False
-
-                    if 'ui_label' in self.PLUGINS_TASK[plugin]:
-                        self.PLUGINS_TASK[plugin]['ui_label'].show()
-
                     if hasattr(self.getPluginClass(plugin), "onResume"):
                         self.getPluginClass(plugin).onResume()
-
-                # Finally, the plugin is displayed back
-                classplugin.show()
+                    if 'ui_label' in self.PLUGINS_TASK[plugin]:
+                        self.PLUGINS_TASK[plugin]['ui_label'].show()
+                    classplugin.show()
 
 def loadConfig():
     config_filename = 'config.txt'
