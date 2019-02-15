@@ -51,7 +51,7 @@ class WScale(QtGui.QWidget):
     def paintEvent(self, e):
         if self.style==1:
             self.arrow.setText(u'\u25B6')
-            self.arrowFont = QtGui.QFont("sans-serif", self.scaleWidth/5, QtGui.QFont.Bold)
+            self.arrowFont = QtGui.QFont("sans-serif", self.scaleWidth/4, QtGui.QFont.Bold)
         elif self.style==2:
             self.arrow.setText("<font color='#FFFF00'>>></font>")
             self.arrowFont = QtGui.QFont("sans-serif", self.scaleWidth/4., QtGui.QFont.Bold)
