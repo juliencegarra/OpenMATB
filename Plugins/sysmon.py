@@ -36,7 +36,7 @@ class Task(QtGui.QWidget):
                 '4': {'name': 'F4', 'failure': 'no', 'keys': [QtCore.Qt.Key_F4]}
             }
             }
-            
+
         # Potentially translate task title
         self.parameters['title'] = _(self.parameters['title'])
 
@@ -70,14 +70,13 @@ class Task(QtGui.QWidget):
         self.accepted_keys = scales_keys + lights_keys
 
     def onStart(self):
-
         # Define a QLabel object to potentially display automation mode
         self.modeFont = QtGui.QFont("sans-serif", int(self.height() / 35.), QtGui.QFont.Bold)
         self.modeLabel = QtGui.QLabel(self)
         self.modeLabel.setGeometry(QtCore.QRect(0, 0.2 * self.height(), self.width(), 0.08 * self.height()))
         self.modeLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.modeLabel.setFont(self.modeFont)
-        
+
         # For each light button
         for index, k in enumerate(self.parameters['lights'].keys()):
 
@@ -109,12 +108,11 @@ class Task(QtGui.QWidget):
         self.currentFailure = {}
 
     def onUpdate(self):
-
         if self.parameters['displayautomationstate']:
             self.refreshModeLabel()
         else:
             self.modeLabel.hide()
-            
+
         # For each light button, refresh name
         for index, k in enumerate(self.parameters['lights'].keys()):
             self.parameters['lights'][k]['ui'].light.setText(self.parameters['lights'][k]['name'])
@@ -157,7 +155,6 @@ class Task(QtGui.QWidget):
                     self.parameters['lights'][thisLight]['on'])
 
     def keyEvent(self, key_pressed):
-
         # If automaticsolver on, do not listen for keyboard inputs
         if self.parameters['automaticsolver'] or not key_pressed in self.accepted_keys:
             return

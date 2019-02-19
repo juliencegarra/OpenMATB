@@ -189,7 +189,7 @@ class Main(QtGui.QMainWindow):
             dll.keybd_event(
                 k, 0x45, KEYEVENTF_EXTENTEDKEY | KEYEVENTF_KEYUP, 0)
 
-    
+
     def load_plugins(self):
         """Inform the Main() class with plugins information"""
 
@@ -236,8 +236,8 @@ class Main(QtGui.QMainWindow):
                     task.hide()
                 else:
                     print _("Plugin '%s' is not recognized") % plugin_name
-                    
-                
+
+
     def place_plugins_on_screen(self):
         """Compute size and position of each plugin, in a 2 x 3 canvas,
         as a function of the taskplacement variable of each plugin"""
@@ -354,7 +354,7 @@ class Main(QtGui.QMainWindow):
                         self.PLUGINS_TASK[plugin_name]['ui_label'].setText('')
                     else:
                         self.PLUGINS_TASK[plugin_name]['ui_label'].setText(self.PLUGINS_TASK[plugin_name]['class'].parameters['title'].upper())
-                    
+
                     self.PLUGINS_TASK[plugin_name]['ui_label'].show()
 
     def timerRegister(self, timer):
@@ -496,7 +496,7 @@ class Main(QtGui.QMainWindow):
             functionname = "on" + command[0].capitalize()
 
             # If the onCommand does not exist...
-            if not hasattr(taskclass, functionname) and functionname not in ["onStart", "onStop", "onHide","onPause", "onShow","onResume"]:
+            if not hasattr(taskclass, functionname) and functionname not in ["onStart", "onStop", "onHide","onPause", "onShow", "onResume"]:
 
                 # signal it.
                 errorcaller = ""
@@ -618,7 +618,7 @@ class Main(QtGui.QMainWindow):
                         functionname = "on" + command[0].capitalize()
 
                         msg = ''
-                        if functionname == "onStart": # = onResume + onShow 
+                        if functionname == "onStart": # = onResume + onShow
                             self.PLUGINS_TASK[task]['taskRunning'] = True
                             self.PLUGINS_TASK[task]['taskVisible'] = True
                             self.PLUGINS_TASK[task]['taskPaused'] = False
@@ -647,6 +647,7 @@ class Main(QtGui.QMainWindow):
                                 self.PLUGINS_TASK[task]['taskPaused'] = False
                                 msg = 'RESUME'
 
+                        # Call the onXXX command from the task
                         if hasattr(taskclass, functionname):
                             getattr(taskclass, functionname)()
 
@@ -654,7 +655,7 @@ class Main(QtGui.QMainWindow):
                             self.mainLog.addLine(['MAIN', 'STATE', task.upper(), msg])
 
                         self.waitEndofPause()
-                        
+
                         if self.parameters['showlabels']:
                             self.updateLabels()
 
@@ -794,7 +795,7 @@ class Main(QtGui.QMainWindow):
 
                     if hasattr(self.getPluginClass(plugin), "onPause"):
                         self.getPluginClass(plugin).onPause()
-                        
+
                 # Running plugins must be hidden
                 if 'ui_label' in self.PLUGINS_TASK[plugin]:
                     self.PLUGINS_TASK[plugin]['ui_label'].hide()
@@ -814,7 +815,7 @@ class Main(QtGui.QMainWindow):
             if plugin != '__main__':
                 classplugin = self.getPluginClass(plugin)
 
-                # Finally, the plugin is displayed back if running                
+                # Finally, the plugin is displayed back if running
                 if self.PLUGINS_TASK[plugin]['taskRunning']:
                     self.PLUGINS_TASK[plugin]['taskPaused'] = False
                     if hasattr(self.getPluginClass(plugin), "onResume"):
