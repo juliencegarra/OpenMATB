@@ -108,6 +108,7 @@ class Task(QtGui.QWidget):
         self.currentFailure = {}
 
     def onUpdate(self):
+
         if self.parameters['displayautomationstate']:
             self.refreshModeLabel()
         else:
@@ -155,6 +156,7 @@ class Task(QtGui.QWidget):
                     self.parameters['lights'][thisLight]['on'])
 
     def keyEvent(self, key_pressed):
+
         # If automaticsolver on, do not listen for keyboard inputs
         if self.parameters['automaticsolver'] or not key_pressed in self.accepted_keys:
             return
