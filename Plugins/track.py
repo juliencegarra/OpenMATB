@@ -1,7 +1,6 @@
 from PySide import QtGui, QtCore
 from Helpers import WTrack
 from Helpers.Translator import translate as _
-import inputs
 import pygame
 
 class Task(QtGui.QWidget):
