@@ -2,7 +2,7 @@ from PySide import QtGui, QtCore
 from Helpers import WTrack
 from Helpers.Translator import translate as _
 import inputs
-import pdb
+import pygame
 
 class Task(QtGui.QWidget):
 
@@ -27,20 +27,20 @@ class Task(QtGui.QWidget):
             'cutofffrequency': 0.06,
             'equalproportions' : True,
         }
-        
+
         # Potentially translate task title
         self.parameters['title'] = _(self.parameters['title'])
 
 
     def onStart(self):
-        
+
         # Define a QLabel object to potentially display automation mode
         self.modeFont = QtGui.QFont("sans-serif", int(self.height() / 35.), QtGui.QFont.Bold)
         self.modeLabel = QtGui.QLabel(self)
         self.modeLabel.setGeometry(QtCore.QRect(0.60 * self.width(), 0.60 * self.height(), 0.40 * self.width(), 0.40 * self.height()))
         self.modeLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.modeLabel.setFont(self.modeFont)
-        
+
         self.parameters['displaytitle'] = True
 
         # Set a WTrack Qt object
@@ -52,10 +52,16 @@ class Task(QtGui.QWidget):
         # Add the WTrack object to the layout
         layout.addWidget(self.widget)
         self.setLayout(layout)
-        
-        if len(inputs.devices.gamepads) == 0:
+
+        pygame.joystick.init()
+
+        # Check for a joystick device
+        if pygame.joystick.get_count() == 0:
             self.parent().showCriticalMessage(
                 _("Please plug a joystick for the '%s' task!") % (self.parameters['title']))
+        else:
+            self.my_joystick = pygame.joystick.Joystick(0)
+            self.my_joystick.init()
 
         # Log some task information once
         self.buildLog(["STATE", "TARGET", "X", str(0.5)])
@@ -84,14 +90,8 @@ class Task(QtGui.QWidget):
         # Else allow manual compensatory movements only if cursor is outside
         # the target area
         elif not self.widget.isCursorInTarget():
-
             # Retrieve potentials joystick inputs (x,y)
-            #~ pdb.set_trace()
-            #~ ev_type, code, state = [[event.ev_type, event.code, event.state] for event in inputs.get_gamepad()][0]
-            #~ if ev_type == 'Absolute':
-                #~ print str(code) + ': ' + str(state)
-            
-            #~ x_input, y_input = self.joystick_input()
+            x_input, y_input = self.joystick_input()
 
             # If assisted solver : correct cursor position only if joystick
             # inputs something
@@ -110,14 +110,14 @@ class Task(QtGui.QWidget):
         self.buildLog(["STATE", "CURSOR", "X", str(current_X)])
         self.buildLog(["STATE", "CURSOR", "Y", str(current_Y)])
 
-    #~ def joystick_input(self):
-        #~ if self.my_joystick:
-            #~ pygame.event.pump()
-            #~ # Apply a joystickforce factor to joystick input to obtain a
-            #~ # smoother movement
-            #~ return self.my_joystick.get_axis(0) * self.parameters['joystickforce'], self.my_joystick.get_axis(1) * self.parameters['joystickforce']
-        #~ else:
-            #~ return 0, 0
+    def joystick_input(self):
+        if self.my_joystick:
+            pygame.event.pump()
+            # Apply a joystickforce factor to joystick input to obtain a
+            # smoother movement
+            return self.my_joystick.get_axis(0) * self.parameters['joystickforce'], self.my_joystick.get_axis(1) * self.parameters['joystickforce']
+        else:
+            return (0, 0)
 
     def refreshModeLabel(self):
         if self.parameters['automaticsolver']:
@@ -131,6 +131,6 @@ class Task(QtGui.QWidget):
     def buildLog(self, thisList):
         thisList = ["TRACK"] + thisList
         self.parent().mainLog.addLine(thisList)
-    
+
     def onStop():
         self.parameters['displaytitle'] = False
