@@ -79,6 +79,9 @@ class Task(QtGui.QWidget):
             # Log its target value if it is set
             if self.parameters['tank'][thisTank]['target'] is not None:
                 self.buildLog(["STATE", "TANK" + thisTank.upper(), "TARGET", str(self.parameters['tank'][thisTank]['target'])])
+                
+                # Change tank initial level at the target level
+                self.parameters['tank'][thisTank]['level'] = self.parameters['tank'][thisTank]['target']
 
              # Set a WTank Qt object
             self.parameters['tank'][thisTank]['ui'] = WTank.WTank(self)
