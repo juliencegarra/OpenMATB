@@ -23,6 +23,7 @@ class Task(QtGui.QWidget):
             'pumpcolorfailure' : '#FF0000',
             'tolerancelevel':500,
             'displaytolerance':True,
+            'resetperformance':None,
 
             'pump': {'1': {'flow': 800, 'state': 0, 'keys': [QtCore.Qt.Key_1], 'hide': 0},
                      '2': {'flow': 600, 'state': 0, 'keys': [QtCore.Qt.Key_2, 233], 'hide': 0},
@@ -133,6 +134,14 @@ class Task(QtGui.QWidget):
 
         if self.parameters['displayautomationstate']:
             self.refreshModeLabel()
+        
+        if self.parameters['resetperformance'] is not None:
+            if self.parameters['resetperformance'] in ['last', 'global']:
+                for this_index in self.performance[self.parameters['resetperformance']]:
+                    self.performance[self.parameters['resetperformance']][this_index] = 0
+            else:
+                self.parent().showCriticalMessage(_("%s : wrong argument in resman;resetperformance") % self.parameters['resetperformance'])
+            self.parameters['resetperformance'] = None
 
         time_resolution = (self.parameters['taskupdatetime'] / 1000) / 60.
 

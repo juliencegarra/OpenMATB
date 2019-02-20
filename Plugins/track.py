@@ -24,6 +24,7 @@ class Task(QtGui.QWidget):
             'joystickforce': 0.05,
             'cutofffrequency': 0.06,
             'equalproportions' : True,
+            'resetperformance':None,
         }
         
         self.performance = {
@@ -79,6 +80,14 @@ class Task(QtGui.QWidget):
             self.refreshModeLabel()
         else:
             self.modeLabel.hide()
+            
+        if self.parameters['resetperformance'] is not None:
+            if self.parameters['resetperformance'] in ['last', 'global']:
+                for this_index in self.performance[self.parameters['resetperformance']]:
+                    self.performance[self.parameters['resetperformance']][this_index] = 0
+            else:
+                self.parent().showCriticalMessage(_("%s : wrong argument in track;resetperformance") % self.parameters['resetperformance'])
+            self.parameters['resetperformance'] = None
 
         # Preallocate x and y input variables
         x_input, y_input = 0, 0

@@ -27,7 +27,11 @@
 0:00:01;sysmon;scales-1-failure;down
 0:00:15;sysmon;scales-4-failure;up
 
+0:00:25;resman;resetperformance;last
+0:00:25;sysmon;resetperformance;last
+0:00:29;track;resetperformance;last
 0:00:30;staticfeedback;start
+
 0:00:30;track;stop
 0:00:30;sysmon;stop
 0:00:30;resman;stop

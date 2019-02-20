@@ -14,7 +14,7 @@ class Task(QtGui.QWidget):
         self.parameters = {
             'taskplacement': 'fullscreen',
             'taskupdatetime' : None,
-            'feedbackduration' : 5 # seconds
+            'feedbackduration' : 5
         }
         
         self.performances = {}

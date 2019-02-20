@@ -23,6 +23,7 @@ class Task(QtGui.QWidget):
             'feedback' : True,
             'feedbackduration': 1.5 * 1000,
             'scalestyle' : 1, # could be defined at the scale level
+            'resetperformance':None,
 
             'lights': {
                 '1': {'name': 'F5', 'failure': False, 'on': True, 'default': 'on', 'oncolor': "#009900", 'keys': [QtCore.Qt.Key_F5]},
@@ -118,6 +119,14 @@ class Task(QtGui.QWidget):
             self.refreshModeLabel()
         else:
             self.modeLabel.hide()
+        
+        if self.parameters['resetperformance'] is not None:
+            if self.parameters['resetperformance'] in ['last', 'global']:
+                for this_index in self.performance[self.parameters['resetperformance']]:
+                    self.performance[self.parameters['resetperformance']][this_index] = 0
+            else:
+                self.parent().showCriticalMessage(_("%s : wrong argument in sysmon;resetperformance") % self.parameters['resetperformance'])
+            self.parameters['resetperformance'] = None
             
         # For each light button, refresh name
         for index, k in enumerate(self.parameters['lights'].keys()):
