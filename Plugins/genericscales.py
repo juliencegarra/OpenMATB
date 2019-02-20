@@ -28,13 +28,14 @@ class Task(QtGui.QWidget):
         self.scaleFont = QtGui.QFont("Times", round(self.screen_height/64.))
 
     def onStart(self):
+        print "ici"
         self.parent().onPause()
         self.LoadScales(self.parameters['filename'])
         self.setLayout(self.layout)
         self.show()
 
     def LoadScales(self, scalefile):
-
+        print "load"
         # Create dictionary to store scales information
         self.scales = {}
 

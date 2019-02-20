@@ -26,25 +26,25 @@ class Task(QtGui.QWidget):
             'equalproportions' : True,
             'resetperformance':None,
         }
-        
+
         self.performance = {
             'total' : {'time_in_ms':0, 'time_out_ms':0, 'points_number':0, 'deviation_mean':0},
             'last'  : {'time_in_ms':0, 'time_out_ms':0, 'points_number':0, 'deviation_mean':0}
         }
-        
+
         # Potentially translate task title
         self.parameters['title'] = _(self.parameters['title'])
 
 
     def onStart(self):
-        
+
         # Define a QLabel object to potentially display automation mode
         self.modeFont = QtGui.QFont("sans-serif", int(self.height() / 35.), QtGui.QFont.Bold)
         self.modeLabel = QtGui.QLabel(self)
         self.modeLabel.setGeometry(QtCore.QRect(0.60 * self.width(), 0.60 * self.height(), 0.40 * self.width(), 0.40 * self.height()))
         self.modeLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.modeLabel.setFont(self.modeFont)
-        
+
         self.parameters['displaytitle'] = True
 
         # Set a WTrack Qt object
@@ -80,7 +80,7 @@ class Task(QtGui.QWidget):
             self.refreshModeLabel()
         else:
             self.modeLabel.hide()
-            
+
         if self.parameters['resetperformance'] is not None:
             if self.parameters['resetperformance'] in ['last', 'global']:
                 for this_index in self.performance[self.parameters['resetperformance']]:
@@ -122,14 +122,14 @@ class Task(QtGui.QWidget):
         # Constantly log the cursor coordinates
         self.buildLog(["STATE", "CURSOR", "X", str(current_X)])
         self.buildLog(["STATE", "CURSOR", "Y", str(current_Y)])
-        
+
         # Record performance
         for this_cat in self.performance.keys():
             if self.widget.isCursorInTarget():
                 self.performance[this_cat]['time_in_ms'] += self.parameters['taskupdatetime']
             else:
                 self.performance[this_cat]['time_out_ms'] += self.parameters['taskupdatetime']
-            
+
             current_deviation = self.widget.returnAbsoluteDeviation()
             self.performance[this_cat]['points_number'] += 1
             self.performance[this_cat]['deviation_mean'] = self.performance[this_cat]['deviation_mean'] * ((self.performance[this_cat]['points_number']-1) / float(self.performance[this_cat]['points_number'])) + current_deviation * (float(1) / self.performance[this_cat]['points_number'])

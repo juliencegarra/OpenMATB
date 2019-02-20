@@ -489,6 +489,10 @@ class Main(QtGui.QMainWindow):
                 _("'%s' plugin: unknown\n\nLINE: %s") % (task, str(lineNumber)))
             return None, None, None
 
+        if len(time)!=7:
+            self.showCriticalMessage(
+                _("'%s' plugin: wrong time format\n\nLINE: %s") % (task, str(lineNumber)))
+
         # When only one command, concatenate it with the 'on' chain (e.g. start leads to onStart)
         # onCommand functions are called into the plugins
         if len(command) == 1:

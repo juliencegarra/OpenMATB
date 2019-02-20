@@ -1,0 +1,6 @@
+# Traduction française du NASA-TLX. Cegarra & Morgado (2009)
+
+Difficule;Selon vous, quel est le niveau de difficulté de cette tâche ?;Tres facile/Impossible;1/5/3
+Difficule2;Comparées aux difficultés que doivent éprouver les autres sujets, je trouve cette tâche ?;Tres facile/Impossible;1/5/3
+Difficule3;Comparées à la plupart des tâches réalisées au quotidien, quelle difficulté cette tâche a pour vous ?;Tres facile/Impossible;1/5/3
+Difficule4;J'estime que cette tâche est:;Tres facile/Impossible;1/5/3

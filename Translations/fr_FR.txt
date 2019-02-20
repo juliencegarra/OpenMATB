@@ -70,6 +70,7 @@ Unable to evaluate a value! This should not happen!=Impossible d'évaluer une va
 Timing overflow. This should not happen!=Dépassement de valeur pour le timing. Cela ne devrait pas arriver !
 Plugin '%s' requires an onUpdate() function!=Le plugin '%s' doit intégrer une fonction onUpdate() !
 No scenario selected!=Pas de scénario sélectionné!
+'%s' plugin: wrong time format\n\nLINE: %s='%s' Plugin: horodatage mal formaté\n\nLIGNE: %s=
 
 # FEEDBACK MESSAGES
 On average, you spent %s%% of time inside the target=En moyenne, vous avez passé %s%% du temps à l'intérieur de la zone-cible
