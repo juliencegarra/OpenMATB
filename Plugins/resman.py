@@ -43,6 +43,17 @@ class Task(QtGui.QWidget):
             }
         }
         
+        self.performance = {
+            'total' : {},
+            'last'  : {}
+        }
+        
+        for this_cat in self.performance:
+            for this_tank in self.parameters['tank']:
+                if self.parameters['tank'][this_tank]['target'] is not None:
+                    self.performance[this_cat][this_tank+'_in'] = 0
+                    self.performance[this_cat][this_tank+'_out'] = 0
+        
         # Potentially translate task title
         self.parameters['title'] = _(self.parameters['title'])
 
@@ -223,11 +234,17 @@ class Task(QtGui.QWidget):
         for thisTank in self.parameters['tank'].keys():
             self.parameters['tank'][thisTank]['ui'].refreshLevel(self.parameters['tank'][thisTank]['level'])
 
-        # 5. Log tank level if a target is set
+        # 5. Log tank level if a target is set           
         for thisTank in self.parameters['tank'].keys():
             if self.parameters['tank'][thisTank]['target'] is not None:
                 self.buildLog(["STATE", "TANK" + thisTank.upper(), "LEVEL", str(self.parameters['tank'][thisTank]['level'])])
-
+                
+                for this_cat in self.performance:
+                    local_dev = abs(self.parameters['tank'][thisTank]['level'] - self.parameters['tank'][thisTank]['target'])
+                    if local_dev <= self.parameters['tolerancelevel']:
+                        self.performance[this_cat][thisTank.lower()+'_in']+=1
+                    else:
+                        self.performance[this_cat][thisTank.lower()+'_out']+=1
         self.update()
 
 

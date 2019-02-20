@@ -64,6 +64,10 @@ class WTrack (QtGui.QWidget):
 
     def linspace(self, lower, upper, length):
         return [lower + x*(upper-lower)/(length-1) for x in range(length)]
+    
+    def returnAbsoluteDeviation(self):
+        this_x, this_y = self.getXY()
+        return numpy.sqrt(this_x**2 + this_y**2)
 
     def getXY(self):
         return self.cursorPos['x'], self.cursorPos['y']

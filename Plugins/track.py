@@ -2,7 +2,6 @@ from PySide import QtGui, QtCore
 from Helpers import WTrack
 from Helpers.Translator import translate as _
 import inputs
-import pdb
 
 class Task(QtGui.QWidget):
 
@@ -16,7 +15,6 @@ class Task(QtGui.QWidget):
             'taskplacement': 'topmid',
             'taskupdatetime': 5,
             'title': 'Tracking',
-            'displaytitle' : False,
             'cursorcolor': '#0000FF',
             'cursorcoloroutside': '#0000FF',
             'automaticsolver': False,
@@ -26,6 +24,11 @@ class Task(QtGui.QWidget):
             'joystickforce': 0.05,
             'cutofffrequency': 0.06,
             'equalproportions' : True,
+        }
+        
+        self.performance = {
+            'total' : {'time_in_ms':0, 'time_out_ms':0, 'points_number':0, 'deviation_mean':0},
+            'last'  : {'time_in_ms':0, 'time_out_ms':0, 'points_number':0, 'deviation_mean':0}
         }
         
         # Potentially translate task title
@@ -86,7 +89,6 @@ class Task(QtGui.QWidget):
         elif not self.widget.isCursorInTarget():
 
             # Retrieve potentials joystick inputs (x,y)
-            #~ pdb.set_trace()
             #~ ev_type, code, state = [[event.ev_type, event.code, event.state] for event in inputs.get_gamepad()][0]
             #~ if ev_type == 'Absolute':
                 #~ print str(code) + ': ' + str(state)
@@ -109,6 +111,17 @@ class Task(QtGui.QWidget):
         # Constantly log the cursor coordinates
         self.buildLog(["STATE", "CURSOR", "X", str(current_X)])
         self.buildLog(["STATE", "CURSOR", "Y", str(current_Y)])
+        
+        # Record performance
+        for this_cat in self.performance.keys():
+            if self.widget.isCursorInTarget():
+                self.performance[this_cat]['time_in_ms'] += self.parameters['taskupdatetime']
+            else:
+                self.performance[this_cat]['time_out_ms'] += self.parameters['taskupdatetime']
+            
+            current_deviation = self.widget.returnAbsoluteDeviation()
+            self.performance[this_cat]['points_number'] += 1
+            self.performance[this_cat]['deviation_mean'] = self.performance[this_cat]['deviation_mean'] * ((self.performance[this_cat]['points_number']-1) / float(self.performance[this_cat]['points_number'])) + current_deviation * (float(1) / self.performance[this_cat]['points_number'])
 
     #~ def joystick_input(self):
         #~ if self.my_joystick:
@@ -131,6 +144,3 @@ class Task(QtGui.QWidget):
     def buildLog(self, thisList):
         thisList = ["TRACK"] + thisList
         self.parent().mainLog.addLine(thisList)
-    
-    def onStop():
-        self.parameters['displaytitle'] = False

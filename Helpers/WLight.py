@@ -24,7 +24,7 @@ class WLight(QtGui.QWidget):
         self.onColor = onColor
         self.ulx = ulx * self.parent().width()
         self.uly = 0.05 * self.parent().height()
-        self.feedback = 0  # Useless until now
+        #~ self.feedback = 0  # Useless yet
 
         self.light.setGeometry(
             self.ulx, self.uly, self.lightWidth, self.lightHeight)

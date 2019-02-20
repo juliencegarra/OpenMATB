@@ -37,6 +37,11 @@ class Task(QtGui.QWidget):
             }
             }
             
+        self.performance = {
+            'total' : {'hit_number': 0, 'miss_number':0, 'fa_number':0},
+            'last'  : {'hit_number': 0, 'miss_number':0, 'fa_number':0}
+        }
+            
         # Potentially translate task title
         self.parameters['title'] = _(self.parameters['title'])
 
@@ -104,12 +109,10 @@ class Task(QtGui.QWidget):
         self.feedbackTimer = QTExtensions.QTimerWithPause(self)
         self.feedbackTimer.timeout.connect(self.endFeedBackTimer)
 
-        # Preallocate a variable handling information about a potential current
-        # failure
+        # Preallocate a variable handling information about a potential current failure
         self.currentFailure = {}
 
     def onUpdate(self):
-
         if self.parameters['displayautomationstate']:
             self.refreshModeLabel()
         else:
@@ -164,7 +167,7 @@ class Task(QtGui.QWidget):
 
         # If no failure is occuring, any keypress is a false alarm
         if len(self.currentFailure) == 0:
-            self.buildLog(["ACTION", "NA", "FA"])
+            self.record_performance('NA','fa')
             return
 
         # If a failure is occuring, key press is evaluated further
@@ -180,7 +183,7 @@ class Task(QtGui.QWidget):
                         # If uncorrect key pressed -> failure continues (false
                         # alarm)
                         else:
-                            self.buildLog(["ACTION", "NA", "FA"])
+                            self.record_performance('NA','fa')
 
     def endFeedBackTimer(self):
         self.feedbackTimer.stop()
@@ -233,8 +236,7 @@ class Task(QtGui.QWidget):
         # If automatic solver off and good key pressed (success), log a HIT,
         # send a positive feedback, start the corresponding timer
         elif success:
-            self.buildLog(
-                ["ACTION", self.parameters[lights_or_scales][number]['name'], "HIT"])
+            self.record_performance(self.parameters[lights_or_scales][number]['name'], 'hit')
 
             if self.parameters['feedback']:
                 self.parameters[lights_or_scales][number]['ui'].feedback = 1
@@ -243,8 +245,7 @@ class Task(QtGui.QWidget):
         # If failure ends with neither automatic solver nor good key pressed,
         # log a MISS
         else:
-            self.buildLog(
-                ["ACTION", self.parameters[lights_or_scales][number]["name"], "MISS"])
+            self.record_performance(self.parameters[lights_or_scales][number]["name"], 'miss')
 
         # In any case, reset all the 'failure' variables
         for thisScale in self.parameters['scales'].keys():
@@ -255,8 +256,7 @@ class Task(QtGui.QWidget):
                 'lights'][thisLight]['default'] == 'on' else False
 
         # Log the end of the failure
-        self.buildLog(
-            ["STATE", self.parameters[lights_or_scales][number]["name"], "SAFE"])
+        self.buildLog(["STATE", self.parameters[lights_or_scales][number]["name"], "SAFE"])
 
         # Empty the current failure variable
         self.currentFailure = {}
@@ -302,6 +302,11 @@ class Task(QtGui.QWidget):
         else:
             self.modeLabel.setText("<b>%s</b>" % _('MANUAL'))
         self.modeLabel.show()
+    
+    def record_performance(self, light_scale_name, event):
+        for this_cat in self.performance.keys():
+            self.performance[this_cat][event+'_number'] += 1
+        self.buildLog(["ACTION", light_scale_name, event.upper()])
 
     def buildLog(self, thisList):
         thisList = ["SYSMON"] + thisList

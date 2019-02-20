@@ -1,0 +1,8 @@
+# Traduction française du NASA-TLX. Cegarra & Morgado (2009)
+
+Difficulte;Selon vous, quel est le niveau de difficulté de cette tâche ?;Très facile/Impossible;1/5/3
+Exigence physique;Dans quelle mesure des opérations physiques ont-elles été requises (par ex.: pousser, tirer, tourner, superviser, activer, etc.) ? Ont-elles conduit à une tâche plutôt facile ou difficile, lente ou rapide, lâche ou vigoureuse, reposante ou ardue ?;Faible/Forte;0/100/50
+Exigence temporelle;Quelle était la pression temporelle, que ce soit à cause de la cadence rythme ou de l’allure des tâches ou de l’apparition des éléments de la tâche avez-vous ressenti ? L’allure était-elle lente et tranquille ou rapide et frénétique ?;Faible/Forte;0/100/50
+Effort;Quelle a été la difficulté d’accomplir (mentalement et physiquement) la tâche avec un niveau de performance tel que le votre ?;Faible/Forte;0/100/50
+Performance;Quelle réussite vous attribuez-vous en ce qui concerne l'atteinte des buts de la tâche fixés par l’expérimentateur (ou par vous-même) ? Dans quelle mesure êtes-vous satisfait de votre performance dans l’accomplissement de ces buts ?;Bonne/Faible;0/100/50
+Frustration;Au cours de la tâche, quel sentiment d'être peu sûr de vous, découragé, irrité, stressé et agacé avez-vous ressenti contrairement au fait d'être sûr de vous, satisfait, content, détendu et complaisant ?;Faible/Fort;0/100/50

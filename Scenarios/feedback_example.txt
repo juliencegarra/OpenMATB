@@ -1,0 +1,36 @@
+# Scenario template
+# Durations are expressed in milliseconds
+
+# 1. Set tasks parameters
+
+# 1.a. System monitoring parameters
+
+# 1.b.i. Resources management parameters
+0:00:00;resman;tank-b-target;1000
+0:00:00;resman;tolerancelevel;100
+
+# 1.b.ii. Pumps status parameters
+# Nothing
+
+# 1.c. Tracking parameters
+0:00:00;track;cursorcolor;#009900
+
+# 1.d. Communications parameters
+
+# 2. Start appropriate tasks
+0:00:00;pumpstatus;start
+0:00:00;resman;start
+0:00:00;track;start
+0:00:00;sysmon;start
+
+
+0:00:01;sysmon;scales-1-failure;down
+0:00:15;sysmon;scales-4-failure;up
+
+0:00:30;staticfeedback;start
+0:00:30;track;stop
+0:00:30;sysmon;stop
+0:00:30;resman;stop
+0:00:30;pumpstatus;stop
+0:00:31;end
+

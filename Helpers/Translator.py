@@ -33,7 +33,7 @@ def translate(s):
                 OSCriticalErrorMessage("Error",
                 "Unable to open the translation. Please ensure it is saved as an UTF-8 file!")
 
-    if len(_translations)!=0 and translations.has_key(unicode(s)):
+    if len(_translations)!=0 and _translations.has_key(unicode(s)):
         return unicode(_translations[unicode(s)])
 
     return unicode(s)

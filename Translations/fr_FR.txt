@@ -70,3 +70,9 @@ Unable to evaluate a value! This should not happen!=Impossible d'évaluer une va
 Timing overflow. This should not happen!=Dépassement de valeur pour le timing. Cela ne devrait pas arriver !
 Plugin '%s' requires an onUpdate() function!=Le plugin '%s' doit intégrer une fonction onUpdate() !
 No scenario selected!=Pas de scénario sélectionné!
+
+# FEEDBACK MESSAGES
+On average, you spent %s%% of time inside the target=En moyenne, vous avez passé %s%% du temps à l'intérieur de la zone-cible
+On average, you corrected %s out of %s of failures (%s%%)=En moyenne, vous avez corrigé %s erreurs sur %s (%s%%)
+%s tank: on average, you have maintained this tank at a correct level %s%% of time=Réservoir %s : en moyenne, vous avez maintenu ce réservoir à un niveau acceptable %s%% du temps
+

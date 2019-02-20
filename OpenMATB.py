@@ -20,7 +20,6 @@ MAIN_SCHEDULER_INTERVAL = 0.001
 global CONFIG
 CONFIG = {}
 
-import pdb
 import ctypes
 import time
 import datetime
@@ -775,7 +774,7 @@ class Main(QtGui.QMainWindow):
         self.close()
         sys.exit()
 
-    def onPause(self):
+    def onPause(self, hide_ui=True):
         """Defines what happens when the experiment is paused, for instance when a generic scale is presented"""
         self.mainLog.addLine(["MAIN", "STATE", "", "PAUSE"])
         self.experiment_pause = True
@@ -796,8 +795,9 @@ class Main(QtGui.QMainWindow):
                         self.getPluginClass(plugin).onPause()
                         
                 # Running plugins must be hidden
-                if 'ui_label' in self.PLUGINS_TASK[plugin]:
-                    self.PLUGINS_TASK[plugin]['ui_label'].hide()
+                if hide_ui:
+                    if 'ui_label' in self.PLUGINS_TASK[plugin]:
+                        self.PLUGINS_TASK[plugin]['ui_label'].hide()
                 classplugin.hide()
 
     def onResume(self):
