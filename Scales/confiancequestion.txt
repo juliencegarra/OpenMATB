@@ -1,8 +1,0 @@
-confiancequestion.txt
-
-?# Traduction française du NASA-TLX. Cegarra & Morgado (2009)
-
-Trustcible;Quelle confiance aviez-vous dans votre capacité à résoudre la tâche de cible (tâche avec joystick) ?;Faible/Forte;1/10/5
-Trustsurveillance;Quelle confiance aviez-vous dans votre capacité à résoudre la tâche de surveillance (les 4 colonnes en haut à gauche) ?;Faible/Forte;1/10/5
-Trustresource;Quelle confiance aviez vous dans votre capacité à résoudre la tâche de ressources (tâche du bas avec les réservoirs) ?;Faible/Forte;1/10/5
-Selfconfidence;Quelle confiance aviez-vous dans l'automatisation de la tâche de surveillance pour détecter les dysfonctionnements (curseur bloqué en bas ou en haut d'une colonne)?;Faible/Forte;1/10/5
