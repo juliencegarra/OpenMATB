@@ -495,7 +495,7 @@ class Main(QtGui.QMainWindow):
             functionname = "on" + command[0].capitalize()
 
             # If the onCommand does not exist...
-            if not hasattr(taskclass, functionname) and functionname not in ["onStart", "onStop", "onHide","onPause", "onShow", "onResume"]:
+            if not hasattr(taskclass, functionname) and functionname not in ["onStart", "onStop", "onHide", "onPause", "onShow", "onResume"]:
 
                 # signal it.
                 errorcaller = ""
@@ -604,8 +604,8 @@ class Main(QtGui.QMainWindow):
         # Check if the current time has entry in the scenario
         if time in self.scenariocontents:
 
-            # If so, browse all the task that are involved
-            for task in [this_task for this_task in self.scenariocontents[time] if this_task != '__main__']:
+            # If so, browse all the task that are involved (or the main script)
+            for task in self.scenariocontents[time]:
                 # Store an instance of the Task class of the plugin
                 taskclass = self.getPluginClass(task)
 
@@ -662,6 +662,7 @@ class Main(QtGui.QMainWindow):
                         # If longer command, set as a parameter variable (see setParameterVariable above)
                         self.setParameterVariable(task, taskclass, command[0], command[1])
                         self.mainLog.addLine(['MAIN', 'SCENARIO', task.upper(), command[0].upper(), command[1]])
+
 
     def waitEndofPause(self):
         # if the task asked for a pause. Wait for the end of the pause
