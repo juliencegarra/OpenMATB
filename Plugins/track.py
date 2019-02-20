@@ -1,7 +1,7 @@
 from PySide import QtGui, QtCore
 from Helpers import WTrack
 from Helpers.Translator import translate as _
-import inputs
+import pygame
 
 class Task(QtGui.QWidget):
 
@@ -55,10 +55,16 @@ class Task(QtGui.QWidget):
         # Add the WTrack object to the layout
         layout.addWidget(self.widget)
         self.setLayout(layout)
-        
-        if len(inputs.devices.gamepads) == 0:
+
+        pygame.joystick.init()
+
+        # Check for a joystick device
+        if pygame.joystick.get_count() == 0:
             self.parent().showCriticalMessage(
                 _("Please plug a joystick for the '%s' task!") % (self.parameters['title']))
+        else:
+            self.my_joystick = pygame.joystick.Joystick(0)
+            self.my_joystick.init()
 
         # Log some task information once
         self.buildLog(["STATE", "TARGET", "X", str(0.5)])
@@ -89,11 +95,7 @@ class Task(QtGui.QWidget):
         elif not self.widget.isCursorInTarget():
 
             # Retrieve potentials joystick inputs (x,y)
-            #~ ev_type, code, state = [[event.ev_type, event.code, event.state] for event in inputs.get_gamepad()][0]
-            #~ if ev_type == 'Absolute':
-                #~ print str(code) + ': ' + str(state)
-            
-            #~ x_input, y_input = self.joystick_input()
+            x_input, y_input = self.joystick_input()
 
             # If assisted solver : correct cursor position only if joystick
             # inputs something
@@ -123,14 +125,14 @@ class Task(QtGui.QWidget):
             self.performance[this_cat]['points_number'] += 1
             self.performance[this_cat]['deviation_mean'] = self.performance[this_cat]['deviation_mean'] * ((self.performance[this_cat]['points_number']-1) / float(self.performance[this_cat]['points_number'])) + current_deviation * (float(1) / self.performance[this_cat]['points_number'])
 
-    #~ def joystick_input(self):
-        #~ if self.my_joystick:
-            #~ pygame.event.pump()
-            #~ # Apply a joystickforce factor to joystick input to obtain a
-            #~ # smoother movement
-            #~ return self.my_joystick.get_axis(0) * self.parameters['joystickforce'], self.my_joystick.get_axis(1) * self.parameters['joystickforce']
-        #~ else:
-            #~ return 0, 0
+    def joystick_input(self):
+        if self.my_joystick:
+            pygame.event.pump()
+            # Apply a joystickforce factor to joystick input to obtain a
+            # smoother movement
+            return self.my_joystick.get_axis(0) * self.parameters['joystickforce'], self.my_joystick.get_axis(1) * self.parameters['joystickforce']
+        else:
+            return (0, 0)
 
     def refreshModeLabel(self):
         if self.parameters['automaticsolver']:

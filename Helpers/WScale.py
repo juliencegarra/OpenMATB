@@ -1,10 +1,4 @@
 from PySide import QtGui, QtCore
-import pdb
-
-class Communicate(QtCore.QObject):
-
-    updateBW = QtCore.Signal(int)
-
 
 class WScale(QtGui.QWidget):
 
@@ -67,7 +61,6 @@ class WScale(QtGui.QWidget):
             self.drawscaleI(qp)
         elif self.style==2:
             self.drawscaleII(qp)
-
         qp.end()
 
 
@@ -91,8 +84,6 @@ class WScale(QtGui.QWidget):
         if self.feedback == 1:
             qp.setBrush(QtCore.Qt.yellow)
             qp.drawRect(self.ulx, self.uly + self.scaleHeight - self.partHeight, self.scaleWidth, self.partHeight)
-
-        self.update()
 
 
     # MATB-II style
@@ -118,6 +109,3 @@ class WScale(QtGui.QWidget):
             qp.drawRect(self.ulx, self.uly + current_y,
                         self.scaleWidth - self.borderSize, self.partHeight)
             current_y += self.partHeight
-
-        self.update()
-

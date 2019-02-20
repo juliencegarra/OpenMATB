@@ -113,6 +113,7 @@ class Task(QtGui.QWidget):
         self.currentFailure = {}
 
     def onUpdate(self):
+
         if self.parameters['displayautomationstate']:
             self.refreshModeLabel()
         else:
