@@ -99,10 +99,8 @@ class Task(QtGui.QWidget):
         if self.parameters['automaticsolver']:
             x_input, y_input = self.widget.getAutoCompensation()
 
-        # Else allow manual compensatory movements only if cursor is outside
-        # the target area
-        elif not self.widget.isCursorInTarget():
-
+        # Else record manual compensatory movements
+        else:
             # Retrieve potentials joystick inputs (x,y)
             x_input, y_input = self.joystick_input()
 
