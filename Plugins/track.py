@@ -13,7 +13,7 @@ class Task(QtGui.QWidget):
         # TRACK PARAMETERS ###
         self.parameters = {
             'taskplacement': 'topmid',
-            'taskupdatetime': 5,
+            'taskupdatetime': 20,
             'title': 'Tracking',
             'cursorcolor': '#0000FF',
             'cursorcoloroutside': '#0000FF',
@@ -21,7 +21,7 @@ class Task(QtGui.QWidget):
             'displayautomationstate': True,
             'assistedsolver': False,
             'targetradius': 0.1,
-            'joystickforce': 0.05,
+            'joystickforce': 1.0,
             'cutofffrequency': 0.06,
             'equalproportions' : True,
             'resetperformance':None,
@@ -139,7 +139,8 @@ class Task(QtGui.QWidget):
             pygame.event.pump()
             # Apply a joystickforce factor to joystick input to obtain a
             # smoother movement
-            return self.my_joystick.get_axis(0) * self.parameters['joystickforce'], self.my_joystick.get_axis(1) * self.parameters['joystickforce']
+            current_force = self.parameters['taskupdatetime'] * (float(self.parameters['joystickforce'])/1000)
+            return self.my_joystick.get_axis(0) * current_force, self.my_joystick.get_axis(1) * current_force
         else:
             return (0, 0)
 

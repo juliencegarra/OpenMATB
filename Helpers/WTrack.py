@@ -10,7 +10,8 @@ class WTrack (QtGui.QWidget):
 
     def __init__(self, parent, equalproportions):
         super(WTrack, self).__init__(parent)
-
+        
+        # Define task area (width, height)
         self.targetArea = None
         self.equalproportions = equalproportions
         self.occupiedSpace = 0.9
@@ -20,7 +21,8 @@ class WTrack (QtGui.QWidget):
             self.task_height = self.occupiedSpace * self.parent().height()
         else:
             self.task_width = self.task_height = min(self.parent().width(), self.parent().height())*self.occupiedSpace
-
+        
+        # Define various sizes (lines, cursor, reticulum, ticks)
         self.penSize = self.task_height / 150.
         self.cursor_diam = 0.1  # 10%
         self.cursor_widthPx = self.cursor_heightPx = self.task_height * \
@@ -28,9 +30,9 @@ class WTrack (QtGui.QWidget):
         self.reticulum_length = self.cursor_diam / 5.
         self.reticulum_lengthPx = self.reticulum_length * self.task_height
         self.tickLength = 0.1 * self.task_height
-
         self.target_radius = self.parent().parameters['targetradius']
 
+        # Create Qt objects
         self.pen_cursor = QtGui.QPen(QtGui.QColor(self.parent().parameters['cursorcolor']), self.penSize * 2, QtCore.Qt.SolidLine)
         self.pen_cursor_outside = QtGui.QPen(QtGui.QColor(self.parent().parameters['cursorcoloroutside']), self.penSize * 2, QtCore.Qt.SolidLine)
         self.letterFont = QtGui.QFont("sans-serif", self.task_height / 30., QtGui.QFont.Bold)
@@ -57,7 +59,7 @@ class WTrack (QtGui.QWidget):
         self.previousPos = {'x': 0, 'y': 0}
 
         self.auto_radius = self.target_radius + 0.05
-        self.compensationForce = 0.005  # Amplitude of the automated compensatory movement
+        self.compensationForce = 0.5  # Amplitude of the automated compensatory movement
 
         random.seed(None)
         self.refreshCursorPosition(self.cursorPos['x'], self.cursorPos['y'])
@@ -105,10 +107,11 @@ class WTrack (QtGui.QWidget):
 
     def getAutoCompensation(self):
         auto_x, auto_y = 0, 0
+        current_force = self.parent().parameters['taskupdatetime'] * (float(self.compensationForce)/1000)
         if abs(self.cursorPos['x']) > 0.02:
-            auto_x = numpy.sign(-self.cursorPos['x']) * self.compensationForce
+            auto_x = numpy.sign(-self.cursorPos['x']) * current_force
         if abs(self.cursorPos['y']) > 0.02:
-            auto_y = numpy.sign(-self.cursorPos['y']) * self.compensationForce
+            auto_y = numpy.sign(-self.cursorPos['y']) * current_force
         return auto_x, auto_y
 
     def refreshCursorPosition(self, x, y):
