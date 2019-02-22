@@ -116,8 +116,9 @@ class WTrack (QtGui.QWidget):
 
     def refreshCursorPosition(self, x, y):
         # Cursor should not leave the widget area
-        self.cursorPos['x'] = max(min(x, 1), -1)
-        self.cursorPos['y'] = max(min(y, 1), -1)
+        self.cursorPos['x'] = max(min(x, 0.99), -0.99)
+        self.cursorPos['y'] = max(min(y, 0.99), -0.99)
+        print self.cursorPos['x']
         self.update()
 
     def getPositionFromRelative(self, x, y):
