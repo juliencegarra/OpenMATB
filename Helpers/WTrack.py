@@ -42,6 +42,7 @@ class WTrack (QtGui.QWidget):
         # Movements parameters
         self.howManySinusoide = 3
         self.cutoffFrequency = self.parent().parameters['cutofffrequency']
+        self.cursorSpeedFactor = 0.5 # At which speed should the sinusoides values be browsed ?
 
         # Range of movements amplitude around the center. e.g., [0,0] = fixed target, [0,1] = wide range, [1,1] = maximum amplitude
         self.amplitudeRange = [0.2, 0.6]
@@ -93,7 +94,7 @@ class WTrack (QtGui.QWidget):
             currentSinus = []
             for thisPhase in range(0, self.howManySinusoide):
                 phase_value = (2 * pi * self.frequencies[thisCoord][thisPhase] * (
-                    current_time_ms / 1000.) + self.phase[thisCoord][thisPhase]) % 2 * pi
+                    (current_time_ms * self.cursorSpeedFactor)/ 1000.) + self.phase[thisCoord][thisPhase]) % 2 * pi
                 currentSinus.append(sin(phase_value))
 
             currentPos = numpy.mean([self.amplitude[thisCoord][thisPhase] * currentSinus[thisPhase]
