@@ -57,7 +57,6 @@ class Main(QtGui.QMainWindow):
 
     def __init__(self, scenario_fullpath):
         super(Main, self).__init__(parent=None)
-        self.setFixedSize(1900, 1000)
         self.registeredTaskTimer = []
         self.parameters = {
             'showlabels': True,
@@ -106,20 +105,30 @@ class Main(QtGui.QMainWindow):
         # but the active screen will be used. Therefore you must ensure that the active screen
         # (just click on it before running application) is also the widest.
 
-        self.screen_width = self.width()
-        self.screen_height = self.height()
 
-        #screen_widths = [QtGui.QApplication.desktop().screenGeometry(i).width()
-                         #for i in range(0, QtGui.QApplication.desktop().screenCount())]
-        #self.screen_width = max(screen_widths)
-        #self.screen_index = screen_widths.index(self.screen_width)
-        #self.screen_height = QtGui.QApplication.desktop().screenGeometry(
-            #self.screen_index).height()
+        screen_widths = [QtGui.QApplication.desktop().screenGeometry(i).width()
+                         for i in range(0, QtGui.QApplication.desktop().screenCount())]
+
+        self.screen_width = max(screen_widths)
+        self.screen_index = screen_widths.index(self.screen_width)
+        self.screen_height = QtGui.QApplication.desktop().screenGeometry(
+            self.screen_index).height()
 
         # Get current screen
-        #current_screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
+        current_screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
         #centerPoint = QtGui.QApplication.desktop().screenGeometry(current_screen).center()
         #self.move(centerPoint)
+
+
+        # limit resolution to 1900x1000?
+        #if self.screen_width>1900 or self.screen_height>1000:
+        #    self.screen_width = 1900
+        #    self.screen_height = 1000
+
+
+        self.setFixedSize(self.screen_width, self.screen_height)
+
+
 
         # Log the computed screen size values
         self.mainLog.addLine(
