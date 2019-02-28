@@ -87,7 +87,7 @@ class WTrack (QtGui.QWidget):
         return self.targetArea.contains(xpos, ypos)
 
     def moveCursor(self):
-        current_time_ms = int(self.parent().parent().elapsedTime)
+        current_time_ms = int(self.parent().parent().totalElapsedTime_ms)
 
         # Avoid absolute positioning (t-1 -> t)
         for thisCoord in ['x', 'y']:

@@ -15,7 +15,7 @@ PARAMETERS_VARIABLE = "parameters"
 
 # We wait at least one tenth millisecond to update tasks.This is sufficient!
 # Will prevent hammering the main loop at <0.06 milliseconds
-MAIN_SCHEDULER_INTERVAL = 0.001
+MAIN_SCHEDULER_INTERVAL = 1
 
 global CONFIG
 CONFIG = {}
@@ -27,6 +27,7 @@ import imp
 import ast
 import sys
 import os
+import pdb
 import platform
 from Helpers import Logger, Translator
 from Helpers.Translator import translate as _
@@ -98,7 +99,7 @@ class Main(QtGui.QMainWindow):
 
         # Initialize two timing variables
         self.scenarioTimeStr = None
-        self.elapsedTime = 0
+        self.totalElapsedTime_ms = 0
 
         # Compute screen dimensions
         # /!\ Be careful : when multiple monitor are present, screen height and width are computed for the widest screen,
@@ -321,7 +322,7 @@ class Main(QtGui.QMainWindow):
 
         # Update time once to take first scenario instructions (0:00:00) into account
         self.scenarioUpdateTime()
-        self.last_time = self.default_timer()
+        self.last_time_microsec = self.default_timer()
 
         # Launch experiment
         while self.experiment_running:
@@ -684,12 +685,13 @@ class Main(QtGui.QMainWindow):
         while self.experiment_pause:
             QtCore.QCoreApplication.processEvents()
 
-        self.last_time = self.default_timer()
+        self.last_time_microsec = self.default_timer()
 
     def scenarioUpdateTime(self):
         """Increment time (h,m,s) and get the corresponding string chain (H:MM:SS)"""
-
-        m, s = divmod(self.elapsedTime / 1000.0, 60)
+        import pdb
+        pdb.set_trace()
+        m, s = divmod(self.totalElapsedTime_ms / 1000.0, 60)
         h, m = divmod(m, 60)
 
         if h > 9:
@@ -705,26 +707,26 @@ class Main(QtGui.QMainWindow):
 
     def scheduler(self):
         """Manage the passage of time. Block time during pauses"""
-        current_time = self.default_timer()
-        elapsed_time = (current_time - self.last_time) * 1000.0
-
-        if elapsed_time < MAIN_SCHEDULER_INTERVAL:
+        current_time_microsec = self.default_timer()
+        elapsed_time_ms = (current_time_microsec - self.last_time_microsec) * 1000.0
+        
+        if elapsed_time_ms < MAIN_SCHEDULER_INTERVAL:
             return
 
-        self.last_time = current_time
+        self.last_time_microsec = current_time_microsec
 
         # The main experiment is in pause, so do not increment time
         if self.experiment_pause or not self.experiment_running:
             return
 
         # Time increment in case the experiment is running
-        self.elapsedTime += elapsed_time
+        self.totalElapsedTime_ms += elapsed_time_ms
 
         # If experiment is effectively running, browse plugins and refresh them (execute their onUpdate() method) as a function of their own UPDATE_TIME
         for plugin_name in self.PLUGINS_TASK:
             if plugin_name in self.loadedTasks:
                 if self.PLUGINS_TASK[plugin_name]["UPDATE_TIME"] is not None and not self.PLUGINS_TASK[plugin_name]['taskPaused']:
-                    self.PLUGINS_TASK[plugin_name]["TIME_SINCE_UPDATE"] += elapsed_time
+                    self.PLUGINS_TASK[plugin_name]["TIME_SINCE_UPDATE"] += elapsed_time_ms
                     if self.PLUGINS_TASK[plugin_name]["TIME_SINCE_UPDATE"] >= self.PLUGINS_TASK[plugin_name]["UPDATE_TIME"]:
                         self.PLUGINS_TASK[plugin_name]["TIME_SINCE_UPDATE"] = 0
                         if hasattr(self.PLUGINS_TASK[plugin_name]["class"], "onUpdate"):
