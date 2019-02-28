@@ -31,7 +31,6 @@ class Task(QtGui.QWidget):
 
     def __init__(self, parent):
         super(Task, self).__init__(parent)
-        return
 
         # GLOBAL VARS
         self.samples_to_test = []
@@ -42,18 +41,19 @@ class Task(QtGui.QWidget):
             'taskplacement': 'fullscreen',
             'paintGaze': False,
             'trackertype': None,
-            'smiip': getConfigValue("smiip", "192.168.1.35"),
-            'smisendport': int(getConfigValue("smisendport", "4444")),
-            'smireceiveport': int(getConfigValue("smireceiveport", "5555")),
-            'connectmaxtries': int(getConfigValue("connectmaxtries", "10")),
-            'maxcalibrations':  int(getConfigValue("maxcalibrations", "5")),
+            'smiip': "192.168.1.35",
+            'smisendport': 4444,
+            'smireceiveport': 5555,
+            'connectmaxtries': 10,
+            'maxcalibrations':  5,
             'mousevisible': True,
             'backgroundcolor': (125, 125, 125, 255),
             'foregroundcolor': (0, 0, 0, 255),
             'getFromSample': ['gazeLX', 'gazeLY', 'positionLX', 'positionLY', 'positionLZ',
                               'diamL', 'gazeRX', 'gazeRY', 'positionRX', 'positionRY', 'positionRZ', 'diamR']
         }
-
+    
+    def onStart(self):
         if not iViewXAPI:
             self.parent().showCriticalMessage(
                 _("Unable to load the eyetracker library!"))
