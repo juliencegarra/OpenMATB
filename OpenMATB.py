@@ -27,8 +27,8 @@ import imp
 import ast
 import sys
 import os
-import pdb
 import platform
+import psutil
 from Helpers import Logger, Translator
 from Helpers.Translator import translate as _
 
@@ -320,6 +320,14 @@ class Main(QtGui.QMainWindow):
         else:
             self.default_timer = time.time
 
+
+        # Set to high priority
+        try:
+            p = psutil.Process(os.getpid())
+            p.set_nice(psutil.HIGH_PRIORITY_CLASS)
+        except:
+            pass
+
         # Update time once to take first scenario instructions (0:00:00) into account
         self.scenarioUpdateTime()
         self.last_time_microsec = self.default_timer()
@@ -602,7 +610,6 @@ class Main(QtGui.QMainWindow):
             try:
                 current[command[-1]] = ast.literal_eval(value)
             except:
-                print value
                 self.showCriticalMessage(
                     _("Unable to evaluate a value! This should not happen!"))
 
