@@ -10,7 +10,6 @@ class Logger(QtGui.QWidget):
         self.endLine = '\n'
         self.additionalDict = headerDict
         self.smiStamp = ''
-        # self.begin_time = datetime.datetime.now()
 
         if not os.path.isfile(self.logPath):
             self.writeHeader()
@@ -53,4 +52,3 @@ class Logger(QtGui.QWidget):
 
         with open(self.logPath, 'a') as logFile:
             logFile.write(stringLine + self.endLine)
-#            self.parent()
