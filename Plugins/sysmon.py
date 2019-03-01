@@ -55,18 +55,12 @@ class Task(QtGui.QWidget):
         totalRange = range(1, self.parameters['scalesnumofboxes'] - 1)
         centerPosition = totalRange[len(totalRange) / 2]
         self.zones = {
-            'up':
-                [k for k in totalRange if k <
-                    (centerPosition - (self.parameters[
-                        'safezonelength'] - 1) / 2)],
-            'down':
-                [k for k in totalRange if k >
-                    (centerPosition + (self.parameters['safezonelength'] - 1) / 2)]
+            'up': [k for k in totalRange if k < (centerPosition - (self.parameters['safezonelength'] - 1) / 2)],
+            'down': [k for k in totalRange if k > (centerPosition + (self.parameters['safezonelength'] - 1) / 2)]
         }
 
         # Define the "safe" zone (no)
-        self.zones['no'] = [
-            k for k in totalRange if k not in self.zones['up'] if k not in self.zones['down']]
+        self.zones['no'] = [k for k in totalRange if k not in self.zones['up'] if k not in self.zones['down']]
 
         # Set a list of accepted keys depending on lights and scales parameters
         scales_keys = [self.parameters['scales'][id]["keys"][0]
@@ -183,8 +177,8 @@ class Task(QtGui.QWidget):
         # If a failure is occuring, key press is evaluated further
         else:
             for lights_or_scales in ['lights', 'scales']:
-                for thisGauge in self.parameters[lights_or_scales].keys():
-                    if self.parameters[lights_or_scales][thisGauge]['failure'] in ['up', 'down'] or self.parameters[lights_or_scales][thisGauge]['failure']:
+                for thisGauge in self.parameters[lights_or_scales].keys():                   
+                    if self.parameters[lights_or_scales][thisGauge]['failure'] in ['up', 'down'] or self.parameters[lights_or_scales][thisGauge]['failure'] == True:
 
                         # If correct key pressed -> end failure
                         if key_pressed in self.parameters[lights_or_scales][thisGauge]['keys']:
