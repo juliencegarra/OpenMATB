@@ -84,6 +84,7 @@ class WScale(QtGui.QWidget):
         if self.feedback == 1:
             qp.setBrush(QtCore.Qt.yellow)
             qp.drawRect(self.ulx, self.uly + self.scaleHeight - self.partHeight, self.scaleWidth, self.partHeight)
+            self.update()
 
 
     # MATB-II style
