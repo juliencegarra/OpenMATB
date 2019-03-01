@@ -696,8 +696,6 @@ class Main(QtGui.QMainWindow):
 
     def scenarioUpdateTime(self):
         """Increment time (h,m,s) and get the corresponding string chain (H:MM:SS)"""
-        import pdb
-        pdb.set_trace()
         m, s = divmod(self.totalElapsedTime_ms / 1000.0, 60)
         h, m = divmod(m, 60)
 
