@@ -28,19 +28,30 @@ class WScale(QtGui.QWidget):
         self.label.setFont(self.labelFont)
 
         self.feedback = 0
+        self.feedbackWidth = 0
+        self.feedbackHeight = 0
 
         self.ulx = self.parent().width() * [i / 10. for i in range(0, 11, 2)][int(order)] - self.scaleWidth / 2
 
         self.label.setGeometry(QtCore.QRect(self.ulx - self.scaleWidth / 2, self.uly + self.scaleHeight + 10, self.scaleWidth * 2, 0.1 * self.parent().height()))
         self.label.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
         self.position = self.middle
-        self.feedback = 0
         length = self.nbsteps + 2
         self.tickposition_list = [this_tick/float(length-1) for this_tick in reversed(range(length))]
         #~ self.tickposition_list = [1 + x*(-1)/length for x in range(length)]
 
         self.pen = QtGui.QPen(QtGui.QColor('#000000'), self.borderSize, QtCore.Qt.SolidLine)
-
+    
+    def set_feedback(self,feedback_state=0):
+        if feedback_state == 1:
+            self.feedback = 1
+            self.feedbackWidth = self.scaleWidth
+            self.feedbackHeight = self.partHeight
+        elif feedback_state == 0:
+            self.feedback = 0
+            self.feedbackWidth = 0
+            self.feedbackHeight = 0
+        self.update()
 
     def paintEvent(self, e):
         if self.style==1:
@@ -51,12 +62,13 @@ class WScale(QtGui.QWidget):
             self.arrowFont = QtGui.QFont("sans-serif", self.scaleWidth/4., QtGui.QFont.Bold)
 
         self.arrow.setFont(self.arrowFont)
-
-        if self.feedback:
+                
+        if self.feedback == 1:
             self.position = self.middle
-
+            
         qp = QtGui.QPainter()
         qp.begin(self)
+        
         if self.style==1:
             self.drawscaleI(qp)
         elif self.style==2:
@@ -66,12 +78,12 @@ class WScale(QtGui.QWidget):
 
     # MATB-I style
     def drawscaleI(self, qp):
-        qp.setRenderHint(QtGui.QPainter.Antialiasing)
-        qp.setPen(self.pen)
+        
+        qp.setPen(self.pen)        
+        
         qp.setBrush(QtCore.Qt.white)
         qp.drawRect(self.ulx,self.uly, self.scaleWidth, self.scaleHeight)
-
-
+        
         for thisTick in self.tickposition_list:
             if thisTick not in [0,1]: # not extreme values
                 lineLenght = 0.3 * self.scaleWidth if thisTick != 0.5 else 0.5 * self.scaleWidth
@@ -81,11 +93,8 @@ class WScale(QtGui.QWidget):
         self.arrow.setGeometry(QtCore.QRect(self.ulx + 0.1 * self.scaleWidth, centerY - 10, 0.4 * self.scaleWidth, 20))
         self.arrow.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
 
-        if self.feedback == 1:
-            qp.setBrush(QtCore.Qt.yellow)
-            qp.drawRect(self.ulx, self.uly + self.scaleHeight - self.partHeight, self.scaleWidth, self.partHeight)
-            self.update()
-
+        qp.setBrush(QtCore.Qt.yellow)
+        qp.drawRect(self.ulx, self.uly + self.scaleHeight - self.partHeight, self.feedbackWidth, self.feedbackHeight)
 
     # MATB-II style
     def drawscaleII(self, qp):

@@ -193,9 +193,9 @@ class Task(QtGui.QWidget):
         self.feedbackTimer.stop()
 
         for thisScale in self.parameters['scales'].keys():
-            self.parameters['scales'][thisScale]['ui'].feedback = 0
+            self.parameters['scales'][thisScale]['ui'].set_feedback(0)
         for thisLight in self.parameters['lights'].keys():
-            self.parameters['lights'][thisLight]['ui'].feedback = 0
+            self.parameters['lights'][thisLight]['ui'].set_feedback(0)
 
     def startFailure(self, lights_or_scales, number):
         if len(self.currentFailure) > 0:
@@ -234,7 +234,7 @@ class Task(QtGui.QWidget):
             self.buildLog(["STATE", self.parameters[lights_or_scales][number]["name"], "AUTOMATIC-SOLVER"])
 
             if self.parameters['feedback']:
-                self.parameters[lights_or_scales][number]['ui'].feedback = 1
+                self.parameters[lights_or_scales][number]['ui'].set_feedback(1)
                 self.feedbackTimer.start(self.parameters['feedbackduration'])
 
         # If automatic solver off and good key pressed (success), log a HIT,
@@ -243,7 +243,7 @@ class Task(QtGui.QWidget):
             self.record_performance(self.parameters[lights_or_scales][number]['name'], 'hit')
 
             if self.parameters['feedback']:
-                self.parameters[lights_or_scales][number]['ui'].feedback = 1
+                self.parameters[lights_or_scales][number]['ui'].set_feedback(1)
                 self.feedbackTimer.start(self.parameters['feedbackduration'])
 
         # If failure ends with neither automatic solver nor good key pressed,
