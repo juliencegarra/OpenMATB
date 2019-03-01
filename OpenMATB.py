@@ -168,10 +168,10 @@ class Main(QtGui.QMainWindow):
                             'control_width': self.screen_width * (3.6 / 20.1)}
         }
 
-        # Turn off Caps Lock and Num Lock if possible (only Windows until now)
+        # Turn off Caps Lock and on Num Lock (for resman)... if possible (only Windows until now)
         if platform.system() == "Windows":
-            self.turnOffKey(0x14)  # Caps Lock
-            self.turnOffKey(0x90)  # Num Lock
+            self.turnKey(0x14, False)  # Caps Lock Off
+            self.turnKey(0x90, True)  # Num Lock On
 
         # Preallocate variables to handle experiment pauses
         self.experiment_pause = False
@@ -186,17 +186,23 @@ class Main(QtGui.QMainWindow):
         self.scenariocontents = self.loadScenario(scenario_fullpath)
 
 
-    def turnOffKey(self, k):
-        """On Windows, use this method to turn off a key defined by the k variable"""
+    def turnKey(self, k, value):
+        """On Windows, use this method to turn off/on a key defined by the k variable"""
         KEYEVENTF_EXTENTEDKEY = 0x1
         KEYEVENTF_KEYUP = 0x2
+        KEYEVENTF_KEYDOWN = 0x0
 
         dll = ctypes.WinDLL('User32.dll')
-
-        if dll.GetKeyState(k):
+        if value and not dll.GetKeyState(k):
+            dll.keybd_event(k, 0x45, KEYEVENTF_EXTENTEDKEY, 0)
+            #dll.keybd_event(
+            #    k, 0x45, KEYEVENTF_EXTENTEDKEY | KEYEVENTF_KEYDOWN, 0)
+            dll.keybd_event(
+                k, 0x45, KEYEVENTF_EXTENTEDKEY | KEYEVENTF_KEYDOWN, 0)
+        elif not value and dll.GetKeyState(k):
             dll.keybd_event(k, 0x45, KEYEVENTF_EXTENTEDKEY, 0)
             dll.keybd_event(
-                k, 0x45, KEYEVENTF_EXTENTEDKEY | KEYEVENTF_KEYUP, 0)
+                k, 0x45, KEYEVENTF_EXTENTEDKEY | KEYEVENTF_KEYDOWN, 0)
 
 
     def load_plugins(self):
@@ -714,7 +720,7 @@ class Main(QtGui.QMainWindow):
         """Manage the passage of time. Block time during pauses"""
         current_time_microsec = self.default_timer()
         elapsed_time_ms = (current_time_microsec - self.last_time_microsec) * 1000.0
-        
+
         if elapsed_time_ms < MAIN_SCHEDULER_INTERVAL:
             return
 
