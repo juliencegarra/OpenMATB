@@ -32,7 +32,7 @@ It is covered by a GPL v3 license to promote exchange between researchers, grant
 
 <h3>Main complementary resources:</h3>
 <ul>
-  
+<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Main-differences-between-the-published-implementations-of-the-MATB-and-the-OpenMATB">Main differences between the existing published implementations of the MATB and the OpenMATB</a></li>
 <li><a href="https://github.com/juliencegarra/OpenMATB/wiki/How-to-build-a-scenario-file">How to develop a scenario script file</a></li>
 <li><a href="https://github.com/juliencegarra/OpenMATB/wiki/List-of-task-parameters">List of available parameters in the scenario files</a></li>
 <li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Internationalization">How to add a new translation</a></li>
