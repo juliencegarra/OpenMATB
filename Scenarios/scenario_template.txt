@@ -6,9 +6,10 @@
 
 # 1.a. System monitoring parameters
 
+0:00:00;sysmon;feedbackcolor;#00ff00
 0:00:01;sysmon;launchfeedback;2
 0:00:00;sysmon;feedback;True
-0:00:00;sysmon;scalestyle;1
+0:00:00;sysmon;scalestyle;2
 
 
 # 1.b.i. Resources management parameters
