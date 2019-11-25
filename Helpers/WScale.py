@@ -106,17 +106,18 @@ class WScale(QtWidgets.QWidget):
         current_y = 0
         for thisPart in range(0, self.nbsteps):
             if thisPart in [self.position - 1, self.position, self.position + 1]:
-                qp.setBrush(QtGui.QColor('#0066CC'))
+                qp.setBrush(QtGui.QBrush(QtGui.QColor('#0066CC')))
                 if thisPart == self.position:
                     self.arrow.setGeometry(
                         self.ulx - self.borderSize * 2, self.uly + current_y, self.scaleWidth, self.partHeight)
                     self.arrow.setAlignment(
                         QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             else:
-                qp.setBrush(QtGui.QColor('#99CCFF'))
+                qp.setBrush(QtGui.QBrush(QtGui.QColor('#99CCFF')))
 
             if thisPart == self.nbsteps - 1 and self.feedback:
-                qp.setBrush(QtGui.QColor('#FFFF00'))
+                qp.setBrush(QtGui.QBrush(QtGui.QColor(self.feedbackColor)))
+
             qp.drawRect(self.ulx, self.uly + current_y,
                         self.scaleWidth - self.borderSize, self.partHeight)
             current_y += self.partHeight
