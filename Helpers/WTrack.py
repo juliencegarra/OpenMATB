@@ -1,16 +1,16 @@
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtWidgets, QtGui
 from math import sin, pi
 import random
 import numpy
-import pdb
 
-class WTrack (QtGui.QWidget):
+
+class WTrack (QtWidgets.QWidget):
 
     """ Tracking widget """
 
     def __init__(self, parent, equalproportions):
         super(WTrack, self).__init__(parent)
-        
+
         # Define task area (width, height)
         self.targetArea = None
         self.equalproportions = equalproportions
@@ -21,7 +21,7 @@ class WTrack (QtGui.QWidget):
             self.task_height = self.occupiedSpace * self.parent().height()
         else:
             self.task_width = self.task_height = min(self.parent().width(), self.parent().height())*self.occupiedSpace
-        
+
         # Define various sizes (lines, cursor, reticulum, ticks)
         self.penSize = self.task_height / 150.
         self.cursor_diam = 0.1  # 10%
@@ -67,7 +67,7 @@ class WTrack (QtGui.QWidget):
 
     def linspace(self, lower, upper, length):
         return [lower + x*(upper-lower)/(length-1) for x in range(length)]
-    
+
     def returnAbsoluteDeviation(self):
         this_x, this_y = self.getXY()
         return numpy.sqrt(this_x**2 + this_y**2)
@@ -119,7 +119,6 @@ class WTrack (QtGui.QWidget):
         # Cursor should not leave the widget area
         self.cursorPos['x'] = max(min(x, 0.99), -0.99)
         self.cursorPos['y'] = max(min(y, 0.99), -0.99)
-        print self.cursorPos['x']
         self.update()
 
     def getPositionFromRelative(self, x, y):
