@@ -616,7 +616,7 @@ class Main(QtWidgets.QMainWindow):
             current[command[-1]] = int(value)
         elif isinstance(current[command[-1]], float):
             current[command[-1]] = float(value)
-        elif isinstance(current[command[-1]], str) or isinstance(current[command[-1]], unicode) or current[command[-1]] is None:
+        elif isinstance(current[command[-1]], str) or current[command[-1]] is None:
             current[command[-1]] = value
         else:
             try:

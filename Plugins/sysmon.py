@@ -21,10 +21,12 @@ class Task(QtWidgets.QWidget):
             'allowanykey': False,
             'scalesnumofboxes': 11,
             'safezonelength': 3,
-            'feedback' : True,
+            'feedback': True,
+            'feedbackcolor': '#ffff00',  # Yellow
             'feedbackduration': 1.5 * 1000,
-            'scalestyle' : 1, # could be defined at the scale level
-            'resetperformance':None,
+            'launchfeedback': 0,
+            'scalestyle': 1,  # could be defined at the scale level
+            'resetperformance': None,
 
             'lights': {
                 '1': {'name': 'F5', 'failure': False, 'on': True, 'default': 'on', 'oncolor': "#009900", 'keys': [QtCore.Qt.Key_F5]},
@@ -164,6 +166,15 @@ class Task(QtWidgets.QWidget):
                 self.parameters['lights'][thisLight]['ui'].refreshState(
                     self.parameters['lights'][thisLight]['on'])
 
+        # 4. Check for arbitrary feedbacks
+        if self.parameters['launchfeedback'] != 0:
+            ui_idx = str(self.parameters['launchfeedback'])
+            if any([ui_idx == idx for idx, val
+                    in self.parameters['scales'].items()]):
+                trigger_ui = self.parameters['scales'][ui_idx]['ui']
+                self.trigger_feedback(trigger_ui)
+                self.parameters['launchfeedback'] = 0
+
     def keyEvent(self, key_pressed):
 
         # If automaticsolver on, do not listen for keyboard inputs
@@ -195,8 +206,8 @@ class Task(QtWidgets.QWidget):
 
         for thisScale in self.parameters['scales'].keys():
             self.parameters['scales'][thisScale]['ui'].set_feedback(0)
-        for thisLight in self.parameters['lights'].keys():
-            self.parameters['lights'][thisLight]['ui'].set_feedback(0)
+        # for thisLight in self.parameters['lights'].keys():
+        #     self.parameters['lights'][thisLight]['ui'].set_feedback(0)
 
     def startFailure(self, lights_or_scales, number):
         if len(self.currentFailure) > 0:
@@ -226,6 +237,7 @@ class Task(QtWidgets.QWidget):
 
         lights_or_scales = self.currentFailure['type']
         number = self.currentFailure['number']
+        feedback_ui = self.parameters[lights_or_scales][number]['ui']
         self.failuretimeoutTimer.stop()
 
         # If automatic solver on and failure occuring, send the good key
@@ -235,8 +247,7 @@ class Task(QtWidgets.QWidget):
             self.buildLog(["STATE", self.parameters[lights_or_scales][number]["name"], "AUTOMATIC-SOLVER"])
 
             if self.parameters['feedback']:
-                self.parameters[lights_or_scales][number]['ui'].set_feedback(1)
-                self.feedbackTimer.start(self.parameters['feedbackduration'])
+                self.trigger_feedback(feedback_ui)
 
         # If automatic solver off and good key pressed (success), log a HIT,
         # send a positive feedback, start the corresponding timer
@@ -244,8 +255,7 @@ class Task(QtWidgets.QWidget):
             self.record_performance(self.parameters[lights_or_scales][number]['name'], 'hit')
 
             if self.parameters['feedback']:
-                self.parameters[lights_or_scales][number]['ui'].set_feedback(1)
-                self.feedbackTimer.start(self.parameters['feedbackduration'])
+                self.trigger_feedback(feedback_ui)
 
         # If failure ends with neither automatic solver nor good key pressed,
         # log a MISS
@@ -307,6 +317,11 @@ class Task(QtWidgets.QWidget):
         else:
             self.modeLabel.setText("<b>%s</b>" % _('MANUAL'))
         self.modeLabel.show()
+
+    def trigger_feedback(self, trigger_ui):
+        trigger_ui.set_feedback(1, self.parameters['feedbackcolor'])
+        self.feedbackTimer.start(self.parameters['feedbackduration'])
+        pass
 
     def record_performance(self, light_scale_name, event):
         for this_cat in self.performance.keys():
