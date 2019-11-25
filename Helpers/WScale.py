@@ -30,6 +30,7 @@ class WScale(QtWidgets.QWidget):
         self.feedback = 0
         self.feedbackWidth = 0
         self.feedbackHeight = 0
+        self.feedbackColor = '#ffff00'  # Yellow
 
         self.ulx = self.parent().width() * [i / 10. for i in range(0, 11, 2)][int(order)] - self.scaleWidth / 2
 
@@ -42,11 +43,12 @@ class WScale(QtWidgets.QWidget):
 
         self.pen = QtGui.QPen(QtGui.QColor('#000000'), self.borderSize, QtCore.Qt.SolidLine)
 
-    def set_feedback(self,feedback_state=0):
+    def set_feedback(self, feedback_state=0, rgb_color='#ffff00'):
         if feedback_state == 1:
             self.feedback = 1
             self.feedbackWidth = self.scaleWidth
             self.feedbackHeight = self.partHeight
+            self.feedbackColor = rgb_color
         elif feedback_state == 0:
             self.feedback = 0
             self.feedbackWidth = 0
@@ -80,9 +82,8 @@ class WScale(QtWidgets.QWidget):
     def drawscaleI(self, qp):
 
         qp.setPen(self.pen)
-
-        qp.setBrush(QtCore.Qt.white)
-        qp.drawRect(self.ulx,self.uly, self.scaleWidth, self.scaleHeight)
+        qp.setBrush(QtGui.QBrush(QtGui.QColor('#ffffff')))
+        qp.drawRect(self.ulx, self.uly, self.scaleWidth, self.scaleHeight)
 
         for thisTick in self.tickposition_list:
             if thisTick not in [0,1]: # not extreme values
@@ -93,7 +94,7 @@ class WScale(QtWidgets.QWidget):
         self.arrow.setGeometry(QtCore.QRect(self.ulx + 0.1 * self.scaleWidth, centerY - 10, 0.4 * self.scaleWidth, 20))
         self.arrow.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
 
-        qp.setBrush(QtCore.Qt.yellow)
+        qp.setBrush(QtGui.QBrush(QtGui.QColor(self.feedbackColor)))
         qp.drawRect(self.ulx, self.uly + self.scaleHeight - self.partHeight, self.feedbackWidth, self.feedbackHeight)
 
     # MATB-II style

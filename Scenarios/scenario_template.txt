@@ -6,7 +6,8 @@
 
 # 1.a. System monitoring parameters
 
-0:00:00;sysmon;feedback;False
+0:00:01;sysmon;launchfeedback;2
+0:00:00;sysmon;feedback;True
 0:00:00;sysmon;scalestyle;1
 
 
