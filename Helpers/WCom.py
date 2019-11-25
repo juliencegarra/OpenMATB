@@ -1,7 +1,7 @@
-from PySide import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore, QtGui
 
 
-class WCom (QtGui.QWidget):
+class WCom (QtWidgets.QWidget):
 
     """ A communication (radio) widget """
 
@@ -28,15 +28,15 @@ class WCom (QtGui.QWidget):
             self.radio_index * (1.5 * self.radio_height)) + self.parent().upper_margin
 
         # Objects
-        self.radio_select = QtGui.QLabel(self)
+        self.radio_select = QtWidgets.QLabel(self)
         self.radio_select.setFont(self.font)
-        self.radio_name_ui = QtGui.QLabel(self)
+        self.radio_name_ui = QtWidgets.QLabel(self)
         self.radio_name_ui.setText(self.radio_name)
         self.radio_name_ui.setFont(self.font)
-        self.radio_frequency = QtGui.QLabel(self)
+        self.radio_frequency = QtWidgets.QLabel(self)
         self.radio_frequency.setText(str(radio_frequency))
         self.radio_frequency.setFont(self.font)
-        self.freq_select = QtGui.QLabel(self)
+        self.freq_select = QtWidgets.QLabel(self)
         self.freq_select.setFont(self.font)
 
         self.radio_select.setGeometry(QtCore.QRect(self.radio_select_ulx, self.uly, self.radio_select_width, self.radio_height))

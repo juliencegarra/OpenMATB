@@ -1,11 +1,11 @@
 #-*- coding:utf-8 -*-
 
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtWidgets
 from Helpers import WTank, WPump
 import itertools
 from Helpers.Translator import translate as _
 
-class Task(QtGui.QWidget):
+class Task(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super(Task, self).__init__(parent)
@@ -43,18 +43,18 @@ class Task(QtGui.QWidget):
                 'f': {'level': 3000, 'max': 4000, 'target': None, 'depletable': 0, 'lossperminute': 0, 'hide': 0}
             }
         }
-        
+
         self.performance = {
             'total' : {},
             'last'  : {}
         }
-        
+
         for this_cat in self.performance:
             for this_tank in self.parameters['tank']:
                 if self.parameters['tank'][this_tank]['target'] is not None:
                     self.performance[this_cat][this_tank+'_in'] = 0
                     self.performance[this_cat][this_tank+'_out'] = 0
-        
+
         # Potentially translate task title
         self.parameters['title'] = _(self.parameters['title'])
 
@@ -62,8 +62,8 @@ class Task(QtGui.QWidget):
 
         if self.parameters['displayautomationstate']:
             # Define a QLabel object to display mode
-            self.modeFont = QtGui.QFont("sans-serif", int(self.height() / 35.), QtGui.QFont.Bold)
-            self.modeLabel = QtGui.QLabel(self)
+            self.modeFont = QtWidgets.QFont("sans-serif", int(self.height() / 35.), QtWidgets.QFont.Bold)
+            self.modeLabel = QtWidgets.QLabel(self)
             self.modeLabel.setGeometry(QtCore.QRect(self.width() * 0.42, self.height() * 0.40, self.width() * 0.20, 20))
             self.modeLabel.setAlignment(QtCore.Qt.AlignCenter)
             self.modeLabel.setFont(self.modeFont)
@@ -80,7 +80,7 @@ class Task(QtGui.QWidget):
             # Log its target value if it is set
             if self.parameters['tank'][thisTank]['target'] is not None:
                 self.buildLog(["STATE", "TANK" + thisTank.upper(), "TARGET", str(self.parameters['tank'][thisTank]['target'])])
-                
+
                 # Change tank initial level at the target level
                 self.parameters['tank'][thisTank]['level'] = self.parameters['tank'][thisTank]['target']
 
@@ -134,7 +134,7 @@ class Task(QtGui.QWidget):
 
         if self.parameters['displayautomationstate']:
             self.refreshModeLabel()
-        
+
         if self.parameters['resetperformance'] is not None:
             if self.parameters['resetperformance'] in ['last', 'global']:
                 for this_index in self.performance[self.parameters['resetperformance']]:
@@ -246,11 +246,11 @@ class Task(QtGui.QWidget):
         for thisTank in self.parameters['tank'].keys():
             self.parameters['tank'][thisTank]['ui'].refreshLevel(self.parameters['tank'][thisTank]['level'])
 
-        # 5. Log tank level if a target is set           
+        # 5. Log tank level if a target is set
         for thisTank in self.parameters['tank'].keys():
             if self.parameters['tank'][thisTank]['target'] is not None:
                 self.buildLog(["STATE", "TANK" + thisTank.upper(), "LEVEL", str(self.parameters['tank'][thisTank]['level'])])
-                
+
                 for this_cat in self.performance:
                     local_dev = abs(self.parameters['tank'][thisTank]['level'] - self.parameters['tank'][thisTank]['target'])
                     if local_dev <= self.parameters['tolerancelevel']:

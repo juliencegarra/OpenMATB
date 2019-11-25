@@ -1,13 +1,13 @@
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtWidgets, QtGui
 
 
-class WTank(QtGui.QWidget):
+class WTank(QtWidgets.QWidget):
 
     def __init__(self, parent):
         '''Draw a tank, based on its upper left coordinates, and on its nature (target, source, limited or not) which define its size ratio'''
         super(WTank, self).__init__(parent)
 
-        self.tank = QtGui.QProgressBar(self)
+        self.tank = QtWidgets.QProgressBar(self)
         self.tank.setOrientation(QtCore.Qt.Vertical)
         self.tank.setTextVisible(False)
         self.tolerance = self.parent().parameters['tolerancelevel']  # below or above the target level
@@ -22,20 +22,20 @@ class WTank(QtGui.QWidget):
             }
         """
         self.setStyleSheet(style)
-        
-        
-            
-    
-    
+
+
+
+
+
 
     def setLabel(self, level=0):
-        self.tankLevel = QtGui.QLabel(self)
+        self.tankLevel = QtWidgets.QLabel(self)
         self.tankLevel.setGeometry(
             QtCore.QRect(self.ulx, self.uly + self.tankHeight, self.tankWidth, 20))
         self.tankLevel.setAlignment(QtCore.Qt.AlignCenter)
 
     def setLetter(self, letter):
-        self.tankLetter = QtGui.QLabel(self)
+        self.tankLetter = QtWidgets.QLabel(self)
         self.tankLetter.setFont(self.letterFont)
         self.tankLetter.setText(letter)
         self.tankLetter.setGeometry(

@@ -1,12 +1,12 @@
-from PySide import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore, QtGui
 
-class WScale(QtGui.QWidget):
+class WScale(QtWidgets.QWidget):
 
     def __init__(self, parent, name, nbsteps, order, style):
         super(WScale, self).__init__(parent)
         self.style = style
         self.nbsteps = nbsteps
-        self.middle = (self.nbsteps - 1) / 2
+        self.middle = int((self.nbsteps - 1) / 2)
 
         self.uly = 0.3 * self.parent().height()
         self.scaleHeight = 0.55 * self.parent().height()
@@ -21,9 +21,9 @@ class WScale(QtGui.QWidget):
         self.scaleHeight = self.scaleWidth / hw_ratio
         self.partHeight = self.scaleHeight / self.nbsteps
 
-        self.arrow = QtGui.QLabel(self)
+        self.arrow = QtWidgets.QLabel(self)
 
-        self.label = QtGui.QLabel(self)
+        self.label = QtWidgets.QLabel(self)
         self.label.setText(name)
         self.label.setFont(self.labelFont)
 
@@ -41,7 +41,7 @@ class WScale(QtGui.QWidget):
         #~ self.tickposition_list = [1 + x*(-1)/length for x in range(length)]
 
         self.pen = QtGui.QPen(QtGui.QColor('#000000'), self.borderSize, QtCore.Qt.SolidLine)
-    
+
     def set_feedback(self,feedback_state=0):
         if feedback_state == 1:
             self.feedback = 1
@@ -62,13 +62,13 @@ class WScale(QtGui.QWidget):
             self.arrowFont = QtGui.QFont("sans-serif", self.scaleWidth/4., QtGui.QFont.Bold)
 
         self.arrow.setFont(self.arrowFont)
-                
+
         if self.feedback == 1:
             self.position = self.middle
-            
+
         qp = QtGui.QPainter()
         qp.begin(self)
-        
+
         if self.style==1:
             self.drawscaleI(qp)
         elif self.style==2:
@@ -78,12 +78,12 @@ class WScale(QtGui.QWidget):
 
     # MATB-I style
     def drawscaleI(self, qp):
-        
-        qp.setPen(self.pen)        
-        
+
+        qp.setPen(self.pen)
+
         qp.setBrush(QtCore.Qt.white)
         qp.drawRect(self.ulx,self.uly, self.scaleWidth, self.scaleHeight)
-        
+
         for thisTick in self.tickposition_list:
             if thisTick not in [0,1]: # not extreme values
                 lineLenght = 0.3 * self.scaleWidth if thisTick != 0.5 else 0.5 * self.scaleWidth
