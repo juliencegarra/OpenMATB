@@ -35,9 +35,9 @@
 0:00:00;instruction;filename;nasatlx/entrainement_sysmon.txt
 0:00:00;instruction;start
 # Début de A : entraînement à la surveillance (sysmon)
-0:00:00;track;pause
-0:00:00;resman;pause
-0:00:00;pumpstatus;pause
+0:00:01;track;pause
+0:00:01;resman;pause
+0:00:01;pumpstatus;pause
 
 0:00:20;sysmon;scales-3-failure;up
 0:00:51;sysmon;scales-1-failure;down
@@ -106,7 +106,7 @@
 
 # Pause cardiaque (3 minutes)
 0:13:00;instruction;filename;nasatlx/pausecardiaque.txt
-0:13:00;instruction;duration_sec;180
+0:13:00;instruction;durationsec;180
 0:13:00;instruction;start
 
 
@@ -151,7 +151,7 @@
 
 # Pause cardiaque (3 minutes)
 0:20:00;instruction;filename;nasatlx/pausecardiaque.txt
-0:20:00;instruction;duration_sec;180
+0:20:00;instruction;durationsec;180
 0:20:00;instruction;start
 
 # Consignes du niveau de base
@@ -192,7 +192,7 @@
 
 # Pause cardiaque (3 minutes)
 0:27:00;instruction;filename;nasatlx/pausecardiaque.txt
-0:27:00;instruction;duration_sec;180
+0:27:00;instruction;durationsec;180
 0:27:00;instruction;start
 
 0:27:00;track;stop
