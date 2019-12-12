@@ -19,7 +19,7 @@ class Task(QtWidgets.QWidget):
             'automaticsolverdelay': 1 * 1000,
             'displayautomationstate': False,
             'allowanykey': False,
-            'scalesnumofboxes': 11,
+            'scalesnumofboxes': 11,  # Must be odd (to admit a middle position)
             'safezonelength': 3,
             'feedback': True,
             'feedbackcolor': '#ffff00',  # Yellow
@@ -42,34 +42,36 @@ class Task(QtWidgets.QWidget):
             }
 
         self.performance = {
-            'total' : {'hit_number': 0, 'miss_number':0, 'fa_number':0},
-            'last'  : {'hit_number': 0, 'miss_number':0, 'fa_number':0}
+            'total': {'hit_number': 0, 'miss_number': 0, 'fa_number': 0},
+            'last': {'hit_number': 0, 'miss_number': 0, 'fa_number': 0}
         }
 
         # Potentially translate task title
         self.parameters['title'] = _(self.parameters['title'])
 
         # Set the initial position of the cursor (middle)
-        for this_scale in self.parameters['scales'].keys():
-            self.parameters['scales'][this_scale][
-                'position'] = self.parameters['scalesnumofboxes'] / 2
+        for thisScale, scaleValue in self.parameters['scales'].items():
+            scaleValue['position'] = self.parameters['scalesnumofboxes'] / 2
 
         # Define two failures zones (up, down)
-        totalRange = range(1, self.parameters['scalesnumofboxes'] - 1)
-        centerPosition = totalRange[int(median(totalRange))]
-        self.zones = {
-            'up': [k for k in totalRange if k < (centerPosition - (self.parameters['safezonelength'] - 1) / 2)],
-            'down': [k for k in totalRange if k > (centerPosition + (self.parameters['safezonelength'] - 1) / 2)]
-        }
+        totalRange = tuple(range(self.parameters['scalesnumofboxes']))
 
-        # Define the "safe" zone (no)
-        self.zones['no'] = [k for k in totalRange if k not in self.zones['up'] if k not in self.zones['down']]
+        self.zones = dict()
+        self.zones['no'] = [int(median(totalRange))]
+        while len(self.zones['no']) < self.parameters['safezonelength']:
+            self.zones['no'].insert(0, min(self.zones['no']) - 1)
+            self.zones['no'].insert(len(self.zones['no']),
+                                    max(self.zones['no']) + 1)
+
+        self.zones['up'] = [r for r in totalRange if r < min(self.zones['no'])]
+        self.zones['down'] = [r for r in totalRange if
+                              r > max(self.zones['no'])]
 
         # Set a list of accepted keys depending on lights and scales parameters
-        scales_keys = [self.parameters['scales'][id]["keys"][0]
-                       for id in self.parameters['scales'].keys()]
-        lights_keys = [self.parameters['lights'][id]["keys"][0]
-                       for id in self.parameters['lights'].keys()]
+        scales_keys = [v['keys'][0] for s, v in
+                       self.parameters['scales'].items()]
+        lights_keys = [v['keys'][0] for l, v in
+                       self.parameters['lights'].items()]
         self.accepted_keys = scales_keys + lights_keys
 
     def onStart(self):
@@ -80,26 +82,26 @@ class Task(QtWidgets.QWidget):
         self.modeLabel.setGeometry(QtCore.QRect(0, 0.2 * self.height(), self.width(), 0.08 * self.height()))
         self.modeLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.modeLabel.setFont(self.modeFont)
+        index = -1
 
         # For each light button
-        for index, k in enumerate(self.parameters['lights'].keys()):
-
+        for thisLight, lightValues in self.parameters['lights'].items():
+            index += 1
             # Set a WLight Qt object
-            self.parameters['lights'][k]['ui'] = WLight.WLight(self, self.parameters['lights'][k][
-                                                               'on'], self.parameters['lights'][k]['oncolor'], self.parameters['lights'][k]['name'], index)
+            lightValues['ui'] = WLight.WLight(self, lightValues['on'],
+                                              lightValues['oncolor'],
+                                              lightValues['name'], index)
 
-            # Show the WLight Qt object
-            self.parameters['lights'][k]['ui'].show()
+            lightValues['ui'].show()  # Show the WLight Qt object
 
         # For each scale gauge
-        for k in sorted(self.parameters['scales'].keys()):
+        for thisScale, scaleValues in self.parameters['scales'].items():
 
             # Set a WScale Qt object
-            self.parameters['scales'][k]['ui'] = WScale.WScale(
-                self, self.parameters['scales'][k]['name'], self.parameters['scalesnumofboxes'], k, self.parameters['scalestyle'])
-
-            # Show the WScale Qt object
-            self.parameters['scales'][k]['ui'].show()
+            scaleValues['ui'] = WScale.WScale(self, scaleValues['name'],
+                   self.parameters['scalesnumofboxes'], thisScale,
+                   self.parameters['scalestyle'])
+            scaleValues['ui'].show()  # Show the WScale Qt object
 
         # Define two timers to handle failure and feedback durations
         self.failuretimeoutTimer = QTExtensions.QTimerWithPause(self)
@@ -107,7 +109,8 @@ class Task(QtWidgets.QWidget):
         self.feedbackTimer = QTExtensions.QTimerWithPause(self)
         self.feedbackTimer.timeout.connect(self.endFeedBackTimer)
 
-        # Preallocate a variable handling information about a potential current failure
+        # Preallocate a variable handling information about
+        # a potential current failure
         self.currentFailure = {}
 
     def onUpdate(self):
@@ -119,52 +122,48 @@ class Task(QtWidgets.QWidget):
 
         if self.parameters['resetperformance'] is not None:
             if self.parameters['resetperformance'] in ['last', 'global']:
-                for this_index in self.performance[self.parameters['resetperformance']]:
-                    self.performance[self.parameters['resetperformance']][this_index] = 0
+                for i in self.performance[self.parameters['resetperformance']]:
+                    self.performance[self.parameters['resetperformance']][i] = 0
             else:
                 self.parent().showCriticalMessage(_("%s : wrong argument in sysmon;resetperformance") % self.parameters['resetperformance'])
             self.parameters['resetperformance'] = None
 
         # For each light button, refresh name
-        for index, k in enumerate(self.parameters['lights'].keys()):
-            self.parameters['lights'][k]['ui'].light.setText(self.parameters['lights'][k]['name'])
+        for thisLight, lightValues in self.parameters['lights'].items():
+            lightValues['ui'].light.setText(lightValues['name'])
 
         # For each scale gauge, refresh name
-        for k in sorted(self.parameters['scales'].keys()):
-            self.parameters['scales'][k]['ui'].label.setText(self.parameters['scales'][k]['name'])
-
+        for thisScale, scaleValues in self.parameters['scales'].items():
+            scaleValues['ui'].label.setText(scaleValues['name'])
 
         # 1. Check failures only if no failure is already occuring
         # (currently prevents double-failure !)
         if len(self.currentFailure) == 0:
-            for lights_or_scales in ['lights', 'scales']:
-                for thisGauge in self.parameters[lights_or_scales].keys():
+            for gauge_type in ['lights', 'scales']:
+                for gauge, gaugeValue in self.parameters[gauge_type].items():
 
                     # If a failure is to be initiated
-                    if (lights_or_scales == 'scales' and self.parameters[lights_or_scales][thisGauge]['failure'] in ['up', 'down']) or (lights_or_scales == 'lights' and self.parameters[lights_or_scales][thisGauge]['failure']):
+                    if (gauge_type == 'scales' and gaugeValue['failure'] in
+                        ['up', 'down']) or (gauge_type == 'lights' and
+                        gaugeValue['failure']):
 
                         # Start it...
-                        self.startFailure(lights_or_scales, thisGauge)
+                        self.startFailure(gauge_type, gauge)
                         # ...and leave the loop
                         break
 
         # 2. Vary position of each scale, depending on its state (up, down, no)
-        for thisScale in self.parameters['scales'].keys():
-            self.parameters['scales'][thisScale][
-                'position'] = self.computeNextPosition(thisScale)
+        for thisScale, scaleValues in self.parameters['scales'].items():
+            scaleValues['position'] = self.computeNextPosition(thisScale)
 
         # 3. Refresh visual display
-        for thisScale in self.parameters['scales'].keys():
-            if 'ui' in self.parameters['scales'][thisScale]:
-                self.parameters['scales'][thisScale][
-                    'ui'].style = self.parameters['scalestyle']
-                self.parameters['scales'][thisScale][
-                    'ui'].position = self.parameters['scales'][thisScale]['position']
+            if 'ui' in scaleValues:
+                scaleValues['ui'].style = self.parameters['scalestyle']
+                scaleValues['ui'].position = scaleValues['position']
 
-        for thisLight in self.parameters['lights'].keys():
-            if 'ui' in self.parameters['lights'][thisLight]:
-                self.parameters['lights'][thisLight]['ui'].refreshState(
-                    self.parameters['lights'][thisLight]['on'])
+        for thisLight, lightValues in self.parameters['lights'].items():
+            if 'ui' in lightValues:
+                lightValues['ui'].refreshState(lightValues['on'])
 
         # 4. Check for arbitrary feedbacks
         if self.parameters['launchfeedback'] != 0:
@@ -178,50 +177,47 @@ class Task(QtWidgets.QWidget):
     def keyEvent(self, key_pressed):
 
         # If automaticsolver on, do not listen for keyboard inputs
-        if self.parameters['automaticsolver'] or not key_pressed in self.accepted_keys:
+        if (self.parameters['automaticsolver'] is True
+                or key_pressed not in self.accepted_keys):
             return
 
         # If no failure is occuring, any keypress is a false alarm
         if len(self.currentFailure) == 0:
-            self.record_performance('NA','fa')
+            self.record_performance('NA', 'fa')
             return
 
         # If a failure is occuring, key press is evaluated further
         else:
-            for lights_or_scales in ['lights', 'scales']:
-                for thisGauge in self.parameters[lights_or_scales].keys():
-                    if self.parameters[lights_or_scales][thisGauge]['failure'] in ['up', 'down'] or self.parameters[lights_or_scales][thisGauge]['failure'] == True:
+            for gauge_type in ['lights', 'scales']:
+                for g, gaugeValues in self.parameters[gauge_type].items():
+                    if (gaugeValues['failure'] in ['up', 'down'] or
+                            gaugeValues['failure'] is True):
 
-                        # If correct key pressed -> end failure
-                        if key_pressed in self.parameters[lights_or_scales][thisGauge]['keys']:
+                        # Correct key pressed -> end failure
+                        if key_pressed in gaugeValues['keys']:
                             self.endFailure(True)
 
-                        # If uncorrect key pressed -> failure continues (false
-                        # alarm)
+                        # Uncorrect key -> failure continues (false alarm)
                         else:
                             self.record_performance('NA','fa')
 
     def endFeedBackTimer(self):
         self.feedbackTimer.stop()
+        for thisScale, scaleValues in self.parameters['scales'].items():
+            scaleValues['ui'].set_feedback(0)
 
-        for thisScale in self.parameters['scales'].keys():
-            self.parameters['scales'][thisScale]['ui'].set_feedback(0)
-        # for thisLight in self.parameters['lights'].keys():
-        #     self.parameters['lights'][thisLight]['ui'].set_feedback(0)
-
-    def startFailure(self, lights_or_scales, number):
+    def startFailure(self, gauge_type, number):
         if len(self.currentFailure) > 0:
             print("Failure already occuring for this gauge!")
             return
 
-        self.currentFailure = {'type': lights_or_scales, 'number': number}
+        self.currentFailure = {'type': gauge_type, 'number': number}
+        gaugeValues = self.parameters[gauge_type][number]
 
-        if lights_or_scales == 'lights':
-            self.parameters[lights_or_scales][number]['on'] = False if self.parameters[
-                lights_or_scales][number]['default'] == 'on' else True
+        if gauge_type == 'lights':
+            gaugeValues['on'] = not gaugeValues['default'] == 'on'
 
-        self.buildLog(
-            ["STATE", self.parameters[lights_or_scales][number]["name"], "FAILURE"])
+        self.buildLog(['STATE', gaugeValues['name'], 'FAILURE'])
 
         # If automatic solver on, start a timer that will automatically stop
         # failure after an automaticsolverdelay duration
@@ -235,43 +231,40 @@ class Task(QtWidgets.QWidget):
 
     def endFailure(self, success=False):
 
-        lights_or_scales = self.currentFailure['type']
+        gauge_type = self.currentFailure['type']
         number = self.currentFailure['number']
-        feedback_ui = self.parameters[lights_or_scales][number]['ui']
+        gauge_feedback = self.parameters[gauge_type][number]
         self.failuretimeoutTimer.stop()
 
         # If automatic solver on and failure occuring, send the good key
         # response
         if self.parameters['automaticsolver']:
-
-            self.buildLog(["STATE", self.parameters[lights_or_scales][number]["name"], "AUTOMATIC-SOLVER"])
+            self.buildLog(['STATE', gauge_feedback['name'], 'AUTOMATIC-SOLVER'])
 
             if self.parameters['feedback']:
-                self.trigger_feedback(feedback_ui)
+                self.trigger_feedback(gauge_feedback['ui'])
 
         # If automatic solver off and good key pressed (success), log a HIT,
         # send a positive feedback, start the corresponding timer
         elif success:
-            self.record_performance(self.parameters[lights_or_scales][number]['name'], 'hit')
-
+            self.record_performance(gauge_feedback['name'], 'hit')
             if self.parameters['feedback']:
-                self.trigger_feedback(feedback_ui)
+                self.trigger_feedback(gauge_feedback['ui'])
 
         # If failure ends with neither automatic solver nor good key pressed,
         # log a MISS
         else:
-            self.record_performance(self.parameters[lights_or_scales][number]["name"], 'miss')
+            self.record_performance(gauge_feedback['name'], 'miss')
 
         # In any case, reset all the 'failure' variables
-        for thisScale in self.parameters['scales'].keys():
-            self.parameters['scales'][thisScale]['failure'] = 'no'
-        for thisLight in self.parameters['lights'].keys():
-            self.parameters['lights'][thisLight]['failure'] = False
-            self.parameters['lights'][thisLight]['on'] = True if self.parameters[
-                'lights'][thisLight]['default'] == 'on' else False
+        if gauge_type == 'scales':
+            gauge_feedback['failure'] = 'no'
+        elif gauge_type == 'lights':
+            gauge_feedback['failure'] = False
+            gauge_feedback['on'] = gauge_feedback['default'] == 'on'
 
         # Log the end of the failure
-        self.buildLog(["STATE", self.parameters[lights_or_scales][number]["name"], "SAFE"])
+        self.buildLog(['STATE', gauge_feedback['name'], 'SAFE'])
 
         # Empty the current failure variable
         self.currentFailure = {}
@@ -319,9 +312,9 @@ class Task(QtWidgets.QWidget):
         self.modeLabel.show()
 
     def trigger_feedback(self, trigger_ui):
-        trigger_ui.set_feedback(1, self.parameters['feedbackcolor'])
-        self.feedbackTimer.start(self.parameters['feedbackduration'])
-        pass
+        if hasattr(trigger_ui, 'set_feedback'):
+            trigger_ui.set_feedback(1, self.parameters['feedbackcolor'])
+            self.feedbackTimer.start(self.parameters['feedbackduration'])
 
     def record_performance(self, light_scale_name, event):
         for this_cat in self.performance.keys():

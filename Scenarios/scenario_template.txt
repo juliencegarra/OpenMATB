@@ -15,6 +15,7 @@
 # 1.b.i. Resources management parameters
 
 0:00:00;resman;tank-b-target;1000
+0:00:00;resman;displayautomationstate;True
 
 
 # 1.b.ii. Pumps status parameters

@@ -122,16 +122,7 @@ class Main(QtWidgets.QMainWindow):
         #centerPoint = QtWidgets.QApplication.desktop().screenGeometry(current_screen).center()
         #self.move(centerPoint)
 
-
-        # limit resolution to 1900x1000?
-        #if self.screen_width>1900 or self.screen_height>1000:
-        #    self.screen_width = 1900
-        #    self.screen_height = 1000
-
-
         self.setFixedSize(self.screen_width, self.screen_height)
-
-
 
         # Log the computed screen size values
         self.mainLog.addLine(
@@ -658,7 +649,7 @@ class Main(QtWidgets.QMainWindow):
                             msg = 'START'
                         elif functionname == "onStop": # = onPause + onHide
                             self.PLUGINS_TASK[task]['taskRunning'] = False
-                            self.PLUGINS_TASK[task]['taskPaused'] = False
+                            self.PLUGINS_TASK[task]['taskPaused'] = True
                             self.PLUGINS_TASK[task]['taskVisible'] = False
                             taskclass.hide()
                             msg = 'STOP'
