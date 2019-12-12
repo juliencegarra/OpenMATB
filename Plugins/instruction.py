@@ -34,6 +34,7 @@ class Task(QtWidgets.QWidget):
         if self.parameters['durationsec'] > 0:
             durationms = self.parameters['durationsec'] * 1000
             QTimer.singleShot(durationms, self.terminate)
+            self.parameters['durationsec'] = 0
 
     def LoadText(self, textfile):
         # Load scales from file
@@ -74,10 +75,11 @@ class Task(QtWidgets.QWidget):
         pass
 
     def terminate(self):
-        self.buildLog(["INSTRUCTIONS", self.parameters['filename'], 'END'])
+        self.buildLog([self.parameters['filename'], 'END'])
         # Force to reparent and destroy the layout
         QtWidgets.QWidget().setLayout(self.layout)
         self.parent().onResume()
 
     def buildLog(self, thisList):
+        thisList = 'INSTRUCTION' + thisList
         self.parent().mainLog.addLine(thisList)

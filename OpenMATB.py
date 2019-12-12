@@ -870,6 +870,7 @@ def getConfigValue(key, defaultvalue):
     else:
         return defaultvalue
 
+
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
 
