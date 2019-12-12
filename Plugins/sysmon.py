@@ -191,8 +191,13 @@ class Task(QtWidgets.QWidget):
 
         # If no failure is occuring, any keypress is a false alarm
         if len(self.currentFailure) == 0:
-            import pdb; pdb.set_trace()
-            self.record_performance('NA', 'fa')
+            for t in ['lights', 'scales']:
+                for g, v in self.parameters[t].items():
+                    if key_pressed in v['keys']:
+                        self.record_performance(v['name'], 'fa')
+                        if (self.parameters['feedbacks']['negative']['active']
+                                is True):
+                            self.trigger_feedback(v['ui'], 'negative')
             return
 
         # If a failure is occuring, key press is evaluated further
