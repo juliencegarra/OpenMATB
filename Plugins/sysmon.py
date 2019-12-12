@@ -21,24 +21,31 @@ class Task(QtWidgets.QWidget):
             'allowanykey': False,
             'scalesnumofboxes': 11,  # Must be odd (to admit a middle position)
             'safezonelength': 3,
-            'feedback': True,
-            'feedbackcolor': '#ffff00',  # Yellow
-            'feedbackduration': 1.5 * 1000,
-            'launchfeedback': 0,
             'scalestyle': 1,  # could be defined at the scale level
             'resetperformance': None,
 
+            'feedbacks': {'positive': {'active': True,
+                                       'color': '#ffff00',
+                                       'duration': 1.5 * 1000,
+                                       'trigger': 0},
+                          'negative': {'active': True,
+                                       'color': '#ff0000',
+                                       'duration': 1.5 * 1000,
+                                       'trigger': 0}},
             'lights': {
-                '1': {'name': 'F5', 'failure': False, 'on': True, 'default': 'on', 'oncolor': "#009900", 'keys': [QtCore.Qt.Key_F5]},
-                '2': {'name': 'F6', 'failure': False, 'on': False, 'default': 'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_F6]}
-            },
-
-            'scales': {
-                '1': {'name': 'F1', 'failure': 'no', 'keys': [QtCore.Qt.Key_F1]},
-                '2': {'name': 'F2', 'failure': 'no', 'keys': [QtCore.Qt.Key_F2]},
-                '3': {'name': 'F3', 'failure': 'no', 'keys': [QtCore.Qt.Key_F3]},
-                '4': {'name': 'F4', 'failure': 'no', 'keys': [QtCore.Qt.Key_F4]}
-            }
+                '1': {'name': 'F5', 'failure': False, 'on': True, 'default':
+                      'on', 'oncolor': "#009900", 'keys': [QtCore.Qt.Key_F5]},
+                '2': {'name': 'F6', 'failure': False, 'on': False, 'default':
+                      'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_F6]}
+                      },
+            'scales': {'1': {'name': 'F1', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F1]},
+                       '2': {'name': 'F2', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F2]},
+                       '3': {'name': 'F3', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F3]},
+                       '4': {'name': 'F4', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F4]}}
             }
 
         self.performance = {
@@ -98,9 +105,9 @@ class Task(QtWidgets.QWidget):
         for thisScale, scaleValues in self.parameters['scales'].items():
 
             # Set a WScale Qt object
-            scaleValues['ui'] = WScale.WScale(self, scaleValues['name'],
-                   self.parameters['scalesnumofboxes'], thisScale,
-                   self.parameters['scalestyle'])
+            scaleValues['ui'] = WScale.WScale(
+                self, scaleValues['name'], self.parameters['scalesnumofboxes'],
+                thisScale, self.parameters['scalestyle'])
             scaleValues['ui'].show()  # Show the WScale Qt object
 
         # Define two timers to handle failure and feedback durations
@@ -124,7 +131,7 @@ class Task(QtWidgets.QWidget):
             if self.parameters['resetperformance'] in ['last', 'global']:
                 for i in self.performance[self.parameters['resetperformance']]:
                     self.performance[self.parameters['resetperformance']][i] = 0
-            else:
+            elif self.parameters['resetperformance'] is not None:
                 self.parent().showCriticalMessage(_("%s : wrong argument in sysmon;resetperformance") % self.parameters['resetperformance'])
             self.parameters['resetperformance'] = None
 
@@ -166,13 +173,14 @@ class Task(QtWidgets.QWidget):
                 lightValues['ui'].refreshState(lightValues['on'])
 
         # 4. Check for arbitrary feedbacks
-        if self.parameters['launchfeedback'] != 0:
-            ui_idx = str(self.parameters['launchfeedback'])
-            if any([ui_idx == idx for idx, val
-                    in self.parameters['scales'].items()]):
-                trigger_ui = self.parameters['scales'][ui_idx]['ui']
-                self.trigger_feedback(trigger_ui)
-                self.parameters['launchfeedback'] = 0
+        for f, v in self.parameters['feedbacks'].items():
+            if v['trigger'] != 0:
+                ui_idx = str(v['trigger'])
+                if any([ui_idx == idx for idx, val
+                        in self.parameters['scales'].items()]):
+                    trigger_ui = self.parameters['scales'][ui_idx]['ui']
+                    self.trigger_feedback(trigger_ui, f)
+                    v['trigger'] = None
 
     def keyEvent(self, key_pressed):
 
@@ -183,6 +191,7 @@ class Task(QtWidgets.QWidget):
 
         # If no failure is occuring, any keypress is a false alarm
         if len(self.currentFailure) == 0:
+            import pdb; pdb.set_trace()
             self.record_performance('NA', 'fa')
             return
 
@@ -199,7 +208,7 @@ class Task(QtWidgets.QWidget):
 
                         # Uncorrect key -> failure continues (false alarm)
                         else:
-                            self.record_performance('NA','fa')
+                            self.record_performance('NA', 'fa')
 
     def endFeedBackTimer(self):
         self.feedbackTimer.stop()
@@ -222,7 +231,8 @@ class Task(QtWidgets.QWidget):
         # If automatic solver on, start a timer that will automatically stop
         # failure after an automaticsolverdelay duration
         if self.parameters['automaticsolver']:
-            self.failuretimeoutTimer.start(self.parameters['automaticsolverdelay'])
+            self.failuretimeoutTimer.start(
+                self.parameters['automaticsolverdelay'])
 
         # If automatic solver off, start a timer the will stop failure after an
         # alerttimeout duration
@@ -241,20 +251,22 @@ class Task(QtWidgets.QWidget):
         if self.parameters['automaticsolver']:
             self.buildLog(['STATE', gauge_feedback['name'], 'AUTOMATIC-SOLVER'])
 
-            if self.parameters['feedback']:
-                self.trigger_feedback(gauge_feedback['ui'])
+            if self.parameters['feedbacks']['positive']['active'] is True:
+                self.trigger_feedback(gauge_feedback['ui'], 'positive')
 
         # If automatic solver off and good key pressed (success), log a HIT,
         # send a positive feedback, start the corresponding timer
         elif success:
             self.record_performance(gauge_feedback['name'], 'hit')
-            if self.parameters['feedback']:
-                self.trigger_feedback(gauge_feedback['ui'])
+            if self.parameters['feedbacks']['positive']['active'] is True:
+                self.trigger_feedback(gauge_feedback['ui'], 'positive')
 
         # If failure ends with neither automatic solver nor good key pressed,
         # log a MISS
         else:
             self.record_performance(gauge_feedback['name'], 'miss')
+            if self.parameters['feedbacks']['negative']['active'] is True:
+                self.trigger_feedback(gauge_feedback['ui'], 'negative')
 
         # In any case, reset all the 'failure' variables
         if gauge_type == 'scales':
@@ -311,10 +323,12 @@ class Task(QtWidgets.QWidget):
             self.modeLabel.setText("<b>%s</b>" % _('MANUAL'))
         self.modeLabel.show()
 
-    def trigger_feedback(self, trigger_ui):
+    def trigger_feedback(self, trigger_ui, type):
         if hasattr(trigger_ui, 'set_feedback'):
-            trigger_ui.set_feedback(1, self.parameters['feedbackcolor'])
-            self.feedbackTimer.start(self.parameters['feedbackduration'])
+            color = self.parameters['feedbacks'][type]['color']
+            duration = self.parameters['feedbacks'][type]['duration']
+            trigger_ui.set_feedback(1, color)
+            self.feedbackTimer.start(duration)
 
     def record_performance(self, light_scale_name, event):
         for this_cat in self.performance.keys():
