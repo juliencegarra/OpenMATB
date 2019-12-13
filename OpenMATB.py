@@ -24,6 +24,7 @@ PLUGINS_PATH = "Plugins"
 LOGS_PATH = "Logs"
 SCENARIOS_PATH = "Scenarios"
 SCALES_PATH = "Scales"
+INSTRUCTIONS_PATH = "Instructions"
 
 # The name of variable used to interact with plugins.
 # Do not touch or everything will break!
@@ -80,6 +81,7 @@ class Main(QtWidgets.QMainWindow):
         self.scenario_shortfilename = os.path.split(scenario_fullpath)[1]
         self.scenario_directory = os.path.split(scenario_fullpath)[0]
         self.scales_directory = os.path.join(self.working_directory, SCALES_PATH)
+        self.instructions_directory = os.path.join(self.working_directory, INSTRUCTIONS_PATH)
 
         # Check that the plugins folder exists
         if not os.path.exists(os.path.join(self.working_directory, PLUGINS_PATH)):
@@ -867,6 +869,7 @@ def getConfigValue(key, defaultvalue):
         return value
     else:
         return defaultvalue
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
