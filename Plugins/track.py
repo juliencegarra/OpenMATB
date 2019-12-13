@@ -1,9 +1,9 @@
-from PySide import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore, QtGui
 from Helpers import WTrack
 from Helpers.Translator import translate as _
 import pygame
 
-class Task(QtGui.QWidget):
+class Task(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super(Task, self).__init__(parent)
@@ -40,7 +40,7 @@ class Task(QtGui.QWidget):
 
         # Define a QLabel object to potentially display automation mode
         self.modeFont = QtGui.QFont("sans-serif", int(self.height() / 35.), QtGui.QFont.Bold)
-        self.modeLabel = QtGui.QLabel(self)
+        self.modeLabel = QtWidgets.QLabel(self)
         self.modeLabel.setGeometry(QtCore.QRect(0.60 * self.width(), 0.60 * self.height(), 0.40 * self.width(), 0.40 * self.height()))
         self.modeLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.modeLabel.setFont(self.modeFont)
@@ -51,7 +51,7 @@ class Task(QtGui.QWidget):
         self.widget = WTrack.WTrack(self, self.parameters['equalproportions'])
 
         # Create a layout for the widget
-        layout = QtGui.QGridLayout()
+        layout = QtWidgets.QGridLayout()
 
         # Add the WTrack object to the layout
         layout.addWidget(self.widget)

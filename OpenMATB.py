@@ -1,13 +1,29 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+import ctypes
+import time
+import datetime
+from importlib.machinery import SourceFileLoader
+import ast
+import sys
+import os
+import platform
+import psutil
+from Helpers import Logger, Translator
+from Helpers.Translator import translate as _
 
-VERSION = "1.0.000"
+# Force import for cxfreeze:
+from Helpers import (QTExtensions, WLight, WPump, WCom,
+                     WScale, WScheduler, WTank, WTrack, xeger)
+
+
+VERSION = "1.1.000"
 VERSIONTITLE = 'OpenMATB v' + VERSION
 
 # Default directories
-DIRECTORY_NAME_PLUGINS = "Plugins"
-DIRECTORY_NAME_LOGS = "Logs"
-DIRECTORY_NAME_SCENARIOS = "Scenarios"
-DIRECTORY_NAME_SCALES = "Scales"
+PLUGINS_PATH = "Plugins"
+LOGS_PATH = "Logs"
+SCENARIOS_PATH = "Scenarios"
+SCALES_PATH = "Scales"
 
 # The name of variable used to interact with plugins.
 # Do not touch or everything will break!
@@ -20,41 +36,28 @@ MAIN_SCHEDULER_INTERVAL = 1
 global CONFIG
 CONFIG = {}
 
-import ctypes
-import time
-import datetime
-import imp
-import ast
-import sys
-import os
-import platform
-import psutil
-from Helpers import Logger, Translator
-from Helpers.Translator import translate as _
-
-# Force import for cxfreeze:
-from Helpers import QTExtensions, WLight, WPump, WCom, WScale, WScheduler, WTank, WTrack, xeger
 
 def OSCriticalErrorMessage(title, msg):
     if platform.system() == "Windows":
-        ctypes.windll.user32.MessageBoxW(None, _(msg), VERSIONTITLE + " - " + _(title), 0)
+        ctypes.windll.user32.MessageBoxW(None, _(msg),
+                                         VERSIONTITLE + " - " + _(title), 0)
     else:
-        print _(title) + ":" + _(msg)
+        print("{}:{}".format(_(title),_(msg)))
     sys.exit()
 
 
 # Ensure that Pyside, pygame, rstr and wave are available
 try:
-    from PySide import QtCore, QtGui
+    from PySide2 import QtCore, QtWidgets, QtGui
     import pygame
     import rstr
     import wave
 except:
-    OSCriticalErrorMessage(
-        _("Error"), _("Please check that all required libraries are installed"))
+    OSCriticalErrorMessage(_("Error"),
+        _("Please check that all required libraries are installed"))
 
 
-class Main(QtGui.QMainWindow):
+class Main(QtWidgets.QMainWindow):
 
     def __init__(self, scenario_fullpath):
         super(Main, self).__init__(parent=None)
@@ -76,22 +79,22 @@ class Main(QtGui.QMainWindow):
 
         self.scenario_shortfilename = os.path.split(scenario_fullpath)[1]
         self.scenario_directory = os.path.split(scenario_fullpath)[0]
-        self.scales_directory = os.path.join(self.working_directory, DIRECTORY_NAME_SCALES)
+        self.scales_directory = os.path.join(self.working_directory, SCALES_PATH)
 
         # Check that the plugins folder exists
-        if not os.path.exists(os.path.join(self.working_directory, DIRECTORY_NAME_PLUGINS)):
+        if not os.path.exists(os.path.join(self.working_directory, PLUGINS_PATH)):
             self.showCriticalMessage(
                 _("Plugins directory does not exist. Check that its name is correct"))
 
         # Create a ./Logs folder if it does not exist
-        if not os.path.exists(os.path.join(self.working_directory, DIRECTORY_NAME_LOGS)):
-            os.mkdir(os.path.join(self.working_directory, DIRECTORY_NAME_LOGS))
+        if not os.path.exists(os.path.join(self.working_directory, LOGS_PATH)):
+            os.mkdir(os.path.join(self.working_directory, LOGS_PATH))
 
         # Create a filename for the log file
         # Corresponds to : scenario name + date + .log
         LOG_FILE_NAME = os.path.join(self.scenario_shortfilename.replace(".txt", "").replace(
             " ", "_") + "_" + datetime.datetime.now().strftime("%Y%m%d_%H%M") + ".log")
-        self.LOG_FILE_PATH = os.path.join(self.working_directory, DIRECTORY_NAME_LOGS, LOG_FILE_NAME)
+        self.LOG_FILE_PATH = os.path.join(self.working_directory, LOGS_PATH, LOG_FILE_NAME)
 
         # Initialize a Logger instance with this log filename (see Helpers/Logger.py)
         self.mainLog = Logger.Logger(self, self.LOG_FILE_PATH)
@@ -102,22 +105,21 @@ class Main(QtGui.QMainWindow):
         self.totalElapsedTime_ms = 0
 
         # Compute screen dimensions
-        # /!\ Be careful : when multiple monitor are present, screen height and width are computed for the widest screen,
-        # but the active screen will be used. Therefore you must ensure that the active screen
-        # (just click on it before running application) is also the widest.
+        # Screen index can be changed just below
 
+        screen_idx = 0  # Here, you can change the screen index
+        screen = QtGui.QGuiApplication.screens()[screen_idx]
+        self.screen_width = screen.geometry().width()
+        self.screen_height = screen.geometry().height()
 
-        screen_widths = [QtGui.QApplication.desktop().screenGeometry(i).width()
-                         for i in range(0, QtGui.QApplication.desktop().screenCount())]
-
-        self.screen_width = max(screen_widths)
-        self.screen_index = screen_widths.index(self.screen_width)
-        self.screen_height = QtGui.QApplication.desktop().screenGeometry(
-            self.screen_index).height()
-
-        # Get current screen
-        current_screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
-        #centerPoint = QtGui.QApplication.desktop().screenGeometry(current_screen).center()
+        # screen_widths = [QtWidgets.QApplication.desktop().screenGeometry(i).width() for i in range(0, QtWidgets.QApplication.desktop().screenCount())]
+        #
+        # self.screen_index = screen_widths.index(self.screen_width)
+        #     self.screen_index).height()
+        #
+        # # Get current screen
+        # current_screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
+        #centerPoint = QtWidgets.QApplication.desktop().screenGeometry(current_screen).center()
         #self.move(centerPoint)
 
 
@@ -209,14 +211,19 @@ class Main(QtGui.QMainWindow):
         """Inform the Main() class with plugins information"""
 
         # For each plugin that is present in the ./Plugins directory
-        for thisfile in os.listdir(DIRECTORY_NAME_PLUGINS):
+        for thisfile in os.listdir(PLUGINS_PATH):
 
             # If it is a python file...
             if thisfile.endswith(".py"):
 
                 # Retrieve the plugin name
                 plugin_name = thisfile.replace(".py", "")
-                module = imp.load_source(plugin_name, os.path.join(self.working_directory, DIRECTORY_NAME_PLUGINS, thisfile))
+                module = SourceFileLoader(plugin_name,
+                                          os.path.join(self.working_directory,
+                                                       PLUGINS_PATH,
+                                                       thisfile)).load_module()
+
+                # module = imp.load_source(plugin_name, os.path.join(self.working_directory, PLUGINS_PATH, thisfile))
 
                 # If the plugin has defined a Task class, log it
                 if hasattr(module, "Task"):
@@ -224,7 +231,7 @@ class Main(QtGui.QMainWindow):
 
                     # Check if a parameters dictionary is present
                     if not hasattr(task, 'parameters'):
-                        print _("Plugin '%s' is invalid (no parameters data)") % (plugin_name)
+                        print(_("Plugin '%s' is invalid (no parameters data)") % (plugin_name))
                         continue
 
                     # Initialize a dictionary to store plugin information
@@ -250,7 +257,7 @@ class Main(QtGui.QMainWindow):
 
                     task.hide()
                 else:
-                    print _("Plugin '%s' is not recognized") % plugin_name
+                    print(_("Plugin '%s' is not recognized") % plugin_name)
 
 
     def place_plugins_on_screen(self):
@@ -273,7 +280,7 @@ class Main(QtGui.QMainWindow):
 
             # Check if the plugin has a taskplacement parameter
             if 'taskplacement' not in plugin.parameters or not plugin.parameters['taskplacement']:
-                print _("Plugin '%s' has no placement data. It will not be displayed") % plugin_name
+                print(_("Plugin '%s' has no placement data. It will not be displayed") % plugin_name)
                 continue
 
             # If so, retrieve it
@@ -303,7 +310,7 @@ class Main(QtGui.QMainWindow):
 
                     # For each non-fullscreen plugin, show its label if needed
                     if self.parameters['showlabels']:
-                        self.PLUGINS_TASK[plugin_name]['ui_label'] = QtGui.QLabel(self)
+                        self.PLUGINS_TASK[plugin_name]['ui_label'] = QtWidgets.QLabel(self)
                         self.PLUGINS_TASK[plugin_name]['ui_label'].setStyleSheet("font: " + str(font_size_pt) + "pt \"MS Shell Dlg 2\"; background-color: black; color: white;")
                         self.PLUGINS_TASK[plugin_name]['ui_label'].setAlignment(QtCore.Qt.AlignCenter)
                         self.PLUGINS_TASK[plugin_name]['ui_label'].resize(self.control_width, LABEL_HEIGHT)
@@ -348,14 +355,14 @@ class Main(QtGui.QMainWindow):
     def showCriticalMessage(self, msg):
         """Display a critical message (msg) in a QMessageBox Qt object before exiting"""
 
-        flags = QtGui.QMessageBox.Abort
-        flags |= QtGui.QMessageBox.StandardButton.Ignore
+        flags = QtWidgets.QMessageBox.Abort
+        flags |= QtWidgets.QMessageBox.StandardButton.Ignore
 
-        result = QtGui.QMessageBox.critical(self, VERSIONTITLE + " "+_("Error"),
+        result = QtWidgets.QMessageBox.critical(self, VERSIONTITLE + " "+_("Error"),
                                             msg,
                                             flags)
 
-        if result == QtGui.QMessageBox.Abort:
+        if result == QtWidgets.QMessageBox.Abort:
             self.onEnd()
             sys.exit()
 
@@ -458,16 +465,15 @@ class Main(QtGui.QMainWindow):
 
         # Check that the last command of the scenario is an 'end'
         try:
-            lasttime = sorted(scenario_content.keys())[-1]
-            lasttask = scenario_content[lasttime].keys()[0]
+            lasttime, lasttask = [(k, v) for k, v in
+                                  sorted(scenario_content.items())][-1]
+            lasttask, lastcmd = [(k, v) for k, v in lasttask.items()][-1]
 
             # Is there more than one task?
             if (len(scenario_content[lasttime].keys()) > 1):
                 raise Exception()
 
-            lastcmd = scenario_content[lasttime][lasttask][0][0]
-
-            if lastcmd != "end":
+            if 'end' not in lastcmd[0]:
                 raise Exception()
         except:
             self.showCriticalMessage(_("The scenario should terminate with a 'end' command"))
@@ -598,7 +604,7 @@ class Main(QtGui.QMainWindow):
 
         t = type(current[command[-1]])
         if current[command[-1]] is None:
-            print _("Warning: None Value in self.parameters. This should not happen!")
+            print(_("Warning: None Value in self.parameters. This should not happen!"))
 
         # Must test booleen first because booleen are also int (e.g., True == 1 is True)
         if isinstance(current[command[-1]], bool):
@@ -767,7 +773,7 @@ class Main(QtGui.QMainWindow):
 
             return True
         else:
-            return QtGui.QMainWindow.eventFilter(self, source, event)
+            return QtWidgets.QMainWindow.eventFilter(self, source, event)
 
     def sendLogToPlugins(self, stringLine):
         if hasattr(self, 'loadedTasks'):
@@ -851,6 +857,7 @@ class Main(QtGui.QMainWindow):
                         self.PLUGINS_TASK[plugin]['ui_label'].show()
                     classplugin.show()
 
+
 def loadConfig():
     config_filename = 'config.txt'
 
@@ -858,25 +865,25 @@ def loadConfig():
         with open(config_filename, 'r') as lines:
             for line in lines:
                 split = line.split('=')
-                if len(split)==2:
-                    CONFIG[split[0]]=(split[1])
+                if len(split) == 2:
+                    CONFIG[split[0]] = (split[1])
+    Translator._lang = CONFIG.get('language')
 
-    if CONFIG.has_key('language'):
-        Translator._lang = CONFIG['language']
 
-# return the value from the config file or the default one
 def getConfigValue(key, defaultvalue):
-    if CONFIG.has_key(key):
-        return CONFIG[key]
-    return defaultvalue
+    value = CONFIG.get(key)
+    if value is not None:
+        return value
+    else:
+        return defaultvalue
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
 
     loadConfig()
 
-    scenario_FullPath, none = QtGui.QFileDialog.getOpenFileName(
-        None, VERSIONTITLE + ' - ' + _('Select a scenario'), DIRECTORY_NAME_SCENARIOS, "(*.txt)")
+    scenario_FullPath, none = QtWidgets.QFileDialog.getOpenFileName(
+        None, VERSIONTITLE + ' - ' + _('Select a scenario'), SCENARIOS_PATH, "(*.txt)")
 
     if os.path.exists(scenario_FullPath):
         pygame.init()

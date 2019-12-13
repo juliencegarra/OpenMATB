@@ -134,9 +134,9 @@ calibrationData = CCalibration(5, 1, 0, 0, 1, 20, 239, 1, 15, b"")
 leftEye = CEye(0, 0, 0)
 rightEye = CEye(0, 0, 0)
 sampleData = CSample(0, leftEye, rightEye, 0)
-eventData = CEvent('F', 'L', 0, 0, 0, 0, 0)
+eventData = CEvent(b'F', b'L', 0, 0, 0, 0, 0)
 
 timestampData = CTimestamp(0)
 
 tmpAOIrectangle = CAOIRectangleStruct(0, 0, 0, 0)
-tmpAOI = CAOIStruct(1, b"", b"", tmpAOIrectangle, 0, 'R', 0, b"")
+tmpAOI = CAOIStruct(1, b"", b"", tmpAOIrectangle, 0, b'R', 0, b"")

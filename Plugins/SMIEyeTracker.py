@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtWidgets
 from Helpers import Logger
 import socket
 import datetime
@@ -27,7 +27,7 @@ def HandleError(ret):
         return "Return Code is " + str(ret) + ". Refer to the iView X SDK Manual for its meaning."
 
 
-class Task(QtGui.QWidget):
+class Task(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super(Task, self).__init__(parent)
@@ -52,7 +52,7 @@ class Task(QtGui.QWidget):
             'getFromSample': ['gazeLX', 'gazeLY', 'positionLX', 'positionLY', 'positionLZ',
                               'diamL', 'gazeRX', 'gazeRY', 'positionRX', 'positionRY', 'positionRZ', 'diamR']
         }
-    
+
     def onStart(self):
         if not iViewXAPI:
             self.parent().showCriticalMessage(
@@ -63,7 +63,7 @@ class Task(QtGui.QWidget):
 
         try:
             self.adress_iviewx = socket.gethostbyname(self.parameters['smiip'])
-            print self.adress_iviewx
+            print(self.adress_iviewx)
         except (socket.error, EOFError):
             self.parent().showCriticalMessage(
                 _("Unable to find the eyetracker computer in the network!"))
@@ -121,7 +121,7 @@ class Task(QtGui.QWidget):
 
             if meanDeviation <= deviation_threshold:
                 calibration_accepted = True
-            print 'Mean deviation -> ' + str(meanDeviation)
+            print('Mean deviation -> ' + str(meanDeviation))
 
         tempDict = {
             'sampleRate (Hz)': str(systemData.samplerate),

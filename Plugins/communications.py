@@ -1,4 +1,4 @@
-from PySide import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore, QtGui
 from Helpers import WCom, QTExtensions
 from copy import copy
 import os
@@ -9,11 +9,10 @@ from random import randrange, choice
 from pygame import mixer
 from Helpers.Translator import translate as _
 
-class Task(QtGui.QWidget):
+class Task(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super(Task, self).__init__(parent)
-
 
         # COMMUNICATIONS PARAMETERS ###
         self.parameters = {
@@ -26,15 +25,15 @@ class Task(QtGui.QWidget):
             'othercallsignnumber': 5,
             'airbandminMhz': 108,
             'airbandmaxMhz': 137,
-            'airbandminvariationMhz' : 5,
-            'airbandmaxvariationMhz' : 6,
+            'airbandminvariationMhz': 5,
+            'airbandmaxvariationMhz': 6,
             'radiostepMhz': 0.1,
             'voicegender': 'male',
             'voiceidiom': 'french',
             'radioprompt': '',
             'promptlist': ['NAV_1', 'NAV_2', 'COM_1', 'COM_2'],
-            'automaticsolver' : False,
-            'displayautomationstate':False,
+            'automaticsolver': False,
+            'displayautomationstate': False,
         }
 
         # Potentially translate task title
@@ -72,7 +71,7 @@ class Task(QtGui.QWidget):
         if self.parameters['displayautomationstate']:
             # Define a QLabel object to display mode
             self.modeFont = QtGui.QFont("sans-serif", int(self.height() / 35.), QtGui.QFont.Bold)
-            self.modeLabel = QtGui.QLabel(self)
+            self.modeLabel = QtWidgets.QLabel(self)
             self.modeLabel.setGeometry(QtCore.QRect(self.width() * 0.5, self.height() * 0.10, self.width() * 0.20, 20))
             self.modeLabel.setAlignment(QtCore.Qt.AlignCenter)
             self.modeLabel.setFont(self.modeFont)
@@ -140,7 +139,7 @@ class Task(QtGui.QWidget):
                         'currentfreq'] = self.generateFrequency()
 
         # Display (own) environment...
-        self.callsign = QtGui.QLabel(self)
+        self.callsign = QtWidgets.QLabel(self)
         self.callsign.setText(
             u'Identifiant    \u27A1    ' + self.parameters['owncallsign'])
         self.callsign.setFont(self.font)
@@ -277,11 +276,12 @@ class Task(QtGui.QWidget):
             # Browse all the radios
             for this_destination in self.parameters['radios'].keys():
                 for this_radio in self.parameters['radios'][this_destination].keys():
+
                     this_radio_name = self.parameters['radios'][this_destination][this_radio]['name']
 
                     # Check if there is a target, and if it is new
                     if self.parameters['radios'][this_destination][this_radio]['targetfreq'] != self.parameters['radios'][this_destination][this_radio]['currentfreq'] and self.parameters['radios'][this_destination][this_radio]['targetfreq'] != self.parameters['radios'][this_destination][this_radio]['lasttarget']:
-                        print '! ' + self.parent().scenarioTimeStr + " : " +"prompt required but mixer already busy! Check that your prompts are spaced with a sufficient duration"
+                        print('! ' + self.parent().scenarioTimeStr + " : " +"prompt required but mixer already busy! Check that your prompts are spaced with a sufficient duration")
 
     def keyEvent(self, key_pressed):
 
@@ -321,12 +321,15 @@ class Task(QtGui.QWidget):
             if key_pressed == QtCore.Qt.Key_Right and self.parameters['radios']['own'][radio_name]['currentfreq'] + self.parameters['radiostepMhz'] < self.parameters['airbandmaxMhz']:
                 lastfreq = copy(self.parameters['radios']['own'][radio_name]['currentfreq'])
                 self.parameters['radios']['own'][radio_name]['currentfreq'] += self.parameters['radiostepMhz']
+                self.parameters['radios']['own'][radio_name]['currentfreq'] = self.roundFrequency(self.parameters['radios']['own'][radio_name]['currentfreq'])
+
 
             elif key_pressed == QtCore.Qt.Key_Left and self.parameters['radios']['own'][radio_name]['currentfreq'] - self.parameters['radiostepMhz'] > self.parameters['airbandminMhz']:
                 lastfreq = copy(
                     self.parameters['radios']['own'][radio_name]['currentfreq'])
                 self.parameters['radios']['own'][radio_name][
                     'currentfreq'] -= self.parameters['radiostepMhz']
+                self.parameters['radios']['own'][radio_name]['currentfreq'] = self.roundFrequency(self.parameters['radios']['own'][radio_name]['currentfreq'])
 
             # Refresh new value only if it represents a change
             if lastfreq != self.parameters['radios']['own'][radio_name]['currentfreq']:
@@ -335,6 +338,10 @@ class Task(QtGui.QWidget):
                 self.buildLog(
                     ["STATE", 'OWN', radio_name, str(self.parameters['radios']['own'][radio_name]['currentfreq'])])
 
+    def roundFrequency(self, raw_frequency):
+        return round((raw_frequency * 1000 /
+                     float(self.parameters['frequencyresolutionKhz']))) / (
+                     1000 / float(self.parameters['frequencyresolutionKhz']))
 
     def generateCallsign(self):
         '''Generate a callsign with no duplicate character. Pick characters in a list to maximize chance to avoid callsign duplicates'''
@@ -380,9 +387,8 @@ class Task(QtGui.QWidget):
         '''Return a random frequency, chosen between airbandminMhz and airbandmaxMhz, at the correct frequencyresolutionKhz'''
         temp = randrange(
             self.parameters['airbandminMhz'] * 10 ** 3, self.parameters['airbandmaxMhz'] * 10 ** 3) / 1000.
-        temp = round((temp * 1000 / float(self.parameters['frequencyresolutionKhz']))) / (
-            1000 / float(self.parameters['frequencyresolutionKhz']))
-        return temp
+
+        return self.roundFrequency(temp)
 
     def setTargetFrequency(self, prompt_destination, radio_name):
         radio = [idx for idx in self.parameters['radios'][prompt_destination].keys() if self.parameters['radios'][prompt_destination][idx]['name'] == radio_name][0]
