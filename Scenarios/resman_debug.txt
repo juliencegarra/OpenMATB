@@ -1,0 +1,16 @@
+# Scenario template
+# Durations are expressed in milliseconds
+
+# 1. Set tasks parameters
+
+# 1.a. System monitoring parameters
+
+# 1.b.i. Resources management parameters
+0:00:00;resman;tank-c-level;100
+0:00:00;resman;start
+0:00:00;pumpstatus;start
+
+0:00:30;resman;stop
+0:00:30;pumpstatus;stop
+0:00:31;end
+

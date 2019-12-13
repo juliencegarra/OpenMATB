@@ -7,11 +7,11 @@ class WCom (QtWidgets.QWidget):
 
     def __init__(self, parent, radio_number):
         super(WCom, self).__init__(parent)
-        self.radio_number = radio_number
-        self.radio_name = self.parent().parameters['radios']['own'][self.radio_number]['name'].replace('_','')
-        radio_frequency = self.parent().parameters['radios']['own'][self.radio_number]['currentfreq']
-        self.radio_index = self.parent().parameters['radios']['own'][self.radio_number]['index']
-        self.is_selected = True if self.radio_index == 0 else False
+        self.radio = self.parent().parameters['radios']['own'][radio_number]
+        self.radio_name = self.radio['name'].replace('_', '')
+        radio_frequency = self.radio['currentfreq']
+        self.radio_index = self.radio['index']
+        self.is_selected = self.radio_index == 0
         self.font = self.parent().font
 
         # Placement and sizes
@@ -49,8 +49,7 @@ class WCom (QtWidgets.QWidget):
         self.freq_select.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
 
     def refreshValues(self):
-        self.radio_frequency.setText(
-            str(self.parent().parameters['radios']['own'][self.radio_number]['currentfreq']))
+        self.radio_frequency.setText(str(self.radio['currentfreq']))
         if self.is_selected:
             self.radio_select.setText(u"\u25B2 \u25BC")
             self.freq_select.setText(u"\u25C0 \u25B6")
