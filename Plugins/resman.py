@@ -1,8 +1,7 @@
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 
-from PySide2 import QtCore, QtWidgets
+from PySide2 import QtCore, QtWidgets, QtGui
 from Helpers import WTank, WPump
-import itertools
 from Helpers.Translator import translate as _
 
 class Task(QtWidgets.QWidget):
@@ -18,12 +17,12 @@ class Task(QtWidgets.QWidget):
             'heuristicsolver': False,
             'assistedsolver': False,
             'displayautomationstate': False,
-            'pumpcoloroff' : '#AAAAAA',
-            'pumpcoloron' : '#00FF00',
-            'pumpcolorfailure' : '#FF0000',
-            'tolerancelevel':500,
-            'displaytolerance':True,
-            'resetperformance':None,
+            'pumpcoloroff': '#AAAAAA',
+            'pumpcoloron': '#00FF00',
+            'pumpcolorfailure': '#FF0000',
+            'tolerancelevel': 500,
+            'displaytolerance': True,
+            'resetperformance': None,
 
             'pump': {'1': {'flow': 800, 'state': 0, 'keys': [QtCore.Qt.Key_1], 'hide': 0},
                      '2': {'flow': 600, 'state': 0, 'keys': [QtCore.Qt.Key_2, 233], 'hide': 0},
@@ -45,8 +44,8 @@ class Task(QtWidgets.QWidget):
         }
 
         self.performance = {
-            'total' : {},
-            'last'  : {}
+            'total': {},
+            'last': {}
         }
 
         for this_cat in self.performance:
@@ -59,89 +58,87 @@ class Task(QtWidgets.QWidget):
         self.parameters['title'] = _(self.parameters['title'])
 
     def onStart(self):
-
-        if self.parameters['displayautomationstate']:
-            # Define a QLabel object to display mode
-            self.modeFont = QtWidgets.QFont("sans-serif", int(self.height() / 35.), QtWidgets.QFont.Bold)
-            self.modeLabel = QtWidgets.QLabel(self)
-            self.modeLabel.setGeometry(QtCore.QRect(self.width() * 0.42, self.height() * 0.40, self.width() * 0.20, 20))
-            self.modeLabel.setAlignment(QtCore.Qt.AlignCenter)
-            self.modeLabel.setFont(self.modeFont)
-            self.refreshModeLabel()
-            self.update()
+        # Define a QLabel object to display mode
+        self.modeFont = QtGui.QFont("sans-serif", int(self.height() / 35.),
+                                    QtGui.QFont.Bold)
+        self.modeLabel = QtWidgets.QLabel(self)
+        self.modeLabel.setGeometry(QtCore.QRect(self.width() * 0.42, self.height() * 0.40, self.width() * 0.20, 20))
+        self.modeLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.modeLabel.setFont(self.modeFont)
+        self.refreshModeLabel()
+        self.update()
 
         # If there is any tank that has a target, log the tolerance value
         if self.parameters['displaytolerance']:
-            self.buildLog(["STATE", "TANK", "TOLERANCE", str(self.parameters['tolerancelevel'])])
+            self.buildLog(["STATE", "TANK", "TOLERANCE",
+                           str(self.parameters['tolerancelevel'])])
 
         # For each defined tank
-        for thisTank in self.parameters['tank'].keys():
+        for thisTank, tankValues in self.parameters['tank'].items():
 
             # Log its target value if it is set
-            if self.parameters['tank'][thisTank]['target'] is not None:
-                self.buildLog(["STATE", "TANK" + thisTank.upper(), "TARGET", str(self.parameters['tank'][thisTank]['target'])])
+            if tankValues['target'] is not None:
+                self.buildLog(["STATE", "TANK" + thisTank.upper(), "TARGET",
+                               str(tankValues['target'])])
 
                 # Change tank initial level at the target level
-                self.parameters['tank'][thisTank]['level'] = self.parameters['tank'][thisTank]['target']
+                tankValues['level'] = tankValues['target']
 
-             # Set a WTank Qt object
-            self.parameters['tank'][thisTank]['ui'] = WTank.WTank(self)
-            self.parameters['tank'][thisTank]['ui'].setMaxLevel(
-                self.parameters['tank'][thisTank]['max'])
-            self.parameters['tank'][thisTank]['ui'].locateAndSize(thisTank, self.parameters[
-                                                                  'tank'][thisTank]['target'], self.parameters['tank'][thisTank]['depletable'])
-            self.parameters['tank'][thisTank]['ui'].setLetter(thisTank.upper())
+            # Set a WTank Qt object
+            tankValues['ui'] = WTank.WTank(self)
+            tankValues['ui'].setMaxLevel(tankValues['max'])
+            tankValues['ui'].locateAndSize(thisTank, tankValues['target'],
+                                           tankValues['depletable'])
+            tankValues['ui'].setLetter(thisTank.upper())
 
             # Display tank current capacity only if it is limited
-            if self.parameters['tank'][thisTank]['depletable']:
-                self.parameters['tank'][thisTank]['ui'].setLabel()
+            if tankValues['depletable']:
+                tankValues['ui'].setLabel()
 
             # Display a target level when appropriate
-            if self.parameters['tank'][thisTank]['target'] is not None:
-                self.parameters['tank'][thisTank]['ui'].setTargetY(
-                    self.parameters['tank'][thisTank]['target'], self.parameters['tank'][thisTank]['max'])
+            if tankValues['target'] is not None:
+                tankValues['ui'].setTargetY(tankValues['target'],
+                                            tankValues['max'])
 
             # Show the resulting Qt object
-            self.parameters['tank'][thisTank]['ui'].show()
+            tankValues['ui'].show()
 
         # For each defined pump
-        for thisPump in self.parameters['pump'].keys():
+        for thisPump, pumpValues in self.parameters['pump'].items():
 
             # Preallocate a variable to signal that a given pump fail has
             # already been logged
-            self.parameters['pump'][thisPump]['failLogged'] = 0
+            pumpValues['failLogged'] = 0
 
             # Set a WPump Qt object
-            self.parameters['pump'][thisPump]['ui'] = WPump.WPump(self, thisPump)
-            self.parameters['pump'][thisPump]['ui'].locateAndSize()
-            self.parameters['pump'][thisPump]['ui'].lower()
+            pumpValues['ui'] = WPump.WPump(self, thisPump)
+            pumpValues['ui'].locateAndSize()
+            pumpValues['ui'].lower()
 
             # Show the resulting Qt object
-            self.parameters['pump'][thisPump]['ui'].show()
+            pumpValues['ui'].show()
 
         # Refresh visual information in case some initial values have been
         # altered in the scenario
-        for thisTank in self.parameters['tank'].keys():
-            self.parameters['tank'][thisTank]['ui'].refreshLevel(
-                self.parameters['tank'][thisTank]['level'])
+        for thisTank, tankValues in self.parameters['tank'].items():
+            tankValues['ui'].refreshLevel(tankValues['level'])
 
-        for thisPump in self.parameters['pump'].keys():
-            self.parameters['pump'][thisPump]['ui'].changeState(
-                self.parameters['pump'][thisPump]['state'], self.parameters['pump'][thisPump]['hide'])
-
+        for thisPump, pumpValues in self.parameters['pump'].items():
+            pumpValues['ui'].changeState(pumpValues['state'],
+                                         pumpValues['hide'])
 
     def onUpdate(self):
-
-        if self.parameters['displayautomationstate']:
+        if self.parameters['displayautomationstate'] is True:
             self.refreshModeLabel()
+        else:
+            self.modeLabel.hide()
 
-        if self.parameters['resetperformance'] is not None:
-            if self.parameters['resetperformance'] in ['last', 'global']:
-                for this_index in self.performance[self.parameters['resetperformance']]:
-                    self.performance[self.parameters['resetperformance']][this_index] = 0
-            else:
-                self.parent().showCriticalMessage(_("%s : wrong argument in resman;resetperformance") % self.parameters['resetperformance'])
+        if self.parameters['resetperformance'] in ['last', 'global']:
+            for i in self.performance[self.parameters['resetperformance']]:
+                self.performance[self.parameters['resetperformance'][i]] = 0
             self.parameters['resetperformance'] = None
+        elif self.parameters['resetperformance'] is not None:
+            self.parent().showCriticalMessage(_("%s : wrong argument in resman;resetperformance") % self.parameters['resetperformance'])
 
         time_resolution = (self.parameters['taskupdatetime'] / 1000) / 60.
 
@@ -149,116 +146,120 @@ class Task(QtWidgets.QWidget):
         # Browse only woorking pumps (state != -1)
 
         if self.parameters['heuristicsolver'] or self.parameters['assistedsolver']:
-            for this_pump in [pump for pump in self.parameters['pump'].keys() if self.parameters['pump'][pump]['state'] != -1]:
-                fromtank = self.parameters['pump'][this_pump]['ui'].fromTank_label
-                totank = self.parameters['pump'][this_pump]['ui'].toTank_label
+            working_pumps = {p: v for p, v in self.parameters['pump'].items()
+                             if v['state'] != -1}
 
+            for thisPump, pumpValue in working_pumps.items():
+                fromtank = self.parameters['tank'][
+                            pumpValue['ui'].fromTank_label]
+                totank = self.parameters['tank'][
+                            pumpValue['ui'].toTank_label]
 
                 # 0.1. Systematically activate pumps draining non-depletable tanks
-                if not self.parameters['tank'][fromtank]['depletable'] and self.parameters['pump'][this_pump]['state'] == 0 :
-                    self.parameters['pump'][this_pump]['state'] = 1
-
+                if not fromtank['depletable'] and pumpValue['state'] == 0:
+                    pumpValue['state'] = 1
 
                 # 0.2. Activate/deactivate pump whose target tank is too low/high
                 # "Too" means level is out of a tolerance zone around the target level (2500 +/- 150)
-                if self.parameters['tank'][totank]['target'] is not None:
-                    if self.parameters['tank'][totank]['level'] <= self.parameters['tank'][totank]['target'] - 150:
-                        self.parameters['pump'][this_pump]['state'] = 1
-                    elif self.parameters['tank'][totank]['level'] >= self.parameters['tank'][totank]['target'] + 150:
-                        self.parameters['pump'][this_pump]['state'] = 0
-
+                if totank['target'] is not None:
+                    if totank['level'] <= totank['target'] - 150:
+                        pumpValue['state'] = 1
+                    elif totank['level'] >= totank['target'] + 150:
+                        pumpValue['state'] = 0
 
                 # 0.3. Equilibrate between the two A/B tanks if sufficient level
-                if self.parameters['tank'][fromtank]['target'] is not None and self.parameters['tank'][totank]['target'] is not None:
-                    if self.parameters['tank'][fromtank]['level'] >= self.parameters['tank'][totank]['target'] >= self.parameters['tank'][totank]['level']:
-                        self.parameters['pump'][this_pump]['state'] = 1
+                if fromtank['target'] is not None and totank['target'] is not None:
+                    if fromtank['level'] >= totank['target'] >= totank['level']:
+                        pumpValue['state'] = 1
                     else:
-                        self.parameters['pump'][this_pump]['state'] = 0
+                        pumpValue['state'] = 0
 
 
         # 1. Deplete tanks A and B
         for thisTank in ['a', 'b']:
-            volume = int(self.parameters['tank'][
-                         thisTank]['lossperminute'] * time_resolution)
-            volume = min(volume, self.parameters['tank'][thisTank][
-                         'level'])  # If level less than volume, deplete only available level
-            self.parameters['tank'][thisTank]['level'] -= volume
+            tankValue = self.parameters['tank'][thisTank]
+            volume = int(tankValue['lossperminute'] * time_resolution)
+            volume = min(volume, tankValue['level'])  # If level less than volume, deplete only available level
+            tankValue['level'] -= volume
 
         # 2. For each pump
-        for pumpNumber in self.parameters['pump'].keys():
+        for pumpNumber, pumpValues in self.parameters['pump'].items():
 
             # 2.a Transfer flow if pump is ON
-            if self.parameters['pump'][pumpNumber]['state'] == 1:
+            if pumpValues['state'] == 1:
 
-                fromtank, totank = self.parameters['pump'][pumpNumber]['ui'].fromTank_label, self.parameters['pump'][pumpNumber]['ui'].toTank_label
+                fromtank = self.parameters['tank'][
+                    pumpValues['ui'].fromTank_label]
+                totank = self.parameters['tank'][
+                    pumpValues['ui'].toTank_label]
 
                 # Compute volume
-                volume = int(self.parameters['pump'][
-                             pumpNumber]['flow']) * time_resolution
+                volume = int(pumpValues['flow']) * time_resolution
 
                 # Check if this volume is available
-                volume = min(
-                    volume, self.parameters['tank'][fromtank]['level'])
+                volume = min(volume, fromtank['level'])
 
                 # Drain it from tank (if its capacity is limited)...
-                if self.parameters['tank'][fromtank]['depletable']:
-                    self.parameters['tank'][fromtank]['level'] -= int(volume)
+                if fromtank['depletable']:
+                    fromtank['level'] -= int(volume)
 
                 # ...to tank (if it's not full)
-                volume = min(volume, self.parameters['tank'][totank][
-                             'max'] - self.parameters['tank'][totank]['level'])
-                self.parameters['tank'][totank]['level'] += int(volume)
+                volume = min(volume, totank['max'] - totank['level'])
+                totank['level'] += int(volume)
 
-            # 2.b Modify flows according to pump states
-            elif self.parameters['pump'][pumpNumber]['state'] != 1 or self.parameters['pump'][pumpNumber]['hide']:  # (OFF | FAIL => 0)
-                if self.parameters['pump'][pumpNumber]['state'] == -1 and not self.parameters['pump'][pumpNumber]['failLogged']:
+            # 2.b Modify flows according to pump states (OFF | FAIL => 0)
+            elif pumpValues['state'] != 1 or pumpValues['hide']:
+                if pumpValues['state'] == -1 and not pumpValues['failLogged']:
                     self.buildLog(["STATE", "PUMP" + pumpNumber, "FAIL"])
-                    self.parameters['pump'][pumpNumber]['failLogged'] = True
+                    pumpValues['failLogged'] = True
 
-                if self.parameters['pump'][pumpNumber]['state'] == 0 and self.parameters['pump'][pumpNumber]['failLogged']:
-                    self.parameters['pump'][pumpNumber]['failLogged'] = False
+                if pumpValues['state'] == 0 and pumpValues['failLogged']:
+                    pumpValues['failLogged'] = False
                     self.buildLog(["STATE", "PUMP" + pumpNumber, "OFF"])
 
         # 3. For each tank
-        for thisTank in self.parameters['tank'].keys():
+        for thisTank, tankValues in self.parameters['tank'].items():
             pumps_to_deactivate = []
 
             # If it is full, select incoming pumps for deactivation
-            if self.parameters['tank'][thisTank]['level'] >= self.parameters['tank'][thisTank]['max']:
-                pumps_to_deactivate = [self.parameters['pump'].keys()[i] for i in range(
-                    0, len(self.parameters['pump'])) if self.parameters['pump'][self.parameters['pump'].keys()[i]]['ui'].toTank_label == thisTank]
+            if tankValues['level'] >= tankValues['max']:
+                pumps_to_deactivate.append(p for p, v in
+                                           self.parameters['pump'].items()
+                                           if v['ui'].toTank_label == thisTank)
 
             # Likewise, if it is empty, select outcome pumps for deactivation
             elif self.parameters['tank'][thisTank]['level'] <= 0:
-                pumps_to_deactivate = [self.parameters['pump'].keys()[i] for i in range(
-                    0, len(self.parameters['pump'])) if self.parameters['pump'][self.parameters['pump'].keys()[i]]['ui'].fromTank_label == thisTank]
+                pumps_to_deactivate.append(p for p, v in
+                                           self.parameters['pump'].items()
+                                           if v['ui'].fromTank_label ==
+                                           thisTank)
 
             # Deactivate selected pumps if not on failure
-            for thisPump in pumps_to_deactivate:
-                if not self.parameters['pump'][thisPump]['state'] == -1:  # if not Fail
-                    self.parameters['pump'][thisPump]['state'] = 0
-                    self.buildLog(["STATE", "PUMP" + thisPump, "OFF"])
+            for thesePumps in pumps_to_deactivate:
+                for thisPump in thesePumps:
+                    if not self.parameters['pump'][thisPump]['state'] == -1:
+                        self.parameters['pump'][thisPump]['state'] = 0
+                        self.buildLog(["STATE", "PUMP" + thisPump, "OFF"])
 
         # 4. Refresh visual information
-        for thisPump in self.parameters['pump'].keys():
-            self.parameters['pump'][thisPump]['ui'].changeState(self.parameters['pump'][thisPump]['state'], self.parameters['pump'][thisPump]['hide'])
+        for thisPump, pumpValue in self.parameters['pump'].items():
+            pumpValue['ui'].changeState(pumpValue['state'], pumpValue['hide'])
 
-        for thisTank in self.parameters['tank'].keys():
-            self.parameters['tank'][thisTank]['ui'].refreshLevel(self.parameters['tank'][thisTank]['level'])
+        for thisTank, tankValue in self.parameters['tank'].items():
+            tankValue['ui'].refreshLevel(tankValue['level'])
 
         # 5. Log tank level if a target is set
-        for thisTank in self.parameters['tank'].keys():
-            if self.parameters['tank'][thisTank]['target'] is not None:
-                self.buildLog(["STATE", "TANK" + thisTank.upper(), "LEVEL", str(self.parameters['tank'][thisTank]['level'])])
+            if tankValue['target'] is not None:
+                self.buildLog(["STATE", "TANK" + thisTank.upper(), "LEVEL",
+                               str(tankValue['level'])])
 
-                for this_cat in self.performance:
-                    local_dev = abs(self.parameters['tank'][thisTank]['level'] - self.parameters['tank'][thisTank]['target'])
+                for perf_cat, perf_val in self.performance.items():
+                    local_dev = abs(tankValue['level'] - tankValue['target'])
                     if local_dev <= self.parameters['tolerancelevel']:
-                        self.performance[this_cat][thisTank.lower()+'_in']+=1
+                        perf_val[thisTank.lower()+'_in'] += 1
                     else:
-                        self.performance[this_cat][thisTank.lower()+'_out']+=1
+                        perf_val[thisTank.lower()+'_out'] += 1
         self.update()
-
 
     def keyEvent(self, key_pressed):
 
@@ -266,32 +267,30 @@ class Task(QtWidgets.QWidget):
             return
         else:
             # List accepted keys
-            accepted_keys = list(itertools.chain.from_iterable(
-                [self.parameters['pump'][thisKey]['keys'] for thisKey in self.parameters['pump'].keys()]))
+            accepted_keys = [v['keys'] for p, v in
+                             self.parameters['pump'].items()]
+            accepted_keys = [i for s in accepted_keys for i in s]
 
             if key_pressed in accepted_keys:
-
-                # Select pump that corresponds to the key...
-                pump_number = [thisKey for thisKey in self.parameters['pump']
-                               .keys() if key_pressed in self.parameters['pump'][thisKey]['keys']][0]
+                # Select pump(s) that corresponds to the key...
+                pumps = {p: v for p, v in self.parameters['pump'].items()
+                         if key_pressed in v['keys'] and v['state'] != -1}
 
                 # ...and reverse its state if it is not on failure
-                if not self.parameters['pump'][pump_number]['state'] == -1:
-                    self.parameters['pump'][pump_number]['state'] = abs(self.parameters['pump'][pump_number]['state'] - 1)
-                    stateStr = 'ON' if self.parameters['pump'][pump_number]['state'] == 1 else 'OFF'
-
+                for thisPump, pumpValue in pumps.items():
+                    pumpValue['state'] = abs(pumpValue['state'] - 1)
                     # Log any pump state change
-                    self.buildLog(["STATE", "PUMP" + pump_number, stateStr])
-                    del stateStr
+                    self.buildLog(["STATE", "PUMP" + thisPump,
+                                   'ON' if pumpValue['state'] == 1 else 'OFF'])
 
                 self.repaint()  # Refresh
             else:
                 return
 
     def refreshModeLabel(self):
-        if self.parameters['heuristicsolver']:
+        if self.parameters['heuristicsolver'] is True:
             self.modeLabel.setText("<b>%s</b>" % _('AUTO ON'))
-        elif self.parameters['assistedsolver']:
+        elif self.parameters['assistedsolver'] is True:
             self.modeLabel.setText("<b>%s</b>" % _('ASSIST ON'))
         else:
             self.modeLabel.setText("<b>%s</b>" % _('MANUAL'))

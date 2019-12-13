@@ -1,5 +1,6 @@
 from PySide2 import QtWidgets, QtCore, QtGui
 
+
 class WLight(QtWidgets.QWidget):
 
     def __init__(self, parent, off, onColor, name, index):
