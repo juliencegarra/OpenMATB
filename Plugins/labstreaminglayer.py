@@ -1,4 +1,4 @@
-﻿from PySide import QtCore, QtGui
+﻿from PySide2 import QtCore, QtWidgets
 import time
 from random import random as rand
 try:
@@ -6,7 +6,7 @@ try:
 except:
     pass
 
-class Task(QtGui.QWidget):
+class Task(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super(Task, self).__init__(parent)

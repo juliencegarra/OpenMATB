@@ -1,9 +1,10 @@
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtWidgets, QtGui
 from Helpers import QTExtensions, WScale, WLight
+from numpy import median
 import random
 from Helpers.Translator import translate as _
 
-class Task(QtGui.QWidget):
+class Task(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super(Task, self).__init__(parent)
@@ -37,12 +38,12 @@ class Task(QtGui.QWidget):
                 '4': {'name': 'F4', 'failure': 'no', 'keys': [QtCore.Qt.Key_F4]}
             }
             }
-            
+
         self.performance = {
             'total' : {'hit_number': 0, 'miss_number':0, 'fa_number':0},
             'last'  : {'hit_number': 0, 'miss_number':0, 'fa_number':0}
         }
-            
+
         # Potentially translate task title
         self.parameters['title'] = _(self.parameters['title'])
 
@@ -53,7 +54,7 @@ class Task(QtGui.QWidget):
 
         # Define two failures zones (up, down)
         totalRange = range(1, self.parameters['scalesnumofboxes'] - 1)
-        centerPosition = totalRange[len(totalRange) / 2]
+        centerPosition = totalRange[int(median(totalRange))]
         self.zones = {
             'up': [k for k in totalRange if k < (centerPosition - (self.parameters['safezonelength'] - 1) / 2)],
             'down': [k for k in totalRange if k > (centerPosition + (self.parameters['safezonelength'] - 1) / 2)]
@@ -73,11 +74,11 @@ class Task(QtGui.QWidget):
 
         # Define a QLabel object to potentially display automation mode
         self.modeFont = QtGui.QFont("sans-serif", int(self.height() / 35.), QtGui.QFont.Bold)
-        self.modeLabel = QtGui.QLabel(self)
+        self.modeLabel = QtWidgets.QLabel(self)
         self.modeLabel.setGeometry(QtCore.QRect(0, 0.2 * self.height(), self.width(), 0.08 * self.height()))
         self.modeLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.modeLabel.setFont(self.modeFont)
-        
+
         # For each light button
         for index, k in enumerate(self.parameters['lights'].keys()):
 
@@ -113,7 +114,7 @@ class Task(QtGui.QWidget):
             self.refreshModeLabel()
         else:
             self.modeLabel.hide()
-        
+
         if self.parameters['resetperformance'] is not None:
             if self.parameters['resetperformance'] in ['last', 'global']:
                 for this_index in self.performance[self.parameters['resetperformance']]:
@@ -121,7 +122,7 @@ class Task(QtGui.QWidget):
             else:
                 self.parent().showCriticalMessage(_("%s : wrong argument in sysmon;resetperformance") % self.parameters['resetperformance'])
             self.parameters['resetperformance'] = None
-            
+
         # For each light button, refresh name
         for index, k in enumerate(self.parameters['lights'].keys()):
             self.parameters['lights'][k]['ui'].light.setText(self.parameters['lights'][k]['name'])
@@ -177,7 +178,7 @@ class Task(QtGui.QWidget):
         # If a failure is occuring, key press is evaluated further
         else:
             for lights_or_scales in ['lights', 'scales']:
-                for thisGauge in self.parameters[lights_or_scales].keys():                   
+                for thisGauge in self.parameters[lights_or_scales].keys():
                     if self.parameters[lights_or_scales][thisGauge]['failure'] in ['up', 'down'] or self.parameters[lights_or_scales][thisGauge]['failure'] == True:
 
                         # If correct key pressed -> end failure
@@ -199,7 +200,7 @@ class Task(QtGui.QWidget):
 
     def startFailure(self, lights_or_scales, number):
         if len(self.currentFailure) > 0:
-            print "Failure already occuring for this gauge!"
+            print("Failure already occuring for this gauge!")
             return
 
         self.currentFailure = {'type': lights_or_scales, 'number': number}
@@ -306,7 +307,7 @@ class Task(QtGui.QWidget):
         else:
             self.modeLabel.setText("<b>%s</b>" % _('MANUAL'))
         self.modeLabel.show()
-    
+
     def record_performance(self, light_scale_name, event):
         for this_cat in self.performance.keys():
             self.performance[this_cat][event+'_number'] += 1

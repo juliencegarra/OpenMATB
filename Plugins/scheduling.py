@@ -1,9 +1,9 @@
-from PySide import QtGui
+from PySide2 import QtWidgets
 from Helpers import WScheduler
 import datetime
 from Helpers.Translator import translate as _
 
-class Task(QtGui.QWidget):
+class Task(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super(Task, self).__init__(parent)
@@ -25,10 +25,10 @@ class Task(QtGui.QWidget):
 
         # Get the time of the last event
         maxTime_sec = max([self.dateStringToSecondInteger(this_time)
-                          for this_time, value in self.parent().scenariocontents.iteritems()])
+                          for this_time, value in self.parent().scenariocontents.items()])
 
         # Set a Qt layout
-        layout = QtGui.QGridLayout()
+        layout = QtWidgets.QGridLayout()
 
         # Set a WScheduler Qt object
         self.widget = WScheduler.WScheduler(self, self.tracking_schedule, self.communication_schedule, maxTime_sec, _('Elapsed Time'))
@@ -51,13 +51,13 @@ class Task(QtGui.QWidget):
         schedules = dict(track = [], communications = [])
 
         for this_task in schedules.keys():
-            this_dict = {key: value for key, value in self.parent().scenariocontents.iteritems() if this_task in value}
+            this_dict = {key: value for key, value in self.parent().scenariocontents.items() if this_task in value}
 
-            if any([['start'] in value[this_task] for key, value in this_dict.iteritems()]):
-                starttime = [key for key, value in this_dict.iteritems() if ['start'] in value[this_task]][0]
-                this_start = [key for key, value in this_dict.iteritems() if ['start'] in value[this_task]][0]
+            if any([['start'] in value[this_task] for key, value in this_dict.items()]):
+                starttime = [key for key, value in this_dict.items() if ['start'] in value[this_task]][0]
+                this_start = [key for key, value in this_dict.items() if ['start'] in value[this_task]][0]
                 try:
-                    endtime = [key for key, value in this_dict.iteritems() if 'stop' in value[this_task][0]][0]
+                    endtime = [key for key, value in this_dict.items() if 'stop' in value[this_task][0]][0]
                 except:
                     self.parent().showCriticalMessage(_("Can't compute schedule. No 'stop' signal found in scenario for the %s task") % (this_task))
 
