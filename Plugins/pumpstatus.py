@@ -1,7 +1,7 @@
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtWidgets, QtGui
 from Helpers.Translator import translate as _
 
-class Task(QtGui.QWidget):
+class Task(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super(Task, self).__init__(parent)
@@ -14,7 +14,7 @@ class Task(QtGui.QWidget):
             'taskupdatetime': 1000,
             'title': 'Pump status'
         }
-        
+
         # Potentially translate task title
         self.parameters['title'] = _(self.parameters['title'])
 
@@ -34,8 +34,8 @@ class Task(QtGui.QWidget):
         # Arrange the layout
         self.width = self.parent().placements[
             self.parameters['taskplacement']]['control_width']
-        layout = QtGui.QVBoxLayout()
-        hlayout = QtGui.QHBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
+        hlayout = QtWidgets.QHBoxLayout()
         layout.addLayout(hlayout)
 
         # For each resman pump
@@ -46,10 +46,10 @@ class Task(QtGui.QWidget):
 
                 # Allocate an horizontal box in the layout, filled with three
                 # distinct elements
-                hbox = QtGui.QHBoxLayout()
+                hbox = QtWidgets.QHBoxLayout()
 
                 # 1. A QLabel Qt object (pump number)
-                dictresman[k]['ui_statuscaption'] = QtGui.QLabel(self)
+                dictresman[k]['ui_statuscaption'] = QtWidgets.QLabel(self)
                 dictresman[k]['ui_statuscaption'].setFont(self.textFont)
                 dictresman[k]['ui_statuscaption'].setAlignment(
                     QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
@@ -58,7 +58,7 @@ class Task(QtGui.QWidget):
                 hbox.addWidget(dictresman[k]['ui_statuscaption'])
 
                 # 2. An arrow in a QLabel Qt object
-                triangle = QtGui.QLabel(u'\u25B6', self)
+                triangle = QtWidgets.QLabel(u'\u25B6', self)
                 triangle.setFixedWidth(self.parent().height() / 14.)
                 triangle.setAlignment(
                     QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
@@ -67,7 +67,7 @@ class Task(QtGui.QWidget):
                 hbox.addWidget(triangle)
 
                 # 3. A QLabel Qt object (pump flow value)
-                dictresman[k]['ui_statusvalue'] = QtGui.QLabel(self)
+                dictresman[k]['ui_statusvalue'] = QtWidgets.QLabel(self)
                 dictresman[k]['ui_statusvalue'].setFont(self.textFont)
                 dictresman[k]['ui_statusvalue'].setAlignment(
                     QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)

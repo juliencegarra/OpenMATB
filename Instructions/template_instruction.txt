@@ -1,0 +1,10 @@
+Instruction template
+
+Here, you can write any instruction you want to display to
+the subjects. To avoid unexpected layout effects, you have
+to wrap your text regularly, like here.
+
+It is possible either to wait for the 'Continue' button to
+be clicked or to present instructions for a given time.
+More details are provided on github.
+https://github.com/juliencegarra/OpenMATB

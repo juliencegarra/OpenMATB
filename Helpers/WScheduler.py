@@ -1,6 +1,6 @@
-from PySide import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore, QtGui
 
-class WScheduler (QtGui.QWidget):
+class WScheduler (QtWidgets.QWidget):
 
     def __init__(self, parent, tracking_schedule, communication_schedule, maxTime_sec, label):
         super(WScheduler, self).__init__(parent)
@@ -41,25 +41,25 @@ class WScheduler (QtGui.QWidget):
         self.lightblue_pen = QtGui.QPen(QtGui.QColor('#729fcf'), self.trait_width, QtCore.Qt.SolidLine)
         self.red_pen = QtGui.QPen(QtGui.QColor('#ff0000'), self.trait_width - 1, QtCore.Qt.SolidLine)
 
-        self.T_letter = QtGui.QLabel(self)
+        self.T_letter = QtWidgets.QLabel(self)
         self.T_letter.setText('T')
         self.T_letter.setFont(self.font)
         self.T_letter.setGeometry(QtCore.QRect(self.tracking_ulx - self.axeWidth / 2, self.breaks_list[-1], self.axeWidth, 55))
         self.T_letter.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
 
-        self.C_letter = QtGui.QLabel(self)
+        self.C_letter = QtWidgets.QLabel(self)
         self.C_letter.setText('C')
         self.C_letter.setFont(self.font)
         self.C_letter.setGeometry(QtCore.QRect(self.communication_ulx - self.axeWidth / 2, self.breaks_list[-1], self.axeWidth, 55))
         self.C_letter.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
 
-        self.min_label = QtGui.QLabel(self)
+        self.min_label = QtWidgets.QLabel(self)
         self.min_label.setText('min')
         self.min_label.setFont(self.minFont)
         self.min_label.setGeometry(QtCore.QRect(self.task_ulx + self.task_width / 2 - 20, self.breaks_list[-1], 40, 55))
         self.min_label.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
 
-        self.time_string_label = QtGui.QLabel(self)
+        self.time_string_label = QtWidgets.QLabel(self)
         self.time_string_label.setText('0:00:00')
         self.time_string_label.setFont(self.thinfont)
         self.time_string_label.setGeometry(
@@ -67,7 +67,7 @@ class WScheduler (QtGui.QWidget):
         self.time_string_label.setAlignment(
             QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter)
 
-        self.time_label = QtGui.QLabel(self)
+        self.time_label = QtWidgets.QLabel(self)
         self.time_label.setText(label)
         self.time_label.setFont(self.thinfont)
         self.time_label.setGeometry(
@@ -77,7 +77,7 @@ class WScheduler (QtGui.QWidget):
 
         self.digits = {}
         for t, this_y in enumerate(self.breaks_list):
-            self.digits[str(t)] = QtGui.QLabel(self)
+            self.digits[str(t)] = QtWidgets.QLabel(self)
             self.digits[str(t)].setText(str(t / 2))
             self.digits[str(t)].setFont(self.font)
             self.digits[str(t)].setGeometry(

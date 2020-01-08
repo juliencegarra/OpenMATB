@@ -1,4 +1,4 @@
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtWidgets, QtGui
 
 tankdict = {'1': {'fromtank': 'c', 'totank': 'a' },
             '2': {'fromtank': 'e', 'totank': 'a' },
@@ -9,7 +9,7 @@ tankdict = {'1': {'fromtank': 'c', 'totank': 'a' },
             '7': {'fromtank': 'a', 'totank': 'b' },
             '8': {'fromtank': 'b', 'totank': 'a' }}
 
-class WPump(QtGui.QWidget):
+class WPump(QtWidgets.QWidget):
 
     def __init__(self, parent, pumpNumber):
         '''Draw a tank, based on its upper left coordinates, and on its nature (target, source, limited or not) which define its size ratio'''
@@ -18,7 +18,7 @@ class WPump(QtGui.QWidget):
         self.toTank_label = tankdict[pumpNumber]['totank']
         self.fromTank_label = tankdict[pumpNumber]['fromtank']
 
-        self.pumpLabel = QtGui.QLabel(self)
+        self.pumpLabel = QtWidgets.QLabel(self)
         self.pumpLabel.setText("<b>%s</b>" % pumpNumber)
 
         self.pumpWidth = self.parent().height() / 16.

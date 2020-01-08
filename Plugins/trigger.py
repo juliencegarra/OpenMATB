@@ -1,7 +1,7 @@
-from PySide import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore
 from Helpers.Translator import translate as _
 
-class Task(QtGui.QWidget):
+class Task(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super(Task, self).__init__(parent)
@@ -29,9 +29,9 @@ class Task(QtGui.QWidget):
 
     def onStart(self):
         if not os.path.exists(os.path.join('..', 'inpout32.dll')):
-            reply = QtGui.QMessageBox.question(
-                None, _('Error'), _("The file '%s' was not found in the current directory. It will not be possible to send trigger events. Do you want to continue?") % 'inpout32.dll', QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-            if reply == QtGui.QMessageBox.No:
+            reply = QtWidgets.QMessageBox.question(
+                None, _('Error'), _("The file '%s' was not found in the current directory. It will not be possible to send trigger events. Do you want to continue?") % 'inpout32.dll', QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+            if reply == QtWidgets.QMessageBox.No:
                 self.parent().onEnd()
                 return
 

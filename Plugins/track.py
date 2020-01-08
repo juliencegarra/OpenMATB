@@ -1,9 +1,9 @@
-from PySide import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore, QtGui
 from Helpers import WTrack
 from Helpers.Translator import translate as _
 import pygame
 
-class Task(QtGui.QWidget):
+class Task(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super(Task, self).__init__(parent)
@@ -23,8 +23,8 @@ class Task(QtGui.QWidget):
             'targetradius': 0.1,
             'joystickforce': 1.0,
             'cutofffrequency': 0.06,
-            'equalproportions' : True,
-            'resetperformance':None,
+            'equalproportions': True,
+            'resetperformance': None,
         }
 
         self.performance = {
@@ -40,7 +40,7 @@ class Task(QtGui.QWidget):
 
         # Define a QLabel object to potentially display automation mode
         self.modeFont = QtGui.QFont("sans-serif", int(self.height() / 35.), QtGui.QFont.Bold)
-        self.modeLabel = QtGui.QLabel(self)
+        self.modeLabel = QtWidgets.QLabel(self)
         self.modeLabel.setGeometry(QtCore.QRect(0.60 * self.width(), 0.60 * self.height(), 0.40 * self.width(), 0.40 * self.height()))
         self.modeLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.modeLabel.setFont(self.modeFont)
@@ -51,7 +51,7 @@ class Task(QtGui.QWidget):
         self.widget = WTrack.WTrack(self, self.parameters['equalproportions'])
 
         # Create a layout for the widget
-        layout = QtGui.QGridLayout()
+        layout = QtWidgets.QGridLayout()
 
         # Add the WTrack object to the layout
         layout.addWidget(self.widget)
@@ -70,7 +70,8 @@ class Task(QtGui.QWidget):
         # Log some task information once
         self.buildLog(["STATE", "TARGET", "X", str(0.5)])
         self.buildLog(["STATE", "TARGET", "Y", str(0.5)])
-        self.buildLog(["STATE", "TARGET", "RADIUS", str(self.parameters['targetradius'])])
+        self.buildLog(["STATE", "TARGET", "RADIUS",
+                       str(self.parameters['targetradius'])])
         msg = _('AUTO') if self.parameters['automaticsolver'] else _('MANUAL')
         self.buildLog(["STATE", "", "MODE", msg])
 
@@ -83,8 +84,8 @@ class Task(QtGui.QWidget):
 
         if self.parameters['resetperformance'] is not None:
             if self.parameters['resetperformance'] in ['last', 'global']:
-                for this_index in self.performance[self.parameters['resetperformance']]:
-                    self.performance[self.parameters['resetperformance']][this_index] = 0
+                for i in self.performance[self.parameters['resetperformance']]:
+                    self.performance[self.parameters['resetperformance']][i] = 0
             else:
                 self.parent().showCriticalMessage(_("%s : wrong argument in track;resetperformance") % self.parameters['resetperformance'])
             self.parameters['resetperformance'] = None
@@ -122,15 +123,15 @@ class Task(QtGui.QWidget):
         self.buildLog(["STATE", "CURSOR", "Y", str(current_Y)])
 
         # Record performance
-        for this_cat in self.performance.keys():
+        for perf_cat, perf_val in self.performance.items():
             if self.widget.isCursorInTarget():
-                self.performance[this_cat]['time_in_ms'] += self.parameters['taskupdatetime']
+                perf_val['time_in_ms'] += self.parameters['taskupdatetime']
             else:
-                self.performance[this_cat]['time_out_ms'] += self.parameters['taskupdatetime']
+                perf_val['time_out_ms'] += self.parameters['taskupdatetime']
 
             current_deviation = self.widget.returnAbsoluteDeviation()
-            self.performance[this_cat]['points_number'] += 1
-            self.performance[this_cat]['deviation_mean'] = self.performance[this_cat]['deviation_mean'] * ((self.performance[this_cat]['points_number']-1) / float(self.performance[this_cat]['points_number'])) + current_deviation * (float(1) / self.performance[this_cat]['points_number'])
+            perf_val['points_number'] += 1
+            perf_val['deviation_mean'] = perf_val['deviation_mean'] * ((perf_val['points_number']-1) / float(perf_val['points_number'])) + current_deviation * (float(1) / perf_val['points_number'])
 
     def joystick_input(self):
         if self.my_joystick:

@@ -20,7 +20,7 @@ def translate(s):
         translation_filename = os.path.join('Translations', _lang + ".txt")
 
         if not os.path.exists(translation_filename):
-            print "There is no translation in the '"+_lang+"' language!"
+            print("There is no translation in the '"+_lang+"' language!")
             _lang = "" # reset the translation to resume
         else:
             try:
@@ -33,7 +33,7 @@ def translate(s):
                 OSCriticalErrorMessage("Error",
                 "Unable to open the translation. Please ensure it is saved as an UTF-8 file!")
 
-    if len(_translations)!=0 and _translations.has_key(unicode(s)):
-        return unicode(_translations[unicode(s)])
+    if len(_translations)!=0 and _translations.has_key(str(s)):
+        return str(_translations[str(s)])
 
-    return unicode(s)
+    return str(s)
