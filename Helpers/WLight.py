@@ -1,6 +1,7 @@
-from PySide import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore, QtGui
 
-class WLight(QtGui.QWidget):
+
+class WLight(QtWidgets.QWidget):
 
     def __init__(self, parent, off, onColor, name, index):
         super(WLight, self).__init__(parent)
@@ -16,7 +17,7 @@ class WLight(QtGui.QWidget):
 
         font = QtGui.QFont(
             "sans-serif", self.lightWidth / 13., QtGui.QFont.Bold)
-        self.light = QtGui.QLabel(self)
+        self.light = QtWidgets.QLabel(self)
         self.light.setLineWidth(self.lightWidth / 37.)
         self.off = off
         self.light.setText("<b>%s</b>" % name)
@@ -33,10 +34,10 @@ class WLight(QtGui.QWidget):
     def refreshState(self, on):
         if on:
             bg = self.onColor
-            self.light.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Raised)
+            self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
         else:
             bg = ""
-            self.light.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Sunken)
+            self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
 
 #        self.light.setBackgroundColor(0,bg)
         self.light.setStyleSheet(

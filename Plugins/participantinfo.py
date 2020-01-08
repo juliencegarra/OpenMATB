@@ -1,7 +1,7 @@
-﻿from PySide import QtCore, QtGui
+﻿from PySide2 import QtCore, QtWidgets
 from Helpers.Translator import translate as _
 
-class Task(QtGui.QWidget):
+class Task(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super(Task, self).__init__(parent)
@@ -15,12 +15,12 @@ class Task(QtGui.QWidget):
     def onStart(self):
         self.parent().onPause()
 
-        self.participant = QtGui.QLineEdit(self)
+        self.participant = QtWidgets.QLineEdit(self)
 
-        self.participantlabel = QtGui.QLabel(_("Participant ID:"), self)
+        self.participantlabel = QtWidgets.QLabel(_("Participant ID:"), self)
         self.participantlabel.setStyleSheet("font: 14pt \"MS Shell Dlg 2\"; ")
 
-        self.participantbtn = QtGui.QPushButton(_('Start'), self)
+        self.participantbtn = QtWidgets.QPushButton(_('Start'), self)
         self.participantbtn.resize(self.participantbtn.sizeHint())
 
         h = (self.parent().screen_height - (self.participantlabel.height()

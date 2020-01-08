@@ -10,11 +10,19 @@ import platform
 import psutil
 from Helpers import Logger, Translator
 from Helpers.Translator import translate as _
+<<<<<<< HEAD
 
 # Force import for cxfreeze:
 from Helpers import (QTExtensions, WLight, WPump, WCom,
                      WScale, WScheduler, WTank, WTrack, xeger)
 
+=======
+
+# Force import for cxfreeze:
+from Helpers import (QTExtensions, WLight, WPump, WCom,
+                     WScale, WScheduler, WTank, WTrack, xeger)
+
+>>>>>>> e7684f2b4d91fc4fd97d4d9e845a67c4d1249a60
 
 VERSION = "1.1.000"
 VERSIONTITLE = 'OpenMATB v' + VERSION
