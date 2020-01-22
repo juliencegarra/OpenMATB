@@ -507,6 +507,10 @@ class Main(QtWidgets.QMainWindow):
             lineList.insert(1, "__main__")
         time, task, command = lineList[0], lineList[1], lineList[2:]
 
+        # manage deprecated command:
+        if task=="sysmon" and command[0]=="feedbackduration":
+            command[0] = "feedbacks-positive-duration"
+
         if task == "__main__":
             taskclass = self
         elif task in self.PLUGINS_TASK:
