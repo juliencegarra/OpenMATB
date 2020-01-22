@@ -50,6 +50,8 @@ def OSCriticalErrorMessage(title, msg):
 # Ensure that Pyside2, pygame, rstr, psutil and wave are available
 try:
     from PySide2 import QtCore, QtWidgets, QtGui
+    #we need to hide pygame message in order to precisely control the output log
+    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
     import pygame
     import rstr
     import psutil
