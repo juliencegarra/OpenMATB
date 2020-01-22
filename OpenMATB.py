@@ -47,15 +47,17 @@ def OSCriticalErrorMessage(title, msg):
     sys.exit()
 
 
-# Ensure that Pyside, pygame, rstr and wave are available
+# Ensure that Pyside2, pygame, rstr, psutil and wave are available
 try:
     from PySide2 import QtCore, QtWidgets, QtGui
     import pygame
     import rstr
+    import psutil
     import wave
-except:
+except Exception as e:
+    print(e)
     OSCriticalErrorMessage(_("Error"),
-        _("Please check that all required libraries are installed"))
+        _("Please check that all required libraries are installed:\n\n"+str(e)))
 
 
 class Main(QtWidgets.QMainWindow):
