@@ -57,7 +57,6 @@ try:
     import psutil
     import wave
 except Exception as e:
-    print(e)
     OSCriticalErrorMessage(_("Error"),
         _("Please check that all required libraries are installed:\n\n"+str(e)))
 
@@ -409,7 +408,6 @@ class Main(QtWidgets.QMainWindow):
 
                     # Extract information from line : time, task and command (see getCommand below)
                     time, task, command = self.getCommand(lineNumber, scenario_line)
-                    print(time, task, command)
 
                     # Add the task to the list of loadedTasks
                     if not task in self.loadedTasks and task is not None:
