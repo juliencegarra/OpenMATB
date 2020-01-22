@@ -1,7 +1,7 @@
 
 <h1>OpenMATB: An open-source version of the Multi-Attribute Task Battery (MATB)</h1>
 
-<b><a href="https://github.com/juliencegarra/OpenMATB/releases/download/1.0/OpenMATB_v1.0.000.zip">Click here to download the last binary for Windows (v1.0)</a></b>
+<b><a href="https://github.com/juliencegarra/OpenMATB/releases/download/1.1/OpenMATB_v1.1.000.zip">Click here to download the last binary for Windows (v1.1)</a></b>
 
 First presented at a NASA Technical memorandum (Comstock & Arnegard, 1992), the Multi-Attribute Task Battery (MATB) contained a set of interactive tasks that were representative of those performed in aircraft piloting. The MATB requires participants to engage in four tasks presented simultaneously on a computer screen. They consist of (1) a monitoring task, (2) a tracking task, (3) an auditory communication task, and (4) a resource management task. The display screen also encompasses a scheduling view (5) for displaying a chart of incoming task events
 
