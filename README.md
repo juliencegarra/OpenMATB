@@ -21,7 +21,7 @@ Contact : <a href="mailto:julien.cegarra@univ-jfc.fr">julien.cegarra AT univ-jfc
 
 <h2>Installation</h2>
 
-The program requires Python 2.x (tested on version 2.7) and the corresponding version of the Pygame, PySide and rstr libraries, freely available online. Make sure you install the matching (32- or 64-bit) version of Pygame as your Python installation, and the one compatible with your Python version number.
+The program requires Python 3.x (tested on version 3.8) and the corresponding version of the Pygame, PySide2 and rstr libraries, freely available online. Make sure you install the matching (32- or 64-bit) version of Pygame as your Python installation, and the one compatible with your Python version number.
 
 The program was tested under Windows and Linux systems. Some minimal code updates are expected to run under mac.
 
