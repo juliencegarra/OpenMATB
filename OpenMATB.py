@@ -325,7 +325,7 @@ class Main(QtWidgets.QMainWindow):
     def runExperiment(self):
         # Initialize a general timer
         if sys.platform == 'win32':
-            self.default_timer = time.clock
+            self.default_timer = time.perf_counter
         else:
             self.default_timer = time.time
 
