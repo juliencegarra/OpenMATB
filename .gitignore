@@ -18,3 +18,8 @@ compilation_cxfreeze.bat
 .Rhistory
 Audacity.png
 OpenMATBscreenshot.png
+.idea/vcs.xml
+.idea/OpenMATB-Audio.iml
+.idea/modules.xml
+.idea/misc.xml
+.idea/inspectionProfiles/profiles_settings.xml
