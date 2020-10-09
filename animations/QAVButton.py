@@ -28,6 +28,9 @@ class QAVButton(QPushButton):
         self.pressed.connect(self.start)
         self.released.connect(self.stop)
 
+        self.is_accelerating = False
+        self.update_color_with_alha(1)
+
     def setSound(self, sound_file):
         self.sound.setSource(QUrl.fromLocalFile(sound_file))
         self.sound.setLoopCount(QSoundEffect.Infinite)
@@ -41,6 +44,17 @@ class QAVButton(QPushButton):
         self.timer.stop()
         self.sound.stop()
 
+    def set_color(self, col):
+        self.color = col
+        self.update_color_with_alha(1)
+
+    def update_color_with_alha(self, alpha):
+        red = self.color.red()
+        green = self.color.green()
+        blue = self.color.blue()
+        bg_style = f"background-color:rgba({red},{green},{blue}, {alpha})"
+        self.setStyleSheet(bg_style)
+
     def update_anim(self):
 
         #logarithmic (check with perception of luminosity/brighness)
@@ -53,11 +67,9 @@ class QAVButton(QPushButton):
         else :
             val = math.log(self.count + 1)
 
-        alpha = val *100 + 155
-        red = self.color.red()
-        green = self.color.green()
-        blue = self.color.blue()
-        self.setStyleSheet(f"background-color:rgba({red},{green},{blue}, {alpha})")
+        alpha = round(val *100) + 155
+        self.update_color_with_alha(alpha)
+
 
         amplitude = val * 0.8 + 0.2
         self.sound.setVolume(amplitude)
@@ -66,6 +78,9 @@ class QAVButton(QPushButton):
         # print(count)
         if self.count >= 1 - self.rate / self.duration:
             self.count = 0
+
+            if self.is_accelerating:
+                self.duration = max(200, self.duration *0.95)
 
 
 if __name__ == '__main__':
@@ -79,18 +94,19 @@ if __name__ == '__main__':
     relax = QAVButton("relax")
     relax.setSound(sound_file = "../Sounds/alarms/al6-low.wav")
     relax.mode = "sin"
-    relax.color = QColor(Qt.blue)
+    relax.set_color(QColor(Qt.blue))
     relax.duration = 2000
+    relax.is_accelerating = True
     warning = QAVButton("warning")
     warning.setSound(sound_file = "../Sounds/alarms/al6-medium.wav")
     warning.mode = "sin"
-    warning.color = QColor(Qt.darkYellow)
+    warning.set_color(QColor(Qt.darkYellow))
     emergency = QAVButton("emergency")
     emergency.setSound(sound_file = "../Sounds/alarms/al6-high.wav")
     emergency.duration = 500
+    emergency.is_accelerating = False
     emergency.mode = "lin"
-    emergency.color = QColor(Qt.red)
-
+    emergency.set_color(QColor(Qt.red))
     layout.addWidget(relax)
     layout.addWidget(warning)
     layout.addWidget(emergency)
