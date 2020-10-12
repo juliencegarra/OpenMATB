@@ -38,10 +38,11 @@ class WLight(QtWidgets.QWidget):
         else:
             bg = ""
             self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+            self.light.setStyleSheet(
+                "QLabel { background-color: " + bg + "; color: black}")
 
 #        self.light.setBackgroundColor(0,bg)
-        self.light.setStyleSheet(
-            "QLabel { background-color: " + bg + "; color: black}")
+
 
     # def resizeEvent(self, e):
     #     self.light.setGeometry(0, 0, self.width(), self.height())

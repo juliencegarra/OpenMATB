@@ -33,9 +33,9 @@ class Task(QtWidgets.QWidget):
                                        'duration': 1.5 * 1000,
                                        'trigger': 0}},
             'lights': {
-                '1': {'name': 'F5', 'failure': False, 'on': True, 'default':
-                      'on', 'oncolor': "#009900", 'keys': [QtCore.Qt.Key_F5]},
-                '2': {'name': 'F6', 'failure': False, 'on': False, 'default':
+                '1': {'name': 'Alarm01', 'failure': False, 'on': False, 'default':
+                      'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_F5]},
+                '2': {'name': 'Alarm02', 'failure': False, 'on': False, 'default':
                       'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_F6]}
                       },
             'scales': {'1': {'name': 'F1', 'failure': 'no', 'keys':
