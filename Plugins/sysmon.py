@@ -14,7 +14,7 @@ class Task(QtWidgets.QWidget):
             'title': 'System monitoring',
             'taskplacement': 'topleft',
             'taskupdatetime': 200,
-            'alerttimeout': 10000,
+            'alerttimeout': 5000,
             'automaticsolver': False,
             'automaticsolverdelay': 1 * 1000,
             'displayautomationstate': False,
@@ -34,18 +34,23 @@ class Task(QtWidgets.QWidget):
                                        'trigger': 0}},
             'lights': {
                 '1': {'name': 'Alarm01', 'failure': False, 'on': False, 'default':
-                      'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_F5]},
+                      'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_1]},
                 '2': {'name': 'Alarm02', 'failure': False, 'on': False, 'default':
-                      'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_F6]}
+                      'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_2]}
+#                ,
+#                '3': {'name': 'Alarm03', 'failure': False, 'on': False, 'default':
+#                      'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_3]}
                       },
-            'scales': {'1': {'name': 'F1', 'failure': 'no', 'keys':
-                             [QtCore.Qt.Key_F1]},
-                       '2': {'name': 'F2', 'failure': 'no', 'keys':
-                             [QtCore.Qt.Key_F2]},
-                       '3': {'name': 'F3', 'failure': 'no', 'keys':
-                             [QtCore.Qt.Key_F3]},
-                       '4': {'name': 'F4', 'failure': 'no', 'keys':
-                             [QtCore.Qt.Key_F4]}}
+            'scales': {
+#                       '1': {'name': 'F1', 'failure': 'no', 'keys':
+#                             [QtCore.Qt.Key_F1]},
+#                       '2': {'name': 'F2', 'failure': 'no', 'keys':
+#                             [QtCore.Qt.Key_F2]},
+#                       '3': {'name': 'F3', 'failure': 'no', 'keys':
+#                             [QtCore.Qt.Key_F3]},
+#                       '4': {'name': 'F4', 'failure': 'no', 'keys':
+#                             [QtCore.Qt.Key_F4]}
+                       }
             }
 
         self.performance = {
