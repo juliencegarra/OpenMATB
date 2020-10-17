@@ -1,0 +1,3 @@
+﻿PySide
+rstr
+pygame
