@@ -12,7 +12,10 @@
 
 # 1.c. Tracking parameters
 0:00:00;track;cursorcolor;#009900
+0:00:00;track;targetradius;0.25
 0:00:00;track;joystickforce;0.02
+0:00:00;track;cutofffrequency;0.2
+0:00:00;track;taskupdatetime;1
 
 
 

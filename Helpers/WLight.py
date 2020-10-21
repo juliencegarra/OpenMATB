@@ -2,10 +2,11 @@ from PySide2 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import QUrl
 from PyQt5.QtMultimedia import QSoundEffect
 import math
+
 count = 0
-#sound_file = 'C:/Users/zmdgd/source/repos/OpenMATB-Audio/Sounds/alarms/al6-high.wav'
-#sound = QSoundEffect()
-#sound.setSource(QUrl.fromLocalFile(sound_file))
+sound_file = 'C:/Users/zmdgd/source/repos/OpenMATB-Audio/Sounds/alarms/al6-high.wav'
+sound = QSoundEffect()
+sound.setSource(QUrl.fromLocalFile(sound_file))
 
 class WLight(QtWidgets.QWidget):
 
@@ -28,6 +29,7 @@ class WLight(QtWidgets.QWidget):
         self.light = QtWidgets.QLabel(self)
         self.light.setLineWidth(self.lightWidth / 37.)
         self.off = off
+        self.id = index
         self.light.setText("<b>%s</b>" % name)
         self.light.setFont(font)
         self.onColor = onColor
@@ -45,32 +47,45 @@ class WLight(QtWidgets.QWidget):
         def blink(self):
             global count #,sound
             val = 1 - count
-            alpha = round(val *100) + 155
+            alpha = round(val *155) + 100
             #amplitude = val * 0.8 + 0.2
             a = str(alpha)
-            print( a)
+            #print(count, a)
             self.light.setStyleSheet(
                     "QLabel { background-color: rgba(200,100,100,"+a+");color:yellow}")
             #sound.setVolume(amplitude)
             count = count + 20 / 500 #period a modifier
         
-            if count >= 1 - 20 / 500:
+            if count > 1 - 20 / 500:
                 count = 0
 
         #Start function "refreshState"
-        if on:
-            bg = self.onColor
-            self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
-            timerb = QtCore.QTimer()
-            #timerb.timeout.connect(test())
-            timerb.timeout.connect(blink(self))
-            timerb.start(20) #period a modifier
-            #sound.play() #How to implement sound.stop() ?
+        if self.id == 0:
+            if on:
+                bg = self.onColor
+                self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
+                timerb = QtCore.QTimer()
+                #timerb.timeout.connect(test())
+                timerb.timeout.connect(blink(self))
+                timerb.start(5) #period a modifier
+                #sound.play() #How to implement sound.stop() ?
+            else:
+                bg = ""
+                self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+                self.light.setStyleSheet(
+                    "QLabel { background-color: " + bg + "; color: gray}")
         else:
-            bg = ""
-            self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-            self.light.setStyleSheet(
-                "QLabel { background-color: " + bg + "; color: gray}")
+            if on:
+                bg = self.onColor
+                self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
+                self.light.setStyleSheet(
+                    "QLabel { background-color: " + bg + "; color: yellow}")
+            else:
+                bg = ""
+                self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+                self.light.setStyleSheet(
+                    "QLabel { background-color: " + bg + "; color: gray}")
+
 
 #        self.light.setBackgroundColor(0,bg)
 
