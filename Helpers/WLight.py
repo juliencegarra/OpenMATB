@@ -1,8 +1,11 @@
 from PySide2 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import QUrl,QTimer
+from PyQt5.QtCore import QUrl
 from PyQt5.QtMultimedia import QSoundEffect
+import math
 count = 0
-sound_file = "C:\Users\zmdgd\source\repos\OpenMATB-Audio\Sounds\alarms\al6-high.wav"
+#sound_file = 'C:/Users/zmdgd/source/repos/OpenMATB-Audio/Sounds/alarms/al6-high.wav'
+#sound = QSoundEffect()
+#sound.setSource(QUrl.fromLocalFile(sound_file))
 
 class WLight(QtWidgets.QWidget):
 
@@ -38,35 +41,31 @@ class WLight(QtWidgets.QWidget):
 
 
     def refreshState(self, on):
-        
-        #Set up sound file
-        global sound_file
-        sound = QSoundEffect()
-        sound.setSource(QUrl.fromLocalFile(sound_file))
-        
         #Fonction to realise "blink" function 
         def blink(self):
-            global count
+            global count #,sound
             val = 1 - count
-            alpha = val *100 + 155
+            alpha = round(val *100) + 155
+            #amplitude = val * 0.8 + 0.2
             a = str(alpha)
-            print(count,':', a)
+            print( a)
             self.light.setStyleSheet(
                     "QLabel { background-color: rgba(200,100,100,"+a+");color:yellow}")
-            count = count + 20 / 1000 #period a modifier
+            #sound.setVolume(amplitude)
+            count = count + 20 / 500 #period a modifier
         
-            if count >= 1 - 20 / 1000:
+            if count >= 1 - 20 / 500:
                 count = 0
 
         #Start function "refreshState"
         if on:
             bg = self.onColor
             self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
-            timerb = QTimer()
+            timerb = QtCore.QTimer()
             #timerb.timeout.connect(test())
             timerb.timeout.connect(blink(self))
             timerb.start(20) #period a modifier
-            self.sound.play() #How to implement sound.stop() ?
+            #sound.play() #How to implement sound.stop() ?
         else:
             bg = ""
             self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
