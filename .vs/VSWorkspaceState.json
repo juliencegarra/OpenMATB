@@ -2,8 +2,12 @@
   "ExpandedNodes": [
     "",
     "\\animations",
+    "\\Helpers",
+    "\\Logs",
+    "\\Plugins",
+    "\\Scenarios",
     "\\Sounds"
   ],
-  "SelectedNode": "\\animations\\anim-pygame.py",
+  "SelectedNode": "\\Helpers\\WLight.py",
   "PreviewInSolutionExplorer": false
 }

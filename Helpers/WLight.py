@@ -35,22 +35,24 @@ class WLight(QtWidgets.QWidget):
 
 
     def refreshState(self, on):
-        count = 0
-        def blink():
-            global count
-            val = 1 - count
+        count = [0]
+        def blink(self):
+            val = 1 - count[0]
             alpha = val *100 + 155
+            a = str(alpha)
             self.light.setStyleSheet(
-                    "QLabel { background-color: rgba(200,100,100, {alpha});color:yellow}")
-            count = count + 20 / 1000
+                    "QLabel { background-color: rgba(200,100,100,"+a+");color:yellow}")
+            count[0] = count[0] + 20 / 1000
         
-            if count >= 1 - 20 / 1000:
-                count = 0
+            if count[0] >= 1 - 20 / 1000:
+                count[0] = 0
         if on:
             bg = self.onColor
             self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
+            #self.light.setStyleSheet(
+            #        "QLabel { background-color: rgba(200,100,100, 255);color:yellow}")
             timerb = QtCore.QTimer()
-            timerb.timeout.connect(blink)
+            timerb.timeout.connect(blink(self))
             timerb.start(20)
         else:
             bg = ""
