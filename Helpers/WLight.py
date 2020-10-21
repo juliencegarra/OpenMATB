@@ -1,5 +1,8 @@
 from PySide2 import QtWidgets, QtCore, QtGui
-
+from PyQt5.QtCore import QUrl,QTimer
+from PyQt5.QtMultimedia import QSoundEffect
+count = 0
+sound_file = "C:\Users\zmdgd\source\repos\OpenMATB-Audio\Sounds\alarms\al6-high.wav"
 
 class WLight(QtWidgets.QWidget):
 
@@ -35,25 +38,35 @@ class WLight(QtWidgets.QWidget):
 
 
     def refreshState(self, on):
-        count = [0]
+        
+        #Set up sound file
+        global sound_file
+        sound = QSoundEffect()
+        sound.setSource(QUrl.fromLocalFile(sound_file))
+        
+        #Fonction to realise "blink" function 
         def blink(self):
-            val = 1 - count[0]
+            global count
+            val = 1 - count
             alpha = val *100 + 155
             a = str(alpha)
+            print(count,':', a)
             self.light.setStyleSheet(
                     "QLabel { background-color: rgba(200,100,100,"+a+");color:yellow}")
-            count[0] = count[0] + 20 / 1000
+            count = count + 20 / 1000 #period a modifier
         
-            if count[0] >= 1 - 20 / 1000:
-                count[0] = 0
+            if count >= 1 - 20 / 1000:
+                count = 0
+
+        #Start function "refreshState"
         if on:
             bg = self.onColor
             self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
-            #self.light.setStyleSheet(
-            #        "QLabel { background-color: rgba(200,100,100, 255);color:yellow}")
-            timerb = QtCore.QTimer()
+            timerb = QTimer()
+            #timerb.timeout.connect(test())
             timerb.timeout.connect(blink(self))
-            timerb.start(20)
+            timerb.start(20) #period a modifier
+            self.sound.play() #How to implement sound.stop() ?
         else:
             bg = ""
             self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)

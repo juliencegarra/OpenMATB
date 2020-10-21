@@ -5,7 +5,7 @@
 
 
 # 1.a. System monitoring parameters
-0:00:00;sysmon;alerttimeout;5000
+0:00:00;sysmon;alerttimeout;10000
 #Alert timeout in milliseconds
 
 
