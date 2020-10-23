@@ -46,28 +46,28 @@ class WLight(QtWidgets.QWidget):
         #Fonction to realise "blink" function 
         def blink(self):
             global count #,sound
+            duration = 1000
             val = 1 - count
             alpha = round(val *155) + 100
             #amplitude = val * 0.8 + 0.2
             a = str(alpha)
             #print(count, a)
             self.light.setStyleSheet(
-                    "QLabel { background-color: rgba(200,100,100,"+a+");color:yellow}")
+                    "QLabel { background-color: rgba(255,80,80,"+a+");color:yellow}")
             #sound.setVolume(amplitude)
-            count = count + 20 / 500 #period a modifier
+            count = count + 20 / duration #period a modifier
         
-            if count > 1 - 20 / 500:
+            if count > 1 - 20 / duration:
                 count = 0
 
         #Start function "refreshState"
-        if self.id == 0:
+        if self.onColor == "#ffffff" :
             if on:
-                bg = self.onColor
                 self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
                 timerb = QtCore.QTimer()
                 #timerb.timeout.connect(test())
                 timerb.timeout.connect(blink(self))
-                timerb.start(5) #period a modifier
+                timerb.start(1) #period a modifier
                 #sound.play() #How to implement sound.stop() ?
             else:
                 bg = ""
@@ -75,16 +75,18 @@ class WLight(QtWidgets.QWidget):
                 self.light.setStyleSheet(
                     "QLabel { background-color: " + bg + "; color: gray}")
         else:
-            if on:
-                bg = self.onColor
-                self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
-                self.light.setStyleSheet(
-                    "QLabel { background-color: " + bg + "; color: yellow}")
-            else:
-                bg = ""
-                self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-                self.light.setStyleSheet(
-                    "QLabel { background-color: " + bg + "; color: gray}")
+            if self.onColor == "#FF0000" :
+                if on:
+                    bg = "#FF0000"
+                    self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
+                
+                else:
+                    bg = ""
+                    self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+            
+                self.light.setStyleSheet("QLabel { background-color: " + bg + "; color: gray}")
+            #else:
+                #Alarm Non-congruent
 
 
 #        self.light.setBackgroundColor(0,bg)

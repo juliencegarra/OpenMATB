@@ -13,7 +13,7 @@ class Task(QtWidgets.QWidget):
         self.parameters = {
             'title': 'System monitoring',
             'taskplacement': 'topleft',
-            'taskupdatetime': 200,
+            'taskupdatetime': 20,
             'alerttimeout': 5000,
             'automaticsolver': False,
             'automaticsolverdelay': 1 * 1000,

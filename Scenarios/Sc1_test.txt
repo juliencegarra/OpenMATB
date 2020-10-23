@@ -6,6 +6,15 @@
 
 # 1.a. System monitoring parameters
 0:00:00;sysmon;alerttimeout;10000
+
+#Setup update rate (ms)
+0:00:00;sysmon;taskupdatetime;20 
+
+#Define alarme type
+#  #FF0000 :: Alarm permanent
+#  #FFFFFF :: Alarm congruent
+#  Others  :: Alarm non-congruent
+0:00:00;sysmon;lights-1-oncolor;#FFFFFF
 #Alert timeout in milliseconds
 
 
@@ -40,6 +49,8 @@
 
 0:00:25;sysmon;lights-2-failure;True
 0:00:35;sysmon;lights-1-failure;True
+
+
 
 
 # 3.c. Tracking events
