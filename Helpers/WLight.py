@@ -4,7 +4,7 @@ from PyQt5.QtMultimedia import QSoundEffect
 import pyglet,math,time
 
 count = 0
-sound_file = 'C:/Users/zmdgd/source/repos/OpenMATB-Audio/Sounds/alarms/al6-high.wav'
+sound_file = 'C:/Users/zmdgd/source/repos/OpenMATB/Sounds/alarms/al6-high.wav'
 pyglet.options['audio'] = ('openal', 'pulse', 'directsound', 'silent')
 source = pyglet.media.StaticSource(pyglet.media.load(sound_file))
 

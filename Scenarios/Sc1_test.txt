@@ -41,7 +41,7 @@
 # 3.a. System monitoring events
 
 0:00:02;sysmon;lights-1-failure;True
-0:00:7;sysmon;lights-2-failure;True
+0:00:07;sysmon;lights-2-failure;True
 
 #0:00:25;sysmon;lights-2-failure;True
 0:00:10;sysmon;lights-1-failure;True
