@@ -37,9 +37,6 @@ class Task(QtWidgets.QWidget):
                       'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_1]},
                 '2': {'name': 'Alarm02', 'failure': False, 'on': False, 'default':
                       'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_2]}
-#                ,
-#                '3': {'name': 'Alarm03', 'failure': False, 'on': False, 'default':
-#                      'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_3]}
                       },
             'scales': {
 #                       '1': {'name': 'F1', 'failure': 'no', 'keys':
