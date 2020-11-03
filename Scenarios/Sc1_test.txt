@@ -9,9 +9,7 @@
 #Alert timeout in milliseconds
 
 #Setup update rate (ms)
-0:00:00;sysmon;taskupdatetime;20 
-
-
+0:00:00;sysmon;taskupdatetime;20
 
 
 
@@ -28,7 +26,7 @@
 # 2. Start appropriate tasks
 0:00:00;track;start
 0:00:00;sysmon;start
-0:00:00;scheduling;start
+0:00:00;sysmon_right;start
 
 
 # 3. Set scenario events
@@ -43,8 +41,10 @@
 0:00:02;sysmon;lights-1-failure;True
 0:00:07;sysmon;lights-2-failure;True
 
-#0:00:25;sysmon;lights-2-failure;True
-0:00:10;sysmon;lights-1-failure;True
+0:00:15;sysmon_right;lights-3-failure;True
+0:00:20;sysmon;lights-1-failure;True
+
+0:00:25;sysmon_right;lights-4-failure;True
 
 
 
@@ -61,7 +61,7 @@
 
 0:01:00;track;stop
 0:01:00;sysmon;stop
-0:01:00;scheduling;stop
+0:01:00;sysmon_right;stop
 
 0:01:01;end
 
