@@ -72,7 +72,7 @@ class WLight(QtWidgets.QWidget):
                 timerb.start(1) 
                 QtCore.QTimer.singleShot(5000,  player.pause)
                 player.play()
-#                keyboard.add_hotkey('f1', player.pause())
+#                keyboard.add_hotkey('1', player.pause())
             else:
                 bg = ""
                 self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)

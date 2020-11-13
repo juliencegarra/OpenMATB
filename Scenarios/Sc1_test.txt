@@ -51,7 +51,7 @@
 
 # 3.c. Tracking events
 
-0:00:20;track;automaticsolver;True
+0:00:05;track;automaticsolver;True
 0:00:40;track;automaticsolver;False
 
 
