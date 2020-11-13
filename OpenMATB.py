@@ -115,8 +115,8 @@ class Main(QtWidgets.QMainWindow):
 
         screen_idx = 0  # Here, you can change the screen index
         screen = QtGui.QGuiApplication.screens()[screen_idx]
-        self.screen_width = screen.geometry().width()
-        self.screen_height = screen.geometry().height()
+        self.screen_width = screen.geometry().width() * 0.8
+        self.screen_height = screen.geometry().height() * 0.8
 
         # screen_widths = [QtWidgets.QApplication.desktop().screenGeometry(i).width() for i in range(0, QtWidgets.QApplication.desktop().screenCount())]
         #
