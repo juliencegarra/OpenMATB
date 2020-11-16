@@ -6,6 +6,8 @@ from PySide2.QtGui import QColor
 from PySide2.QtMultimedia import QSoundEffect
 from PySide2.QtWidgets import QPushButton, QApplication, QWidget, QHBoxLayout
 
+BUTTON_STYLE = "border: 1px solid white; border-radius: 4px;"
+
 
 class QAVButton(QPushButton):
     def __init__(self, label):
@@ -23,17 +25,17 @@ class QAVButton(QPushButton):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_anim)
 
-        self.mode = "sin"
+        self.mode = "toggle"
 
         self.pressed.connect(self.start)
         self.released.connect(self.stop)
 
         self.is_accelerating = False
-        self.update_color_with_alha(1)
+        self.update_style("")
 
     def setSound(self, sound_file):
         self.sound.setSource(QUrl.fromLocalFile(sound_file))
-        self.sound.setLoopCount(QSoundEffect.Infinite)
+        #self.sound.setLoopCount(QSoundEffect.Infinite)
 
     def start(self):
         self.count = 0
@@ -43,33 +45,38 @@ class QAVButton(QPushButton):
     def stop(self):
         self.timer.stop()
         self.sound.stop()
+        self.update_style("")
 
     def set_color(self, col):
         self.color = col
-        self.update_color_with_alha(1)
 
     def update_color_with_alha(self, alpha):
         red = self.color.red()
         green = self.color.green()
         blue = self.color.blue()
-        bg_style = f"background-color:rgba({red},{green},{blue}, {alpha})"
+        bg_style = f"background-color:rgba({red},{green},{blue}, {alpha});"
+        self.update_style(bg_style)
+
+    def update_style(self, bg):
+        bg_style = "QPushButton {" + bg + BUTTON_STYLE + "}"
         self.setStyleSheet(bg_style)
 
     def update_anim(self):
 
-        #logarithmic (check with perception of luminosity/brighness)
-        #val = math.log(count + 1)
-        #linear
+        # logarithmic (check with perception of luminosity/brighness)
+        # val = math.log(count + 1)
+        # linear
         if self.mode == "sin":
-            val = math.sin(self.count* 2 * math.pi) / 2 + 0.5
+            val = math.sin(self.count * 2 * math.pi) / 2 + 0.5
         elif self.mode == "lin":
             val = 1 - self.count
-        else :
+        elif self.mode == "toggle":
+            val = 1
+        else:
             val = math.log(self.count + 1)
 
-        alpha = round(val *100) + 155
+        alpha = round(val * 100) + 155
         self.update_color_with_alha(alpha)
-
 
         amplitude = val * 0.8 + 0.2
         self.sound.setVolume(amplitude)
@@ -80,36 +87,42 @@ class QAVButton(QPushButton):
             self.count = 0
 
             if self.is_accelerating:
-                self.duration = max(200, self.duration *0.95)
+                self.duration = max(200, self.duration * 0.95)
 
 
 if __name__ == '__main__':
-    #build UI
+    # build UI
     app = QApplication(sys.argv)
     widget = QWidget()
-    widget.setGeometry(200,200,500,500)
+    widget.setGeometry(200, 200, 500, 500)
     layout = QHBoxLayout()
     widget.setLayout(layout)
 
-    relax = QAVButton("relax")
-    relax.setSound(sound_file = "../Sounds/alarms/al6-low.wav")
-    relax.mode = "sin"
-    relax.set_color(QColor(Qt.blue))
-    relax.duration = 2000
-    relax.is_accelerating = True
-    warning = QAVButton("warning")
-    warning.setSound(sound_file = "../Sounds/alarms/al6-medium.wav")
-    warning.mode = "sin"
-    warning.set_color(QColor(Qt.darkYellow))
-    emergency = QAVButton("emergency")
-    emergency.setSound(sound_file = "../Sounds/alarms/al6-high.wav")
-    emergency.duration = 500
-    emergency.is_accelerating = False
-    emergency.mode = "lin"
-    emergency.set_color(QColor(Qt.red))
-    layout.addWidget(relax)
-    layout.addWidget(warning)
-    layout.addWidget(emergency)
+    audio_visual_congruent_left = QAVButton("  AudioVisual Congruent Left  ")
+    audio_visual_congruent_left.setSound(sound_file="../Sounds/alarms/bip2-left-master.wav")
+    audio_visual_congruent_left.mode = "sin"
+    audio_visual_congruent_left.set_color(QColor(Qt.darkYellow))
+
+    visual = QAVButton("  Visual  ")
+    visual.mode = "toggle"
+    visual.set_color(QColor(Qt.darkYellow))
+    visual.duration = 2000
+    visual.is_accelerating = False
+
+    audio_visual = QAVButton("  Audio-Visual  ")
+    audio_visual.setSound(sound_file="../Sounds/alarms/bip1-master.wav")
+    audio_visual.mode = "toggle"
+    audio_visual.set_color(QColor(Qt.darkYellow))
+
+    audio_visual_congruent_right = QAVButton("  AudioVisual Congruent Right  ")
+    audio_visual_congruent_right.setSound(sound_file="../Sounds/alarms/bip2-right-master.wav")
+    audio_visual_congruent_right.mode = "sin"
+    audio_visual_congruent_right.set_color(QColor(Qt.darkYellow))
+
+    layout.addWidget(audio_visual_congruent_left)
+    layout.addWidget(visual)
+    layout.addWidget(audio_visual)
+    layout.addWidget(audio_visual_congruent_right)
 
     widget.show()
     sys.exit(app.exec_())
