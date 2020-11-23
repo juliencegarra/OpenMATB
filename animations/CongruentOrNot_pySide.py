@@ -99,7 +99,8 @@ if __name__ == '__main__':
     widget.setLayout(layout)
 
     audio_visual_congruent_left = QAVButton("  AudioVisual Congruent Left  ")
-    audio_visual_congruent_left.setSound(sound_file="../Sounds/alarms/bip2-left-master.wav")
+    #audio_visual_congruent_left.setSound(sound_file="../Sounds/alarms/bip2-left-master.wav")
+    audio_visual_congruent_left.setSound(sound_file="C:/Users/zmdgd/source/repos/OpenMATB/Sounds/alarms/bip2-left-master.wav")
     audio_visual_congruent_left.mode = "sin"
     audio_visual_congruent_left.set_color(QColor(Qt.darkYellow))
 
@@ -110,12 +111,14 @@ if __name__ == '__main__':
     visual.is_accelerating = False
 
     audio_visual = QAVButton("  Audio-Visual  ")
-    audio_visual.setSound(sound_file="../Sounds/alarms/bip1-master.wav")
+    #audio_visual.setSound(sound_file="../Sounds/alarms/bip1-master.wav")
+    audio_visual.setSound(sound_file="C:/Users/zmdgd/source/repos/OpenMATB/Sounds/alarms/bip1-master.wav")
     audio_visual.mode = "toggle"
     audio_visual.set_color(QColor(Qt.darkYellow))
 
     audio_visual_congruent_right = QAVButton("  AudioVisual Congruent Right  ")
-    audio_visual_congruent_right.setSound(sound_file="../Sounds/alarms/bip2-right-master.wav")
+    #audio_visual_congruent_right.setSound(sound_file="../Sounds/alarms/bip2-right-master.wav")
+    audio_visual_congruent_right.setSound(sound_file="C:/Users/zmdgd/source/repos/OpenMATB/Sounds/alarms/bip2-right-master.wav")
     audio_visual_congruent_right.mode = "sin"
     audio_visual_congruent_right.set_color(QColor(Qt.darkYellow))
 

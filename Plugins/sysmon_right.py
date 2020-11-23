@@ -33,10 +33,10 @@ class Task(QtWidgets.QWidget):
                                        'duration': 1.5 * 1000,
                                        'trigger': 0}},
             'lights': {
-                '3': {'name': '3', 'failure': False, 'on': False, 'default':
+                '1': {'name': '1', 'failure': False, 'on': False, 'default':
                       'off', 'oncolor': "#FFFF00", 'keys': [QtCore.Qt.Key_3], "sound_file": "Sounds/alarms/al-low-right.wav"
                       },
-                '4': {'name': '4', 'failure': False, 'on': False, 'default':
+                '2': {'name': '2', 'failure': False, 'on': False, 'default':
                       'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_4], "sound_file": "Sounds/alarms/al-high-right.wav"}
                       },
             'scales': {}

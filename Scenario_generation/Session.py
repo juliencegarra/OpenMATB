@@ -1,14 +1,17 @@
 import random
 
 modules = ['track','sysmon','sysmon_right','sysmon_left','scheduling']
+
 wl = [['track;targetradius;0.20','track;cutofffrequency;0.2','track;joystickforce;0.02','track;automaticsolver;True'],
       ['track;targetradius;0.20','track;cutofffrequency;0.5','track;joystickforce;0.02','track;automaticsolver;False']]
+
 almode = [['sysmon_right;lights-1-oncolor;#FF0000','sysmon_right;lights-2-oncolor;#FF0000',
            'sysmon_left;lights-1-oncolor;#FF0000','sysmon_left;lights-2-oncolor;#FF0000'],
           ['sysmon_right;lights-1-oncolor;#FFFF00','sysmon_right;lights-2-oncolor;#FFFF00',
            'sysmon_left;lights-1-oncolor;#FFFF00','sysmon_left;lights-2-oncolor;#FFFF00'],
            ['sysmon_right;lights-1-oncolor;#00FF00','sysmon_right;lights-2-oncolor;#00FF00',
            'sysmon_left;lights-1-oncolor;#00FF00','sysmon_left;lights-2-oncolor;#00FF00']]
+
 lfailure = ['sysmon_left;lights-1-failure;True','sysmon_left;lights-2-failure;True',
            'sysmon_right;lights-1-failure;True','sysmon_right;lights-2-failure;True']
 
@@ -56,7 +59,7 @@ def writend(session):
         message = time + mod +';stop\n'
         session.fic.write(message)
     time = gettime(session.tt+1)
-    session.fic.write(time+';end\n') 
+    session.fic.write(time+'end\n') 
 
 def writeparam(session):
     for i in range(session.length):

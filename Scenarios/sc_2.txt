@@ -64,39 +64,39 @@
 0:08:20;sysmon_left;lights-1-oncolor;#00FF00
 0:08:20;sysmon_left;lights-2-oncolor;#00FF00
 
-0:00:12;sysmon_left;lights-1-failure;True
-0:00:21;sysmon_left;lights-1-failure;True
-0:00:36;sysmon_right;lights-2-failure;True
-0:00:55;sysmon_right;lights-2-failure;True
+0:01:16;sysmon_left;lights-2-failure;True
+0:00:17;sysmon_right;lights-1-failure;True
+0:01:35;sysmon_right;lights-2-failure;True
+0:01:03;sysmon_right;lights-1-failure;True
 
-0:03:20;sysmon_right;lights-1-failure;True
-0:02:07;sysmon_right;lights-1-failure;True
-0:02:08;sysmon_right;lights-2-failure;True
-0:02:57;sysmon_left;lights-2-failure;True
+0:03:11;sysmon_right;lights-1-failure;True
+0:02:33;sysmon_left;lights-2-failure;True
+0:03:01;sysmon_left;lights-1-failure;True
+0:01:46;sysmon_right;lights-2-failure;True
 
-0:03:31;sysmon_right;lights-1-failure;True
-0:03:38;sysmon_right;lights-1-failure;True
-0:04:07;sysmon_left;lights-1-failure;True
-0:04:28;sysmon_left;lights-2-failure;True
+0:04:22;sysmon_right;lights-1-failure;True
+0:04:59;sysmon_left;lights-1-failure;True
+0:03:28;sysmon_left;lights-1-failure;True
+0:04:09;sysmon_right;lights-2-failure;True
 
-0:06:09;sysmon_right;lights-1-failure;True
-0:05:58;sysmon_left;lights-2-failure;True
-0:06:39;sysmon_right;lights-1-failure;True
-0:05:03;sysmon_left;lights-1-failure;True
+0:05:07;sysmon_left;lights-2-failure;True
+0:05:07;sysmon_right;lights-1-failure;True
+0:05:44;sysmon_left;lights-1-failure;True
+0:05:12;sysmon_left;lights-1-failure;True
 
-0:07:30;sysmon_left;lights-2-failure;True
-0:07:19;sysmon_right;lights-1-failure;True
-0:06:51;sysmon_right;lights-1-failure;True
-0:07:44;sysmon_left;lights-2-failure;True
+0:06:52;sysmon_right;lights-1-failure;True
+0:07:53;sysmon_right;lights-2-failure;True
+0:07:21;sysmon_left;lights-2-failure;True
+0:08:18;sysmon_left;lights-1-failure;True
 
-0:09:58;sysmon_right;lights-2-failure;True
-0:09:47;sysmon_left;lights-1-failure;True
-0:09:55;sysmon_left;lights-2-failure;True
-0:08:21;sysmon_right;lights-1-failure;True
+0:09:51;sysmon_right;lights-1-failure;True
+0:09:39;sysmon_left;lights-1-failure;True
+0:09:40;sysmon_left;lights-1-failure;True
+0:09:28;sysmon_right;lights-1-failure;True
 
 0:10:00;track;stop
 0:10:00;sysmon;stop
 0:10:00;sysmon_right;stop
 0:10:00;sysmon_left;stop
 0:10:00;scheduling;stop
-0:10:01;;end
+0:10:01;end
