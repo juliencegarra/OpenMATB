@@ -1,8 +1,8 @@
 import random
 
 modules = ['track','sysmon','sysmon_right','sysmon_left','scheduling']
-wl = [['targetradius;0.20','track;cutofffrequency;0.2','track;joystickforce;0.02','track;automaticsolver;True'],
-      ['targetradius;0.20','track;cutofffrequency;0.5','track;joystickforce;0.02','track;automaticsolver;False']]
+wl = [['track;targetradius;0.20','track;cutofffrequency;0.2','track;joystickforce;0.02','track;automaticsolver;True'],
+      ['track;targetradius;0.20','track;cutofffrequency;0.5','track;joystickforce;0.02','track;automaticsolver;False']]
 almode = [['sysmon_right;lights-1-oncolor;#FF0000','sysmon_right;lights-2-oncolor;#FF0000',
            'sysmon_left;lights-1-oncolor;#FF0000','sysmon_left;lights-2-oncolor;#FF0000'],
           ['sysmon_right;lights-1-oncolor;#FFFF00','sysmon_right;lights-2-oncolor;#FFFF00',
@@ -13,7 +13,7 @@ lfailure = ['sysmon_left;lights-1-failure;True','sysmon_left;lights-2-failure;Tr
            'sysmon_right;lights-1-failure;True','sysmon_right;lights-2-failure;True']
 
 class Session(object):
-    def __init__(self, list = [], length=0,name='defaut_session',tt=600,):
+    def __init__(self, list = [0,1,2,3,4,5], length=6,name='defaut_session',tt=600,):
         self.list = list
         self.length = length
         self.name = name
@@ -25,7 +25,7 @@ class Session(object):
         self.length+=1
 
     def init(self):
-        self.fic = open(self.name+'.txt', 'w')
+        self.fic = open('Scenarios\\' + self.name + '.txt', 'w')
 
     def sswrite(self):
         writestart(self)
@@ -38,7 +38,7 @@ class Session(object):
 def gettime(t):
     mm = int(t/60)
     ss = int(t%60)
-    time = "00:{:0>2d}:{:0>2d};".format(mm,ss)
+    time = "0:{:0>2d}:{:0>2d};".format(mm,ss)
     return time
 
 
@@ -48,6 +48,7 @@ def writestart(session):
     for mod in modules:
         message = time + mod +';start\n'
         session.fic.write(message)
+    session.fic.write('\n')
 
 def writend(session):
     time = gettime(session.tt)
@@ -60,7 +61,9 @@ def writend(session):
 def writeparam(session):
     for i in range(session.length):
         writewlp(i,session.list[i],session.fic)
+        session.fic.write('\n')
         writemode(i,session.list[i],session.fic)
+        session.fic.write('\n')
     genefailure(session.fic)
 
 def writewlp(t,i,fic):
@@ -76,6 +79,7 @@ def writemode(t,i,fic):
             fic.write(message)
 
 def genefailure(fic):
+    q=0
     failurelist = []
     for i in range(24):
         t = random.randint(int(i/4)*100,int(i/4)*100+100)
@@ -85,6 +89,8 @@ def genefailure(fic):
         time = gettime(fail[0])
         message = time + lfailure[fail[1]] + '\n'
         fic.write(message)
+        q+=1
+        if q%4 == 0: fic.write('\n')
 
 """
 I want to realise the overlap warming
