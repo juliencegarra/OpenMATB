@@ -21,7 +21,7 @@ class Task(QtWidgets.QWidget):
     def onStart(self):
 
         # Retrieve scenario events for the tracking and the communication tasks
-        self.tracking_schedule, self.communication_schedule = self.getSchedule()
+        self.tracking_schedule = self.getSchedule()
 
         # Get the time of the last event
         maxTime_sec = max([self.dateStringToSecondInteger(this_time)
@@ -31,7 +31,7 @@ class Task(QtWidgets.QWidget):
         layout = QtWidgets.QGridLayout()
 
         # Set a WScheduler Qt object
-        self.widget = WScheduler.WScheduler(self, self.tracking_schedule, self.communication_schedule, maxTime_sec, _('Elapsed Time'))
+        self.widget = WScheduler.WScheduler(self, self.tracking_schedule, maxTime_sec, _('Elapsed Time'))
         layout.addWidget(self.widget)
         self.setLayout(layout)
 
@@ -48,7 +48,7 @@ class Task(QtWidgets.QWidget):
     def getSchedule(self):
         """Read self.parent().scenariocontents. Schedules show manual mode phases"""
 
-        schedules = dict(track = [], communications = [])
+        schedules = dict(track = [])
 
         for this_task in schedules.keys():
             this_dict = {key: value for key, value in self.parent().scenariocontents.items() if this_task in value}
@@ -77,7 +77,7 @@ class Task(QtWidgets.QWidget):
 
                 if len(schedules[this_task]) == 0:
                     schedules[this_task].append([self.dateStringToSecondInteger(starttime), self.dateStringToSecondInteger(endtime)])
-        return schedules['track'], schedules['communications']
+        return schedules['track']
 
     def dateStringToSecondInteger(self, date_string, format_string="%H:%M:%S"):
         '''Convert a date string into seconds (int)'''

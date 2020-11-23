@@ -1,13 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\animations",
     "\\Helpers",
     "\\Instructions",
     "\\Plugins",
+    "\\Scales",
     "\\Scenarios",
-    "\\Sounds"
+    "\\Scenarios\\Exp_2x3",
+    "\\Scenarios\\Parasuraman_et_al_1993",
+    "\\Sounds",
+    "\\Sounds\\alarms"
   ],
-  "SelectedNode": "\\Plugins\\sysmon.py",
+  "SelectedNode": "\\Cena_geno.py",
   "PreviewInSolutionExplorer": false
 }

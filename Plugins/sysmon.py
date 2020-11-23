@@ -13,7 +13,7 @@ class Task(QtWidgets.QWidget):
         self.parameters = {
             'title': 'System monitoring',
             'taskplacement': 'topleft',
-            'taskupdatetime': 20,
+            'taskupdatetime': 200,
             'alerttimeout': 5000,
             'automaticsolver': False,
             'automaticsolverdelay': 1 * 1000,
@@ -32,22 +32,16 @@ class Task(QtWidgets.QWidget):
                                        'color': '#ff0000',
                                        'duration': 1.5 * 1000,
                                        'trigger': 0}},
-            'lights': {
-                '1': {'name': '1', 'failure': False, 'on': False, 'default':
-                      'off', 'oncolor': "#FFFF00", 'keys': [QtCore.Qt.Key_1], "sound_file": "Sounds/alarms/al-low-left.wav"
-                      },
-                '2': {'name': '2', 'failure': False, 'on': False, 'default':
-                      'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_2], "sound_file": "Sounds/alarms/al-high-left.wav"}
-                      },
+            'lights': {},
             'scales': {
-#                       '1': {'name': 'F1', 'failure': 'no', 'keys':
-#                             [QtCore.Qt.Key_F1]},
-#                       '2': {'name': 'F2', 'failure': 'no', 'keys':
-#                             [QtCore.Qt.Key_F2]},
-#                       '3': {'name': 'F3', 'failure': 'no', 'keys':
-#                             [QtCore.Qt.Key_F3]},
-#                       '4': {'name': 'F4', 'failure': 'no', 'keys':
-#                             [QtCore.Qt.Key_F4]}
+                       '1': {'name': 'F1', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F1]},
+                       '2': {'name': 'F2', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F2]},
+                       '3': {'name': 'F3', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F3]},
+                       '4': {'name': 'F4', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F4]}
                        }
             }
 
@@ -346,3 +340,4 @@ class Task(QtWidgets.QWidget):
     def buildLog(self, thisList):
         thisList = ["SYSMON"] + thisList
         self.parent().mainLog.addLine(thisList)
+

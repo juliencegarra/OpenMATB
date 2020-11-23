@@ -11,6 +11,12 @@
 #Setup update rate (ms)
 0:00:00;sysmon;taskupdatetime;20
 
+#Set mode change
+0:00:00;sysmon;lights-1-oncolor;#FF0000
+0:00:00;sysmon;lights-2-oncolor;#FFFF00
+
+
+
 
 
 # 1.c. Tracking parameters
