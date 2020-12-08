@@ -40,7 +40,7 @@ class WLight(QtWidgets.QWidget):
 
         # audio part
         self.sound_file = sound_file
-        self.color = QColor(self.onColor)
+        self.color = QColor('#FF0000')
         self.count = 0
         self.duration = 1000
         self.rate = 20
@@ -61,6 +61,12 @@ class WLight(QtWidgets.QWidget):
         #print('starting sound?', self.sound.status())
         if not self.sound.isPlaying():
             self.count = 0
+            self.sound.play()
+            self.timer.start(self.rate)
+
+    def start_nc(self):
+        if not self.sound.isPlaying():
+            self.count = self.duration*0.5
             self.sound.play()
             self.timer.start(self.rate)
 
@@ -102,12 +108,21 @@ class WLight(QtWidgets.QWidget):
 
     def refreshState(self, on):
         if on:
-            bg = self.onColor
-            self.start()
-            self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
+            if self.onColor == '#FF0000':
+                bg = self.onColor
+                self.start()
+                self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
+            elif self.onColor == '#FFFF00' :
+                self.start_nc()
+                self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
+            elif self.onColor == '#00FF00' : 
+                bg = '#FF0000'
+                self.light.setStyleSheet(
+             "QLabel { background-color: " + bg + "; color: black}")
+                self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
         else:
             bg = ""
             self.light.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-            self.stop()
+            if self.onColor != '#00FF00': self.stop()
             self.light.setStyleSheet(
              "QLabel { background-color: " + bg + "; color: black}")

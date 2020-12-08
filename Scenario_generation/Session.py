@@ -2,8 +2,9 @@ import random
 
 modules = ['track','sysmon','sysmon_right','sysmon_left','scheduling']
 
-wl = [['track;targetradius;0.20','track;cutofffrequency;0.2','track;joystickforce;0.02','track;automaticsolver;True'],
-      ['track;targetradius;0.20','track;cutofffrequency;0.5','track;joystickforce;0.02','track;automaticsolver;False']]
+wl = [['track;targetradius;0.30','track;cutofffrequency;0.4','track;joystickforce;0.02','track;automaticsolver;False'],
+      ['track;targetradius;0.20','track;cutofffrequency;0.7','track;joystickforce;0.02','track;automaticsolver;False']
+      ]
 
 almode = [['sysmon_right;lights-1-oncolor;#FF0000','sysmon_right;lights-2-oncolor;#FF0000',
            'sysmon_left;lights-1-oncolor;#FF0000','sysmon_left;lights-2-oncolor;#FF0000'],
@@ -31,8 +32,8 @@ class Session(object):
         self.fic = open('Scenarios\\' + self.name + '.txt', 'w')
 
     def sswrite(self):
-        writestart(self)
         writeparam(self)
+        writestart(self)
         writend(self)
 
     def end(self):

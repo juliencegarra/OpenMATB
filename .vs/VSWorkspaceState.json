@@ -1,15 +1,14 @@
 {
   "ExpandedNodes": [
     "",
+    "\\animations",
+    "\\Helpers",
     "\\Instructions",
     "\\Plugins",
     "\\Scales",
     "\\Scenarios",
-    "\\Scenarios\\Exp_2x3",
-    "\\Scenarios\\Parasuraman_et_al_1993",
     "\\Scenario_generation",
-    "\\Sounds",
-    "\\Sounds\\alarms"
+    "\\Sounds"
   ],
   "SelectedNode": "\\Scenario_generation\\Cena_geno.py",
   "PreviewInSolutionExplorer": false

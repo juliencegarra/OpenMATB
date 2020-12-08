@@ -159,12 +159,12 @@ class Main(QtWidgets.QMainWindow):
 
             'bottommid': {'control_top': self.screen_height / 2, 'control_left': self.screen_width * (
                     5.9 / 20.1), 'control_height': self.screen_height / 2,
-                          'control_width': self.screen_width * (10.7 / 20.1)},
+                          'control_width': self.screen_width * (8.4 / 20.1)},
 
             'bottomright': {'control_top': self.screen_height / 2, 'control_left': self.screen_width * (5.9 / 20.1) +
-                                                                                   self.screen_width * (10.6 / 20.1),
+                                                                                   self.screen_width * (8.3 / 20.1),
                             'control_height': self.screen_height / 2,
-                            'control_width': self.screen_width * (3.6 / 20.1)}
+                            'control_width': self.screen_width * (5.9 / 20.1)}
         }
 
         # Turn off Caps Lock and on Num Lock (for resman)... if possible (only Windows until now)
@@ -506,7 +506,8 @@ class Main(QtWidgets.QMainWindow):
         time, task, command = lineList[0], lineList[1], lineList[2:]
 
         # manage deprecated command:
-        if task=="sysmon" and command[0]=="feedbackduration":
+        if ((task=="sysmon" )| (task=="sysmon_left") | (task=="sysmon_right")
+          )and command[0]=="feedbackduration":
             command[0] = "feedbacks-positive-duration"
 
         if task == "__main__":

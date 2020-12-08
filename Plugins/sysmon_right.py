@@ -33,11 +33,11 @@ class Task(QtWidgets.QWidget):
                                        'duration': 1.5 * 1000,
                                        'trigger': 0}},
             'lights': {
-                '1': {'name': '1', 'failure': False, 'on': False, 'default':
-                      'off', 'oncolor': "#FFFF00", 'keys': [QtCore.Qt.Key_3], "sound_file": "Sounds/alarms/al-low-right.wav"
+                '1': {'name': '3', 'failure': False, 'on': False, 'default':
+                      'off', 'oncolor': "#00FF00", 'keys': [QtCore.Qt.Key_3], "sound_file": "Sounds/alarms/bip2-right-master.wav"
                       },
-                '2': {'name': '2', 'failure': False, 'on': False, 'default':
-                      'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_4], "sound_file": "Sounds/alarms/al-high-right.wav"}
+                '2': {'name': '4', 'failure': False, 'on': False, 'default':
+                      'off', 'oncolor': "#00FF00", 'keys': [QtCore.Qt.Key_4], "sound_file": "Sounds/alarms/bip2-right-master.wav"}
                       },
             'scales': {}
             }
@@ -335,5 +335,5 @@ class Task(QtWidgets.QWidget):
         self.buildLog(["ACTION", light_scale_name, event.upper()])
 
     def buildLog(self, thisList):
-        thisList = ["SYSMON"] + thisList
+        thisList = ["SYSMON_RIGHT"] + thisList
         self.parent().mainLog.addLine(thisList)
