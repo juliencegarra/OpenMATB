@@ -3,13 +3,10 @@
     "",
     "\\animations",
     "\\Helpers",
-    "\\Instructions",
     "\\Plugins",
-    "\\Scales",
     "\\Scenarios",
-    "\\Scenario_generation",
-    "\\Sounds"
+    "\\Scenario_generation"
   ],
-  "SelectedNode": "\\Scenario_generation\\Cena_geno.py",
+  "SelectedNode": "\\Scenario_generation\\Session.py",
   "PreviewInSolutionExplorer": false
 }

@@ -1,4 +1,4 @@
-import random
+import random,os
 
 modules = ['track','sysmon','sysmon_right','sysmon_left','scheduling']
 
@@ -29,8 +29,13 @@ class Session(object):
         self.length+=1
 
     def init(self):
+        ''' Try to seperate Scenario files
+        working_directory = os.getcwd()
+        if not os.path.exists(os.path.join(working_directory, LOGS_PATH)):
+            os.mkdir(os.path.join(working_directory, LOGS_PATH))
+            '''
         self.fic = open('Scenarios\\' + self.name + '.txt', 'w')
-
+        
     def sswrite(self):
         writeparam(self)
         writestart(self)
