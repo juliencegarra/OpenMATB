@@ -17,7 +17,7 @@ class Task(QtWidgets.QWidget):
             'title': 'Tracking',
             'cursorcolor': '#0000FF',
             'cursorcoloroutside': '#0000FF',
-            'automaticsolver': False,
+            'automaticsolver': True,
             'displayautomationstate': True,
             'assistedsolver': False,
             'targetradius': 0.1,

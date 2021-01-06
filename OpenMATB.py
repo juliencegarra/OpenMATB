@@ -99,7 +99,7 @@ class Main(QtWidgets.QMainWindow):
         # Create a filename for the log file
         # Corresponds to : scenario name + date + .log
         LOG_FILE_NAME = os.path.join(self.scenario_shortfilename.replace(".txt", "").replace(
-            " ", "_") + "_" + datetime.datetime.now().strftime("%Y%m%d_%H%M") + ".log")
+            " ", "_") + ".log")
         self.LOG_FILE_PATH = os.path.join(self.working_directory, LOGS_PATH, LOG_FILE_NAME)
 
         # Initialize a Logger instance with this log filename (see Helpers/Logger.py)

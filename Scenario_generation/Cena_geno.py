@@ -8,7 +8,7 @@ exps = [[0,	1,	5,	2,	4,	3],
         [5,	0,	4,	2,	3,	2]] # Balanced Latin Square
 
 for exp in exps:
-    sc = Session(list=exp,length=6,name = 'sc_'+str(exp[0]))
+    sc = Session(list=exp,length=6,name = 'sc_'+str(exp[0]+1))
     sc.init()
     sc.sswrite()
     sc.end()
