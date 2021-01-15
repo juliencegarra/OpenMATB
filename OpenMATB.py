@@ -99,7 +99,7 @@ class Main(QtWidgets.QMainWindow):
         # Create a filename for the log file
         # Corresponds to : scenario name + date + .log
         LOG_FILE_NAME = os.path.join(self.scenario_shortfilename.replace(".txt", "").replace(
-            " ", "_") + "_" + datetime.datetime.now().strftime("%Y%m%d_%H%M") + ".log")
+            " ", "_") + ".log")
         self.LOG_FILE_PATH = os.path.join(self.working_directory, LOGS_PATH, LOG_FILE_NAME)
 
         # Initialize a Logger instance with this log filename (see Helpers/Logger.py)
@@ -115,8 +115,8 @@ class Main(QtWidgets.QMainWindow):
 
         screen_idx = 0  # Here, you can change the screen index
         screen = QtGui.QGuiApplication.screens()[screen_idx]
-        self.screen_width = screen.geometry().width()
-        self.screen_height = screen.geometry().height()
+        self.screen_width = screen.geometry().width() * 0.8
+        self.screen_height = screen.geometry().height() * 0.8
 
         # screen_widths = [QtWidgets.QApplication.desktop().screenGeometry(i).width() for i in range(0, QtWidgets.QApplication.desktop().screenCount())]
         #
@@ -144,27 +144,27 @@ class Main(QtWidgets.QMainWindow):
                            'control_width': self.screen_width},
 
             'topleft': {'control_top': 0, 'control_left': 0, 'control_height': self.screen_height / 2,
-                        'control_width': self.screen_width * (7.0 / 20.1)},
+                        'control_width': self.screen_width * (5.0 / 20.1)},
 
             'topmid': {'control_top': 0, 'control_left': self.screen_width * (
-                    5.9 / 20.1), 'control_height': self.screen_height / 2,
-                       'control_width': self.screen_width * (10.7 / 20.1)},
+                    4.9 / 20.1), 'control_height': self.screen_height / 2,
+                       'control_width': self.screen_width * (10.2 / 20.1)},
 
-            'topright': {'control_top': 0, 'control_left': self.screen_width * (5.9 / 20.1) + self.screen_width * (
-                    10.6 / 20.1), 'control_height': self.screen_height / 2,
-                         'control_width': self.screen_width * (3.6 / 20.1)},
+            'topright': {'control_top': 0, 'control_left': self.screen_width * (4.9 / 20.1) + self.screen_width * (
+                    10.1 / 20.1), 'control_height': self.screen_height / 2,
+                         'control_width': self.screen_width * (5.0 / 20.1)},
 
             'bottomleft': {'control_top': self.screen_height / 2, 'control_left': 0, 'control_height':
-                self.screen_height / 2, 'control_width': self.screen_width * (5.9 / 20.1)},
+                self.screen_height / 2, 'control_width': self.screen_width * (5.5 / 20.1)},
 
             'bottommid': {'control_top': self.screen_height / 2, 'control_left': self.screen_width * (
-                    5.9 / 20.1), 'control_height': self.screen_height / 2,
+                    5.5 / 20.1), 'control_height': self.screen_height / 2,
                           'control_width': self.screen_width * (10.7 / 20.1)},
 
-            'bottomright': {'control_top': self.screen_height / 2, 'control_left': self.screen_width * (5.9 / 20.1) +
-                                                                                   self.screen_width * (10.6 / 20.1),
+            'bottomright': {'control_top': self.screen_height / 2, 'control_left': self.screen_width * (5.5 / 20.1) +
+                                                                                   self.screen_width * (10.7 / 20.1),
                             'control_height': self.screen_height / 2,
-                            'control_width': self.screen_width * (3.6 / 20.1)}
+                            'control_width': self.screen_width * (3.9 / 20.1)}
         }
 
         # Turn off Caps Lock and on Num Lock (for resman)... if possible (only Windows until now)
@@ -506,7 +506,8 @@ class Main(QtWidgets.QMainWindow):
         time, task, command = lineList[0], lineList[1], lineList[2:]
 
         # manage deprecated command:
-        if task=="sysmon" and command[0]=="feedbackduration":
+        if ((task=="sysmon" )| (task=="sysmon_left") | (task=="sysmon_right")
+          )and command[0]=="feedbackduration":
             command[0] = "feedbacks-positive-duration"
 
         if task == "__main__":

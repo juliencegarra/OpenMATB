@@ -2,7 +2,7 @@ from PySide2 import QtWidgets, QtCore, QtGui
 
 class WScheduler (QtWidgets.QWidget):
 
-    def __init__(self, parent, tracking_schedule, communication_schedule, maxTime_sec, label):
+    def __init__(self, parent, tracking_schedule, maxTime_sec, label):
         super(WScheduler, self).__init__(parent)
 
         self.schedule_duration_mn = 8
@@ -30,12 +30,11 @@ class WScheduler (QtWidgets.QWidget):
         self.breaks_list = [lowerspace + x*(upperspace-lowerspace)/length for x in range(length)]
 
         self.tracking_ulx = self.task_ulx + 0.8 * self.task_width
-        self.communication_ulx = self.task_ulx + 0.2 * self.task_width
         self.schedule_up = self.breaks_list[0]
         self.schedule_down = self.breaks_list[-1]
 
         # Schedules
-        self.schedules = dict(track = tracking_schedule, communication = communication_schedule)
+        self.schedules = dict(track = tracking_schedule)
 
         self.green_pen = QtGui.QPen(QtGui.QColor('#009900'), min(1, self.trait_width - 2))
         self.lightblue_pen = QtGui.QPen(QtGui.QColor('#729fcf'), self.trait_width, QtCore.Qt.SolidLine)
@@ -47,11 +46,7 @@ class WScheduler (QtWidgets.QWidget):
         self.T_letter.setGeometry(QtCore.QRect(self.tracking_ulx - self.axeWidth / 2, self.breaks_list[-1], self.axeWidth, 55))
         self.T_letter.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
 
-        self.C_letter = QtWidgets.QLabel(self)
-        self.C_letter.setText('C')
-        self.C_letter.setFont(self.font)
-        self.C_letter.setGeometry(QtCore.QRect(self.communication_ulx - self.axeWidth / 2, self.breaks_list[-1], self.axeWidth, 55))
-        self.C_letter.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
+        
 
         self.min_label = QtWidgets.QLabel(self)
         self.min_label.setText('min')
@@ -87,7 +82,7 @@ class WScheduler (QtWidgets.QWidget):
 
     def getProgression(self, current_time):
         self.time_string_label.setText(current_time)
-        self.current = dict(track = [], communication = [])
+        self.current = dict(track = [])
 
         self.current_time_sec = self.parent().dateStringToSecondInteger(current_time)
         self.schedule_limit_sec = self.current_time_sec + self.schedule_duration_mn * 60
@@ -144,15 +139,12 @@ class WScheduler (QtWidgets.QWidget):
         qp.setPen(self.red_pen)
 
         qp.drawRect(QtCore.QRect(self.tracking_ulx - 5, self.schedule_up - 10, 10, 10))
-        qp.drawRect(QtCore.QRect(self.communication_ulx - 5, self.schedule_up - 10, 10, 10))
         qp.drawRect(QtCore.QRect(self.tracking_ulx - 5, self.schedule_down, 10, 10))
-        qp.drawRect(QtCore.QRect(self.communication_ulx - 5, self.schedule_down, 10, 10))
 
         # Tracking label
         self.T_letter.show()
 
         # Communication label
-        self.C_letter.show()
 
         # Red time lines
         remaining_time = abs(self.maxTime_sec - self.current_time_sec)
@@ -162,10 +154,7 @@ class WScheduler (QtWidgets.QWidget):
         qp.drawLine(self.tracking_ulx - 5, self.breaks_list[0] + limit_y * (self.breaks_list[-1] - self.breaks_list[
                     0]), self.tracking_ulx + 5, self.breaks_list[0] + limit_y * (self.breaks_list[-1] - self.breaks_list[0]))
 
-        qp.drawLine(self.communication_ulx, self.breaks_list[0], self.communication_ulx, self.breaks_list[
-                    0] + limit_y * (self.breaks_list[-1] - self.breaks_list[0]))
-        qp.drawLine(self.communication_ulx - 5, self.breaks_list[0] + limit_y * (self.breaks_list[-1] - self.breaks_list[
-                    0]), self.communication_ulx + 5, self.breaks_list[0] + limit_y * (self.breaks_list[-1] - self.breaks_list[0]))
+     
 
         qp.setBrush(QtGui.QColor('#009900'))
         qp.setPen(self.green_pen)
@@ -176,7 +165,7 @@ class WScheduler (QtWidgets.QWidget):
                 if this_interval[1] != 0:
                     uly_up = self.breaks_list[0] + this_interval[0]
                     uly_down = self.breaks_list[0] + this_interval[1]
-                    this_x = self.tracking_ulx if this_task == 'track' else self.communication_ulx
+                    this_x = self.tracking_ulx 
                     this_rect = QtCore.QRect(this_x - 15, uly_up, 30, uly_down - uly_up)
                     qp.drawRect(this_rect)
 

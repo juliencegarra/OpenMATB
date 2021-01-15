@@ -14,7 +14,7 @@ class Task(QtWidgets.QWidget):
             'title': 'System monitoring',
             'taskplacement': 'topleft',
             'taskupdatetime': 200,
-            'alerttimeout': 10000,
+            'alerttimeout': 5000,
             'automaticsolver': False,
             'automaticsolverdelay': 1 * 1000,
             'displayautomationstate': False,
@@ -32,20 +32,17 @@ class Task(QtWidgets.QWidget):
                                        'color': '#ff0000',
                                        'duration': 1.5 * 1000,
                                        'trigger': 0}},
-            'lights': {
-                '1': {'name': 'F5', 'failure': False, 'on': True, 'default':
-                      'on', 'oncolor': "#009900", 'keys': [QtCore.Qt.Key_F5]},
-                '2': {'name': 'F6', 'failure': False, 'on': False, 'default':
-                      'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_F6]}
-                      },
-            'scales': {'1': {'name': 'F1', 'failure': 'no', 'keys':
-                             [QtCore.Qt.Key_F1]},
-                       '2': {'name': 'F2', 'failure': 'no', 'keys':
-                             [QtCore.Qt.Key_F2]},
-                       '3': {'name': 'F3', 'failure': 'no', 'keys':
-                             [QtCore.Qt.Key_F3]},
-                       '4': {'name': 'F4', 'failure': 'no', 'keys':
-                             [QtCore.Qt.Key_F4]}}
+            'lights': {},
+            'scales': {
+                       '1': {'name': 'F5', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F5]},
+                       '2': {'name': 'F6', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F6]},
+                       '3': {'name': 'F7', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F7]},
+                       '4': {'name': 'F8', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F8]}
+                       }
             }
 
         self.performance = {
@@ -97,7 +94,7 @@ class Task(QtWidgets.QWidget):
             # Set a WLight Qt object
             lightValues['ui'] = WLight.WLight(self, lightValues['on'],
                                               lightValues['oncolor'],
-                                              lightValues['name'], index)
+                                              lightValues['name'], index, lightValues['sound_file'])
 
             lightValues['ui'].show()  # Show the WLight Qt object
 
@@ -343,3 +340,4 @@ class Task(QtWidgets.QWidget):
     def buildLog(self, thisList):
         thisList = ["SYSMON"] + thisList
         self.parent().mainLog.addLine(thisList)
+

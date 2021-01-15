@@ -1,0 +1,87 @@
+# Scenario template
+# Durations are expressed in milliseconds
+
+# 1. Set tasks parameters
+
+
+# 1.a. System monitoring parameters
+
+0:00:00;sysmon;alerttimeout;5000
+#Alert timeout in milliseconds
+
+0:00:00;sysmon;scales-1-name;TEMP1
+0:00:00;sysmon;scales-2-name;PRES1
+0:00:00;sysmon;scales-3-name;TEMP2
+0:00:00;sysmon;scales-4-name;PRES2
+
+0:00:00;sysmon;feedbackduration;1500
+
+# 1.c. Tracking parameters
+
+0:00:00;track;cursorcolor;#009900
+0:00:00;track;targetradius;0.25
+0:00:00;track;joystickforce;0.02
+0:00:00;track;cutofffrequency;0.2
+0:00:00;track;taskupdatetime;1
+
+
+
+# 2. Start appropriate tasks
+
+0:00:00;track;start
+0:00:00;sysmon;start
+0:00:00;sysmon_right;start
+0:00:00;sysmon_left;start
+0:00:00;scheduling;start
+
+
+# 3. Set scenario events
+
+# Retrieve participant information :
+
+0:00:00;participantinfo;start
+0:00:00;genericscales;filename;Questionnaire_ihm.txt
+0:00:00;genericscales;start
+
+####Not Required In Training Session
+
+#Set instruction
+#0:00:00;instruction;filename;I_ihm.txt
+#0:00:00;instruction;start
+
+#"Instruction" function didn't work properly for now
+
+# 3.a. System monitoring events
+
+0:00:12;sysmon;scales-1-failure;down
+0:00:14;sysmon;scales-2-failure;up
+0:00:16;sysmon;scales-3-failure;down
+0:00:18;sysmon;scales-4-failure;up
+
+0:00:20;sysmon_left;lights-1-failure;True
+0:00:26;sysmon_left;lights-2-failure;True
+0:00:32;sysmon_right;lights-3-failure;True
+0:00:48;sysmon_right;lights-4-failure;True
+
+
+
+# 3.c. Tracking events
+
+0:00:10;track;automaticsolver;True
+
+
+
+
+
+# 4. End tasks at 10 minutes
+
+0:01:00;track;stop
+0:01:00;sysmon;stop
+0:01:00;scheduling;stop
+0:01:00;sysmon_right;stop
+0:01:00;sysmon_left;stop
+
+
+
+0:01:01;end
+

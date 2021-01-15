@@ -10,7 +10,7 @@ class Task(QtWidgets.QWidget):
 
         # PUMPSTATUS PARAMETERS ###
         self.parameters = {
-            'taskplacement': 'bottomright',
+            'taskplacement': 'bottomleft',
             'taskupdatetime': 1000,
             'title': 'Pump status'
         }
