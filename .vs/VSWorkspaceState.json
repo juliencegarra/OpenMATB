@@ -4,9 +4,10 @@
     "\\animations",
     "\\Helpers",
     "\\Plugins",
+    "\\Scales",
     "\\Scenarios",
     "\\Scenario_generation"
   ],
-  "SelectedNode": "\\OpenMATB.py",
+  "SelectedNode": "\\animations\\CongruentOrNot_pySide.py",
   "PreviewInSolutionExplorer": false
 }

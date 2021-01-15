@@ -1,16 +1,16 @@
 0:00:00;track;targetradius;0.30
 0:00:00;track;cutofffrequency;0.4
 
-0:00:00;sysmon_right;lights-1-oncolor;#FF0000
-0:00:00;sysmon_right;lights-2-oncolor;#FF0000
-0:00:00;sysmon_left;lights-1-oncolor;#FF0000
-0:00:00;sysmon_left;lights-2-oncolor;#FF0000
+0:00:00;sysmon_right;lights-1-oncolor;#00FF00
+0:00:00;sysmon_right;lights-2-oncolor;#00FF00
+0:00:00;sysmon_left;lights-1-oncolor;#00FF00
+0:00:00;sysmon_left;lights-2-oncolor;#00FF00
 
 0:00:05;track;automaticsolver;False
-0:00:21;sysmon_left;lights-1-failure;True
-0:00:38;sysmon_left;lights-2-failure;True
-0:00:17;sysmon_right;lights-2-failure;True
-0:00:13;sysmon_left;lights-1-failure;True
+0:00:34;sysmon_left;lights-1-failure;True
+0:00:30;sysmon_left;lights-2-failure;True
+0:01:10;sysmon_left;lights-2-failure;True
+0:00:12;sysmon_right;lights-1-failure;True
 
 0:00:00;track;start
 0:00:00;sysmon;start

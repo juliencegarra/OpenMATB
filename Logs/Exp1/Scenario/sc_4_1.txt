@@ -7,10 +7,10 @@
 0:00:00;sysmon_left;lights-2-oncolor;#FF0000
 
 0:00:05;track;automaticsolver;False
-0:00:21;sysmon_left;lights-1-failure;True
-0:00:38;sysmon_left;lights-2-failure;True
-0:00:17;sysmon_right;lights-2-failure;True
-0:00:13;sysmon_left;lights-1-failure;True
+0:01:24;sysmon_left;lights-1-failure;True
+0:00:50;sysmon_right;lights-2-failure;True
+0:00:28;sysmon_right;lights-2-failure;True
+0:00:31;sysmon_right;lights-2-failure;True
 
 0:00:00;track;start
 0:00:00;sysmon;start

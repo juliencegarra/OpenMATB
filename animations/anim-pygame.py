@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     #audio
     channel = None
-    sound_file = "../Sounds/alarms/al1.wav"
+    sound_file = "C:/Users/zmdgd/source/repos/OpenMATB/Sounds/alarms/al1.wav"
     sound = pygame.mixer.Sound(os.path.abspath(sound_file))
 
     #build UI
