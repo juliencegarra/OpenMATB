@@ -144,27 +144,27 @@ class Main(QtWidgets.QMainWindow):
                            'control_width': self.screen_width},
 
             'topleft': {'control_top': 0, 'control_left': 0, 'control_height': self.screen_height / 2,
-                        'control_width': self.screen_width * (7.0 / 20.1)},
+                        'control_width': self.screen_width * (5.0 / 20.1)},
 
             'topmid': {'control_top': 0, 'control_left': self.screen_width * (
-                    5.9 / 20.1), 'control_height': self.screen_height / 2,
-                       'control_width': self.screen_width * (10.7 / 20.1)},
+                    4.9 / 20.1), 'control_height': self.screen_height / 2,
+                       'control_width': self.screen_width * (10.2 / 20.1)},
 
-            'topright': {'control_top': 0, 'control_left': self.screen_width * (5.9 / 20.1) + self.screen_width * (
-                    10.6 / 20.1), 'control_height': self.screen_height / 2,
-                         'control_width': self.screen_width * (3.6 / 20.1)},
+            'topright': {'control_top': 0, 'control_left': self.screen_width * (4.9 / 20.1) + self.screen_width * (
+                    10.1 / 20.1), 'control_height': self.screen_height / 2,
+                         'control_width': self.screen_width * (5.0 / 20.1)},
 
             'bottomleft': {'control_top': self.screen_height / 2, 'control_left': 0, 'control_height':
-                self.screen_height / 2, 'control_width': self.screen_width * (5.9 / 20.1)},
+                self.screen_height / 2, 'control_width': self.screen_width * (5.5 / 20.1)},
 
             'bottommid': {'control_top': self.screen_height / 2, 'control_left': self.screen_width * (
-                    5.9 / 20.1), 'control_height': self.screen_height / 2,
-                          'control_width': self.screen_width * (8.4 / 20.1)},
+                    5.5 / 20.1), 'control_height': self.screen_height / 2,
+                          'control_width': self.screen_width * (10.7 / 20.1)},
 
-            'bottomright': {'control_top': self.screen_height / 2, 'control_left': self.screen_width * (5.9 / 20.1) +
-                                                                                   self.screen_width * (8.3 / 20.1),
+            'bottomright': {'control_top': self.screen_height / 2, 'control_left': self.screen_width * (5.5 / 20.1) +
+                                                                                   self.screen_width * (10.7 / 20.1),
                             'control_height': self.screen_height / 2,
-                            'control_width': self.screen_width * (5.9 / 20.1)}
+                            'control_width': self.screen_width * (3.9 / 20.1)}
         }
 
         # Turn off Caps Lock and on Num Lock (for resman)... if possible (only Windows until now)

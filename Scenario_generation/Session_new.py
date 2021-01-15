@@ -1,6 +1,6 @@
 import random,os
 
-modules = ['track','sysmon','sysmon_right','sysmon_left','scheduling']
+modules = ['track','resman','sysmon_right','sysmon_left','scheduling','pumpstatus']
 
 wl = [['track;targetradius;0.30','track;cutofffrequency;0.2'],
       ['track;targetradius;0.30','track;cutofffrequency;0.4']

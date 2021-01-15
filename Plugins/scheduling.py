@@ -11,7 +11,7 @@ class Task(QtWidgets.QWidget):
         # SCHEDULING PARAMETERS ###
         self.parameters = {
             'title': 'Scheduling',
-            'taskplacement': "topright",
+            'taskplacement': "bottomright",
             'taskupdatetime': 1000
         }
 

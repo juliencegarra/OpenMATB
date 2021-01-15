@@ -34,14 +34,14 @@ class Task(QtWidgets.QWidget):
                                        'trigger': 0}},
             'lights': {},
             'scales': {
-                       '1': {'name': 'F1', 'failure': 'no', 'keys':
-                             [QtCore.Qt.Key_F1]},
-                       '2': {'name': 'F2', 'failure': 'no', 'keys':
-                             [QtCore.Qt.Key_F2]},
-                       '3': {'name': 'F3', 'failure': 'no', 'keys':
-                             [QtCore.Qt.Key_F3]},
-                       '4': {'name': 'F4', 'failure': 'no', 'keys':
-                             [QtCore.Qt.Key_F4]}
+                       '1': {'name': 'F5', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F5]},
+                       '2': {'name': 'F6', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F6]},
+                       '3': {'name': 'F7', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F7]},
+                       '4': {'name': 'F8', 'failure': 'no', 'keys':
+                             [QtCore.Qt.Key_F8]}
                        }
             }
 

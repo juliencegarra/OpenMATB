@@ -12,7 +12,7 @@ class Task(QtWidgets.QWidget):
         # SYSMON PARAMETERS ###
         self.parameters = {
             'title': 'System monitoring',
-            'taskplacement': 'bottomleft',
+            'taskplacement': 'topleft',
             'taskupdatetime': 20,
             'alerttimeout': 5000,
             'automaticsolver': False,
@@ -33,11 +33,11 @@ class Task(QtWidgets.QWidget):
                                        'duration': 1.5 * 1000,
                                        'trigger': 0}},
             'lights': {
-                '1': {'name': '1', 'failure': False, 'on': False, 'default':
-                      'off', 'oncolor': "#FFFF00", 'keys': [QtCore.Qt.Key_1], "sound_file": "Sounds/alarms/bip2-left-master.wav"
+                '1': {'name': 'F1', 'failure': False, 'on': False, 'default':
+                      'off', 'oncolor': "#FFFF00", 'keys': [QtCore.Qt.Key_F1], "sound_file": "Sounds/alarms/bip2-left-master.wav"
                       },
-                '2': {'name': '2', 'failure': False, 'on': False, 'default':
-                      'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_2], "sound_file": "Sounds/alarms/bip2-left-master.wav"}
+                '2': {'name': 'F2', 'failure': False, 'on': False, 'default':
+                      'off', 'oncolor': "#FF0000", 'keys': [QtCore.Qt.Key_F1], "sound_file": "Sounds/alarms/bip2-left-master.wav"}
                       },
             'scales': {}
             }

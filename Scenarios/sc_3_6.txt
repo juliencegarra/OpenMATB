@@ -7,20 +7,22 @@
 0:00:00;sysmon_left;lights-2-oncolor;#00FF00
 
 0:00:05;track;automaticsolver;False
-0:00:53;sysmon_right;lights-2-failure;True
-0:00:24;sysmon_left;lights-1-failure;True
-0:01:30;sysmon_right;lights-1-failure;True
-0:01:00;sysmon_right;lights-1-failure;True
+0:01:27;sysmon_right;lights-1-failure;True
+0:01:00;sysmon_left;lights-1-failure;True
+0:00:51;sysmon_left;lights-2-failure;True
+0:01:31;sysmon_left;lights-2-failure;True
 
 0:00:00;track;start
-0:00:00;sysmon;start
+0:00:00;resman;start
 0:00:00;sysmon_right;start
 0:00:00;sysmon_left;start
 0:00:00;scheduling;start
+0:00:00;pumpstatus;start
 
 0:01:40;track;stop
-0:01:40;sysmon;stop
+0:01:40;resman;stop
 0:01:40;sysmon_right;stop
 0:01:40;sysmon_left;stop
 0:01:40;scheduling;stop
+0:01:40;pumpstatus;stop
 0:01:41;end

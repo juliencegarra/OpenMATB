@@ -1,13 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\animations",
-    "\\Helpers",
     "\\Plugins",
-    "\\Scales",
     "\\Scenarios",
     "\\Scenario_generation"
   ],
-  "SelectedNode": "\\animations\\CongruentOrNot_pySide.py",
+  "SelectedNode": "\\Scenarios\\scenario_template.txt",
   "PreviewInSolutionExplorer": false
 }
