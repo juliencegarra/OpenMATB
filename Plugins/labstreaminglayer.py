@@ -2,8 +2,10 @@
 import time
 from random import random as rand
 try:
-    from pylsl import StreamInfo, StreamOutlet, StreamInlet, resolve_stream
+    # Could fail if pylsl is not available.
+    from pylsl import StreamInfo, StreamOutlet
 except:
+    # Continue in case of failure. If the plugin is not used, that's not a problem.
     pass
 
 class Task(QtWidgets.QWidget):
@@ -12,26 +14,37 @@ class Task(QtWidgets.QWidget):
         super(Task, self).__init__(parent)
 
         self.parameters = {
-        'taskupdatetime' : 10,
+            'title' : 'Lab Streaming Layer',
+            # The onUpdate function should be called approximatively every 10 ms.
+            'taskupdatetime' : 10,
+            'marker' : '',
         }
 
-        self.info = None
-        self.outlet = None
+        self.stream_info = None
+        self.stream_outlet = None
 
     def onStart(self):
-        try:
-            log_info = StreamInfo('LogStream', 'Markers', 1, 0, 'string', 'myuidw43536')
-            self.info_outlet = StreamOutlet(log_info)
-        except:
-            pass
+        # If we get there it's because the plugin is used.
+        # If pylsl is not available this part should fail.
+        # Create a LSL marker outlet.
+        self.stream_info = StreamInfo('openMATB', type='Markers', channel_count=1, nominal_srate=0, channel_format='string', source_id='myuidw435368')
+        self.stream_outlet = StreamOutlet(self.stream_info)
 
     def onUpdate(self):
-        pass
+        if self.parameters['marker'] != '':
+            # A marker has been set. Push it to the outlet.
+            self.pushMarker(self.parameters['marker'])
+            # Reset the marker to empty.
+            self.parameters['marker'] = ''
 
     def onStop(self):
-        pass
+        self.stream_info = None
+        self.stream_outlet = None
 
-    def onLog(self, chain):
-#        print chain
-        if hasattr(self, 'info_outlet'):
-            self.info_outlet.push_sample([chain])
+    def pushMarker(self, marker):
+        self.stream_outlet.push_sample([marker])
+        self.buildLog(['MARKER', marker])
+
+    def buildLog(self, thisList):
+        thisList = ["LABSTREAMINGLAYER"] + thisList
+        self.parent().mainLog.addLine(thisList)
