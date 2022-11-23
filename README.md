@@ -1,3 +1,8 @@
+**Important!**
+
+<a href="https://sources.univ-jfc.fr/bvaler01/openmatb">We have migrated the development of OpenMATB to gitlab</a>
+
+<br/>
 
 <h1>OpenMATB: An open-source version of the Multi-Attribute Task Battery (MATB)</h1>
 
