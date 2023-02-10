@@ -1,0 +1,10 @@
+# This is an instructions template
+
+# There are several commands that you might use to adapt the questionnaire to your needs.
+#   The <title> command will display a title
+#   The <newpage> command will split the questionnaire into multiple parts
+# If you need to change the title
+
+<title>Présentation des tâches
+
+Dans la tâche de communication, il s'agit pour le participant de répondre à des instructions sonores quant aux fréquences de ses radios. Certains messages s'adressent à lui (son indicatif), mais il doit ignorer les autres messages (autre indicatif).

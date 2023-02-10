@@ -1,0 +1,4 @@
+pyglet==1.5.26
+PyMsgBox==1.0.9
+rstr==3.1.0
+pyparallel==0.2.2

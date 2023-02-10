@@ -1,0 +1,125 @@
+# Replication of Parasuraman, Molloy and Singh (1993)
+# This experiment aims at investigating the performance consequences of automation-induced complacency
+# Example of a low-reliability block (10 minutes, with 87.5% or 14 of 16 malfuctions detected)
+
+# Durations are expressed in milliseconds
+
+# 1. Set tasks parameters
+
+# 1.a. System monitoring parameters
+
+0:00:00;sysmon;scales-1-name;TEMP1
+0:00:00;sysmon;scales-2-name;PRES1
+0:00:00;sysmon;scales-3-name;TEMP2
+0:00:00;sysmon;scales-4-name;PRES2
+0:00:00;sysmon;lights-1-name;OK
+0:00:00;sysmon;lights-2-name;WARNING
+0:00:00;sysmon;automaticsolverdelay;4000
+0:00:00;sysmon;feedbackduration;1500
+0:00:00;sysmon;alerttimeout;10000
+
+
+# 1.b.i. Resources management parameters
+# Empty (default parameters used)
+
+
+# 1.b.ii. Pumps status parameters
+# Empty (default parameters used)
+
+
+# 1.c. Tracking parameters
+
+0:00:00;track;cursorcolor;#009900
+0:00:00;track;cutofffrequency;0.06
+0:00:00;track;equalproportions;False
+
+
+# 2. Start appropriate tasks
+
+0:00:00;resman;start
+0:00:00;track;start
+0:00:00;sysmon;start
+
+
+# 3. Set scenario events
+
+# 3.a. System monitoring events (16 system malfunctions : example of a high-reliability block [87.5% of automatic resolving])
+# Warning light onset during automatic solving is managed explicitly
+
+0:00:30;sysmon;scales-2-failure;up
+0:00:30;sysmon;automaticsolver;True
+0:00:30;sysmon;lights-2-on;True
+
+0:01:10;sysmon;scales-3-failure;down
+0:01:10;sysmon;automaticsolver;True
+0:01:10;sysmon;lights-2-on;True
+
+0:01:42;sysmon;scales-1-failure;up
+0:01:42;sysmon;automaticsolver;True
+0:01:42;sysmon;lights-2-on;True
+
+0:02:00;sysmon;scales-1-failure;up
+0:02:00;sysmon;automaticsolver;True
+0:02:00;sysmon;lights-2-on;True
+
+0:02:47;sysmon;scales-2-failure;down
+0:02:47;sysmon;automaticsolver;True
+0:02:47;sysmon;lights-2-on;True
+
+0:03:26;sysmon;scales-4-failure;down
+0:03:26;sysmon;automaticsolver;True
+0:03:26;sysmon;lights-2-on;True
+
+0:04:10;sysmon;scales-2-failure;up
+0:04:10;sysmon;automaticsolver;False
+0:04:10;sysmon;lights-2-on;False
+
+0:04:38;sysmon;scales-4-failure;down
+0:04:38;sysmon;automaticsolver;True
+0:04:38;sysmon;lights-2-on;True
+
+0:05:25;sysmon;scales-1-failure;down
+0:05:25;sysmon;automaticsolver;True
+0:05:25;sysmon;lights-2-on;True
+
+0:06:12;sysmon;scales-2-failure;up
+0:06:12;sysmon;automaticsolver;False
+0:06:12;sysmon;lights-2-on;False
+
+0:06:55;sysmon;scales-3-failure;up
+0:06:55;sysmon;automaticsolver;True
+0:06:55;sysmon;lights-2-on;True
+
+0:07:14;sysmon;scales-1-failure;down
+0:07:14;sysmon;automaticsolver;True
+0:07:14;sysmon;lights-2-on;True
+
+0:07:55;sysmon;scales-2-failure;up
+0:07:55;sysmon;automaticsolver;True
+0:07:55;sysmon;lights-2-on;True
+
+0:08:17;sysmon;scales-1-failure;down
+0:08:17;sysmon;automaticsolver;False
+0:08:17;sysmon;lights-2-on;False
+
+0:08:45;sysmon;scales-4-failure;down
+0:08:45;sysmon;automaticsolver;True
+0:08:45;sysmon;lights-2-on;True
+
+0:09:40;sysmon;scales-1-failure;up
+0:09:40;sysmon;automaticsolver;True
+0:09:40;sysmon;lights-2-on;True
+
+# 3.b. Resources management events
+# Empty
+
+
+# 3.c. Tracking events
+# Empty
+
+
+# 4. End tasks at 10 minutes
+
+0:10:00;resman;stop
+0:10:00;track;stop
+0:10:00;sysmon;stop
