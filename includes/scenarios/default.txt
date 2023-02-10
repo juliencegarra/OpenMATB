@@ -1,0 +1,93 @@
+# Scénario de démonstration du OpenMATB
+
+# Message d'accueil
+0:00:00;instructions;filename;default/welcome_screen.txt
+0:00:00;instructions;start
+
+# Visionnage de l'environnement complet pendant dix secondes
+0:00:00;sysmon;start
+0:00:00;track;start
+0:00:00;scheduling;start
+0:00:00;resman;start
+0:00:00;communications;start
+
+# Présentation du sysmon
+0:00:10;resman;hide
+0:00:10;resman;pause
+0:00:10;track;hide
+0:00:10;track;pause
+0:00:10;scheduling;hide
+0:00:10;scheduling;pause
+0:00:10;communications;hide
+0:00:10;communications;pause
+0:00:10;instructions;filename;default/sysmon.txt
+0:00:10;instructions;start
+
+
+# Dans le Sysmon, apparition de deux erreurs, sur dix secondes
+0:00:15;sysmon;scales-1-failure;True
+0:00:20;sysmon;lights-1-failure;True
+
+
+# Présentation de la Poursuite
+0:00:25;track;show
+0:00:25;track;resume
+0:00:25;sysmon;hide
+0:00:25;sysmon;pause
+0:00:25;instructions;filename;default/track.txt
+0:00:25;instructions;start
+
+
+# Présentation de la tâche de Communication
+0:00:45;communications;show
+0:00:45;communications;resume
+0:00:45;track;hide
+0:00:45;track;pause
+0:00:45;instructions;filename;default/communications.txt
+0:00:45;instructions;start
+
+0:00:48;communications;radioprompt;own
+
+# Présentation du Resman
+0:01:05;resman;show
+0:01:05;resman;resume
+0:01:05;communications;hide
+0:01:05;communications;pause
+0:01:05;instructions;filename;default/resman.txt
+0:01:05;instructions;start
+
+0:01:10;resman;pump-1-state;failure
+
+# Présentation du planificateur
+0:01:35;resman;hide
+0:01:35;scheduling;show
+0:01:35;sysmon;resume
+0:01:35;track;resume
+0:01:35;communications;resume
+0:01:40;sysmon;automaticsolver;true
+
+
+0:01:35;scheduling;resume
+0:01:35;instructions;filename;default/scheduling.txt
+0:01:35;instructions;start
+
+0:01:45;sysmon;show
+0:01:45;track;show
+0:01:45;communications;show
+0:01:45;resman;show
+0:01:45;instructions;filename;default/full.txt
+0:01:45;instructions;start
+0:01:55;sysmon;automaticsolver;false
+
+0:01:55;resman;pump-1-state;off
+0:01:55;sysmon;lights-2-failure;true
+0:02:00;communications;radioprompt;own
+0:02:05;resman;pump-6-state;failure
+0:02:10;sysmon;scales-3-failure;true
+
+
+0:02:30;sysmon;stop
+0:02:30;track;stop
+0:02:30;communications;stop
+0:02:30;resman;stop
+0:02:30;scheduling;stop
