@@ -30,6 +30,8 @@ To run perfectly, the software requires only a personal computer and a joystick 
 
 ## Installation
 
+The first thing to do is to install the correct version (3.9) of `python` on your computer.
+
 ### Cross-platform installation
 
 To execute OpenMATB on most platforms, simply to clone the current repository to a given local folder, and execute the `main.py` file with python 3.9.
@@ -45,10 +47,9 @@ python -m pip install -r requirements.txt
 ```
 
 
-
 ### In a virtual environment
 
-If you want to create a dedicated python installation, you might want to install a virtual environment in your local repository. To to so, follow the instructions detailed on this [related page](https://docs.python.org/3.9/tutorial/venv.html).
+If you want to create a dedicated python installation, you might want to install a virtual environment in your local repository. To do so, follow the instructions detailed on this [related page](https://docs.python.org/3.9/tutorial/venv.html).
 
 **Warning:** be sure to create the virtual environment into a directory named `.venv`. If you want to use an other name, make sure to change the `main.py` [shebang](https://docs.python.org/3.9/tutorial/appendix.html#tut-scripts) (`#! .venv/bin/python3.9`) that allows its direct execution with the distribution installed in the virtual environment.
 
@@ -60,16 +61,16 @@ Once the virtual environment is set, you must activate it to installe the requir
 Now that your virtual environment is activated, just install the dependencies as you would do for a "normal" python distribtion.
 
 ```bash
-python -m pip -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 Finally, you can simply execute the `main.py`. Two possibilities here :
 
 1. You can activate the OpenMATB virtual environment and type `python main.py` in the shell;
-2. Or you can execute `main.py` and let the shebang find the virtual distribution for you. In that case, (a) no need to activate the virtual environment, (b) be sure that you made the `main.py` file executable.
+2. Or you can execute `main.py` and let the shebang finds the virtual distribution for you. In that case, (a) no need to activate the virtual environment, (b) be sure that you made the `main.py` file executable.
 
 
-### Use of compiled source
+### Use of compiled source (coming soon)
 
 If you don't mind not seeing all the source files, you might want to use compiled versions of the software. The good thing here is that you don't have to install neither python nor its dependencies to make OpenMATB working.
 
@@ -83,7 +84,7 @@ If you don't mind not seeing all the source files, you might want to use compile
 
 When executed, the main file basically inspects the `config.ini` variables, that are `language`**, `screen_index`, `fullscreen`, `scenario_path` and `clock_speed`. The most important is the `scenario_path` variable because it defines what scenario textfile should be used for the sequencing and the setting of the protocol. 
 
-(**For now, french (fr_FR) and english (en_EN) locales are avaible, but feel free to [develop your own translation](https://github.com/juliencegarra/OpenMATB/wiki/Internationalization), it's fast and easy.)
+(**For now, french (fr_FR) and english (en_EN) locales are available, but feel free to [develop your own translation](https://github.com/juliencegarra/OpenMATB/wiki/Internationalization), it's fast and easy.)
 
 A scenario is a text file which specifies, for each module of the program (for instance the system monitoring task), all the events that it must execute, as well as their onset time. For instance, try this basic scenario, which starts the four main tasks of the MATB, and stop them after 2 minutes and a half. (Note how each command — `start` and `stop` in this example — is associated with an alias: for instance `sysmon` for the system monitoring task.)
 
@@ -176,7 +177,7 @@ OpenMATB is covered by a GPL v3 license to promote exchange between researchers,
 ## Tutorials
 
 <ul>
-<li><a href="https://sources.univ-jfc.fr/bvaler01/openmatb/-/wikis/How-to-build-a-scenario-file">How to build a scenario file</a></li>
+<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/How-to-build-a-scenario-file">How to build a scenario file</a></li>
 <li><a href="https://github.com/juliencegarra/OpenMATB/wiki/List-of-task-parameters">List of available parameters in the scenario files</a></li>
 <li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Internationalization">How to add a new translation</a></li>
 <li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Write-a-questionnaire">How to add custom rating scales</a></li>
@@ -185,12 +186,3 @@ OpenMATB is covered by a GPL v3 license to promote exchange between researchers,
 <li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Technical-documentation">Misc technical aspects (in progress)</a></li>
 
 </ul>
-
-
-
-
-
-
-
-
-
