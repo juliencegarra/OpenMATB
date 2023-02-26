@@ -21,24 +21,20 @@ class Communications(AbstractPlugin):
         
         # Callsign regex must be defined first because it is needed by self.get_callsign()
         self.parameters['callsignregex']='[A-Z][A-Z][A-Z]\d\d\d'
-        new_par = dict(owncallsign=self.get_callsign(), othercallsign=list(), othercallsignnumber=5, 
+        self.old_regex = str(self.parameters['callsignregex'])
+        new_par = dict(owncallsign=str(), othercallsign=list(), othercallsignnumber=5, 
                        airbandminMhz=108.0, airbandmaxMhz=137.0, airbandminvariationMhz=5, 
                        airbandmaxvariationMhz=6, voicegender='female', voiceidiom='french',
                        radioprompt=str(), maxresponsedelay=20000, 
                        promptlist=['NAV_1', 'NAV_2', 'COM_1', 'COM_2'], automaticsolver=False, 
                        displayautomationstate=True, feedbackduration=1500,
-                       
                        feedbacks=dict(positive=dict(active=False, color=C['GREEN']),
                                       negative=dict(active=False, color=C['RED'])))
                                       
         self.parameters.update(new_par)
-        
-        for i in range(self.parameters['othercallsignnumber']):
-            this_callsign = self.get_callsign()
-            while this_callsign in [self.parameters['owncallsign']] + \
-                                    self.parameters['othercallsign']:
-                this_callsign = self.get_callsign()
-            self.parameters['othercallsign'].append(this_callsign)
+        self.regenerate_callsigns()
+
+
         
         # Handle OWN radios information       
         self.parameters['radios'] = dict()
@@ -64,6 +60,16 @@ class Communications(AbstractPlugin):
         self.player = Player()
         self.automode_position = (0.5, 0.2)
     
+
+    def regenerate_callsigns(self):
+        self.parameters['owncallsign'] = self.get_callsign()
+        for i in range(self.parameters['othercallsignnumber']):
+            this_callsign = self.get_callsign()
+            while this_callsign in [self.parameters['owncallsign']] + \
+                                    self.parameters['othercallsign']:
+                this_callsign = self.get_callsign()
+            self.parameters['othercallsign'].append(this_callsign)
+
     
     def create_widgets(self):
         super().create_widgets()
@@ -214,6 +220,10 @@ class Communications(AbstractPlugin):
     def compute_next_plugin_state(self):
         if super().compute_next_plugin_state() == 0:
             return
+
+        if self.parameters['callsignregex'] != self.old_regex:
+            self.regenerate_callsigns()
+            self.old_regex = str(self.parameters['callsignregex'])
         
         if self.parameters['radioprompt'].lower() in ['own', 'other']:
             while True:
@@ -285,6 +295,8 @@ class Communications(AbstractPlugin):
     def refresh_widgets(self):
         if super().refresh_widgets() == 0:
             return
+
+        self.widgets['communications_callsign'].set_text(self.parameters['owncallsign'])
         
         # Move arrow to active radio
         for _, radio in self.parameters['radios'].items():
