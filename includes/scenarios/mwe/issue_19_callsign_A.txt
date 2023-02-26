@@ -1,0 +1,24 @@
+# Issue 19 @thomakl
+# > I would like to set my owncallsign in the Communications plugin with this instruction :
+# > 0:00:00;communications;owncallsign;ENSC23
+# > or
+# > 0:00:00;communications;callsignregex;ENSC\d\d
+# > However, it seems to work and it generates its own call sign anyway.
+
+# 1. Set tasks parameters
+# 1.d. Communications parameters
+# Change the callsign format, the number of distractive callsigns, the voice gender and idiom
+0:00:00;communications;owncallsign;Default
+
+# 2. Start appropriate tasks
+0:00:00;communications;start
+0:00:01;communications;owncallsign;ENSC23
+
+# 3.d. Communications events
+# /!\ Be careful to let sufficient time during two prompts to avoid sound overlaping
+# Schedule some radio prompts
+0:00:10;communications;radioprompt;own
+0:00:30;communications;radioprompt;other
+
+# 4. End tasks at 1 minute
+0:01:00;communications;stop
