@@ -11,8 +11,8 @@ from core.constants import PATHS as P, COLORS as C
 
 
 class Communications(AbstractPlugin):
-    def __init__(self, taskplacement='bottomleft', taskupdatetime=80):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, window, taskplacement='bottomleft', taskupdatetime=80):
+        super().__init__(window, taskplacement, taskupdatetime)
         
         self.keys.extend(['UP', 'DOWN', 'RIGHT', 'LEFT', 'ENTER'])
         

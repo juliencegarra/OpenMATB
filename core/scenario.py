@@ -1,7 +1,8 @@
 import re
 from pyglet.window import key as winkey
 from core.constants import COLORS as C, PATHS as P
-from core.error import fatalerror
+from core import logger
+from core.dialog import fatalerror
 import plugins
 
 DEPRECATED = ['pumpstatus', 'end', 'cutofffrequency', 'equalproportions'] # Ignore these arguments
@@ -67,13 +68,15 @@ class Scenario:
     and checks that some criteria are met (e.g., acceptable values)
     '''
 
-    def __init__(self, scenario_path):
+    def __init__(self, scenario_path, window):
         if scenario_path.exists():
             contents = open(scenario_path, 'r').readlines()
         else:
             fatalerror(_('%s was not found') % str(scenario_path))
 
         self.path = scenario_path
+        logger.log_manual_entry(self.path, key='scenario_path')
+
         # Convert the scenario file into a list of events #
         # (Squeeze empty and commented [#] lines)
         self.events = [Event.parse_from_string(line_n, line_str) for line_n, line_str
@@ -86,7 +89,7 @@ class Scenario:
             if not hasattr(globals()['plugins'], event.plugin.capitalize()):
                 fatalerror(_('Scenario error: %s is not a valid plugin name (l. %s)') % (event.plugin, event.line))
 
-        self.plugins = {name: getattr(globals()['plugins'], name.capitalize())()
+        self.plugins = {name: getattr(globals()['plugins'], name.capitalize())(window)
                         for name in self.get_plugins_name_list()}
 
 

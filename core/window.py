@@ -3,14 +3,15 @@ from pyglet.window import Window, key as winkey
 from pyglet.graphics import Batch
 from pyglet.gl import GL_POLYGON
 from pyglet.text import Label
-from pymsgbox import confirm, alert
+from core.dialog import Dialog
 from core import Container
 from core.constants import COLORS as C, FONT_SIZES as F, Group as G, PLUGIN_TITLE_HEIGHT_PROPORTION
 from core import logger
 import os
 
 class Window(Window):
-    def __init__(self, screen_index, fullscreen, replay_mode, highlight_aoi, *args, **kwargs):
+    def __init__(self, screen_index, fullscreen, replay_mode, highlight_aoi, hide_on_pause,
+                 *args, **kwargs):
 
         screens = get_display().get_screens()
         if screen_index + 1 > len(screens):
@@ -32,7 +33,7 @@ class Window(Window):
 
         self._fullscreen=fullscreen
 
-        super().__init__(fullscreen=self._fullscreen, width=self._width, height=self._height, *args, **kwargs)
+        super().__init__(fullscreen=self._fullscreen, width=self._width, height=self._height, vsync=True, *args, **kwargs)
 
         self.set_size_and_location() # Postpone multiple monitor support
         self.set_mouse_visible(replay_mode)
@@ -43,10 +44,12 @@ class Window(Window):
         self.replay_mode = replay_mode
         self.create_MATB_background()
         self.alive = True
-        self.was_prompting = False
+        self.modal_dialog = False
+        self.joystick_warning = False
 
         self.on_key_press_replay = None # used by the replay
         self.highlight_aoi = highlight_aoi
+        self.hide_on_pause = hide_on_pause
 
 
     def is_in_replay_mode(self):
@@ -86,14 +89,36 @@ class Window(Window):
 
 
     def on_draw(self):
+        if self.modal_dialog == True:
+            self.set_mouse_visible()
+        else:
+            self.set_mouse_visible(False)
+
+        if self.joystick_warning and not self.modal_dialog:
+            self.add_dialog('Joystick error', _('No joystick found'), 
+                            buttons=[_('Continue'), _('Exit')], exit_button=_('Exit'))
+            self.joystick_warning = False
+
         self.clear()
         self.batch.draw()
 
 
+    def is_modal_dialog_on(self):
+        return self.modal_dialogs > 0
+
+
     # Log any keyboard input, either plugins accept it or not
     def on_key_press(self, symbol, modifiers):
+        if self.modal_dialog == True:
+            return
+        
         keystr = winkey.symbol_string(symbol)
         self.keyboard[keystr] = True  # KeyStateHandler
+
+        if keystr == 'ESCAPE':
+            self.exit_prompt()
+        elif keystr == 'P':           
+            self.pause_prompt()
 
         if self.replay_mode:
             if self.on_key_press_replay != None:
@@ -104,49 +129,28 @@ class Window(Window):
 
 
     def on_key_release(self, symbol, modifiers):
+        if self.modal_dialog == True:
+            return
+
         keystr = winkey.symbol_string(symbol)        
-        self.keyboard[keystr] = False  # KeyStateHandler
-        
-        # For now, these events are waiting key release because waiting key press
-        # leads to miss the releasing of the key (pymsgbox blocking)
-        if keystr == 'ESCAPE':
-            if self.user_wants_to_quit():
-                self.exit()
-            else:
-                pass
-        
-        elif keystr == 'P':           
-            self.pause()
-        
+        self.keyboard[keystr] = False  # KeyStateHandler        
         logger.record_input('keyboard', keystr, 'release')
 
 
-    def user_wants_to_quit(self):
-        self.was_prompting = True
-        if self._fullscreen:
-            self.set_visible(False)
-
-        response = confirm(text=_('You pressed the Escape key.\nDo you want to quit?'), title=_('Exit OpenMATB?'), buttons=[_('Continue'), _('Quit')])
-
-        if self._fullscreen:
-            self.set_visible(True)
-
-        if response == _('Quit'):
-            return True
-        elif response == _('Continue'):
-            return False
+    def exit_prompt(self):
+        msg = _('You pressed the Escape key. Do you want to quit?')
+        self.add_dialog('Exit', msg, buttons=[_('Yes'), _('No')],
+               exit_button=_('Yes'), hide_background=self.hide_on_pause)
     
     
-    def pause(self):
-        self.was_prompting = True
-        if self._fullscreen:
-            self.set_visible(False)
+    def pause_prompt(self):
+        self.add_dialog('Pause', 'Pause', buttons=['Continuer'], title=None, 
+                        hide_background=self.hide_on_pause)
 
-        response = alert(text=_('Pause'), title=_('OpenMATB'), button=_('Continue'))
 
-        if self._fullscreen:
-            self.set_visible(True)
-            
+    def add_dialog(self, name, msg, buttons, **kwargs):
+        Dialog(self, name, msg, buttons, **kwargs)
+
 
     def exit(self):
         self.alive = False

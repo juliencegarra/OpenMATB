@@ -2,12 +2,13 @@ from math import sin, pi, ceil
 from pyglet.input import get_joysticks
 from plugins.abstract import AbstractPlugin
 from core.widgets import Reticle
+from core.dialog import Dialog
 from core import Container, Group as G, COLORS as C, FONT_SIZES as F
 
 
 class Track(AbstractPlugin):
-    def __init__(self, taskplacement='topmid', taskupdatetime=20, silent=False):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, window, taskplacement='topmid', taskupdatetime=20, silent=False):
+        super().__init__(window, taskplacement, taskupdatetime)
 
         new_par = dict(cursorcolor=C['BLACK'], cursorcoloroutside=C['RED'], automaticsolver=False,
                        displayautomationstate=True, targetproportion=0.25, joystickforce=1,
@@ -24,10 +25,6 @@ class Track(AbstractPlugin):
         self.joystick = None
         self.silent = silent
 
-    # We subclass the abstractplugin initialize() to check the joystick
-    def initialize(self, window):
-        super().initialize(window)
-
         if not self.win.replay_mode:
             joysticks = get_joysticks()
             if len(joysticks) > 0:
@@ -36,10 +33,10 @@ class Track(AbstractPlugin):
             else:
                 self.joystick = None
                 if self.silent == False:
-                    from core import errorchoice
-                    errorchoice(_('No joystick found'))
+                    self.win.joystick_warning = True
 
-
+        if self.joystick is not None:
+            self.joystick.push_handlers(self.win)
 
     def get_response_timers(self):
         return [self.response_time]

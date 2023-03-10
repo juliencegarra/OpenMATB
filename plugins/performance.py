@@ -4,8 +4,8 @@ from plugins.abstract import AbstractPlugin
 
 
 class Performance(AbstractPlugin):
-    def __init__(self, taskplacement='topright', taskupdatetime=50):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, window, taskplacement='topright', taskupdatetime=50):
+        super().__init__(window, taskplacement, taskupdatetime)
 
         new_par = dict(levelmin=0, levelmax=100, ticknumber=5, criticallevel=20,
                        shadowundercritical=True, defaultcolor=C['GREEN'], criticalcolor=C['RED'])

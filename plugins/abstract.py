@@ -1,4 +1,3 @@
-import pdb
 from pathlib import Path
 from pyglet.window import key as winkey
 from core.widgets import Simpletext, Frame
@@ -8,11 +7,11 @@ from core import Container, logger
 
 class AbstractPlugin:
     """Any plugin (or task) depends on this meta-class"""
-    def __init__(self, taskplacement='fullscreen', taskupdatetime=-1):
+    def __init__(self, window, taskplacement='fullscreen', taskupdatetime=-1):
 
         self.alias = self.__class__.__name__.lower()  #   A lower version of the plugin class name
         self.widgets = dict()                         #   To store the widget objects of a plugin
-        self.win = None                               #   The window to which the plugin is attached
+        self.win = window                             #   The window to which the plugin is attached
         self.container = None                         #   The visual area of the plugin (object)
         self.logger = logger
 
@@ -43,14 +42,14 @@ class AbstractPlugin:
         # Define minimal draw order depending on task placement
         self.m_draw = BFLIM if self.parameters['taskplacement'] == 'fullscreen' else 0
 
-
-    def initialize(self, window):
-        self.win = window
-
         if not self.win.is_in_replay_mode():
             self.win.push_handlers(self.on_key_press, self.on_key_release)
-            if hasattr(self, 'joystick') and getattr(self, 'joystick') is not None:
-                self.joystick.push_handlers(self.win)
+
+
+    # def initialize(self, window):
+        # self.win = window
+
+        
 
 
     def update(self, scenariotime):
@@ -104,8 +103,8 @@ class AbstractPlugin:
             if self.get_widget('foreground') is not None:
                 self.get_widget('foreground').show()
 
-        if self.win._mouse_visible == True:
-            self.win.set_mouse_visible(self.win.replay_mode)
+        # if self.win._mouse_visible == True:
+        #     self.win.set_mouse_visible(self.win.replay_mode)
 
 
     def pause(self):
@@ -374,8 +373,8 @@ class AbstractPlugin:
 
 
 class BlockingPlugin(AbstractPlugin):
-    def __init__(self, taskplacement='fullscreen', taskupdatetime=15):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, window, taskplacement='fullscreen', taskupdatetime=15):
+        super().__init__(window, taskplacement, taskupdatetime)
 
         new_par = dict(boldtitle=False)
         self.parameters.update(new_par)

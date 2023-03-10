@@ -6,8 +6,8 @@ from core import Container
 
 
 class Scheduling(AbstractPlugin):
-    def __init__(self, taskplacement='topright', taskupdatetime=1000):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, window, taskplacement='topright', taskupdatetime=1000):
+        super().__init__(window, taskplacement, taskupdatetime)
 
         self.parameters.update(dict(minduration=8,
                                displayedplugins=['sysmon', 'track', 'communications', 'resman']))
