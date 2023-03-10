@@ -5,8 +5,8 @@ from re import match as regex_match
 from os import linesep
 
 class Genericscales(BlockingPlugin):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, window):
+        super().__init__(window)
 
         self.folder = P['QUESTIONNAIRES']
         new_par = dict(filename=None, pointsize=0, maxdurationsec=0, 
