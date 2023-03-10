@@ -6,8 +6,8 @@ except:
     print("unable to import pylsl")
 
 class Labstreaminglayer(Instructions):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, window):
+        super().__init__(window)
 
         self.parameters.update({'marker':'', 'streamsession':False,
                                 'pauseatstart':False})
