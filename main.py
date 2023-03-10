@@ -21,13 +21,13 @@ language = gettext.translation('openmatb', LOCALE_PATH, [language_iso])
 language.install()
 
 # Only after language installation, import core modules (they must be translated)
-from core import Window, Scenario, Scheduler, fatalerror, errorchoice
+from core import Window, Scenario, Scheduler
 from core.constants import PATHS as P
-
+from core.dialog import fatalerror
 
 # Check if the specified font is available on the system
 if len(config['Openmatb']['font_name']) and not font.have_font(config['Openmatb']['font_name']):
-    errorchoice(_(f"In config.ini, the specified font (%s) is not available. If you continue, a default font will be used.") % config['Openmatb']['font_name'])
+    fatalerror(_(f"In config.ini, the specified font (%s) is not available. Correct it or leave it empty to use a default font.") % config['Openmatb']['font_name'])
 
 
 # Check the specified screen index. If null, set screen_index to 0.
@@ -39,39 +39,31 @@ else:
     except ValueError:
         fatalerror(_(f"In config.ini, screen index must be an integer, not %s") % config['Openmatb']['screen_index'])
 
-
-# Check the specified fullscreen value. If null, set to True
-if config['Openmatb']['fullscreen'].lower() in ['true', 'false']:
-    fullscreen = True if config['Openmatb']['fullscreen'].lower() == 'true' else False
-else:
-    errorchoice(_(f"In config.ini, the specified fullscreen mode must be a boolean (not %s). If you continue, fullscreen will be set to its default value (True)") % config['Openmatb']['fullscreen'])
-    fullscreen = True
-
-
-# Check the specified highlight_aoi value. If null, set to False
-if config['Openmatb']['highlight_aoi'].lower() in ['true', 'false']:
-    highlight_aoi = True if config['Openmatb']['highlight_aoi'].lower() == 'true' else False
-else:
-    errorchoice(_(f"In config.ini, the specified highlight_aoi value must be a boolean (not %s). If you continue, highlight_aoi will be set to its default value (False)") % config['Openmatb']['highlight_aoi'])
-    highlight_aoi = False
+# Check boolean values
+for param in ['fullscreen', 'highlight_aoi', 'hide_on_pause']:
+    if config['Openmatb'][param].lower() in ['true', 'false']:
+        if config['Openmatb']['fullscreen'].lower() == 'true':
+            globals()[param] = True
+        else:
+            globals()[param] = False
+    else:
+        fatalerror(_(f"In config.ini, [%s] parameter must be a boolean (true or false, not %s).") %           (param, config['Openmatb'][param]))
 
 
 class OpenMATB:
     def __init__(self):
-        scenario_path = P['SCENARIOS'].joinpath(config['Openmatb']['scenario_path'])
-        self.input_file = Scenario(scenario_path)
+        # The MATB window must be bordeless (in non-fullscreen mode)
+        window = Window(screen_index=screen_index, fullscreen=fullscreen,
+                        replay_mode=False, style=Window.WINDOW_STYLE_BORDERLESS,
+                        highlight_aoi=highlight_aoi, hide_on_pause=hide_on_pause)
 
-        # The MATB window must is bordeless (in non-fullscreen mode)
-        self.window = Window(screen_index=screen_index, fullscreen=fullscreen,
-                             replay_mode=False, style=Window.WINDOW_STYLE_BORDERLESS,
-                             highlight_aoi=highlight_aoi)
-        self.scheduler = Scheduler(self.input_file, self.window,
+        scenario_path = P['SCENARIOS'].joinpath(config['Openmatb']['scenario_path'])
+        scenario = Scenario(scenario_path, window)
+
+        self.scheduler = Scheduler(scenario.events, scenario.plugins, window,
                                    config['Openmatb']['clock_speed'],
                                    config['Openmatb']['display_session_number'])
-
-    def run(self):
         self.scheduler.run()
 
 if __name__ == '__main__':
     app = OpenMATB()
-    app.run()

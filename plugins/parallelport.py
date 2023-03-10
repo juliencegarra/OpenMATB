@@ -1,11 +1,11 @@
 from plugins.abstract import AbstractPlugin
 from core.constants import PATHS as P
-from core.error import fatalerror
+from core.dialog import fatalerror
 from core import logger
 
 class Parallelport(AbstractPlugin):
-    def __init__(self, taskplacement='invisible', taskupdatetime=5):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, window, taskplacement='invisible', taskupdatetime=5):
+        super().__init__(window, taskplacement, taskupdatetime)
 
         try:
             import parallel

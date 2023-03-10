@@ -22,43 +22,48 @@ Contact : <a href="mailto:julien.cegarra@univ-jfc.fr">julien.cegarra AT univ-jfc
 
 ## Requirements
 
-The last version requires Python 3.9 and only depends on [pyglet](https://github.com/pyglet/pyglet), [PyMsgBox](https://github.com/asweigart/PyMsgBox), [PyParallel](https://github.com/pyserial/pyparallel) and [rstr](https://github.com/leapfrogonline/rstr) third-part libraries. Two other libraries are directly included in the core code (`pyglet-gui` and `pylsl`).
+The last version requires Python 3.9 and only depends on the following third-part libraries:
 
-The program was tested under Windows and Linux systems (64 bits). Some minimal code updates are expected to run under mac.
+- [pyglet](https://github.com/pyglet/pyglet)
+- [pyparallel](https://github.com/pyserial/pyparallel)
+- [rstr](https://github.com/leapfrogonline/rstr)
+- [pyglet-gui](https://github.com/jorgecarleitao/pyglet-gui)
+- [pylsl](https://github.com/chkothe/pylsl)
+
+The program was tested under Windows and Linux systems (64 bits). Some minimal code updates are expected to run under Mac.
 
 To run perfectly, the software requires only a personal computer and a joystick for the tracking task.
 
-## Installation
+## Cross-platform installation
 
-The first thing to do is to install the correct version (3.9) of `python` on your computer.
+The first thing to do is to [install python 3.9](https://www.python.org/downloads/) on your computer.
 
-### Cross-platform installation
+To execute OpenMATB on most platforms, simply clone the current repository to a given local folder. Then, make sure you installed the correct python libraries with pip. The correct library versions are written in `requirements.txt`. You can use the `-r` flag of `pip` to install everything at once.
 
-To execute OpenMATB on most platforms, simply to clone the current repository to a given local folder, and execute the `main.py` file with python 3.9.
-
-```bash
-python main.py
-```
-
-Before that, make sure you installed the correct python libraries with pip. The correct library versions are written in `requirements.txt`. You can use the `-r` flag of `pip` to install everything at once.
+(In the commands below, replace `python` with `py`, under Windows)
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
+You can now launch OpenMATB by executing the `main.py` file with python 3.9.
 
-### In a virtual environment
+```bash
+python main.py
+```
 
-If you want to create a dedicated python installation, you might want to install a virtual environment in your local repository. To do so, follow the instructions detailed on this [related page](https://docs.python.org/3.9/tutorial/venv.html).
+### Virtual environment
+
+If you want to create a dedicated python installation (so various python projects won’t overlap), you might want to install a virtual environment in your local repository. To do so, follow the instructions detailed on this [related page](https://docs.python.org/3.9/tutorial/venv.html).
 
 **Warning:** be sure to create the virtual environment into a directory named `.venv`. If you want to use an other name, make sure to change the `main.py` [shebang](https://docs.python.org/3.9/tutorial/appendix.html#tut-scripts) (`#! .venv/bin/python3.9`) that allows its direct execution with the distribution installed in the virtual environment.
 
-Once the virtual environment is set, you must activate it to installe the required dependencies into it:
+Once the virtual environment is set, you must activate it to install the required dependencies into it:
 
 - **Under Linux**: `source .venv/bin/activate`
 - **Under Windows**: `.venv\Scripts\activate.bat` (see [this page](https://docs.python.org/3.9/tutorial/venv.html) for more information).
 
-Now that your virtual environment is activated, just install the dependencies as you would do for a "normal" python distribtion.
+Now that your virtual environment is activated, just install the dependencies as you would do for a "global" python distribtion.
 
 ```bash
 python -m pip install -r requirements.txt

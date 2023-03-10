@@ -4,8 +4,8 @@ from core.widgets import Scale, Light
 from plugins.abstract import AbstractPlugin
 
 class Sysmon(AbstractPlugin):
-    def __init__(self, taskplacement='topleft', taskupdatetime=200):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, window, taskplacement='topleft', taskupdatetime=200):
+        super().__init__(window, taskplacement, taskupdatetime)
 
         new_par = dict(alerttimeout=10000, automaticsolver=False, automaticsolverdelay=1000,
                        displayautomationstate=True, allowanykey=False, feedbackduration=1500,

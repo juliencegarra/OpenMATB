@@ -1,6 +1,6 @@
 from sys import exit
 from pyglet.app import EventLoop
-from pymsgbox import alert
+from core.dialog import Dialog
 from core.scenario import Event
 from core.clock import Clock
 from core import logger
@@ -12,11 +12,10 @@ class Scheduler:
     This class manages events execution.
     """
 
-    def __init__(self, scenario, win, clock_speed, display_session_number):
-        self.events = scenario.events
-        self.plugins = scenario.plugins
+    def __init__(self, events, plugins, win, clock_speed, display_session_number):
+        self.events = events
+        self.plugins = plugins
 
-        logger.log_manual_entry(scenario.path, key='scenario_path')
         logger.log_manual_entry(open('VERSION', 'r').read().strip(), key='version')
 
         if 'scheduling' in self.plugins:
@@ -26,10 +25,13 @@ class Scheduler:
         if 'performance' in self.plugins:
             self.plugins['performance'].plugins = self.plugins
 
+        # Attribute Window to plugins
         self.win = win
+        for i, p in self.plugins.items():
+            p.win = self.win
+
         self.clock = Clock(clock_speed, 'main')
         self.pause_scenario_time = False
-        self.totaltime = 0
         self.scenariotime = 0
 
         # Used in replay to stop simulate clock
@@ -41,37 +43,29 @@ class Scheduler:
         # Store the plugins that could be paused by a *blocking* event
         self.paused_plugins = list()
 
-        # Link each plugin to the main Window instance and their key handlers to it
-        # And to its clock (scenario_clock for non-blocking plugins,
-        #                   main_clock for blocking ones)
-        # DEBUG :: Do we yet have to initialize different clock accordingly ?
-        for i, p in self.plugins.items():
-            p.initialize(self.win)
-
-        # Display the session id before making the UI visible if desired
-        if bool(display_session_number) == True:
-            alert(text=_('Session ID: %s') % logger.session_id, title='OpenMATB', button=_('Start'))
+        
 
         # Display window and create the event loop
         self.win.set_visible(True)
+        # Display the session ID just after the windows has appeared
+        if bool(display_session_number) == True:
+            msg = _('Session ID: %s') % logger.session_id
+            self.win.add_dialog('Session ID', msg, buttons=[_('Start')])
+
         self.clock.schedule(self.update)
         self.event_loop = EventLoop()
 
 
-    def update(self, dt):
-        
-        # Update timers with dt
-        # ONLY if the program was not freezed by a pymsgbox
-        if not self.win.was_prompting:
-            self.totaltime += dt
-            if not self.is_scenario_time_paused():
-                self.scenariotime += dt
-        else:
-            self.win.was_prompting = False
 
-        # Inform the logger about times
-        logger.set_totaltime(self.totaltime)
-        logger.set_scenariotime(self.scenariotime)
+    def update(self, dt):
+        if self.win.modal_dialog == True:
+            return
+        
+        # Update timers with dt    
+        if not self.is_scenario_time_paused():
+            self.scenariotime += dt
+            logger.set_scenariotime(self.scenariotime)
+
 
         # Detect a potential blocking plugin
         active_blocking_plugin = self.get_active_blocking_plugin()
@@ -105,7 +99,7 @@ class Scheduler:
         if len(ap) > 0:
             [p.update(self.scenariotime) for p in ap]
 
-            # Meanwhile, if the windows has been killed, exit the program
+            # If the windows has been killed, exit the program
             if self.win.alive == False:
                 self.exit()
 

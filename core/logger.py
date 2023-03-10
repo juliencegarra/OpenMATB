@@ -7,8 +7,7 @@ from core.constants import PATHS
 class Logger:
     def __init__(self):
         self.datetime = datetime.now()
-        self.fields_list = ['logtime', 'totaltime', 'scenariotime', 'type', 'module', 'address', 
-                            'value']
+        self.fields_list = ['logtime', 'scenariotime', 'type', 'module', 'address', 'value']
         self.slot = namedtuple('Row', self.fields_list)
         self.maxfloats = 6  # Time logged at microsecond precision
         self.session_id = None
@@ -35,7 +34,7 @@ class Logger:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.mode = 'w'
 
-        self.totaltime, self.scenariotime = 0, 0  # Updated by the scheduler class
+        self.scenariotime = 0  # Updated by the scheduler class
 
         self.file = None
         self.writer = None
@@ -51,21 +50,19 @@ class Logger:
         elif len(event.command) == 2:
             adress = event.command[0]
             value = event.command[1]
-        slot = [perf_counter(), self.totaltime, self.scenariotime, 'event', event.plugin,
-                adress, value]
+        slot = [perf_counter(), self.scenariotime, 'event', event.plugin, adress, value]
         self.write_single_slot(slot)
 
 
     def record_input(self, module, key, state):
-        slot = [perf_counter(), self.totaltime, self.scenariotime, 'input', module, key, state]
+        slot = [perf_counter(), self.scenariotime, 'input', module, key, state]
         self.write_single_slot(slot)
 
 
     def record_aoi(self, container, name):
         plugin = name.split('_')[0]
         widget = '_'.join(name.split('_')[1:])
-        slot = [perf_counter(), self.totaltime, self.scenariotime, 'aoi', plugin,
-                widget, container.get_x1y1x2y2()]
+        slot = [perf_counter(), self.scenariotime, 'aoi', plugin, widget, container.get_x1y1x2y2()]
         self.write_single_slot(slot)
 
 
@@ -73,17 +70,17 @@ class Logger:
         module = graph_name.split('_')[0]
         graph_name = '_'.join(graph_name.split('_')[1:])
         address = f'{graph_name}, {attribute}'
-        slot = [perf_counter(), self.totaltime, self.scenariotime, 'state', module, address, value]
+        slot = [perf_counter(), self.scenariotime, 'state', module, address, value]
         self.write_single_slot(slot)
 
 
     def log_performance(self, module, metric, value):
-        slot = [perf_counter(), self.totaltime, self.scenariotime, 'performance', module, metric, value]
+        slot = [perf_counter(), self.scenariotime, 'performance', module, metric, value]
         self.write_single_slot(slot)
 
 
     def log_manual_entry(self, entry, key='manual'):
-        slot = [perf_counter(), self.totaltime, self.scenariotime, key, '', '', entry]
+        slot = [perf_counter(), self.scenariotime, key, '', '', entry]
         self.write_single_slot(slot)
 
 

@@ -5,8 +5,8 @@ from plugins.abstract import AbstractPlugin
 
 
 class Resman(AbstractPlugin):
-    def __init__(self, taskplacement='bottommid', taskupdatetime=2000):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, window, taskplacement='bottommid', taskupdatetime=2000):
+        super().__init__(window, taskplacement, taskupdatetime)
 
         new_par = dict(automaticsolver=False, displayautomationstate=True, pumpcoloroff=C['WHITE'],
                        pumpcoloron=C['GREEN'], pumpcolorfailure=C['RED'], toleranceradius=250,
