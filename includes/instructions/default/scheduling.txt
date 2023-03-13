@@ -1,14 +1,7 @@
-# This is an instructions template
+<h1>Présentation des tâches</h1>
 
-# There are several commands that you might use to adapt the questionnaire to your needs.
-#   The <title> command will display a title
-#   The <newpage> command will split the questionnaire into multiple parts
-# If you need to change the title
+<p>En haut à droite de l'écran, le participant dispose d'un planificateur, qui lui indique pour chaque tâche (symbolisée par une lettre capitale et une ligne de temps), les phases durant lesquelles elle sera active.</p>
 
-<title>Présentation des tâches
+<p>Il existe aussi un système d'automation, capable de partager la charge de travail avec le participant. Lorsque l'automation est active pour une tâche donnée, le planificateur le symbolise.</p>
 
-En haut à droite de l'écran, le participant dispose d'un planificateur, qui lui indique pour chaque tâche (symbolisée par une lettre capitale et une ligne de temps), les phases durant lesquelles elle sera active.
-
-Il existe aussi un système d'automation, capable de partager la charge de travail avec le participant. Lorsque l'automation est active pour une tâche donnée, le planificateur le symbolise.
-
-Ceci aide le participant à gérer son effort et l'allocation de ses ressources.
+<p>Ceci aide le participant à gérer son effort et l'allocation de ses ressources.</p>

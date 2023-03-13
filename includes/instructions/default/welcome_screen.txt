@@ -1,11 +1,4 @@
-# This is an instructions template
+<h1>Présentation du OpenMATB
+<p>OpenMATB est un logiciel de simulation d'environnement multitâches, développé pour la première fois en 1992 par Comstock et Arnegard.</p>
 
-# There are several commands that you might use to adapt the questionnaire to your needs.
-#   The <title> command will display a title
-#   The <newpage> command will split the questionnaire into multiple parts
-# If you need to change the title
-
-<title>Présentation du OpenMATB
-OpenMATB est un logiciel de simulation d'environnement multitâches, développé pour la première fois en 1992 par Comstock et Arnegard.
-
-Parce qu'il exige des participants de contrôler plusieurs tâches simultanément, ce logiciel permet une compréhension fine des processus mentaux impliqués dans la gestion des situations complexes et dynamiques.
+<p>Parce qu'il exige des participants de contrôler plusieurs tâches simultanément, ce logiciel permet une compréhension fine des processus mentaux impliqués dans la gestion des situations complexes et dynamiques.</p>

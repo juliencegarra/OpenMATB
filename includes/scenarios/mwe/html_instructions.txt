@@ -1,0 +1,24 @@
+# Scenario template
+# Durations are expressed in milliseconds
+# Timestamps are stated in the following format H:MM:SS
+
+# 1. Set tasks parameters
+# 1.a. System monitoring parameters
+# 1.b.i. Resources management parameters
+# 1.c. Tracking parameters
+# 1.d. Communications parameters
+
+# 2. Start appropriate tasks
+0:00:00;sysmon;start
+
+# 3. Set scenario events
+0:00:00;instructions;filename;instructions_example_en.txt
+0:00:00;instructions;start
+
+# 3.a. System monitoring events
+# 3.b. Resources management events
+# 3.c. Tracking events
+# 3.d. Communications events
+
+# 4. End tasks
+0:01:00;sysmon;stop

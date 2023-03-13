@@ -1,12 +1,5 @@
-# This is an instructions template
+<h1>Présentation des tâches</h1>
 
-# There are several commands that you might use to adapt the questionnaire to your needs.
-#   The <title> command will display a title
-#   The <newpage> command will split the questionnaire into multiple parts
-# If you need to change the title
+<p>Dans la tâche de surveillance, les participants contrôlent un ensemble de <strong>six jauges</strong>.</p>
 
-<title>Présentation des tâches
-
-Dans la tâche de surveillance, les participants contrôlent un ensemble de six jauges.
-
-Ils doivent corriger le système si nécessaire : lorsque la lumière verte s'éteint ; lorsque la lumière rouge s'allume, ou encore lorsque l'une des flèches mouvantes se déplace à l'extrémité de l'une des quatre échelles.
+<p>Ils doivent corriger le système si nécessaire : lorsque la lumière verte s'éteint ; lorsque la lumière rouge s'allume, ou encore lorsque l'une des flèches mouvantes se déplace à l'extrémité de l'une des quatre échelles.</p>

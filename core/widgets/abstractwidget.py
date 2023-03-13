@@ -1,6 +1,6 @@
 import math
 from pyglet.gl import *
-from pyglet.text import Label
+from pyglet.text import Label, HTMLLabel
 from core import Group as G, COLORS as C, FONT_SIZES as F
 from core import logger
 from core.constants import BFLIM
@@ -81,7 +81,7 @@ class AbstractWidget:
 
     def assign_vertices_to_batch(self):
         for name, v_tuple in self.vertex.items():
-            if isinstance(v_tuple, Label):
+            if isinstance(v_tuple, Label) or isinstance(v_tuple, HTMLLabel):
                 v_tuple.batch = self.win.batch
             else:
                 self.on_batch[name] = self.win.batch.add(*v_tuple)
@@ -89,7 +89,7 @@ class AbstractWidget:
 
     def empty_batch(self):
         for name in list(self.vertex.keys()):  # TODO: Complete and use show_vertex
-            if isinstance(self.vertex[name], Label):
+            if isinstance(self.vertex[name], Label) or isinstance(self.vertex[name], HTMLLabel):
                 self.vertex[name].batch = None
             else:
                 self.on_batch[name].delete()
