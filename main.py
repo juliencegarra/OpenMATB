@@ -42,7 +42,7 @@ else:
 # Check boolean values
 for param in ['fullscreen', 'highlight_aoi', 'hide_on_pause']:
     if config['Openmatb'][param].lower() in ['true', 'false']:
-        if config['Openmatb']['fullscreen'].lower() == 'true':
+        if config['Openmatb'][param].lower() == 'true':
             globals()[param] = True
         else:
             globals()[param] = False
