@@ -1,10 +1,3 @@
-# This is an instructions template
+<h1>Présentation des tâches</h1>
 
-# There are several commands that you might use to adapt the questionnaire to your needs.
-#   The <title> command will display a title
-#   The <newpage> command will split the questionnaire into multiple parts
-# If you need to change the title
-
-<title>Présentation des tâches
-
-Tout l'enjeu pour le participant consiste à parvenir à réaliser l'ensemble de ces tâches simultanément.
+<p>Tout l'enjeu pour le participant consiste à parvenir à réaliser l'ensemble de ces tâches simultanément.</p>

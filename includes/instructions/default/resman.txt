@@ -1,14 +1,7 @@
-# This is an instructions template
+<h1>Présentation des tâches</h1>
 
-# There are several commands that you might use to adapt the questionnaire to your needs.
-#   The <title> command will display a title
-#   The <newpage> command will split the questionnaire into multiple parts
-# If you need to change the title
+<p>Dans la tâche de gestion des ressources, les participants doivent limiter la fuite des deux réservoirs principaux (A et B) en utilisant un jeu de réservoirs de secours et de pompes, dont chacune a une puissance particulière.</p>
 
-<title>Présentation des tâches
+<p>La tâche du participant est d'allumer/éteindre les pompes numérotées pour faire se rapprocher, du mieux que possible, les réservoirs A et B de leurs niveaux normaux.</p>
 
-Dans la tâche de gestion des ressources, les participants doivent limiter la fuite des deux réservoirs principaux (A et B) en utilisant un jeu de réservoirs de secours et de pompes, dont chacune a une puissance particulière.
-
-La tâche du participant est d'allumer/éteindre les pompes numérotées pour faire se rapprocher, du mieux que possible, les réservoirs A et B de leurs niveaux normaux.
-
-Des pompes peuvent parfois tomber en panne.
+<p>Des pompes peuvent parfois tomber en panne.</p>

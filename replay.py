@@ -119,7 +119,7 @@ theme = Theme({
                    }
                }
            }
-           }, resources_path='core/theme/')
+           }, resources_path='core/img/theme/')
 
 
 

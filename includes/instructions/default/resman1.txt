@@ -1,9 +1,0 @@
-<title> Présentation de la tâche de gestion des ressources - MAIN GAUCHE
-
-Cette tâche est une tâche de gestion des ressources, qui simule un système de carburant d'avion.
-
-Elle comprend un ensemble de six réservoirs rectangulaires (notés de A à F) et de huit pompes triangulaires (notées de 1 à 8). 
-
-Les pompes permettent de transférer du carburant entre les réservoirs, dont certains subissent des fuites. 
-
-Avant de poursuivre, observez ce système pendant quelques secondes, et repérez les réservoirs principaux A et B. 

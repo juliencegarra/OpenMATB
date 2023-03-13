@@ -18,7 +18,6 @@ class Slider(AbstractWidget):
         self.value_default = value_default
         self.draw_order = draw_order
         
-        self.win.set_mouse_visible(True)
         self.rank = rank
         self.groove_value = self.value_default
         self.hover = False
@@ -180,3 +179,12 @@ class Slider(AbstractWidget):
         if self.visible:
             self.set_groove_position()
             self.set_value_label()
+
+    def hide(self):
+        super().hide()
+        self.win.slider_visible = False
+
+
+    def show(self):
+        super().show()
+        self.win.slider_visible = True        

@@ -174,4 +174,4 @@ DIALOG_THEME = Theme({"font":'serif',
             }
         }
     }},
-					  resources_path='./includes/theme')
+					  resources_path='./includes/img/theme')

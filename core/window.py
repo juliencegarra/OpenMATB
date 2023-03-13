@@ -45,6 +45,7 @@ class Window(Window):
         self.create_MATB_background()
         self.alive = True
         self.modal_dialog = False
+        self.slider_visible = False
         self.joystick_warning = False
 
         self.on_key_press_replay = None # used by the replay
@@ -89,10 +90,7 @@ class Window(Window):
 
 
     def on_draw(self):
-        if self.modal_dialog == True:
-            self.set_mouse_visible()
-        else:
-            self.set_mouse_visible(False)
+        self.set_mouse_visible(self.is_mouse_necessary())
 
         if self.joystick_warning and not self.modal_dialog:
             self.add_dialog('Joystick error', _('No joystick found'), 
@@ -101,6 +99,10 @@ class Window(Window):
 
         self.clear()
         self.batch.draw()
+
+
+    def is_mouse_necessary(self):
+        return self.modal_dialog == True or self.slider_visible == True
 
 
     def is_modal_dialog_on(self):

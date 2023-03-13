@@ -9,6 +9,7 @@ from .radio import Radio
 from .pump import Pump
 from .timeline import Timeline
 from .simpletext import Simpletext
+from .simplehtml import SimpleHTML
 from .slider import Slider
 from .frame import Frame
 from .performancescale import Performancescale

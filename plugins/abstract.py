@@ -1,6 +1,6 @@
 from pathlib import Path
 from pyglet.window import key as winkey
-from core.widgets import Simpletext, Frame
+from core.widgets import Simpletext, SimpleHTML, Frame
 from core.constants import *
 from core import Container, logger
 
@@ -445,14 +445,13 @@ class BlockingPlugin(AbstractPlugin):
     def make_slide_graphs(self):
         # Extract the title from the slide string if relevant
         slide_content = self.current_slide.split('\n')
-        title_idx = [i for i,t in enumerate(slide_content) if '<title>' in t]
+        title_idx = [i for i,t in enumerate(slide_content) if '<h1>' in t]
         if len(title_idx) > 0:
              # In case multiple title tags, take the last one
-            title = slide_content[title_idx[-1]].replace('<title>','')
+            title = slide_content[title_idx[-1]]
 
-            self.add_widget(f'title', Simpletext, container=self.container,
-                            text=title, font_size=F['XLARGE'], wrap_width=1, y=0.9,
-                            bold=self.parameters['boldtitle'], draw_order=self.m_draw+1)
+            self.add_widget(f'title', SimpleHTML, container=self.container,
+                            text=title, wrap_width=1, y=0.9, draw_order=self.m_draw+1)
             del slide_content[title_idx[-1]]
 
         # Remove a potential previous title
@@ -464,10 +463,9 @@ class BlockingPlugin(AbstractPlugin):
 
         if self.parameters['allowkeypress'] == True:
             key_name = self.parameters['response']['key'].lower()
-            response_text = self.parameters['response']['text']
-            self.add_widget(f'press_{key_name}', Simpletext, container=self.container,
-                            draw_order=self.m_draw+1, text=response_text, font_size=F['LARGE'],
-                            wrap_width=1, y=0.1)
+            response_text = '<center><p>'+self.parameters['response']['text']+'</p></center>'
+            self.add_widget(f'press_{key_name}', SimpleHTML, container=self.container,
+                            draw_order=self.m_draw+1, text=response_text, wrap_width=0.5, x=0.5, y=0.1)
 
 
     def on_key_press(self, symbol, modifiers):
