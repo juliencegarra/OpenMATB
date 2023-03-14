@@ -1,3 +1,7 @@
+# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Institut National Universitaire Champollion (Albi, France).
+# License : CeCILL, version 2.1 (see the LICENSE file)
+
 import math
 from pyglet.gl import *
 from pyglet.text import Label, HTMLLabel

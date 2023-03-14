@@ -1,5 +1,9 @@
 #! .venv/bin/python3.9
 
+# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Institut National Universitaire Champollion (Albi, France).
+# License : CeCILL, version 2.1 (see the LICENSE file)
+
 #TODO:
 # make dialogs (question dialog, file dialog)
 # if 'input' in last log line it seems not handled in replay

@@ -1,3 +1,7 @@
+# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Institut National Universitaire Champollion (Albi, France).
+# License : CeCILL, version 2.1 (see the LICENSE file)
+
 from time import strftime, gmtime
 from core.widgets import Timeline, Schedule, Simpletext
 from plugins.abstract import AbstractPlugin

@@ -1,3 +1,7 @@
+# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Institut National Universitaire Champollion (Albi, France).
+# License : CeCILL, version 2.1 (see the LICENSE file)
+
 from pyglet.gl import *
 from core import COLORS as C, Group as G, Container, FONT_SIZES as F
 from core.widgets import AbstractWidget
