@@ -1,0 +1,32 @@
+# This is an instructions template
+#
+# Instructions must be formated via simple HTML tags syntaxing.
+# 
+# The following elements are supported fully::
+#    B BLOCKQUOTE BR CENTER CODE DD DIR DL EM FONT H1 H2 H3 H4 H5 H6 I IMG KBD
+#    LI MENU OL P PRE Q SAMP STRONG SUB SUP TT U UL VAR
+# 
+# If you want to split your instruction into multiple parts, simply use the <newpage> tag.
+#
+# Note that three tags are normalized in OpenMATB : <h1>, <h2> and <p>, which means that
+# using these tags will automatically render text into some predefined sizes, weight and so on.
+
+<h1>Instructions example</h1>
+
+<center>
+<p>Here, you can write <strong>any instruction</strong> you want to display to the subjects</p>
+<p>You can present instructions on multiple screens using the <em>newpage</em> command.</p>
+</center>
+
+<newpage>
+<h1>Instructions example</h1>
+
+<center>
+<p>It is possible either to wait for the 'Space' key to be pressed or to present instructions for a given time. Look for the documentation.</p>
+
+<p>Moreover, you can use the <em>img</em> tag to render images (that must be included into the 'includes/img' directory).</p>
+
+<p><img src=openmatb.png></p>
+
+<p>More details are provided on github. https://github.com/juliencegarra/OpenMATB</p>
+</center>

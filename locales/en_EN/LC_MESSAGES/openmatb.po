@@ -1,0 +1,383 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2023-03-14 12:01+0100\n"
+"PO-Revision-Date: 2023-03-14 12:01+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 2.4.2\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-Basepath: ../../..\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: locales\n"
+
+#: core/constants.py:32 core/translator.py:4
+msgid "System monitoring"
+msgstr "System monitoring"
+
+#: core/constants.py:33
+msgid "Tracking"
+msgstr "Tracking"
+
+#: core/constants.py:34
+msgid "Scheduling"
+msgstr "Scheduling"
+
+#: core/constants.py:35
+msgid "Communications"
+msgstr "Communications"
+
+#: core/constants.py:36
+msgid "Resources management"
+msgstr "Resources management"
+
+#: core/constants.py:37
+msgid "Parallel port"
+msgstr "Parallel port"
+
+#: core/constants.py:38
+msgid "Lab streaming layer"
+msgstr "Lab streaming layer"
+
+#: core/constants.py:39
+msgid "Instructions"
+msgstr "Instructions"
+
+#: core/constants.py:40
+msgid "Generic scales"
+msgstr "Generic scales"
+
+#: core/constants.py:41
+msgid "Eye tracker"
+msgstr "Eye tracker"
+
+#: core/constants.py:42
+msgid "Performance"
+msgstr "Performance"
+
+#: core/dialog.py:73
+msgid "Press any key to exit"
+msgstr "Press any key to exit"
+
+#: core/logger.py:126
+msgid "Warning, queue is empty"
+msgstr "Warning, queue is empty"
+
+#: core/scenario.py:75
+#, python-format
+msgid "%s was not found"
+msgstr "%s was not found"
+
+#: core/scenario.py:90
+#, python-format
+msgid "Scenario error: %s is not a valid plugin name (l. %s)"
+msgstr "Scenario error: %s is not a valid plugin name (l. %s)"
+
+#: core/scenario.py:104
+msgid "No error"
+msgstr "No error"
+
+#: core/scenario.py:108
+#, python-format
+msgid "There were some errors in the scenario. See the %s file."
+msgstr "There were some errors in the scenario. See the %s file."
+
+#: core/scenario.py:176
+#, python-format
+msgid "The (%s) plugin does not have a start command."
+msgstr "The (%s) plugin does not have a start command."
+
+#: core/scenario.py:180
+#, python-format
+msgid "The (%s) plugin does not have a stop command."
+msgstr "The (%s) plugin does not have a stop command."
+
+#: core/scenario.py:189
+#, python-format
+msgid "Error on line %s. This event does not trigger any command."
+msgstr "Error on line %s. This event does not trigger any command."
+
+#: core/scenario.py:193
+#, python-format
+msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
+msgstr "Error on line %s. Maximum length of an event is 2 (parameter;value)."
+
+#: core/scenario.py:200
+#, python-format
+msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
+msgstr "Error on line %s. Method (%s) is not available for the plugin (%s)"
+
+#: core/scenario.py:217
+#, python-format
+msgid "Warning on line %s. Parameter (%s) has no verification method"
+msgstr "Warning on line %s. Parameter (%s) has no verification method"
+
+#: core/scenario.py:235
+#, python-format
+msgid "Error on line %s. %s "
+msgstr "Error on line %s. %s "
+
+#: core/scenario.py:242
+#, python-format
+msgid "Error on line %s. The %s plugin does not have a %s parameter"
+msgstr "Error on line %s. The %s plugin does not have a %s parameter"
+
+#: core/scenario.py:262
+#, python-format
+msgid "should be a string (not %s)."
+msgstr "should be a string (not %s)."
+
+#: core/scenario.py:266
+#, python-format
+msgid "should be a natural (0 included) integer (not %s)."
+msgstr "should be a natural (0 included) integer (not %s)."
+
+#: core/scenario.py:283
+#, python-format
+msgid "should be a positive (0 excluded) integer (not %s)."
+msgstr "should be a positive (0 excluded) integer (not %s)."
+
+#: core/scenario.py:290
+#, python-format
+msgid "should be a boolean (not %s)."
+msgstr "should be a boolean (not %s)."
+
+#: core/scenario.py:306
+#, python-format
+msgid "must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
+msgstr "must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
+
+#: core/scenario.py:312
+#, python-format
+msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
+msgstr "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
+
+#: core/scenario.py:317
+#, python-format
+msgid "should be a positive float (not %s)"
+msgstr "should be a positive float (not %s)"
+
+#: core/scenario.py:352
+#, python-format
+msgid "should be comprised in %s (not %s)"
+msgstr "should be comprised in %s (not %s)"
+
+#: core/scenario.py:359
+#, python-format
+msgid "should be a valid regex expression (not %s)"
+msgstr "should be a valid regex expression (not %s)"
+
+#: core/scenario.py:369
+#, python-format
+msgid "should be an acceptable keyboard key value (not %s). See documentation."
+msgstr ""
+"should be an acceptable keyboard key value (not %s). See documentation."
+
+#: core/scenario.py:385
+#, python-format
+msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
+msgstr "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
+
+#: core/scenario.py:400
+#, python-format
+msgid "should be composed of valid callsigns (not %s)"
+msgstr "should be composed of valid callsigns (not %s)"
+
+#: core/scenario.py:404
+#, python-format
+msgid "should be a float between 0 and 1 (included) (not %s)"
+msgstr "should be a float between 0 and 1 (included) (not %s)"
+
+#: core/scenario.py:423
+#, python-format
+msgid ""
+"should be available either in the Instruction or Questionnaire folder (not "
+"%s)"
+msgstr ""
+"should be available either in the Instruction or Questionnaire folder (not "
+"%s)"
+
+#: core/scheduler.py:52
+#, python-format
+msgid "Session ID: %s"
+msgstr "Session ID: %s"
+
+#: core/scheduler.py:53
+msgid "Start"
+msgstr "Start"
+
+#: core/widgets/timeline.py:29
+msgid "min."
+msgstr "min."
+
+#: core/window.py:19
+#, python-format
+msgid ""
+"In config.ini, the specified screen index (%s) exceed the number of "
+"available screens (%s). Note that in Python, the first index is 0."
+msgstr ""
+"In config.ini, the specified screen index (%s) exceed the number of "
+"available screens (%s). Note that in Python, the first index is 0."
+
+#: core/window.py:96
+msgid "No joystick found"
+msgstr "No joystick found"
+
+#: core/window.py:97
+msgid "Continue"
+msgstr "Continue"
+
+#: core/window.py:97
+msgid "Exit"
+msgstr "Exit"
+
+#: core/window.py:143
+#| msgid ""
+#| "You pressed the Escape key.\n"
+#| "Do you want to quit?"
+msgid "You pressed the Escape key. Do you want to quit?"
+msgstr "You pressed the Escape key. Do you want to quit?"
+
+#: core/window.py:144 core/window.py:145
+msgid "Yes"
+msgstr "Yes"
+
+#: core/window.py:144
+msgid "No"
+msgstr "No"
+
+#: core/window.py:193
+#, python-format
+msgid "Error. No placement found for the [%s] alias"
+msgstr "Error. No placement found for the [%s] alias"
+
+#: main.py:30
+#, python-format
+#| msgid ""
+#| "In config.ini, the specified font (%s) is not available. If you continue, "
+#| "a default font will be used."
+msgid ""
+"In config.ini, the specified font (%s) is not available. Correct it or leave "
+"it empty to use a default font."
+msgstr ""
+"In config.ini, the specified font (%s) is not available. Correct it or leave "
+"it empty to use a default font."
+
+#: main.py:40
+#, python-format
+msgid "In config.ini, screen index must be an integer, not %s"
+msgstr "In config.ini, screen index must be an integer, not %s"
+
+#: main.py:50
+#, python-format
+#| msgid "In config.ini, screen index must be an integer, not %s"
+msgid ""
+"In config.ini, [%s] parameter must be a boolean (true or false, not %s)."
+msgstr ""
+"In config.ini, [%s] parameter must be a boolean (true or false, not %s)."
+
+#: plugins/abstract.py:191 plugins/abstract.py:193
+msgid "MANUAL"
+msgstr "MANUAL"
+
+#: plugins/abstract.py:191
+msgid "AUTO"
+msgstr "AUTO"
+
+#: plugins/communications.py:58
+msgid " does not exist"
+msgstr " does not exist"
+
+#: plugins/communications.py:77
+#, python-format
+msgid "Callsign \t\t %s"
+msgstr "Callsign \t\t %s"
+
+#: plugins/genericscales.py:13
+msgid "Press SPACE to validate"
+msgstr "Press SPACE to validate"
+
+#: plugins/instructions.py:11
+msgid "Press SPACE to continue"
+msgstr "Press SPACE to continue"
+
+#: plugins/labstreaminglayer.py:19
+msgid "Please enable the OpenMATB stream into your LabRecorder."
+msgstr "Please enable the OpenMATB stream into your LabRecorder."
+
+#: plugins/parallelport.py:14
+msgid "Python Parallel module is missing. Skipping parallel plugin"
+msgstr "Python Parallel module is missing. Skipping parallel plugin"
+
+#: plugins/parallelport.py:21
+msgid "The physical parallel port was not found."
+msgstr "The physical parallel port was not found."
+
+#: plugins/resman.py:110
+msgid "Pump status"
+msgstr "Pump status"
+
+#: plugins/scheduling.py:127
+#, python-format
+msgid "Elapsed time \t %s"
+msgstr "Elapsed time \t %s"
+
+#: plugins/scheduling.py:136
+#, python-format
+#| msgid "Elapsed time \t %s"
+msgid "Remaining time \t %s"
+msgstr "Remaining time \t %s"
+
+#: replay.py:41
+msgid ""
+"In config.ini, screen index must be an integer, not {config['Openmatb']"
+"['screen_index']}"
+msgstr ""
+"In config.ini, screen index must be an integer, not {config['Openmatb']"
+"['screen_index']}"
+
+#~ msgid "OpenMATB Error"
+#~ msgstr "OpenMATB Error"
+
+#~ msgid "Abort"
+#~ msgstr "Abort"
+
+#~ msgid "Exit OpenMATB?"
+#~ msgstr "Exit OpenMATB?"
+
+#~ msgid "Quit"
+#~ msgstr "Quit"
+
+#, python-format
+#~ msgid ""
+#~ "In config.ini, the specified fullscreen mode must be a boolean (not %s). "
+#~ "If you continue, fullscreen will be set to its default value (True)"
+#~ msgstr ""
+#~ "In config.ini, the specified fullscreen mode must be a boolean (not %s). "
+#~ "If you continue, fullscreen will be set to its default value (True)"
+
+#, python-format
+#~ msgid ""
+#~ "In config.ini, the specified highlight_aoi value must be a boolean (not "
+#~ "%s). If you continue, highlight_aoi will be set to its default value "
+#~ "(False)"
+#~ msgstr ""
+#~ "In config.ini, the specified highlight_aoi value must be a boolean (not "
+#~ "%s). If you continue, highlight_aoi will be set to its default value "
+#~ "(False)"
+
+#, python-brace-format
+#~ msgid "Session ID: {logger.session_id}"
+#~ msgstr "Session ID: {logger.session_id}"
+
+#~ msgid "Plugin"
+#~ msgstr "Plugin"

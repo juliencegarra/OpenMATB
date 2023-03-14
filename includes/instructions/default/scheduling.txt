@@ -1,0 +1,7 @@
+<h1>Présentation des tâches</h1>
+
+<p>En haut à droite de l'écran, le participant dispose d'un planificateur, qui lui indique pour chaque tâche (symbolisée par une lettre capitale et une ligne de temps), les phases durant lesquelles elle sera active.</p>
+
+<p>Il existe aussi un système d'automation, capable de partager la charge de travail avec le participant. Lorsque l'automation est active pour une tâche donnée, le planificateur le symbolise.</p>
+
+<p>Ceci aide le participant à gérer son effort et l'allocation de ses ressources.</p>

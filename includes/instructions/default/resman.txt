@@ -1,0 +1,7 @@
+<h1>Présentation des tâches</h1>
+
+<p>Dans la tâche de gestion des ressources, les participants doivent limiter la fuite des deux réservoirs principaux (A et B) en utilisant un jeu de réservoirs de secours et de pompes, dont chacune a une puissance particulière.</p>
+
+<p>La tâche du participant est d'allumer/éteindre les pompes numérotées pour faire se rapprocher, du mieux que possible, les réservoirs A et B de leurs niveaux normaux.</p>
+
+<p>Des pompes peuvent parfois tomber en panne.</p>
