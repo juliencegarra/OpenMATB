@@ -1,0 +1,4 @@
+<h1>Présentation du OpenMATB
+<p>OpenMATB est un logiciel de simulation d'environnement multitâches, développé pour la première fois en 1992 par Comstock et Arnegard.</p>
+
+<p>Parce qu'il exige des participants de contrôler plusieurs tâches simultanément, ce logiciel permet une compréhension fine des processus mentaux impliqués dans la gestion des situations complexes et dynamiques.</p>

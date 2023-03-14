@@ -1,0 +1,5 @@
+<h1>Présentation des tâches</h1>
+
+<p>Dans la tâche de surveillance, les participants contrôlent un ensemble de <strong>six jauges</strong>.</p>
+
+<p>Ils doivent corriger le système si nécessaire : lorsque la lumière verte s'éteint ; lorsque la lumière rouge s'allume, ou encore lorsque l'une des flèches mouvantes se déplace à l'extrémité de l'une des quatre échelles.</p>
