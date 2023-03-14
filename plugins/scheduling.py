@@ -9,8 +9,8 @@ class Scheduling(AbstractPlugin):
     def __init__(self, window, taskplacement='topright', taskupdatetime=1000):
         super().__init__(window, taskplacement, taskupdatetime)
 
-        self.parameters.update(dict(minduration=8,
-                               displayedplugins=['sysmon', 'track', 'communications', 'resman']))
+        self.parameters.update(dict(minduration=8, displaychronometer=True, reversechronometer=False,
+                                    displayedplugins=['sysmon', 'track', 'communications', 'resman']))
 
         for i, p in enumerate(self.parameters['displayedplugins']):
             self.parameters['displayedplugins'][i] = _(self.parameters['displayedplugins'][i])
@@ -20,7 +20,7 @@ class Scheduling(AbstractPlugin):
         self.planning = {p:{'running':list(), 'manual':list()}
                          for p in self.parameters['displayedplugins']}
         self.colors = dict(line=C['GREY'], running=C['RED'], manual=C['GREEN'])
-        self.elapsed_time_ms = 0
+        self.maximum_time_sec = None
 
 
     def create_widgets(self):
@@ -35,7 +35,7 @@ class Scheduling(AbstractPlugin):
                        max_time_minute=self.parameters['minduration'])
 
         self.add_widget('elapsed_time', Simpletext, container=self.task_container,
-                       text=self.get_elapsed_time_string(), y=0.05)
+                       text=self.get_chrono_str(), y=0.05)
 
         for p, name in enumerate(self.planning.keys()):
             planning_container = Container(f'schedule_{name}',
@@ -53,7 +53,7 @@ class Scheduling(AbstractPlugin):
         # This plugin can not be paused for now.
         # When visible, it is just synchronized with the elapsed time
         self.widgets['scheduling_timeline'].set_max_time(self.parameters['minduration'])
-        self.widgets[f'{self.alias}_elapsed_time'].set_text(self.get_elapsed_time_string())
+        self.widgets[f'{self.alias}_elapsed_time'].set_text(self.get_chrono_str())
         self.update_relative_plannings()
 
 
@@ -108,6 +108,16 @@ class Scheduling(AbstractPlugin):
                 self.widgets[wdgt_adress].hide()
 
 
+    def get_chrono_str(self):
+        if self.parameters['displaychronometer']:
+            if self.parameters['reversechronometer']:
+                return self.get_remaining_time_string()
+            else:
+                return self.get_elapsed_time_string()
+        else:
+            return ''
+
+
     def get_elapsed_time_sec(self):
         return int(self.scenariotime)
 
@@ -117,15 +127,25 @@ class Scheduling(AbstractPlugin):
         return _('Elapsed time \t %s') % str_time
 
 
+    def get_remaining_time_sec(self):
+        return int(self.maximum_time_sec) - int(self.scenariotime)
+
+
+    def get_remaining_time_string(self):
+        str_time = strftime('%H:%M:%S', gmtime(self.get_remaining_time_sec()))
+        return _('Remaining time \t %s') % str_time
+
+
     def set_planning(self, events):  # Executed by the scheduler
         # TODO: Remove redundant events (stop -> stop), keep the earliest.
         start_stop_labels = ['start', 'stop', 'resume', 'pause']
         auto_labels = ['automaticsolver']
-        stop_time = None
+        
+        # Retrieve last event time_sec for reversed chronometer
+        self.maximum_time_sec = events[-1].time_sec
 
         start_time_sec = [e.time_sec for e in events if e.plugin == 'scheduling'
                          if 'start' in e.command[0]][0]
-        self.elapsed_time_ms = 1000 * start_time_sec
 
         # For each task...
         for task in self.planning.keys():
