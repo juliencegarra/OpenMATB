@@ -176,10 +176,6 @@ Since the first release of OpenMATB, there has been a lot of changes, the main o
 - Each task module now logs a serie of performance metrics as soon as their are available, to facilitate further calculations.
 
 
-## License
-
-OpenMATB is covered by a GPL v3 license to promote exchange between researchers, granting them the permission not only to run and to study the source code, but also to share their software modifications.
-
 ## Tutorials
 
 <ul>
