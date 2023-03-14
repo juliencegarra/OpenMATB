@@ -145,14 +145,15 @@ Since the first release of OpenMATB, there has been a lot of changes, the main o
 
 - Each task (system monitoring, tracking, communications, resources management) can now be taken over by an automation, with the `automaticsolver` parameter;
 - Accordingly, in the `scheduling` module, it is now possible to display up to four timelines (one per task);
+- In the `scheduling` module, it is now possible to hide (no time) or reverse (remaining time) the chronometer;
 - All the task plugins can now display their own feedback:
     * The `resman` plugin can now feedback the participant if the tanks are out of their tolerance area, by turning tolerance indicators to red (default) ;
     * The `communications` plugin can feedback the participant on response by displaying a green/red rectangle around the responded radio.
 - Each task can now also display an overdue alarm, when a response is needed since too long (new parameters);
 - A new plugin (labstreaminglayer) now allows the MATB to stream its log through the LSL communication protocol so has to synchronize it with various neurophysiological recordings.
 - A `performance` plugin has ben added, which allows to display a general performance level to the participant. The rules that underly performance computation is described in…
-- - A new `instructions` module is available, which allows the user to present static instructions to the participant at desired time (see [this page for more information](TODO));
-- The `track` plugin now allows to reverse joystick axis
+- - A new `instructions` module is available, which allows the user to present static instructions in an HTML format, to the participant, at desired time. This includes the possibility to present images thanks to the `<img>` html tag;
+- The `track` plugin now allows to reverse joystick axis;
 - The tracking reticule path now sticks to the algorithm described in the initial MATB version by Comstock & Arnegard (1992);
 - To avoid aberrant calculations of performance in the tracking task, due to the (potential) unequal proportions of height and width, the `equalproportions` parameters has been removed. Proportions in the tracking are now necessarily equals;
 - The `pumpstatus` module (showing pump flows of the resources management task) has been removed. It has been integrated to the resources management module (`resman`), as an option (`displaystatus` parameter);
@@ -161,18 +162,18 @@ Since the first release of OpenMATB, there has been a lot of changes, the main o
 
 **Other changes:**
 
-- Each scenario value is now finely controlled against a set of type verification methods. For instance, a `taskplacement` value must be a correct value (being in location_list = ['fullscreen', 'topmid', 'topright', 'topleft', 'bottomleft', 'bottommid', 'bottomright']), and so on, which greatly facilitates scenario debugging;
-- Each scenario error is now logged into a `last_scenario_errors.log` file;
-- The scenario does not need a final ending line anymore (e.g., `0:05:00;end`). Program now exits if there is no event to execute anymore and all the modules have been stopped;
+- Each scenario value is now finely controlled against a set of type verification methods. For instance, a `taskplacement` value must be a correct value (being in location_list = ['fullscreen', 'topmid', 'topright', 'topleft', 'bottomleft', 'bottommid', 'bottomright']), and so on, which greatly facilitates scenario debugging.
+- Each scenario error is now logged into a `last_scenario_errors.log` file.
+- The scenario does not need a final ending line anymore (e.g., `0:05:00;end`). Program now exits if there is no event to execute anymore and all the modules have been stopped.
 - Added a `config.ini` file where to modify the main OpenMATB parameters, such as the scenario to use, the locale, the fullscreen mode...
-- Switch from PySide/PyQt to the pyglet graphical library, which has the major advantage to be a pure python library;
-- Can now exit OpenMATB with the Escape key + confirmation;
-- OpenMATB can now be paused with the P key
+- Switch from PySide/PyQt to the pyglet graphical library, which has the major advantage to be a pure python library.
+- Can now exit OpenMATB with the Escape key + confirmation.
+- OpenMATB can now be paused with the P key.
 - The user can now define a global font into `config.ini`, given it is availale on his/her computer
 - Areas of interest (AOI) of each task are now automatically logged at start, for further (oculometric) computations. AOIs can be displayed for debugging purpose, with the `highlight_aoi` parameter of the `config.ini` file.
 - To comply with anonymity constraints, the `participantinfo` was removed and replace with a session ID, displayed at startup. This session ID (e.g., 52) is used as a suffix for session logging files.
-- A particular scenario generator was added, so as to help conceiving scenario of progressive difficulty
-- Each task module now logs a serie of performance metrics as soon as their are available, to facilitate further calculations;
+- A particular scenario generator was added, so as to help conceiving scenario of progressive difficulty.
+- Each task module now logs a serie of performance metrics as soon as their are available, to facilitate further calculations.
 
 
 ## License

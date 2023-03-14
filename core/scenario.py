@@ -507,6 +507,8 @@ validation_dict = {
 
     # Scheduling #
     'minduration': is_positive_integer,
+    'displaychronometer': is_boolean,
+    'reversechronometer': is_boolean,
     'displayedplugins': (is_in_list, ['sysmon', 'track', 'resman', 'communications']),
 
 

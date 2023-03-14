@@ -1,2 +1,5 @@
 sessions
 last_scenario_errors.log
+.venv
+__pycache__
+capture.sublime-workspace
