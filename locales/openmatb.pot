@@ -2,10 +2,11 @@
 # Copyright (C) YEAR ORGANIZATION
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2022-09-13 13:31+0200\n"
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2023-03-14 11:58+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -13,5 +14,304 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 2.4.2\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SearchPath-0: .\n"
 
+#: core/constants.py:32 core/translator.py:4
+msgid "System monitoring"
+msgstr ""
 
+#: core/constants.py:33
+msgid "Tracking"
+msgstr ""
+
+#: core/constants.py:34
+msgid "Scheduling"
+msgstr ""
+
+#: core/constants.py:35
+msgid "Communications"
+msgstr ""
+
+#: core/constants.py:36
+msgid "Resources management"
+msgstr ""
+
+#: core/constants.py:37
+msgid "Parallel port"
+msgstr ""
+
+#: core/constants.py:38
+msgid "Lab streaming layer"
+msgstr ""
+
+#: core/constants.py:39
+msgid "Instructions"
+msgstr ""
+
+#: core/constants.py:40
+msgid "Generic scales"
+msgstr ""
+
+#: core/constants.py:41
+msgid "Eye tracker"
+msgstr ""
+
+#: core/constants.py:42
+msgid "Performance"
+msgstr ""
+
+#: core/dialog.py:73
+msgid "Press any key to exit"
+msgstr ""
+
+#: core/logger.py:126
+msgid "Warning, queue is empty"
+msgstr ""
+
+#: core/scenario.py:75
+#, python-format
+msgid "%s was not found"
+msgstr ""
+
+#: core/scenario.py:90
+#, python-format
+msgid "Scenario error: %s is not a valid plugin name (l. %s)"
+msgstr ""
+
+#: core/scenario.py:104
+msgid "No error"
+msgstr ""
+
+#: core/scenario.py:108
+#, python-format
+msgid "There were some errors in the scenario. See the %s file."
+msgstr ""
+
+#: core/scenario.py:176
+#, python-format
+msgid "The (%s) plugin does not have a start command."
+msgstr ""
+
+#: core/scenario.py:180
+#, python-format
+msgid "The (%s) plugin does not have a stop command."
+msgstr ""
+
+#: core/scenario.py:189
+#, python-format
+msgid "Error on line %s. This event does not trigger any command."
+msgstr ""
+
+#: core/scenario.py:193
+#, python-format
+msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
+msgstr ""
+
+#: core/scenario.py:200
+#, python-format
+msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
+msgstr ""
+
+#: core/scenario.py:217
+#, python-format
+msgid "Warning on line %s. Parameter (%s) has no verification method"
+msgstr ""
+
+#: core/scenario.py:235
+#, python-format
+msgid "Error on line %s. %s "
+msgstr ""
+
+#: core/scenario.py:242
+#, python-format
+msgid "Error on line %s. The %s plugin does not have a %s parameter"
+msgstr ""
+
+#: core/scenario.py:262
+#, python-format
+msgid "should be a string (not %s)."
+msgstr ""
+
+#: core/scenario.py:266
+#, python-format
+msgid "should be a natural (0 included) integer (not %s)."
+msgstr ""
+
+#: core/scenario.py:283
+#, python-format
+msgid "should be a positive (0 excluded) integer (not %s)."
+msgstr ""
+
+#: core/scenario.py:290
+#, python-format
+msgid "should be a boolean (not %s)."
+msgstr ""
+
+#: core/scenario.py:306
+#, python-format
+msgid "must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
+msgstr ""
+
+#: core/scenario.py:312
+#, python-format
+msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
+msgstr ""
+
+#: core/scenario.py:317
+#, python-format
+msgid "should be a positive float (not %s)"
+msgstr ""
+
+#: core/scenario.py:352
+#, python-format
+msgid "should be comprised in %s (not %s)"
+msgstr ""
+
+#: core/scenario.py:359
+#, python-format
+msgid "should be a valid regex expression (not %s)"
+msgstr ""
+
+#: core/scenario.py:369
+#, python-format
+msgid "should be an acceptable keyboard key value (not %s). See documentation."
+msgstr ""
+
+#: core/scenario.py:385
+#, python-format
+msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
+msgstr ""
+
+#: core/scenario.py:400
+#, python-format
+msgid "should be composed of valid callsigns (not %s)"
+msgstr ""
+
+#: core/scenario.py:404
+#, python-format
+msgid "should be a float between 0 and 1 (included) (not %s)"
+msgstr ""
+
+#: core/scenario.py:423
+#, python-format
+msgid "should be available either in the Instruction or Questionnaire folder (not %s)"
+msgstr ""
+
+#: core/scheduler.py:52
+#, python-format
+msgid "Session ID: %s"
+msgstr ""
+
+#: core/scheduler.py:53
+msgid "Start"
+msgstr ""
+
+#: core/widgets/timeline.py:29
+msgid "min."
+msgstr ""
+
+#: core/window.py:19
+#, python-format
+msgid "In config.ini, the specified screen index (%s) exceed the number of available screens (%s). Note that in Python, the first index is 0."
+msgstr ""
+
+#: core/window.py:96
+msgid "No joystick found"
+msgstr ""
+
+#: core/window.py:97
+msgid "Continue"
+msgstr ""
+
+#: core/window.py:97
+msgid "Exit"
+msgstr ""
+
+#: core/window.py:143
+msgid "You pressed the Escape key. Do you want to quit?"
+msgstr ""
+
+#: core/window.py:144 core/window.py:145
+msgid "Yes"
+msgstr ""
+
+#: core/window.py:144
+msgid "No"
+msgstr ""
+
+#: core/window.py:193
+#, python-format
+msgid "Error. No placement found for the [%s] alias"
+msgstr ""
+
+#: main.py:30
+#, python-format
+msgid "In config.ini, the specified font (%s) is not available. Correct it or leave it empty to use a default font."
+msgstr ""
+
+#: main.py:40
+#, python-format
+msgid "In config.ini, screen index must be an integer, not %s"
+msgstr ""
+
+#: main.py:50
+#, python-format
+msgid "In config.ini, [%s] parameter must be a boolean (true or false, not %s)."
+msgstr ""
+
+#: plugins/abstract.py:191 plugins/abstract.py:193
+msgid "MANUAL"
+msgstr ""
+
+#: plugins/abstract.py:191
+msgid "AUTO"
+msgstr ""
+
+#: plugins/communications.py:58
+msgid " does not exist"
+msgstr ""
+
+#: plugins/communications.py:77
+#, python-format
+msgid "Callsign \t\t %s"
+msgstr ""
+
+#: plugins/genericscales.py:13
+msgid "Press SPACE to validate"
+msgstr ""
+
+#: plugins/instructions.py:11
+msgid "Press SPACE to continue"
+msgstr ""
+
+#: plugins/labstreaminglayer.py:19
+msgid "Please enable the OpenMATB stream into your LabRecorder."
+msgstr ""
+
+#: plugins/parallelport.py:14
+msgid "Python Parallel module is missing. Skipping parallel plugin"
+msgstr ""
+
+#: plugins/parallelport.py:21
+msgid "The physical parallel port was not found."
+msgstr ""
+
+#: plugins/resman.py:110
+msgid "Pump status"
+msgstr ""
+
+#: plugins/scheduling.py:127
+#, python-format
+msgid "Elapsed time \t %s"
+msgstr ""
+
+#: plugins/scheduling.py:136
+#, python-format
+msgid "Remaining time \t %s"
+msgstr ""
+
+#: replay.py:41
+msgid "In config.ini, screen index must be an integer, not {config['Openmatb']['screen_index']}"
+msgstr ""
