@@ -3,7 +3,7 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from core.widgets.abstractwidget import *
-from core import Container
+from core.container import Container
 
 class Performancescale(AbstractWidget):
     def __init__(self, name, container, win, level_min, level_max, tick_number, color):

@@ -3,7 +3,8 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from random import choice, sample
-from core import Container, COLORS as C
+from core.container import Container
+from core.constants import COLORS as C
 from core.widgets import Scale, Light
 from plugins.abstract import AbstractPlugin
 

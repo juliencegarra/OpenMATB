@@ -6,7 +6,7 @@ from time import strftime, gmtime
 from core.widgets import Timeline, Schedule, Simpletext
 from plugins.abstract import AbstractPlugin
 from core.constants import COLORS as C
-from core import Container
+from core.container import Container
 
 
 class Scheduling(AbstractPlugin):
@@ -144,7 +144,7 @@ class Scheduling(AbstractPlugin):
         # TODO: Remove redundant events (stop -> stop), keep the earliest.
         start_stop_labels = ['start', 'stop', 'resume', 'pause']
         auto_labels = ['automaticsolver']
-        
+
         # Retrieve last event time_sec for reversed chronometer
         self.maximum_time_sec = events[-1].time_sec
 

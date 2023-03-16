@@ -8,9 +8,9 @@ from pyglet.graphics import Batch
 from pyglet.gl import GL_POLYGON
 from pyglet.text import Label
 from core.dialog import Dialog
-from core import Container
+from core.container import Container
 from core.constants import COLORS as C, FONT_SIZES as F, Group as G, PLUGIN_TITLE_HEIGHT_PROPORTION
-from core import logger
+from core.logger import logger
 import os
 
 class Window(Window):
@@ -97,7 +97,7 @@ class Window(Window):
         self.set_mouse_visible(self.is_mouse_necessary())
 
         if self.joystick_warning and not self.modal_dialog:
-            self.add_dialog('Joystick error', _('No joystick found'), 
+            self.add_dialog('Joystick error', _('No joystick found'),
                             buttons=[_('Continue'), _('Exit')], exit_button=_('Exit'))
             self.joystick_warning = False
 
@@ -117,13 +117,13 @@ class Window(Window):
     def on_key_press(self, symbol, modifiers):
         if self.modal_dialog == True:
             return
-        
+
         keystr = winkey.symbol_string(symbol)
         self.keyboard[keystr] = True  # KeyStateHandler
 
         if keystr == 'ESCAPE':
             self.exit_prompt()
-        elif keystr == 'P':           
+        elif keystr == 'P':
             self.pause_prompt()
 
         if self.replay_mode:
@@ -138,8 +138,8 @@ class Window(Window):
         if self.modal_dialog == True:
             return
 
-        keystr = winkey.symbol_string(symbol)        
-        self.keyboard[keystr] = False  # KeyStateHandler        
+        keystr = winkey.symbol_string(symbol)
+        self.keyboard[keystr] = False  # KeyStateHandler
         logger.record_input('keyboard', keystr, 'release')
 
 
@@ -147,10 +147,10 @@ class Window(Window):
         msg = _('You pressed the Escape key. Do you want to quit?')
         self.add_dialog('Exit', msg, buttons=[_('Yes'), _('No')],
                exit_button=_('Yes'), hide_background=self.hide_on_pause)
-    
-    
+
+
     def pause_prompt(self):
-        self.add_dialog('Pause', 'Pause', buttons=['Continuer'], title=None, 
+        self.add_dialog('Pause', 'Pause', buttons=['Continuer'], title=None,
                         hide_background=self.hide_on_pause)
 
 

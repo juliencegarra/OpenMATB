@@ -3,7 +3,7 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from core.widgets.abstractwidget import *
-from core import Container
+from core.container import Container
 
 class Tank(AbstractWidget):
     def __init__(self, name, container, win, letter, level, fluid_label, level_max, target,
@@ -101,8 +101,8 @@ class Tank(AbstractWidget):
         v1[1] = v1[3] = self.get_y_of(level, level_max)
         self.on_batch['fluid'].vertices = v1
         self.logger.record_state(self.name, 'fluid_level', level)
-        
-    
+
+
     def get_fluid_level(self):
         return self.level
 
@@ -112,7 +112,7 @@ class Tank(AbstractWidget):
             return
         self.vertex['fluid_label'].text = label
         self.logger.record_state(self.name, 'fluid_label', label)
-    
-    
+
+
     def get_fluid_label(self):
         return self.vertex['fluid_label'].text

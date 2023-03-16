@@ -4,8 +4,9 @@
 
 from pyglet.gl import *
 from random import sample
+from core.container import Container
 from core.constants import COLORS as C, FONT_SIZES as F
-from core import Container, Group as G
+from core.constants import Group as G
 from core.widgets.abstractwidget import AbstractWidget
 from pyglet.text import Label
 
@@ -95,19 +96,19 @@ class Scale(AbstractWidget):
         self.position = position
         self.on_batch['arrow'].vertices = self.return_arrow_vertice(self.position)
         self.logger.record_state(self.name, 'arrow', self.position)
-        
-    
+
+
     def get_arrow_position(self):
         return self.position
-    
-    
+
+
     def set_label(self, label):
         label_to_upper = label.upper()
         if label == self.get_label():
             return
         self.vertex['label'].text = label_to_upper
         self.logger.record_state(self.name, 'label', label_to_upper)
-        
-        
+
+
     def get_label(self):
         return self.vertex['label'].text
