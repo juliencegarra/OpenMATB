@@ -5,7 +5,7 @@ First presented at a NASA Technical memorandum (Comstock & Arnegard, 1992), the 
 
 <img src="capture.png" alt="OpenMATB screen capture" width="600" />
 
-Almost twenty years have passed since the last iteration of the MATB implementation (Comstock & Arnegard, 1992), different requirements for up to date research are no longer satisfied.
+Almost thirty years have passed since the first iteration of the MATB implementation (Comstock & Arnegard, 1992), different requirements for up to date research are no longer satisfied.
 
 OpenMATB aims to provide an open-source re-implementation of the multi-attribute task battery. It promotes three aspects:
 1. tasks customization for full adaptation of the battery,
