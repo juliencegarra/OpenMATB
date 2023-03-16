@@ -3,7 +3,7 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from core.constants import *
-from core import Container
+from core.container import Container
 from core.widgets import Pump, Tank, PumpFlow, Simpletext, Frame
 from plugins.abstract import AbstractPlugin
 
@@ -157,7 +157,7 @@ class Resman(AbstractPlugin):
     def compute_next_plugin_state(self):
         if super().compute_next_plugin_state() == 0:
             return
-        
+
         tanks = self.parameters['tank']
         pumps = self.parameters['pump']
         time_resolution = (self.parameters['taskupdatetime'] / 1000) / 60.

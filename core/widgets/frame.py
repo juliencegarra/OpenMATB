@@ -2,8 +2,9 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from core.container import Container
+from core.constants import COLORS as C, Group as G
 from core.widgets import AbstractWidget
-from core import COLORS as C, Group as G, Container
 from pyglet.gl import GL_QUADS
 
 class Frame(AbstractWidget):
@@ -11,12 +12,12 @@ class Frame(AbstractWidget):
     This widget is a simple frame that surrounds the task. It has a given color and thickness,
     and can be shown or hidden to generate various feedback effects (blinking alarm, colorful feedback).
     '''
-    def __init__(self, name, container, win, fill_color=C['BACKGROUND'], 
+    def __init__(self, name, container, win, fill_color=C['BACKGROUND'],
                  border_color=C['BACKGROUND'], border_thickness=0, draw_order=1):
         super().__init__(name, container, win)
 
         self.border_thickness = border_thickness
-        
+
         if fill_color is not None:
             self.add_vertex('fillarea', 4, GL_QUADS, G(draw_order),
                             ('v2f/static', (0,)*8),
@@ -50,8 +51,8 @@ class Frame(AbstractWidget):
 
         if self.is_visible():
             self.on_batch['border'].vertices = self.get_border_vertices()
-            
-    
+
+
     def get_border_thickness(self):
         return self.border_thickness
 

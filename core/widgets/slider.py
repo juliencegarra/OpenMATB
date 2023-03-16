@@ -3,14 +3,15 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from pyglet.gl import *
-from core import COLORS as C, Group as G, Container, FONT_SIZES as F
+from core.container import Container
+from core.constants import COLORS as C, Group as G, FONT_SIZES as F
 from core.widgets import AbstractWidget
 from core.widgets import AbstractWidget
 from pyglet.text import Label
 
 
 class Slider(AbstractWidget):
-    def __init__(self, name, container, win, title, label_min, label_max, 
+    def __init__(self, name, container, win, title, label_min, label_max,
                  value_min, value_max, value_default, rank, draw_order=1):
         super().__init__(name, container, win)
 
@@ -21,7 +22,7 @@ class Slider(AbstractWidget):
         self.value_max = value_max
         self.value_default = value_default
         self.draw_order = draw_order
-        
+
         self.rank = rank
         self.groove_value = self.value_default
         self.hover = False
@@ -33,7 +34,7 @@ class Slider(AbstractWidget):
         glHint (GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
         glLineWidth (3)
 
-        
+
         #self.set_main_container(y, width, height)
         self.set_sub_containers()
         self.set_slider_thumb_and_groove()
@@ -95,7 +96,7 @@ class Slider(AbstractWidget):
         # The groove container comprises the whole groove movements area
         self.containers['allgroove'] = self.containers['slide'].get_reduced(slider_thumb_w,
                                                                          slider_groove_h)
-        
+
         v1 = self.vertice_border(self.containers['thumb'])
         self.add_vertex('thumb', 4, GL_QUADS, G(self.draw_order+self.rank), ('v2f/static', v1),
                         ('c4B/static', (C['GREY']*4)))
@@ -119,7 +120,7 @@ class Slider(AbstractWidget):
     def set_groove_position(self):
         if self.get_groove_vertices() == self.on_batch['groove'].vertices:
             return
-        
+
         self.on_batch['groove'].vertices = self.get_groove_vertices()
         self.on_batch['groove_b'].vertices = self.get_groove_vertices()
 
@@ -163,10 +164,10 @@ class Slider(AbstractWidget):
         self.groove_value = new_value
         self.logger.record_state(self.name, 'value', str(self.groove_value))
         self.update()
-        
+
     def get_title(self):
         return self.title
-    
+
     def get_value(self):
         return self.groove_value
 
@@ -191,4 +192,4 @@ class Slider(AbstractWidget):
 
     def show(self):
         super().show()
-        self.win.slider_visible = True        
+        self.win.slider_visible = True

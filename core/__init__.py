@@ -2,7 +2,6 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)from .constants import FONT_SIZES, COLORS, Group
 
-from .container import Container
 from .logger import logger
 from .window import Window
 from .scenario import Scenario

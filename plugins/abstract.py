@@ -6,7 +6,8 @@ from pathlib import Path
 from pyglet.window import key as winkey
 from core.widgets import Simpletext, SimpleHTML, Frame
 from core.constants import *
-from core import Container, logger
+from core.container import Container
+from core.logger import logger
 
 
 class AbstractPlugin:
@@ -53,7 +54,7 @@ class AbstractPlugin:
     # def initialize(self, window):
         # self.win = window
 
-        
+
 
 
     def update(self, scenariotime):
@@ -69,7 +70,7 @@ class AbstractPlugin:
         """
         if self.is_visible():
             return
-        
+
         if self.verbose:
             print('Show ', self.alias)
         self.visible = True
@@ -103,7 +104,7 @@ class AbstractPlugin:
             # Resman case (manage status if relevant)
             if self.get_widget('status_title') is not None:
                 self.get_widget('status_title').hide()
-            
+
             if self.get_widget('foreground') is not None:
                 self.get_widget('foreground').show()
 
@@ -150,8 +151,8 @@ class AbstractPlugin:
 
     def is_visible(self):
         return self.visible is True
-    
-    
+
+
     def is_paused(self):
         return self.paused is True
 
@@ -186,7 +187,7 @@ class AbstractPlugin:
             return 0
         if self.verbose:
             print(self.alias, 'Compute next state')
-        
+
         self.next_refresh_time = self.scenariotime + self.parameters['taskupdatetime']/1000
 
         # Should an automation state (string) be displayed ?
@@ -204,7 +205,7 @@ class AbstractPlugin:
     def refresh_widgets(self):
         if not self.is_visible():
             return 0
-        
+
         if self.get_widget('foreground') is not None:
             self.get_widget('foreground').set_visibility(False)
 
@@ -214,8 +215,8 @@ class AbstractPlugin:
 
         if self.display_title == True:
             self.get_widget('task_title').set_text(self.parameters['title'].upper())
-            
-            
+
+
         # Update the overdue feedback state if relevant
         # Overdue state computing is here to unmerge its temporal
         # logic from the taskupdatetime parameter (so the alarm
@@ -230,7 +231,7 @@ class AbstractPlugin:
                 else:  # Blink case
                     if overdue['_nexttoggletime'] == 0:  # First toggle
                         overdue['_nexttoggletime'] = self.scenariotime
-                    
+
                     if self.scenariotime >= overdue['_nexttoggletime']:
                         overdue['_nexttoggletime'] += overdue['blinkdurationms']/1000
                         overdue['_is_visible'] = not overdue['_is_visible']
@@ -239,7 +240,7 @@ class AbstractPlugin:
                 overdue['_is_visible'] = False
         else:
             overdue['_is_visible'] = False
-        
+
         if 'widget' in overdue:
             overdue['widget'].set_visibility(overdue['_is_visible'])
             overdue['widget'].set_border_color(overdue['color'])
@@ -393,7 +394,7 @@ class BlockingPlugin(AbstractPlugin):
 
         self.input_path = None
         self.folder = None  # Depends on the nature of blocking plugin (questionnaire, instruction...)
-        
+
         # Should we stop the plugin when the are no more slide available
         # (Useful for the LSL plugin, which has a starting instruction, but
         #  should not be stopped)
@@ -405,7 +406,7 @@ class BlockingPlugin(AbstractPlugin):
         self.go_to_next_slide = True  # So the first slide appears as soon as possible
 
         # Create an input path if relevant
-        
+
         if self.parameters['filename'] is not None:
             self.input_path = Path('.', self.folder, self.parameters['filename'])
 
@@ -413,10 +414,10 @@ class BlockingPlugin(AbstractPlugin):
         if self.input_path is not None and self.input_path.exists():
             self.slides.append(str())                      # Create the first slide
             lines = self.input_path.open(encoding='utf8').readlines()
-            
+
             if self.ignore_empty_lines == True:
                 lines = [l for l in lines if len(l.strip()) > 0]
-                
+
             for line in lines:
                 if '#' not in line:
                     if '<newpage>' in line:
@@ -485,7 +486,7 @@ class BlockingPlugin(AbstractPlugin):
         # Waiting for the key release to advance one slide at the time
         if key.lower() == 'space' and state == 'release':
             self.go_to_next_slide = True
-            
+
 
 
 # TODO : Include a Solver class like

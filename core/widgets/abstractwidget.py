@@ -5,7 +5,7 @@
 import math
 from pyglet.gl import *
 from pyglet.text import Label, HTMLLabel
-from core import Group as G, COLORS as C, FONT_SIZES as F
+from core.constants import Group as G, COLORS as C, FONT_SIZES as F
 from core import logger
 from core.constants import BFLIM
 import configparser
@@ -59,7 +59,7 @@ class AbstractWidget:
             return
         if self.verbose:
             print('Hide ', self.name)
-            
+
         self.empty_batch()
         if hasattr(self, 'set_visibility'):
             self.set_visibility(False)

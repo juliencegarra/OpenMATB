@@ -7,7 +7,8 @@ from pyglet.input import get_joysticks
 from plugins.abstract import AbstractPlugin
 from core.widgets import Reticle
 from core.dialog import Dialog
-from core import Container, Group as G, COLORS as C, FONT_SIZES as F
+from core.container import Container
+from core.constants import Group as G, COLORS as C, FONT_SIZES as F
 
 
 class Track(AbstractPlugin):
