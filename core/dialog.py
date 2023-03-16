@@ -24,7 +24,7 @@ class Dialog(Manager):
 		self.hide_background = hide_background
 		self.win = win
 		self.win.modal_dialog = True
-		
+
 		if hide_background:
 			MATB_container = win.get_container('fullscreen')
 			l, b, w, h = MATB_container.get_lbwh()
@@ -37,7 +37,7 @@ class Dialog(Manager):
 			button_strip.append(None)
 			button_strip.append(Button(b, on_press=met))
 		button_strip.append(None)
-		
+
 		vert_strip = [SectionHeader('Titre')] if title is not None and len(title) > 0 else list()
 		vert_strip.extend([Label(msg), HorizontalContainer(button_strip)])
 
@@ -48,13 +48,13 @@ class Dialog(Manager):
 	def on_delete(self, dt):
 		if self.hide_background:
 			self.backv.delete()
-		self.delete()
 		self.win.modal_dialog = False
 		logger.log_manual_entry(f"{self.name} end", key='dialog')
+		self.delete()
 
 	def on_exit(self, dt):
-		self.on_delete(0)
 		self.win.alive = False
+		self.on_delete(0)
 
 
 
@@ -62,13 +62,13 @@ def fatalerror(msg):
 	batch = Batch()
 	fatalwin = Window(style=Window.WINDOW_STYLE_BORDERLESS, width=400, height=250)
 	pyglet.gl.glClearColor(*C['BACKGROUND'])  # background definition
-	
+
 	m = 40  # margin
 	title = pyglet.text.Label('OpenMATB – fatal error !', font_name='sans', font_size=F['MEDIUM'], color=C['BACKGROUND'],
                               x=fatalwin.width//2, y=fatalwin.height-18,
                               anchor_x='center', anchor_y='center')
 
-	rectangle = pyglet.shapes.Rectangle(0, fatalwin.height-m, fatalwin.width, m, color=C['BLACK'][0:3], batch=batch)	
+	rectangle = pyglet.shapes.Rectangle(0, fatalwin.height-m, fatalwin.width, m, color=C['BLACK'][0:3], batch=batch)
 
 	label = pyglet.text.Label(msg, font_name='serif',
     	x=fatalwin.width//2, y=fatalwin.height//2, multiline=True, color=C['BLACK'],
