@@ -10,6 +10,7 @@ from core.clock import Clock
 from core import logger
 
 import pyglet.clock
+import sys
 
 class Scheduler:
     """
@@ -47,7 +48,7 @@ class Scheduler:
         # Store the plugins that could be paused by a *blocking* event
         self.paused_plugins = list()
 
-        
+
 
         # Display window and create the event loop
         self.win.set_visible(True)
@@ -64,8 +65,8 @@ class Scheduler:
     def update(self, dt):
         if self.win.modal_dialog == True:
             return
-        
-        # Update timers with dt    
+
+        # Update timers with dt
         if not self.is_scenario_time_paused():
             self.scenariotime += dt
             logger.set_scenariotime(self.scenariotime)
@@ -252,6 +253,8 @@ class Scheduler:
     def exit(self):
         logger.log_manual_entry('end')
         self.event_loop.exit()
+        self.win.close()
+        sys.exit(0)
 
 
     def run(self):
