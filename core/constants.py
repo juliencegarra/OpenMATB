@@ -16,7 +16,7 @@ C = COLORS = dict(WHITE=(255, 255, 255, 255),
                   BLUE=(153, 204, 255, 255))
 
 F = FONT_SIZES = dict(SMALL=12,
-                      MEDIUM=15,
+                      MEDIUM=16,
                       LARGE=20,
                       XLARGE=30)
 
