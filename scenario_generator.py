@@ -27,6 +27,7 @@ language.install()
 # Imports #
 from core.scenario import Event
 from core.constants import PATHS
+from core.window import Window
 from plugins import *
 
 
@@ -43,13 +44,15 @@ SCENARIO_NAME = 'incapacitation'
 # Specify a scenario that should be added at the beginning
 ADD_SCENARIO_PATH = PATHS['SCENARIOS'].joinpath('custom_incapacitation.txt')
 
+win = Window(0, '', False, False, False, False)
+win.set_visible(False)
 
 # Plugin instances #
 # Useful to manipulate parameters #
-plugins = {'track':Track(silent=True), 
-           'sysmon':Sysmon(),
-           'communications':Communications(),
-           'resman':Resman()}
+plugins = {'track':Track(win, silent=True), 
+           'sysmon':Sysmon(win),
+           'communications':Communications(win),
+           'resman':Resman(win)}
            
 
 def part_duration_sec(duration_sec, part_left, duration_list=list()):
@@ -287,6 +290,9 @@ def add_scenario_phase(scenario_lines, task_difficulty_tuples, start_sec):
     
 
 def main():
+
+    print('Please wait. Generating scenario.')
+    
     # If a custom scenario entry is specified, then modify plugin parameters because
     # some are important in the scenario generation (e.g., a failure duration).
     if ADD_SCENARIO_PATH.exists():
@@ -323,6 +329,7 @@ def main():
     date_str_2 = date_time.strftime("%d/%m/%Y %H:%M:%S")
     
     scenario_path = PATHS['SCENARIOS'].joinpath('generated', f'{SCENARIO_NAME}_{date_str_1}.txt')
+    scenario_path.parent.mkdir(parents=True, exist_ok=True)
     
     with open(str(scenario_path), 'w') as scenario_f:
         
