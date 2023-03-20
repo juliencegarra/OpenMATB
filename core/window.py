@@ -38,10 +38,10 @@ class Window(Window):
         # Font definition
         # Font check
         if len(font_name) == 0:
-            self.font_name = 'serif'
+            self.font_name = None
         elif not font.have_font(font_name):
-            errors.add_error(_(f"In config.ini, the specified font (%s) is not available. A default serif font will be used."))
-            self.font_name = 'serif'
+            errors.add_error(_(f"In config.ini, the specified font is not available. A default font will be used."))
+            self.font_name = None
         else:
             self.font_name = font_name
 
