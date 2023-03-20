@@ -20,6 +20,7 @@ class Scheduler:
     def __init__(self, events, plugins, win, clock_speed, display_session_number):
         self.events = events
         self.plugins = plugins
+        self.display_session_number = display_session_number
 
         logger.log_manual_entry(open('VERSION', 'r').read().strip(), key='version')
 
@@ -48,14 +49,8 @@ class Scheduler:
         # Store the plugins that could be paused by a *blocking* event
         self.paused_plugins = list()
 
-
-
         # Display window and create the event loop
         self.win.set_visible(True)
-        # Display the session ID just after the windows has appeared
-        if bool(display_session_number) == True:
-            msg = _('Session ID: %s') % logger.session_id
-            self.win.add_dialog('Session ID', msg, buttons=[_('Start')])
 
         self.clock.schedule(self.update)
         self.event_loop = EventLoop()
@@ -65,6 +60,13 @@ class Scheduler:
     def update(self, dt):
         if self.win.modal_dialog == True:
             return
+
+        # Display the session ID if need be
+        if bool(self.display_session_number) == True:
+            msg = _('Session ID: %s') % logger.session_id
+            self.win.add_dialog('Session ID', msg, buttons=[_('Start')])
+            self.display_session_number = False
+
 
         # Update timers with dt
         if not self.is_scenario_time_paused():
@@ -103,16 +105,15 @@ class Scheduler:
         # ... if so, update them
         if len(ap) > 0:
             [p.update(self.scenariotime) for p in ap]
-
-            # If the windows has been killed, exit the program
-            if self.win.alive == False:
-                self.exit()
-
         # ... if not, and no remaining events, close the OpenMATB
         elif len(self.events_queue) == 0:
             self.exit()
 
-        #else:
+        # If the windows has been killed, exit the program
+        if self.win.alive == False:
+            self.exit()
+
+        # else:
         #    self.move_scenario_time_to(0) # in replay restart
 
 

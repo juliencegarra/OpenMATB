@@ -9,11 +9,6 @@ from pyglet_gui.manager import Manager
 from pyglet_gui.buttons import Button
 from pyglet_gui.containers import VerticalContainer, HorizontalContainer
 
-from pyglet.window import Window
-from pyglet.graphics import Batch
-import pyglet.text
-import pyglet.app
-
 from core import logger
 from core.constants import COLORS as C, FONT_SIZES as F, Group as G
 
@@ -39,7 +34,12 @@ class Dialog(Manager):
 		button_strip.append(None)
 
 		vert_strip = [SectionHeader('Titre')] if title is not None and len(title) > 0 else list()
-		vert_strip.extend([Label(msg), HorizontalContainer(button_strip)])
+		if isinstance(msg, str):
+			vert_strip.extend([Label(msg), HorizontalContainer(button_strip)])
+		elif isinstance(msg, list):
+			for this_msg in msg:
+				vert_strip.extend([Label(this_msg)])
+			vert_strip.extend([HorizontalContainer(button_strip)])
 
 		super().__init__(content=Frame(VerticalContainer(vert_strip)),
 						 window=win, batch=win.batch, group=G(21), theme=DIALOG_THEME)
@@ -55,43 +55,6 @@ class Dialog(Manager):
 	def on_exit(self, dt):
 		self.win.alive = False
 		self.on_delete(0)
-
-
-
-def fatalerror(msg):
-	batch = Batch()
-	fatalwin = Window(style=Window.WINDOW_STYLE_BORDERLESS, width=400, height=250)
-	pyglet.gl.glClearColor(*C['BACKGROUND'])  # background definition
-
-	m = 40  # margin
-	title = pyglet.text.Label('OpenMATB – fatal error !', font_name='sans', font_size=F['MEDIUM'], color=C['BACKGROUND'],
-                              x=fatalwin.width//2, y=fatalwin.height-18,
-                              anchor_x='center', anchor_y='center')
-
-	rectangle = pyglet.shapes.Rectangle(0, fatalwin.height-m, fatalwin.width, m, color=C['BLACK'][0:3], batch=batch)
-
-	label = pyglet.text.Label(msg, font_name='serif',
-    	x=fatalwin.width//2, y=fatalwin.height//2, multiline=True, color=C['BLACK'],
-    	anchor_x='center', anchor_y='center', width=fatalwin.width-m*2)
-
-	presskeystr = _('Press any key to exit')
-	presskeylabel = pyglet.text.Label(presskeystr, font_name='serif',
-    	x=fatalwin.width//2, y=25, color=C['BLACK'],
-    	anchor_x='center', anchor_y='center', bold=True)
-
-	@fatalwin.event
-	def on_draw():
-	    fatalwin.clear()
-	    for v in [rectangle, title, label, presskeylabel]:
-	    	v.draw()
-
-
-	@fatalwin.event
-	def on_key_press(symbol, modifiers):
-		exit(0)
-
-	pyglet.app.run()
-
 
 
 DIALOG_THEME = Theme({"font":'serif',

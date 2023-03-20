@@ -6,7 +6,7 @@ from math import sin, pi, ceil
 from pyglet.input import get_joysticks
 from plugins.abstract import AbstractPlugin
 from core.widgets import Reticle
-from core.dialog import Dialog
+from core.error import errors
 from core.container import Container
 from core.constants import Group as G, COLORS as C, FONT_SIZES as F
 
@@ -38,7 +38,7 @@ class Track(AbstractPlugin):
             else:
                 self.joystick = None
                 if self.silent == False:
-                    self.win.joystick_warning = True
+                    errors.add_error(_('No joystick found'))
 
         if self.joystick is not None:
             self.joystick.push_handlers(self.win)

@@ -2,6 +2,7 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from pyglet import font
 from pyglet.canvas import get_display
 from pyglet.window import Window, key as winkey
 from pyglet.graphics import Batch
@@ -11,18 +12,39 @@ from core.dialog import Dialog
 from core.container import Container
 from core.constants import COLORS as C, FONT_SIZES as F, Group as G, PLUGIN_TITLE_HEIGHT_PROPORTION
 from core.logger import logger
+from core.error import errors
 import os
 
 class Window(Window):
-    def __init__(self, screen_index, fullscreen, replay_mode, highlight_aoi, hide_on_pause,
+    def __init__(self, screen_index, font_name, fullscreen, replay_mode, highlight_aoi, hide_on_pause,
                  *args, **kwargs):
+
+        errors.win = self
+
+        # Screen definition #
+        try:
+            screen_index = int(screen_index)
+        except:
+            screen_index = 0
 
         screens = get_display().get_screens()
         if screen_index + 1 > len(screens):
-            from core.error import fatalerror
-            fatalerror(_(f"In config.ini, the specified screen index (%s) exceed the number of available screens (%s). Note that in Python, the first index is 0.") % (screen_index, len(get_display().get_screens())))
+            screen = screens[-1]
+            errors.add_error(_(f"In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected.") % len(get_display().get_screens()))
         else:
-            screen = screens[screen_index]
+            screen = screens[screen_index]     
+
+
+        # Font definition
+        # Font check
+        if len(font_name) == 0:
+            self.font_name = 'serif'
+        elif not font.have_font(font_name):
+            errors.add_error(_(f"In config.ini, the specified font (%s) is not available. A default serif font will be used."))
+            self.font_name = 'serif'
+        else:
+            self.font_name = font_name
+
 
         if replay_mode:
             self._width=int(screen.width / 1.2)
@@ -31,7 +53,7 @@ class Window(Window):
             self._width=screen.width
             self._height=screen.height
 
-        #In Windows, setting fullscreen will make pyglet freeze
+        # In Windows, setting fullscreen will make pyglet freeze
         if os.name=='nt':
             fullscreen=False
 
@@ -55,6 +77,7 @@ class Window(Window):
         self.on_key_press_replay = None # used by the replay
         self.highlight_aoi = highlight_aoi
         self.hide_on_pause = hide_on_pause
+
 
 
     def is_in_replay_mode(self):
@@ -96,10 +119,10 @@ class Window(Window):
     def on_draw(self):
         self.set_mouse_visible(self.is_mouse_necessary())
 
-        if self.joystick_warning and not self.modal_dialog:
-            self.add_dialog('Joystick error', _('No joystick found'),
-                            buttons=[_('Continue'), _('Exit')], exit_button=_('Exit'))
-            self.joystick_warning = False
+        # if self.joystick_warning and not self.modal_dialog:
+            # self.add_dialog('Joystick error', ,
+                            # buttons=[_('Continue'), _('Exit')], exit_button=_('Exit'))
+            # self.joystick_warning = False
 
         self.clear()
         self.batch.draw()
