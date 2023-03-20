@@ -8,25 +8,20 @@ from pyglet.text import Label, HTMLLabel
 from core.constants import Group as G, COLORS as C, FONT_SIZES as F
 from core import logger
 from core.constants import BFLIM
-import configparser
-
-# Read the configuration file
-config = configparser.ConfigParser()
-config.read("config.ini")
-font_name = config['Openmatb']['font_name']
-
+from core.dialog import Dialog
 
 class AbstractWidget:
     def __init__(self, name, container, win):
         self.name = name
         self.container = container
         self.win = win
+        self.font_name = self.win.font_name
         self.vertex = dict()
         self.on_batch = dict()
         self.visible = False
         self.logger = logger
         glLineWidth(2)
-        self.font_name = font_name
+        
         self.m_draw = 0
         self.verbose = False
 

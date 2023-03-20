@@ -4,8 +4,8 @@
 
 from plugins.abstract import AbstractPlugin
 from core.constants import PATHS as P
-from core.dialog import fatalerror
-from core import logger
+from core.logger import logger
+from core.error import errors
 
 class Parallelport(AbstractPlugin):
     def __init__(self, window, taskplacement='invisible', taskupdatetime=5):
@@ -14,16 +14,13 @@ class Parallelport(AbstractPlugin):
         try:
             import parallel
         except:
-             #TODO: use a global alerterror() method
-            print(_('Python Parallel module is missing. Skipping parallel plugin'))
+            errors.add_error(_('Python Parallel module is missing. Skipping parallel plugin'))
             return
 
         try:
             self._port = parallel.Parallel()
-
         except:  # Exception under Linux platforms : FileNotFoundError (/dev/parport0)
-            fatalerror(_('The physical parallel port was not found.'))
-
+            errors.add_error(_('The physical parallel port was not found.'))
         else:
 
             self._downvalue = 0

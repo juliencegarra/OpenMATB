@@ -5,8 +5,8 @@
 import re
 from pyglet.window import key as winkey
 from core.constants import COLORS as C, PATHS as P
-from core import logger
-from core.dialog import fatalerror
+from core.logger import logger
+from core.error import errors
 import plugins
 
 DEPRECATED = ['pumpstatus', 'end', 'cutofffrequency', 'equalproportions'] # Ignore these arguments
@@ -73,10 +73,14 @@ class Scenario:
     '''
 
     def __init__(self, scenario_path, window):
+        self.events = list()
+        self.plugins = dict()
+
         if scenario_path.exists():
             contents = open(scenario_path, 'r').readlines()
         else:
-            fatalerror(_('%s was not found') % str(scenario_path))
+            errors.add_error(_('%s was not found') % str(scenario_path), fatal = True)
+            return
 
         self.path = scenario_path
         logger.log_manual_entry(self.path, key='scenario_path')
@@ -91,25 +95,25 @@ class Scenario:
         # But first, check that only available plugins are mentioned
         for event in self.events:
             if not hasattr(globals()['plugins'], event.plugin.capitalize()):
-                fatalerror(_('Scenario error: %s is not a valid plugin name (l. %s)') % (event.plugin, event.line))
+                errors.add_error(_('Scenario error: %s is not a valid plugin name (l. %s)') % (event.plugin, event.line), fatal = True)
 
         self.plugins = {name: getattr(globals()['plugins'], name.capitalize())(window)
                         for name in self.get_plugins_name_list()}
 
 
         self.events = self.events_retrocompatibility() # Apply retrocompatiblity to events
-        errors = self.check_events()   # Check that events are properly expressed
+        event_errors = self.check_events()   # Check that events are properly expressed
 
         errorf = open(P['SCENARIO_ERRORS'],'w')
-        if len(errors) > 0:
-            for this_error in errors:
+        if len(event_errors) > 0:
+            for this_error in event_errors:
                 print(this_error, file=errorf)
         else:
             print(_('No error'), file=errorf)
         errorf.close()
 
-        if len(errors) > 0:
-            fatalerror(_(f"There were some errors in the scenario. See the %s file.") % P['SCENARIO_ERRORS'].name)
+        if len(event_errors) > 0:
+            errors.add_error(_(f"There were some errors in the scenario. See the %s file.") % P['SCENARIO_ERRORS'].name, fatal = True)
 
 
     def events_retrocompatibility(self):

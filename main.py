@@ -6,8 +6,6 @@
 
 import gettext, configparser
 from pathlib import Path
-from pyglet import font
-
 
 # Read the configuration file
 config = configparser.ConfigParser()
@@ -25,21 +23,7 @@ language.install()
 # Only after language installation, import core modules (they must be translated)
 from core import Window, Scenario, Scheduler
 from core.constants import PATHS as P
-from core.dialog import fatalerror
-
-# Check if the specified font is available on the system
-if len(config['Openmatb']['font_name']) and not font.have_font(config['Openmatb']['font_name']):
-    fatalerror(_(f"In config.ini, the specified font (%s) is not available. Correct it or leave it empty to use a default font.") % config['Openmatb']['font_name'])
-
-
-# Check the specified screen index. If null, set screen_index to 0.
-if len(config['Openmatb']['screen_index']) == 0:
-    screen_index = 0
-else:
-    try:
-        screen_index = int(config['Openmatb']['screen_index'])
-    except ValueError:
-        fatalerror(_(f"In config.ini, screen index must be an integer, not %s") % config['Openmatb']['screen_index'])
+from core.error import errors
 
 # Check boolean values
 for param in ['fullscreen', 'highlight_aoi', 'hide_on_pause']:
@@ -49,18 +33,21 @@ for param in ['fullscreen', 'highlight_aoi', 'hide_on_pause']:
         else:
             globals()[param] = False
     else:
-        fatalerror(_(f"In config.ini, [%s] parameter must be a boolean (true or false, not %s).") %           (param, config['Openmatb'][param]))
+        globals()[param] = False
+        errors.add_error(_(f"In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False") % (param, config['Openmatb'][param]))
 
 
 class OpenMATB:
     def __init__(self):
         # The MATB window must be bordeless (in non-fullscreen mode)
-        window = Window(screen_index=screen_index, fullscreen=fullscreen,
-                        replay_mode=False, style=Window.WINDOW_STYLE_BORDERLESS,
-                        highlight_aoi=highlight_aoi, hide_on_pause=hide_on_pause)
+        window = Window(screen_index=config['Openmatb']['screen_index'], font_name=config['Openmatb']['font_name'],
+                        fullscreen=fullscreen, replay_mode=False, 
+                        style=Window.WINDOW_STYLE_BORDERLESS, highlight_aoi=highlight_aoi, hide_on_pause=hide_on_pause)
 
         scenario_path = P['SCENARIOS'].joinpath(config['Openmatb']['scenario_path'])
         scenario = Scenario(scenario_path, window)
+
+        errors.show_errors()
 
         self.scheduler = Scheduler(scenario.events, scenario.plugins, window,
                                    config['Openmatb']['clock_speed'],
