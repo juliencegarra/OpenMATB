@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 C = COLORS = dict(WHITE=(255, 255, 255, 255),
+                  WHITE_TRANSLUCENT=(255, 255, 255, 235),
                   BLACK=(50, 50, 50, 255),
                   GREEN=(142, 219, 176, 255),
                   RED=(241, 100, 100, 255),

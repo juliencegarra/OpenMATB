@@ -8,4 +8,4 @@ from .window import Window
 from .scenario import Scenario
 from .scheduler import Scheduler
 from .clock import Clock
-from .dialog import Dialog
+from .modaldialog import ModalDialog

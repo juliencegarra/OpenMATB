@@ -8,7 +8,7 @@ from pyglet.text import Label, HTMLLabel
 from core.constants import Group as G, COLORS as C, FONT_SIZES as F
 from core import logger
 from core.constants import BFLIM
-from core.dialog import Dialog
+
 
 class AbstractWidget:
     def __init__(self, name, container, win):

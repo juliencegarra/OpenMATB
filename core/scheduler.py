@@ -4,10 +4,10 @@
 
 from sys import exit
 from pyglet.app import EventLoop
-from core.dialog import Dialog
 from core.scenario import Event
 from core.clock import Clock
-from core import logger
+from core.modaldialog import ModalDialog
+from core.logger import logger
 
 import pyglet.clock
 import sys
@@ -58,13 +58,13 @@ class Scheduler:
 
 
     def update(self, dt):
-        if self.win.modal_dialog == True:
+        if self.win.modal_dialog is not None:
             return
 
         # Display the session ID if need be
         if bool(self.display_session_number) == True:
             msg = _('Session ID: %s') % logger.session_id
-            self.win.add_dialog('Session ID', msg, buttons=[_('Start')])
+            self.win.modal_dialog = ModalDialog(self.win, msg, title='Session ID')
             self.display_session_number = False
 
 

@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2023-03-14 12:01+0100\n"
-"PO-Revision-Date: 2023-03-14 12:01+0100\n"
+"POT-Creation-Date: 2023-03-21 11:42+0100\n"
+"PO-Revision-Date: 2023-03-21 11:42+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -20,184 +20,196 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: locales\n"
 
-#: core/constants.py:32 core/translator.py:4
+#: core/constants.py:37
 msgid "System monitoring"
 msgstr "System monitoring"
 
-#: core/constants.py:33
+#: core/constants.py:38
 msgid "Tracking"
 msgstr "Tracking"
 
-#: core/constants.py:34
+#: core/constants.py:39
 msgid "Scheduling"
 msgstr "Scheduling"
 
-#: core/constants.py:35
+#: core/constants.py:40
 msgid "Communications"
 msgstr "Communications"
 
-#: core/constants.py:36
+#: core/constants.py:41
 msgid "Resources management"
 msgstr "Resources management"
 
-#: core/constants.py:37
+#: core/constants.py:42
 msgid "Parallel port"
 msgstr "Parallel port"
 
-#: core/constants.py:38
+#: core/constants.py:43
 msgid "Lab streaming layer"
 msgstr "Lab streaming layer"
 
-#: core/constants.py:39
+#: core/constants.py:44
 msgid "Instructions"
 msgstr "Instructions"
 
-#: core/constants.py:40
+#: core/constants.py:45
 msgid "Generic scales"
 msgstr "Generic scales"
 
-#: core/constants.py:41
+#: core/constants.py:46
 msgid "Eye tracker"
 msgstr "Eye tracker"
 
-#: core/constants.py:42
+#: core/constants.py:47
 msgid "Performance"
 msgstr "Performance"
 
-#: core/dialog.py:73
-msgid "Press any key to exit"
-msgstr "Press any key to exit"
+#: core/error.py:21
+msgid "Warning"
+msgstr "Warning"
 
-#: core/logger.py:126
+#: core/error.py:21
+msgid "Error(s)"
+msgstr "Error(s)"
+
+#: core/logger.py:130
 msgid "Warning, queue is empty"
 msgstr "Warning, queue is empty"
 
-#: core/scenario.py:75
+#: core/modaldialog.py:49
+msgid "Exit"
+msgstr "Exit"
+
+#: core/modaldialog.py:56
+msgid "Continue"
+msgstr "Continue"
+
+#: core/scenario.py:82
 #, python-format
 msgid "%s was not found"
 msgstr "%s was not found"
 
-#: core/scenario.py:90
+#: core/scenario.py:98
 #, python-format
 msgid "Scenario error: %s is not a valid plugin name (l. %s)"
 msgstr "Scenario error: %s is not a valid plugin name (l. %s)"
 
-#: core/scenario.py:104
+#: core/scenario.py:112
 msgid "No error"
 msgstr "No error"
 
-#: core/scenario.py:108
+#: core/scenario.py:116
 #, python-format
 msgid "There were some errors in the scenario. See the %s file."
 msgstr "There were some errors in the scenario. See the %s file."
 
-#: core/scenario.py:176
+#: core/scenario.py:184
 #, python-format
 msgid "The (%s) plugin does not have a start command."
 msgstr "The (%s) plugin does not have a start command."
 
-#: core/scenario.py:180
+#: core/scenario.py:188
 #, python-format
 msgid "The (%s) plugin does not have a stop command."
 msgstr "The (%s) plugin does not have a stop command."
 
-#: core/scenario.py:189
+#: core/scenario.py:197
 #, python-format
 msgid "Error on line %s. This event does not trigger any command."
 msgstr "Error on line %s. This event does not trigger any command."
 
-#: core/scenario.py:193
+#: core/scenario.py:201
 #, python-format
 msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
 msgstr "Error on line %s. Maximum length of an event is 2 (parameter;value)."
 
-#: core/scenario.py:200
+#: core/scenario.py:208
 #, python-format
 msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
 msgstr "Error on line %s. Method (%s) is not available for the plugin (%s)"
 
-#: core/scenario.py:217
+#: core/scenario.py:225
 #, python-format
 msgid "Warning on line %s. Parameter (%s) has no verification method"
 msgstr "Warning on line %s. Parameter (%s) has no verification method"
 
-#: core/scenario.py:235
+#: core/scenario.py:243
 #, python-format
 msgid "Error on line %s. %s "
 msgstr "Error on line %s. %s "
 
-#: core/scenario.py:242
+#: core/scenario.py:250
 #, python-format
 msgid "Error on line %s. The %s plugin does not have a %s parameter"
 msgstr "Error on line %s. The %s plugin does not have a %s parameter"
 
-#: core/scenario.py:262
+#: core/scenario.py:270
 #, python-format
 msgid "should be a string (not %s)."
 msgstr "should be a string (not %s)."
 
-#: core/scenario.py:266
+#: core/scenario.py:274
 #, python-format
 msgid "should be a natural (0 included) integer (not %s)."
 msgstr "should be a natural (0 included) integer (not %s)."
 
-#: core/scenario.py:283
+#: core/scenario.py:291
 #, python-format
 msgid "should be a positive (0 excluded) integer (not %s)."
 msgstr "should be a positive (0 excluded) integer (not %s)."
 
-#: core/scenario.py:290
+#: core/scenario.py:298
 #, python-format
 msgid "should be a boolean (not %s)."
 msgstr "should be a boolean (not %s)."
 
-#: core/scenario.py:306
+#: core/scenario.py:314
 #, python-format
 msgid "must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
 msgstr "must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
 
-#: core/scenario.py:312
+#: core/scenario.py:320
 #, python-format
 msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
 msgstr "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
 
-#: core/scenario.py:317
+#: core/scenario.py:325
 #, python-format
 msgid "should be a positive float (not %s)"
 msgstr "should be a positive float (not %s)"
 
-#: core/scenario.py:352
+#: core/scenario.py:360
 #, python-format
 msgid "should be comprised in %s (not %s)"
 msgstr "should be comprised in %s (not %s)"
 
-#: core/scenario.py:359
+#: core/scenario.py:367
 #, python-format
 msgid "should be a valid regex expression (not %s)"
 msgstr "should be a valid regex expression (not %s)"
 
-#: core/scenario.py:369
+#: core/scenario.py:377
 #, python-format
 msgid "should be an acceptable keyboard key value (not %s). See documentation."
 msgstr ""
 "should be an acceptable keyboard key value (not %s). See documentation."
 
-#: core/scenario.py:385
+#: core/scenario.py:393
 #, python-format
 msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
 msgstr "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
 
-#: core/scenario.py:400
+#: core/scenario.py:408
 #, python-format
 msgid "should be composed of valid callsigns (not %s)"
 msgstr "should be composed of valid callsigns (not %s)"
 
-#: core/scenario.py:404
+#: core/scenario.py:412
 #, python-format
 msgid "should be a float between 0 and 1 (included) (not %s)"
 msgstr "should be a float between 0 and 1 (included) (not %s)"
 
-#: core/scenario.py:423
+#: core/scenario.py:431
 #, python-format
 msgid ""
 "should be available either in the Instruction or Questionnaire folder (not "
@@ -206,153 +218,148 @@ msgstr ""
 "should be available either in the Instruction or Questionnaire folder (not "
 "%s)"
 
-#: core/scheduler.py:52
+#: core/scheduler.py:66
 #, python-format
 msgid "Session ID: %s"
 msgstr "Session ID: %s"
 
-#: core/scheduler.py:53
-msgid "Start"
-msgstr "Start"
-
-#: core/widgets/timeline.py:29
+#: core/widgets/timeline.py:33
 msgid "min."
 msgstr "min."
 
-#: core/window.py:19
+#: core/window.py:35
 #, python-format
 msgid ""
-"In config.ini, the specified screen index (%s) exceed the number of "
-"available screens (%s). Note that in Python, the first index is 0."
+"In config.ini, the specified screen index exceeds the number of available "
+"screens (%s). Last screen selected."
 msgstr ""
-"In config.ini, the specified screen index (%s) exceed the number of "
-"available screens (%s). Note that in Python, the first index is 0."
+"In config.ini, the specified screen index exceeds the number of available "
+"screens (%s). Last screen selected."
 
-#: core/window.py:96
-msgid "No joystick found"
-msgstr "No joystick found"
+#: core/window.py:45
+msgid ""
+"In config.ini, the specified font is not available. A default font will be "
+"used."
+msgstr ""
+"In config.ini, the specified font is not available. A default font will be "
+"used."
 
-#: core/window.py:97
-msgid "Continue"
-msgstr "Continue"
+#: core/window.py:166
+msgid "You hit the Escape key"
+msgstr "You hit the Escape key"
 
-#: core/window.py:97
-msgid "Exit"
-msgstr "Exit"
+#: core/window.py:166
+msgid "Exit OpenMATB?"
+msgstr "Exit OpenMATB?"
 
-#: core/window.py:143
-#| msgid ""
-#| "You pressed the Escape key.\n"
-#| "Do you want to quit?"
-msgid "You pressed the Escape key. Do you want to quit?"
-msgstr "You pressed the Escape key. Do you want to quit?"
+#: core/window.py:170
+msgid "Pause"
+msgstr "Pause"
 
-#: core/window.py:144 core/window.py:145
-msgid "Yes"
-msgstr "Yes"
-
-#: core/window.py:144
-msgid "No"
-msgstr "No"
-
-#: core/window.py:193
+#: core/window.py:209
 #, python-format
 msgid "Error. No placement found for the [%s] alias"
 msgstr "Error. No placement found for the [%s] alias"
 
-#: main.py:30
+#: main.py:37
 #, python-format
-#| msgid ""
-#| "In config.ini, the specified font (%s) is not available. If you continue, "
-#| "a default font will be used."
 msgid ""
-"In config.ini, the specified font (%s) is not available. Correct it or leave "
-"it empty to use a default font."
+"In config.ini, [%s] parameter must be a boolean (true or false, not %s). "
+"Defaulting to False"
 msgstr ""
-"In config.ini, the specified font (%s) is not available. Correct it or leave "
-"it empty to use a default font."
+"In config.ini, [%s] parameter must be a boolean (true or false, not %s). "
+"Defaulting to False"
 
-#: main.py:40
-#, python-format
-msgid "In config.ini, screen index must be an integer, not %s"
-msgstr "In config.ini, screen index must be an integer, not %s"
-
-#: main.py:50
-#, python-format
-#| msgid "In config.ini, screen index must be an integer, not %s"
-msgid ""
-"In config.ini, [%s] parameter must be a boolean (true or false, not %s)."
-msgstr ""
-"In config.ini, [%s] parameter must be a boolean (true or false, not %s)."
-
-#: plugins/abstract.py:191 plugins/abstract.py:193
+#: plugins/abstract.py:196 plugins/abstract.py:198
 msgid "MANUAL"
 msgstr "MANUAL"
 
-#: plugins/abstract.py:191
+#: plugins/abstract.py:196
 msgid "AUTO"
 msgstr "AUTO"
 
-#: plugins/communications.py:58
+#: plugins/communications.py:62
 msgid " does not exist"
 msgstr " does not exist"
 
-#: plugins/communications.py:77
+#: plugins/communications.py:81
 #, python-format
 msgid "Callsign \t\t %s"
 msgstr "Callsign \t\t %s"
 
-#: plugins/genericscales.py:13
+#: plugins/genericscales.py:17
 msgid "Press SPACE to validate"
 msgstr "Press SPACE to validate"
 
-#: plugins/instructions.py:11
+#: plugins/instructions.py:15
 msgid "Press SPACE to continue"
 msgstr "Press SPACE to continue"
 
-#: plugins/labstreaminglayer.py:19
+#: plugins/labstreaminglayer.py:23
 msgid "Please enable the OpenMATB stream into your LabRecorder."
 msgstr "Please enable the OpenMATB stream into your LabRecorder."
 
-#: plugins/parallelport.py:14
+#: plugins/parallelport.py:17
 msgid "Python Parallel module is missing. Skipping parallel plugin"
 msgstr "Python Parallel module is missing. Skipping parallel plugin"
 
-#: plugins/parallelport.py:21
+#: plugins/parallelport.py:23
 msgid "The physical parallel port was not found."
 msgstr "The physical parallel port was not found."
 
-#: plugins/resman.py:110
+#: plugins/resman.py:114
 msgid "Pump status"
 msgstr "Pump status"
 
-#: plugins/scheduling.py:127
+#: plugins/scheduling.py:131
 #, python-format
 msgid "Elapsed time \t %s"
 msgstr "Elapsed time \t %s"
 
-#: plugins/scheduling.py:136
+#: plugins/scheduling.py:140
 #, python-format
-#| msgid "Elapsed time \t %s"
 msgid "Remaining time \t %s"
 msgstr "Remaining time \t %s"
 
-#: replay.py:41
+#: plugins/track.py:41
+msgid "No joystick found"
+msgstr "No joystick found"
+
+#: replay.py:45
 msgid ""
 "In config.ini, screen index must be an integer, not {config['Openmatb']"
 "['screen_index']}"
 msgstr ""
 "In config.ini, screen index must be an integer, not {config['Openmatb']"
 "['screen_index']}"
+
+#~ msgid "Press any key to exit"
+#~ msgstr "Press any key to exit"
+
+#~ msgid "Start"
+#~ msgstr "Start"
+
+#~| msgid ""
+#~| "You pressed the Escape key.\n"
+#~| "Do you want to quit?"
+#~ msgid "You pressed the Escape key. Do you want to quit?"
+#~ msgstr "You pressed the Escape key. Do you want to quit?"
+
+#~ msgid "Yes"
+#~ msgstr "Yes"
+
+#~ msgid "No"
+#~ msgstr "No"
+
+#, python-format
+#~ msgid "In config.ini, screen index must be an integer, not %s"
+#~ msgstr "In config.ini, screen index must be an integer, not %s"
 
 #~ msgid "OpenMATB Error"
 #~ msgstr "OpenMATB Error"
 
 #~ msgid "Abort"
 #~ msgstr "Abort"
-
-#~ msgid "Exit OpenMATB?"
-#~ msgstr "Exit OpenMATB?"
 
 #~ msgid "Quit"
 #~ msgstr "Quit"
