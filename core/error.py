@@ -19,6 +19,8 @@ class Errors:
 		if self.win is not None:
 			if not self.is_empty():
 				title = _('Warning') if not self.some_fatals else _('Error(s)')
-				self.win.modal_dialog = ModalDialog(self.win, self.errors_list, title=title, continue_key=None, exit_key='ESCAPE')
+				continue_key = None if self.some_fatals else 'SPACE'
+				self.win.modal_dialog = ModalDialog(self.win, self.errors_list, title=title,
+					  								continue_key=continue_key, exit_key='ESCAPE')
 
 errors = Errors()
