@@ -34,7 +34,7 @@ class Window(Window):
             screen = screens[-1]
             errors.add_error(_(f"In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected.") % len(get_display().get_screens()))
         else:
-            screen = screens[screen_index]     
+            screen = screens[screen_index]
 
 
         # Font definition
@@ -55,10 +55,6 @@ class Window(Window):
             self._width=screen.width
             self._height=screen.height
 
-        # In Windows, setting fullscreen will make pyglet freeze
-        if os.name=='nt':
-            fullscreen=False
-
         self._fullscreen=fullscreen
 
         super().__init__(fullscreen=self._fullscreen, width=self._width, height=self._height, vsync=True, *args, **kwargs)
@@ -78,7 +74,6 @@ class Window(Window):
         self.on_key_press_replay = None # used by the replay
         self.highlight_aoi = highlight_aoi
         self.hide_on_pause = hide_on_pause
-
 
 
     def is_in_replay_mode(self):
