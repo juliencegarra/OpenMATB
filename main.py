@@ -26,7 +26,7 @@ from core.constants import PATHS as P
 from core.error import errors
 
 # Check boolean values
-for param in ['fullscreen', 'highlight_aoi', 'hide_on_pause']:
+for param in ['fullscreen', 'highlight_aoi', 'hide_on_pause', 'display_session_number']:
     if config['Openmatb'][param].lower() in ['true', 'false']:
         if config['Openmatb'][param].lower() == 'true':
             globals()[param] = True
