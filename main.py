@@ -51,7 +51,7 @@ class OpenMATB:
 
         self.scheduler = Scheduler(scenario.events, scenario.plugins, window,
                                    config['Openmatb']['clock_speed'],
-                                   config['Openmatb']['display_session_number'])
+                                   display_session_number)
         self.scheduler.run()
 
 if __name__ == '__main__':
