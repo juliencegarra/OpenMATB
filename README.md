@@ -29,9 +29,7 @@ The last version requires Python 3.9 and only depends on the following third-par
 - [rstr](https://github.com/leapfrogonline/rstr)
 - [pylsl](https://github.com/chkothe/pylsl)
 
-The program was tested under Windows and Linux systems (64 bits). Some minimal code updates are expected to run under Mac.
-
-To run perfectly, the software requires only a personal computer and a joystick for the tracking task.
+The program is compatible with Windows, Mac and Linux systems. To run perfectly, the software requires only a personal computer and a joystick for the tracking task.
 
 ## Cross-platform installation
 
