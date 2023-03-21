@@ -62,7 +62,7 @@ class Scheduler:
             return
 
         # Display the session ID if need be
-        if self.display_session_number.lower() == 'true':
+        if self.display_session_number:
             msg = _('Session ID: %s') % logger.session_id
             self.win.modal_dialog = ModalDialog(self.win, msg, title='Session ID')
             self.display_session_number = False
