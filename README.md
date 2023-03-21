@@ -27,7 +27,6 @@ The last version requires Python 3.9 and only depends on the following third-par
 - [pyglet](https://github.com/pyglet/pyglet)
 - [pyparallel](https://github.com/pyserial/pyparallel)
 - [rstr](https://github.com/leapfrogonline/rstr)
-- [pyglet-gui](https://github.com/jorgecarleitao/pyglet-gui)
 - [pylsl](https://github.com/chkothe/pylsl)
 
 The program was tested under Windows and Linux systems (64 bits). Some minimal code updates are expected to run under Mac.

@@ -12,8 +12,7 @@ from core.constants import COLORS as C
 class SimpleHTML(AbstractWidget):
     def __init__(self, name, container, win, text, draw_order=1, x=0.5, y=0.5, wrap_width=1):
         super().__init__(name, container, win)
-
-        
+                
         text = self.preparse(text)
 
         x = int(self.container.l + x * self.container.w)

@@ -2,4 +2,3 @@ pyglet==1.5.26
 rstr==3.1.0
 pyparallel==0.2.2
 pylsl==1.16.1
-git+https://github.com/jorgecarleitao/pyglet-gui.git

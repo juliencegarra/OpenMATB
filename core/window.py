@@ -8,12 +8,14 @@ from pyglet.window import Window, key as winkey
 from pyglet.graphics import Batch
 from pyglet.gl import GL_POLYGON
 from pyglet.text import Label
-from core.dialog import Dialog
 from core.container import Container
 from core.constants import COLORS as C, FONT_SIZES as F, Group as G, PLUGIN_TITLE_HEIGHT_PROPORTION
+from core.modaldialog import ModalDialog
 from core.logger import logger
 from core.error import errors
 import os
+
+
 
 class Window(Window):
     def __init__(self, screen_index, font_name, fullscreen, replay_mode, highlight_aoi, hide_on_pause,
@@ -70,9 +72,8 @@ class Window(Window):
         self.replay_mode = replay_mode
         self.create_MATB_background()
         self.alive = True
-        self.modal_dialog = False
+        self.modal_dialog = None
         self.slider_visible = False
-        self.joystick_warning = False
 
         self.on_key_press_replay = None # used by the replay
         self.highlight_aoi = highlight_aoi
@@ -118,12 +119,6 @@ class Window(Window):
 
     def on_draw(self):
         self.set_mouse_visible(self.is_mouse_necessary())
-
-        # if self.joystick_warning and not self.modal_dialog:
-            # self.add_dialog('Joystick error', ,
-                            # buttons=[_('Continue'), _('Exit')], exit_button=_('Exit'))
-            # self.joystick_warning = False
-
         self.clear()
         self.batch.draw()
 
@@ -138,7 +133,7 @@ class Window(Window):
 
     # Log any keyboard input, either plugins accept it or not
     def on_key_press(self, symbol, modifiers):
-        if self.modal_dialog == True:
+        if self.modal_dialog is not None:
             return
 
         keystr = winkey.symbol_string(symbol)
@@ -158,7 +153,8 @@ class Window(Window):
 
 
     def on_key_release(self, symbol, modifiers):
-        if self.modal_dialog == True:
+        if self.modal_dialog is not None:
+            self.modal_dialog.on_key_release(symbol, modifiers)
             return
 
         keystr = winkey.symbol_string(symbol)
@@ -167,18 +163,11 @@ class Window(Window):
 
 
     def exit_prompt(self):
-        msg = _('You pressed the Escape key. Do you want to quit?')
-        self.add_dialog('Exit', msg, buttons=[_('Yes'), _('No')],
-               exit_button=_('Yes'), hide_background=self.hide_on_pause)
+        self.modal_dialog = ModalDialog(self, _('You hit the Escape key'), title=_('Exit OpenMATB?'), exit_key='q')
 
 
     def pause_prompt(self):
-        self.add_dialog('Pause', 'Pause', buttons=['Continuer'], title=None,
-                        hide_background=self.hide_on_pause)
-
-
-    def add_dialog(self, name, msg, buttons, **kwargs):
-        Dialog(self, name, msg, buttons, **kwargs)
+        self.modal_dialog = ModalDialog(self, _('Pause'))
 
 
     def exit(self):
