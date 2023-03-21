@@ -39,11 +39,12 @@ class ModalDialog:
         if isinstance(msg, str):
             msg = [msg]
 
-        html = '<font face=%s>' % self.win.font_name
-        html += '<center><p><strong>%s</strong></p></center>' % title
+        html = '<center><p><strong><font face=%s>' % self.win.font_name
+        html += '%s</font></strong></p></center>' % title
         for m in msg:
-            html += '<center><p>%s</p></center>' % m
-        html += '<center><p><em>'
+            html += '<center><p><font face=%s>' % self.win.font_name
+            html += '%s</font></p></center>' % m
+        html += '<center><p><em><font face=%s>' % self.win.font_name
         if exit_key is not None:
             html += '[%s]' % _(exit_key.capitalize())
             html += ' %s' % _('Exit')
@@ -54,8 +55,7 @@ class ModalDialog:
         if continue_key is not None:
             html += '[%s]' % _(continue_key.capitalize())
             html += ' %s' % _('Continue')
-        html += '</em></p></center>'
-        html += '</font>'
+        html += '</font></em></p></center>'
 
         self.html_label = HTMLLabel(html, x=0, y=0, anchor_x='center', anchor_y='center', 
                                     group=G(22), batch=self.win.batch, multiline=True, 
