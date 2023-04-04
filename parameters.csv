@@ -40,7 +40,7 @@ sysmon,scales-3-name,Name of the scale #3,(string),F3
 sysmon,scales-3-failure,Set this to True if you want to trigger a failure,(boolean),False
 sysmon,scales-3-side,"To which side trigger the failure? (0:random, 1:up, -1:down)","-1, 0, 1",0
 sysmon,scales-3-key,Keyboard key to resolve a failure,(keyboard key),F3
-sysmon,scales-4-name,Name of the scale #3,(string),F4
+sysmon,scales-4-name,Name of the scale #4,(string),F4
 sysmon,scales-4-failure,Set this to True if you want to trigger a failure,(boolean),False
 sysmon,scales-4-side,"To which side trigger the failure? (0:random, 1:up, -1:down)","-1, 0, 1",0
 sysmon,scales-4-key,Keyboard key to resolve a failure,(keyboard key),F4
