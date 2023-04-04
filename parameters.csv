@@ -1,0 +1,180 @@
+Plugin alias,Variable,Description,Possible values,Default
+(anytaskalias),taskfeedback-overdue-active,Should the task signal it has been waiting for a response for more than taskfeedback-overdue-delayms,(boolean),False
+(anytaskalias),taskfeedback-overdue-color,"Color of the blinking frame, around the task","`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",red
+(anytaskalias),taskfeedback-overdue-delayms,Delay (ms) after which the overdue feedback will blink,(positive integer),2000
+(anytaskalias),Taskfeedback-overdue-blinkduration,"When blinking, delay (ms) between two blinks (1/speed)",(positive integer),1000
+sysmon,title,"Title of the task, displayed if the plugin is visible",(string),System monitoring
+sysmon,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",topleft
+sysmon,taskupdatetime,Delay between plugin updates (ms),(positive integer),200
+sysmon,alerttimeout,Maximum duration of a failure (ms),(positive integer),10000
+sysmon,automaticsolver,"When True, any failure will be automatically corrected after an `automaticsolverdelay` duration",(boolean),False
+sysmon,automaticsolverdelay,"Delay (ms) between a failure onset and its automatic correction, if `automaticsolver` == True",(positive integer),1000
+sysmon,displayautomationstate,"If True, the current automation state (MANUAL vs AUTO ON) of the task is displayed.",(boolean),True
+sysmon,allowanykey,"If True, the subject can use any system monitoring key, to signal a failure. For instance, he or she could use the F2 key to signal a failure for the F4 gauge.",(boolean),False
+sysmon,feedbackduration,"Duration (ms) of feedbacks, if enabled",(positive integer),1500
+sysmon,feedbacks-positive-active,Is the positive feedback (correct response) enabled?,(boolean),True
+sysmon,feedbacks-positive-color,Color of the positive feedback if enabled,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",green
+sysmon,feedbacks-negative-active,Is the negative feedback (correct response) enabled?,(boolean),True
+sysmon,feedbacks-negative-color,Color of the negative feedback if enabled,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",red
+sysmon,lights-1-name,Name of the first (left) light,(string),F5
+sysmon,lights-1-failure,Set this to True if you want to trigger a failure,(boolean),False
+sysmon,lights-1-default,Which is the default state (no failure) of this light?,`on` or `off`,on
+sysmon,lights-1-oncolor,Color of the light when it is `on`,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",green
+sysmon,lights-1-key,Keyboard key to resolve a failure,(keyboard key),F5
+sysmon,lights-1-on,Current state of the light,(boolean),True
+sysmon,lights-2-name,Name of the second (right) light,(string),F6
+sysmon,lights-2-failure,Set this to True if you want to trigger a failure,(boolean),False
+sysmon,lights-2-default,Which is the default state (no failure) of this light?,`on` or `off`,off
+sysmon,lights-2-oncolor,Color of the light when it is `on`,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",red
+sysmon,lights-2-key,Keyboard key to resolve a failure,(keyboard key),F6
+sysmon,lights-2-on,Current state of the light,(boolean),False
+sysmon,scales-1-name,Name of the scale #1,(string),F1
+sysmon,scales-1-failure,Set this to True if you want to trigger a failure,(boolean),False
+sysmon,scales-1-side,"To which side trigger the failure? (0:random, 1:up, -1:down)","-1, 0, 1",0
+sysmon,scales-1-key,Keyboard key to resolve a failure,(keyboard key),F1
+sysmon,scales-2-name,Name of the scale #2,(string),F2
+sysmon,scales-2-failure,Set this to True if you want to trigger a failure,(boolean),False
+sysmon,scales-2-side,"To which side trigger the failure? (0:random, 1:up, -1:down)","-1, 0, 1",0
+sysmon,scales-2-key,Keyboard key to resolve a failure,(keyboard key),F2
+sysmon,scales-3-name,Name of the scale #3,(string),F3
+sysmon,scales-3-failure,Set this to True if you want to trigger a failure,(boolean),False
+sysmon,scales-3-side,"To which side trigger the failure? (0:random, 1:up, -1:down)","-1, 0, 1",0
+sysmon,scales-3-key,Keyboard key to resolve a failure,(keyboard key),F3
+sysmon,scales-4-name,Name of the scale #3,(string),F4
+sysmon,scales-4-failure,Set this to True if you want to trigger a failure,(boolean),False
+sysmon,scales-4-side,"To which side trigger the failure? (0:random, 1:up, -1:down)","-1, 0, 1",0
+sysmon,scales-4-key,Keyboard key to resolve a failure,(keyboard key),F4
+track,title,"Title of the task, displayed if the plugin is visible",(string),Tracking
+track,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",topmid
+track,taskupdatetime,Delay between plugin updates (ms),(positive integer),20
+track,cursorcolor,Color of the moving cursor,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",black
+track,cursorcoloroutside,Color of the moving cursor when outside the target area,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",red
+track,automaticsolver,"When True, the cursor movement is automatically compensated toward the center",(boolean),False
+track,displayautomationstate,"If True, the current automation state (MANUAL vs AUTO ON) of the task is displayed.",(boolean),True
+track,targetproportion,Radius proportion of the target area. 0.1 means that the radius of the target area is 10% of the task total width. 0 means no target area at all.,(unit_interval=[0:1]),0.25
+track,joystickforce,"The smaller this factor, the more the joystick movement is attenuated. Greater values leads to a more sensitive joystick.",(integer),1
+track,inverseaxis,Set this to True if joystick actions should be inverted,(boolean),False
+scheduling,title,"Title of the task, displayed if the plugin is visible",(string),Scheduling
+scheduling,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",topright
+scheduling,taskupdatetime,Delay between plugin updates (ms),(positive integer),1000
+scheduling,minduration,Duration (minutes) of the displayed scheduling,(positive integer),8
+scheduling,displaychronometer,Should the elapsed time be displayed?,(boolean),True
+scheduling,reversechronometer,Should elapsed time be turned to remaining time?,(boolean),False
+scheduling,displayedplugins,List of plugin schedules to display,"(list of task plugins alias = `sysmon`, `track`, `communications`, `resman`)","[`sysmon`, `track`, `communications`, `resman`]"
+communications,title,"Title of the task, displayed if the plugin is visible",(string),Communications
+communications,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",bottomleft
+communications,taskupdatetime,Delay between plugin updates (ms),(positive integer),80
+communications,automaticsolver,"When True, the target frequency is automatically set by an automation",(boolean),False
+communications,displayautomationstate,"If True, the current automation state (MANUAL vs AUTO ON) of the task is displayed.",(boolean),True
+communications,callsignregex,Regular expression pattern for callsign generation,(regular expression),[A-Z][A-Z][A-Z]\d\d\d
+communications,owncallsign,"Callsign of the subject. If empty, automatically generated according to callsignregex",(string),(empty)
+communications,othercallsignnumber,Number of irrelevant distracting callsigns,(positive integer),5
+communications,othercallsign,"List of distracting callsigns. If empty, automatically generated according to callsignregex and othercallsignnumber",(list of string),(empty)
+communications,airbandminMhz,"Minimum radio frequency, in Mhz",(positive float),108.0
+communications,airbandmaxMhz,"Maximum radio frequency, in Mhz",(positive float),137.0
+communications,airbandminvariationMhz,Minimum frequency variation of the target radio,(positive integer),5
+communications,airbandmaxvariationMhz,Maximum frequency variation of the target radio,(positive integer),6
+communications,voiceidiom,Voice idiom. The corresponding folder must be present in the Sound directory,`english` or `french`,french
+communications,voicegender,Voice gender. The corresponding folder must be present in the selected idiom directory,`male` or `female`,female
+communications,radioprompt,Use it to trigger either a target (own) or a distractor (other) prompt [own or other]. Initially empty. Will be emptied at the end of the prompt,`own` or `other`,(empty)
+communications,promptlist,"List of radio labels, in their order of appearance. Each corresponding file must be available in the sound folder. This list is used both for target and distractors radio lists.","[NAV1, NAV2, COM1, COM2]",
+communications,maxresponsedelay,Maximum response delay (ms),(positive integer),20000
+communications,feedbackduration,Duration (ms) of the feedbacks when enabled,(positive integer),1500
+communications,feedbacks-positive-active,Is the positive feedback (correct response) enabled?,(boolean),False
+communications,feedbacks-positive-color,Color of the positive feedback if enabled,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",green
+communications,feedbacks-negative-active,Is the negative feedback (correct response) enabled?,(boolean),False
+communications,feedbacks-negative-color,Color of the negative feedback if enabled,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",red
+resman,title,"Title of the task, displayed if the plugin is visible",(string),Resources management
+resman,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",bottommid
+resman,taskupdatetime,Delay between plugin updates (ms),(positive integer),2000
+resman,automaticsolver,"When True, the target frequency is automatically set by an automation",(boolean),False
+resman,displayautomationstate,"If True, the current automation state (MANUAL vs AUTO ON) of the task is displayed.",(boolean),True
+resman,toleranceradius,Radius of the tolerance area (0=do not display tolerance area),(integer),250
+resman,tolerancecolor,Color of the tolerance area when volume is inside it,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",black
+resman,tolerancecoloroutside,Color of the tolerance area when volume is outside it,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",black
+resman,pumpcoloroff,Color of the pump when its state is `off`,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",white
+resman,pumpcoloron,Color of the pump when its state is `on`,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",green
+resman,pumpcolorfailure,Color of the pump when its state is `failure`,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",red
+resman,displaystatus,Should the pump status be displayed in a specific panel?,(boolean),True
+resman,statuslocation,Placement where to display the pump status,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",bottomright
+resman,tank-a-level,Current level of this tank,(integer),2500
+resman,tank-a-max,Maximum level of this tank,(integer),4000
+resman,tank-a-target,Target level of this tank,(integer),2500
+resman,tank-a-depletable,Is this tank depletable (False=infinite resource),(boolean),True
+resman,tank-a-lossperminute,Volume lost (leak) in a minute,(positive integer),800
+resman,tank-b-level,Current level of this tank,(integer),2500
+resman,tank-b-max,Maximum level of this tank,(integer),4000
+resman,tank-b-target,Target level of this tank,(integer),2500
+resman,tank-b-depletable,Is this tank depletable (False=infinite resource),(boolean),True
+resman,tank-b-lossperminute,Volume lost (leak) in a minute,(positive integer),800
+resman,tank-c-level,Current level of this tank,(integer),1000
+resman,tank-c-max,Maximum level of this tank,(integer),2000
+resman,tank-c-target,Target level of this tank,(integer),(empty)
+resman,tank-c-depletable,Is this tank depletable (False=infinite resource),(boolean),True
+resman,tank-c-lossperminute,Volume lost (leak) in a minute,(positive integer),0
+resman,tank-d-level,Current level of this tank,(integer),1000
+resman,tank-d-max,Maximum level of this tank,(integer),2000
+resman,tank-d-target,Target level of this tank,(integer),(empty)
+resman,tank-d-depletable,Is this tank depletable (False=infinite resource),(boolean),True
+resman,tank-d-lossperminute,Volume lost (leak) in a minute,(positive integer),0
+resman,tank-e-level,Current level of this tank,(integer),3000
+resman,tank-e-max,Maximum level of this tank,(integer),4000
+resman,tank-e-target,Target level of this tank,(integer),(empty)
+resman,tank-e-depletable,Is this tank depletable (False=infinite resource),(boolean),False
+resman,tank-e-lossperminute,Volume lost (leak) in a minute,(positive integer),0
+resman,tank-f-level,Current level of this tank,(integer),3000
+resman,tank-f-max,Maximum level of this tank,(integer),4000
+resman,tank-f-target,Target level of this tank,(integer),(empty)
+resman,tank-f-depletable,Is this tank depletable (False=infinite resource),(boolean),False
+resman,tank-f-lossperminute,Volume lost (leak) in a minute,(positive integer),0
+resman,pump-1-flow,Pump debit per minute,(positive integer),800
+resman,pump-1-state,Current state of the pump,`on` or `off` or `failure`,off
+resman,pump-1-key,Keyboard key to toggle the pump,(keyboard key),NUM_1
+resman,pump-2-flow,Pump debit per minute,(positive integer),600
+resman,pump-2-state,Current state of the pump,`on` or `off` or `failure`,off
+resman,pump-2-key,Keyboard key to toggle the pump,(keyboard key),NUM_2
+resman,pump-3-flow,Pump debit per minute,(positive integer),800
+resman,pump-3-state,Current state of the pump,`on` or `off` or `failure`,off
+resman,pump-3-key,Keyboard key to toggle the pump,(keyboard key),NUM_3
+resman,pump-4-flow,Pump debit per minute,(positive integer),600
+resman,pump-4-state,Current state of the pump,`on` or `off` or `failure`,off
+resman,pump-4-key,Keyboard key to toggle the pump,(keyboard key),NUM_4
+resman,pump-5-flow,Pump debit per minute,(positive integer),600
+resman,pump-5-state,Current state of the pump,`on` or `off` or `failure`,off
+resman,pump-5-key,Keyboard key to toggle the pump,(keyboard key),NUM_5
+resman,pump-6-flow,Pump debit per minute,(positive integer),600
+resman,pump-6-state,Current state of the pump,`on` or `off` or `failure`,off
+resman,pump-6-key,Keyboard key to toggle the pump,(keyboard key),NUM_6
+resman,pump-7-flow,Pump debit per minute,(positive integer),400
+resman,pump-7-state,Current state of the pump,`on` or `off` or `failure`,off
+resman,pump-7-key,Keyboard key to toggle the pump,(keyboard key),NUM_7
+resman,pump-8-flow,Pump debit per minute,(positive integer),400
+resman,pump-8-state,Current state of the pump,`on` or `off` or `failure`,off
+resman,pump-8-key,Keyboard key to toggle the pump,(keyboard key),NUM_8
+instructions,title,"Title of the task, displayed if the plugin is visible",(string),Instructions
+instructions,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",fullscreen
+instructions,taskupdatetime,Delay between plugin updates (ms),(positive integer),15
+instructions,filename,Name of the instructions file to use,(string),(empty)
+instructions,response-text,String chain to prompt the subject to press a continuing key,(string),'Press SPACE to continue’
+instructions,response-key,Keyboard key to continue,(keyboard key),space
+genericscales,title,"Title of the task, displayed if the plugin is visible",(string),Generic scales
+genericscales,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",fullscreen
+genericscales,taskupdatetime,Delay between plugin updates (ms),(positive integer),15
+genericscales,filename,Name of the instructions file to use,(string),(empty)
+genericscales,response-text,String chain to prompt the subject to press a continuing key,(string),'Press SPACE to validate’
+genericscales,response-key,Keyboard key to continue,(keyboard key),space
+performance,title,"Title of the task, displayed if the plugin is visible",(string),Performance
+performance,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",topright
+performance,taskupdatetime,Delay between plugin updates (ms),(positive integer),50
+performance,levelmin,Minimum performance level,(integer),0
+performance,levelmax,Maximum performance level,(integer),100
+performance,ticknumber,Steps (visual) from levelmin to levelmax,(integer),5
+performance,criticallevel,Level below which performance is considered critical,(integer),20
+performance,shadowundercritical,Should the performance level be shadowed when under criticallevel?,(boolean),True
+performance,defaultcolor,Color of the fluctuating performance bar,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",green
+performance,criticalcolor,Color of the performance bar when performance is critical,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",red
+labstreaminglayer,marker,Set this parameter with a string chain to send it through LSL,(string),(empty)
+labstreaminglayer,streamsession,Should the whole session log be streamed through LSL?,(boolean),False
+labstreaminglayer,pauseatstart,"Should a pause screen be proposed at LSL start, to allow the user to add the stream in the LabRecorder?",(boolean),False
+parallelport,trigger,"Set this parameter with a 8-bit integer (1-256), to change the parallel port state",(positive integer),0
+parallelport,delayms,Delay (ms) before the parallel port is set back to its default value (0),(positive integer),5
