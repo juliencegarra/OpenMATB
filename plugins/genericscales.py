@@ -6,7 +6,6 @@ from plugins.abstract import BlockingPlugin
 from core.widgets import Simpletext, Slider, Frame
 from core.constants import FONT_SIZES as F, PATHS as P, COLORS as C
 from re import match as regex_match
-from os import linesep
 
 class Genericscales(BlockingPlugin):
     def __init__(self, window):
@@ -29,8 +28,9 @@ class Genericscales(BlockingPlugin):
     
     def make_slide_graphs(self):
         super().make_slide_graphs()
-                
-        scale_list = [s for s in self.current_slide.split(linesep) if len(s.strip()) > 0]
+            
+        scales = self.current_slide.split('\n')
+        scale_list = [s.strip() for s in scales if len(s.strip()) > 0]
         if len(scale_list) == 0:
             return
 
@@ -38,7 +38,7 @@ class Genericscales(BlockingPlugin):
         
         height_in_prop = (self.question_height_ratio * self.container.h)/all_scales_container.h
         for l, scale in enumerate(scale_list):
-            
+
             # Define the scale main container (question + response slider)            
             scale_container = all_scales_container.reduce_and_translate(
                 height=height_in_prop, y=1-(1/(len(scale_list)))*l)
