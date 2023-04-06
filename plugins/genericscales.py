@@ -31,31 +31,20 @@ class Genericscales(BlockingPlugin):
         super().make_slide_graphs()
                 
         scale_list = [s for s in self.current_slide.split(linesep) if len(s.strip()) > 0]
-        
-        all_scales_container = self.container.get_reduced(1, self.top_to_top*(len(scale_list)-1))
-        
-        # Debug: display the main scales container (vertically centered)
-        #self.add_widget(f'scale_container', Frame, all_scales_container, 
-                        #fill_color=C['GREY'], draw_order=self.m_draw+1)
+        if len(scale_list) == 0:
+            return
+
+        all_scales_container = self.container.get_reduced(1, self.top_to_top*(len(scale_list)))
         
         height_in_prop = (self.question_height_ratio * self.container.h)/all_scales_container.h
         for l, scale in enumerate(scale_list):
+            
             # Define the scale main container (question + response slider)            
             scale_container = all_scales_container.reduce_and_translate(
-                height=height_in_prop, y=1-(1/(len(scale_list)-1))*l)
-            
-            #self.add_widget(f'scale_{l}_background', Frame, scale_container, 
-                            #fill_color=C['WHITE'], draw_order=self.m_draw+2)
+                height=height_in_prop, y=1-(1/(len(scale_list)))*l)
             
             text_container = scale_container.reduce_and_translate(1, 0.4, 0, 1)
             slider_container = scale_container.reduce_and_translate(1, 0.6, 0, 0)
-            
-            # Debug: display text and slider container
-            #self.add_widget(f'scale_{l}_text', Frame, text_container, 
-                            #fill_color=C['GREEN'], draw_order=self.m_draw+2)
-            
-            #self.add_widget(f'scale_{l}_slider', Frame, slider_container, 
-                            #fill_color=C['WHITE'], draw_order=self.m_draw+1)
             
             if regex_match(self.regex_scale_pattern, scale):
                 title, label, limit_labels, values = scale.strip().split(';')
