@@ -131,6 +131,10 @@ logtime,totaltime,scenariotime,type,module,address,value
 
 Details about how each module log information are available [here](the log file).
 
+## Tutorials
+
+For more information about how to use OpenMATB, please refers to [our wiki](https://github.com/juliencegarra/OpenMATB/wiki).
+
 
 ## Major changes
 
@@ -171,17 +175,3 @@ Since the first release of OpenMATB, there has been a lot of changes, the main o
 - To comply with anonymity constraints, the `participantinfo` was removed and replace with a session ID, displayed at startup. This session ID (e.g., 52) is used as a suffix for session logging files.
 - A particular scenario generator was added, so as to help conceiving scenario of progressive difficulty.
 - Each task module now logs a serie of performance metrics as soon as their are available, to facilitate further calculations.
-
-
-## Tutorials
-
-<ul>
-<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/How-to-build-a-scenario-file">How to build a scenario file</a></li>
-<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/List-of-task-parameters">List of available parameters in the scenario files</a></li>
-<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Internationalization">How to add a new translation</a></li>
-<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Write-a-questionnaire">How to add custom rating scales</a></li>
-<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Present-instructions">How to interpose instructions during the experiment?</a></li>
-<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/How-to-compile-to-binary">How to compile the source code to a binary version (Windows)</a></li>
-<li><a href="https://github.com/juliencegarra/OpenMATB/wiki/Technical-documentation">Misc technical aspects (in progress)</a></li>
-
-</ul>
