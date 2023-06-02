@@ -138,7 +138,7 @@ class Communications(AbstractPlugin):
 
     def prompt_for_a_new_target(self, destination, radio_name):
         self.parameters['radioprompt'] = ''
-        radio = [r for i, r in self.parameters['radios'].items() if r['name'] == radio_name][0]
+        radio = self.get_radios_by_key_value('name', radio_name)[0]
 
         callsign = self.parameters[f'{destination}callsign']
         callsign = choice(callsign) if isinstance(callsign, list) else callsign
@@ -172,6 +172,12 @@ class Communications(AbstractPlugin):
         # Multiple radios can have a target frequency at the same time
         # because of a potential delay in reactions
         return [r for _, r in self.parameters['radios'].items() if r['targetfreq'] is not None]
+
+
+    def get_non_target_radios_list(self):   
+        # Multiple radios can have a target frequency at the same time
+        # because of a potential delay in reactions
+        return [r for _, r in self.parameters['radios'].items() if r['targetfreq'] is None]
 
 
     def get_active_radio_dict(self):
@@ -229,14 +235,24 @@ class Communications(AbstractPlugin):
             self.regenerate_callsigns()
             self.old_regex = str(self.parameters['callsignregex'])
 
-        if self.parameters['radioprompt'].lower() in ['own', 'other']:
-            while True:
-                selected_radio = choice(self.parameters['promptlist'])
-                if selected_radio != self.lastradioselected:
-                    break
 
-            self.lastradioselected = str(selected_radio)
-            self.prompt_for_a_new_target(self.parameters['radioprompt'].lower(), selected_radio)
+        if self.parameters['radioprompt'].lower() in ['own', 'other']:
+            radio_name_to_prompt = None
+
+            # If the prompt is relevant (own), select a radio among (available) non-target radios
+            if self.parameters['radioprompt'].lower() == 'own':
+                non_target_radios = self.get_non_target_radios_list()
+                if len(non_target_radios) > 0:
+                    radio_name_to_prompt = choice(non_target_radios)['name']
+            elif self.parameters['radioprompt'].lower() == 'other':
+                radio_name_to_prompt = choice(self.parameters['promptlist'])
+
+            if radio_name_to_prompt is not None:
+                self.prompt_for_a_new_target(self.parameters['radioprompt'].lower(), 
+                                             radio_name_to_prompt)
+            else:
+                self.log_manual_entry('Error. Could not trigger prompt', key='manual')
+
 
         if self.can_receive_keys == True:
             self.modulate_frequency()
