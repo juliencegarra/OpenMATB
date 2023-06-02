@@ -396,9 +396,6 @@ class Communications(AbstractPlugin):
         else:
             deviation = rt = target_frequency = target_radio_name = float('nan')
 
-        if good_radio == True:
-            self.disable_radio_target(responded_radio)
-
         self.log_performance('response_was_needed', response_needed)
         self.log_performance('target_radio', target_radio_name)
         self.log_performance('responded_radio', responded_radio['name'])
@@ -413,6 +410,7 @@ class Communications(AbstractPlugin):
             self.set_feedback(responded_radio, ft='negative')
         else:
             if good_radio == True and round(deviation, 1) == 0:
+                self.disable_radio_target(responded_radio)
                 self.set_feedback(responded_radio, ft='positive')
             else:
                 self.set_feedback(responded_radio, ft='negative')
