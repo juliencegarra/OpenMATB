@@ -61,7 +61,6 @@ class Communications(AbstractPlugin):
             if not sample_needed.exists():
                 print(sample_needed, _(' does not exist'))
 
-        self.player = Player()
         self.automode_position = (0.5, 0.2)
 
 
@@ -154,13 +153,10 @@ class Communications(AbstractPlugin):
             radio['is_prompting'] = True
 
         sound_group = self.group_audio_files(callsign, radio_name, random_frequency)
-        self.player.queue(sound_group)
 
-        # Play immediately the sound_group, even if the player is already playing
-        if self.player.playing:
-            self.player.next_source()
-        else:
-            self.player.play()
+        self.player = Player()
+        self.player.queue(sound_group)
+        self.player.play()
 
 
     def get_rand_frequency(self):
@@ -248,6 +244,14 @@ class Communications(AbstractPlugin):
                 radio_name_to_prompt = choice(self.parameters['promptlist'])
 
             if radio_name_to_prompt is not None:
+                # If a new prompt is incoming and a prompt is still playing
+                # Pause and stop this prompt
+                prompting_radio_list = self.get_radios_by_key_value('is_prompting', True)
+                if prompting_radio_list is not None and len(prompting_radio_list) > 0:
+                    self.player.pause()
+                    del self.player
+                    prompting_radio = prompting_radio_list[0]
+                    prompting_radio['is_prompting'] = False
                 self.prompt_for_a_new_target(self.parameters['radioprompt'].lower(), 
                                              radio_name_to_prompt)
             else:
