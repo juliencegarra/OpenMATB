@@ -252,6 +252,8 @@ class Communications(AbstractPlugin):
                     del self.player
                     prompting_radio = prompting_radio_list[0]
                     prompting_radio['is_prompting'] = False
+                    self.logger.log_manual_entry(f"Target {prompting_radio['name']}:{prompting_radio['targetfreq']}")
+                
                 self.prompt_for_a_new_target(self.parameters['radioprompt'].lower(), 
                                              radio_name_to_prompt)
             else:
@@ -278,6 +280,7 @@ class Communications(AbstractPlugin):
 
             elif self.player.source is None:  # If the radio prompt has just ended
                 radio['is_prompting'] = False
+                self.logger.log_manual_entry(f"Target {radio['name']}:{radio['targetfreq']}")
 
 
         # If multiple radios must be modified
@@ -357,10 +360,27 @@ class Communications(AbstractPlugin):
         self.log_performance('correct_radio', False)
         self.log_performance('response_deviation', float('nan'))
         self.log_performance('response_time', float('nan'))
+        self.log_performance('sdt_value', 'MISS')
 
         self.disable_radio_target(target_radio)
 
         self.set_feedback(target_radio, ft='negative')
+
+
+    def get_sdt_value(self, response_needed, was_a_radio_responded, correct_radio,
+                      response_deviation):
+        if not response_needed:
+            return 'FA'
+        elif was_a_radio_responded is False:
+            return 'MISS'
+        elif correct_radio and response_deviation == 0:
+            return 'HIT'
+        elif correct_radio is False and response_deviation == 0:
+            return 'BAD_RADIO'
+        elif response_deviation != 0 and correct_radio:
+            return 'BAD_FREQ'
+        elif correct_radio is False and response_deviation != 0:
+            return 'BAD_RADIO_FREQ'
 
 
     def confirm_response(self):
@@ -391,10 +411,12 @@ class Communications(AbstractPlugin):
         if measure_radio is not None:
             target_frequency = measure_radio['targetfreq']
             target_radio_name = measure_radio['name']
-            deviation = responded_radio['currentfreq'] - target_frequency
+            deviation = round(responded_radio['currentfreq'] - target_frequency, 1)
             rt = measure_radio['response_time']
         else:
             deviation = rt = target_frequency = target_radio_name = float('nan')
+
+        sdt = self.get_sdt_value(response_needed, True, good_radio, deviation)
 
         self.log_performance('response_was_needed', response_needed)
         self.log_performance('target_radio', target_radio_name)
@@ -402,14 +424,15 @@ class Communications(AbstractPlugin):
         self.log_performance('target_frequency', target_frequency)
         self.log_performance('responded_frequency', responded_radio['currentfreq'])
         self.log_performance('correct_radio', good_radio)
-        self.log_performance('response_deviation', round(deviation, 1))
+        self.log_performance('response_deviation', deviation)
         self.log_performance('response_time', rt)
+        self.log_performance('sdt_value', sdt)
 
         # Response is good if both radio and frequency are correct
         if not response_needed:
             self.set_feedback(responded_radio, ft='negative')
         else:
-            if good_radio == True and round(deviation, 1) == 0:
+            if good_radio == True and deviation == 0:
                 self.disable_radio_target(responded_radio)
                 self.set_feedback(responded_radio, ft='positive')
             else:
