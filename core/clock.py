@@ -9,24 +9,23 @@ class Clock(pyglet.clock.Clock):
     A special implementation of the pyglet Clock whose speed can be changed.
     """
     _time: float = 0.0
-    default_speed: float = 1.0
-    speed: float = default_speed
-    pause_sources = {}
 
-    def __init__(self, speed: float, name: str):
+    def __init__(self, name: str):
         self.name = name
 
         pyglet.clock.Clock.__init__(self, time_function=self.get_time)
-        self.default_speed = float(speed)
-        self.speed = self.default_speed
-
         pyglet.clock.schedule(self.advance)
-        self.on_time_changed = None
+        self.target_time = None
 
 
     def advance(self, time: float):
-        self.set_time(self._time + (time * self.speed))
+        self.set_time(self._time + time)
         self.tick()
+        if self.target_time is not None:
+            if self.target_time >= self.get_time():
+                self.advance(0.1)   # Recursion
+            else:
+                self.target_time = None
 
 
     def get_time(self) -> float:
@@ -37,29 +36,29 @@ class Clock(pyglet.clock.Clock):
     def set_time(self, time: float):
         self._time = time
 
-        if self.on_time_changed != None:
-            self.on_time_changed(self._time)
+
+    def set_target_time(self, target_time):
+        if target_time < self.get_time():
+            print('Warning. The clock was sent a bad target time (back in time)')
+        self.target_time = target_time
+        return self.target_time
 
 
-    def set_speed(self, speed: float):
-        self.speed = speed
+    def is_target_defined(self):
+        return self.target_time is not None
 
 
-    def pause(self, key:str):
-        self.pause_sources[key] = True
-        self.set_speed(0.0)
+    def get_target_time(self):
+        if self.is_target_defined():
+            return self.target_time
+        return
 
 
-    def resume(self, key:str):
-        # resume if we not longer have a pause in progress
-        if not self.is_playing(None):
-            self.set_speed(self.default_speed)
-        self.pause_sources[key] = False
-
-
-    def is_playing(self, ignore: str) -> bool:
-        # is there any pause still in progress?
-        for key in self.pause_sources:
-            if self.pause_sources[key] == True and key != ignore:
+    def is_target_reached(self):
+        if self.target_time is not None:
+            if self.target_time <= self.get_time():
+                return True
+            else:
                 return False
-        return True
+        else:
+            return False

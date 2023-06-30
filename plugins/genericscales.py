@@ -8,8 +8,8 @@ from core.constants import FONT_SIZES as F, PATHS as P, COLORS as C
 from re import match as regex_match
 
 class Genericscales(BlockingPlugin):
-    def __init__(self, window):
-        super().__init__(window)
+    def __init__(self):
+        super().__init__()
 
         self.folder = P['QUESTIONNAIRES']
         new_par = dict(filename=None, pointsize=0, maxdurationsec=0, 
@@ -60,6 +60,17 @@ class Genericscales(BlockingPlugin):
                                 title=title, label_min=label_min, label_max=label_max,
                                 value_min=value_min, value_max=value_max, 
                                 value_default=value_default, rank=l, draw_order=self.m_draw+3)
+
+
+    def refresh_widgets(self):
+        # Useful for replay mode (refresh groove positions)
+        if super().refresh_widgets() == 0:
+            return
+
+        for slider_name, slider in self.sliders.items():
+            slider.update()
+        
+
     
     def stop(self):
         for slider_name, slider_widget in self.sliders.items():

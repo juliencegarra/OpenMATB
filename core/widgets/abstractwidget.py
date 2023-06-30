@@ -6,8 +6,10 @@ import math
 from pyglet.gl import *
 from pyglet.text import Label, HTMLLabel
 from core.constants import Group as G, COLORS as C, FONT_SIZES as F
-from core import logger
+from pyglet import sprite
+from core.logger import logger
 from core.constants import BFLIM
+from core.utils import get_conf_value
 
 
 class AbstractWidget:
@@ -15,11 +17,12 @@ class AbstractWidget:
         self.name = name
         self.container = container
         self.win = win
-        self.font_name = self.win.font_name
+        self.font_name = get_conf_value('Openmatb', 'font_name')
         self.vertex = dict()
         self.on_batch = dict()
         self.visible = False
         self.logger = logger
+        self.highlight_aoi = get_conf_value('Openmatb', 'highlight_aoi')
         glLineWidth(2)
         
         self.m_draw = 0
@@ -67,7 +70,7 @@ class AbstractWidget:
         if self.container is None:
             return
 
-        if self.win.highlight_aoi is True:
+        if self.highlight_aoi is True:
             self.border_vertice = self.vertice_border(self.container)
             self.add_vertex('highlight', 8, GL_LINES, G(self.m_draw+8),
                             ('v2f/static', self.vertice_strip(self.border_vertice)),
@@ -80,7 +83,7 @@ class AbstractWidget:
 
     def assign_vertices_to_batch(self):
         for name, v_tuple in self.vertex.items():
-            if isinstance(v_tuple, Label) or isinstance(v_tuple, HTMLLabel):
+            if isinstance(v_tuple, Label) or isinstance(v_tuple, HTMLLabel) or isinstance(v_tuple, sprite.Sprite):
                 v_tuple.batch = self.win.batch
             else:
                 self.on_batch[name] = self.win.batch.add(*v_tuple)

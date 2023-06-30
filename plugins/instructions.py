@@ -7,8 +7,8 @@ from core.widgets import SimpleHTML
 from core.constants import FONT_SIZES as F, PATHS as P
 
 class Instructions(BlockingPlugin):
-    def __init__(self, window):
-        super().__init__(window)
+    def __init__(self):
+        super().__init__()
 
         self.folder = P['INSTRUCTIONS']
         new_par = dict(filename=None, pointsize=0, maxdurationsec=0,

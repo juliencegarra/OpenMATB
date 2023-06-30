@@ -4,9 +4,10 @@
 
 import re
 from pyglet.window import key as winkey
-from core.constants import COLORS as C, PATHS as P
+from core.constants import COLORS as C, PATHS as P, REPLAY_MODE
 from core.logger import logger
 from core.error import errors
+from core.utils import get_conf_value
 import plugins
 
 DEPRECATED = ['pumpstatus', 'end', 'cutofffrequency', 'equalproportions'] # Ignore these arguments
@@ -72,20 +73,19 @@ class Scenario:
     and checks that some criteria are met (e.g., acceptable values)
     '''
 
-    def __init__(self, scenario_path, window):
+    def __init__(self, contents=None):
         self.events = list()
         self.plugins = dict()
 
-        if scenario_path.exists():
-            contents = open(scenario_path, 'r').readlines()
-        else:
-            errors.add_error(_('%s was not found') % str(scenario_path), fatal = True)
-            return
+        if contents is None:
+            scenario_path = P['SCENARIOS'].joinpath(get_conf_value('Openmatb', 'scenario_path'))
+            if scenario_path.exists():
+                contents = open(scenario_path, 'r').readlines()
+                logger.log_manual_entry(scenario_path, key='scenario_path')
+            else:
+                errors.add_error(_('%s was not found') % str(scenario_path), fatal = True)
 
-        self.path = scenario_path
-        logger.log_manual_entry(self.path, key='scenario_path')
-
-        # Convert the scenario file into a list of events #
+        # Convert the scenario content into a list of events #
         # (Squeeze empty and commented [#] lines)
         self.events = [Event.parse_from_string(line_n, line_str) for line_n, line_str
                        in enumerate(contents)
@@ -97,7 +97,8 @@ class Scenario:
             if not hasattr(globals()['plugins'], event.plugin.capitalize()):
                 errors.add_error(_('Scenario error: %s is not a valid plugin name (l. %s)') % (event.plugin, event.line), fatal = True)
 
-        self.plugins = {name: getattr(globals()['plugins'], name.capitalize())(window)
+        # Instanciate plugins
+        self.plugins = {name: getattr(globals()['plugins'], name.capitalize())()
                         for name in self.get_plugins_name_list()}
 
 
@@ -184,8 +185,12 @@ class Scenario:
                 errors.append(_('The (%s) plugin does not have a start command.') % plug_name)
 
             if self.plugins[plug_name].blocking is False:
-                if not any(['stop' in e.command for e in self.get_plugin_events(plug_name)]):
-                    errors.append(_('The (%s) plugin does not have a stop command.') % plug_name)
+                if REPLAY_MODE == False:
+                    if not any(['stop' in e.command for e in self.get_plugin_events(plug_name)]):
+                        errors.append(_('The (%s) plugin does not have a stop command.') % plug_name)
+                else:
+                    pass # Not a problem during a replay (because a scenario can have been exited
+                         # manually before the end, it’s not mandatory to have it)
 
         # Rule 1 bis - As for the blocking plugins, they should have their input file
         # defined before they start (check that each start command is preceeded by filename information)
@@ -294,6 +299,8 @@ def is_positive_integer(x):
 def is_boolean(x):
     if x.capitalize() in ['True', 'False']:
         return eval(x.capitalize()), None
+    elif x in ['1', '0']:
+        return bool(int(x)), None
     else:
         return None, _('should be a boolean (not %s).') % x
 
@@ -302,8 +309,7 @@ def is_color(x):  # Can be an hexadecimal value, a constant name, or an RGBa val
     m = re.search(r'^#(?:[0-9a-fA-F]{3}){1,2}$', x)
     if m is not None:
         x = x.lstrip('#')
-        rgba = list(int(x[i:i + 2], 16) for i in (0, 2, 4))
-        rgba.append(255)
+        rgba = tuple(list(int(x[i:i + 2], 16) for i in (0, 2, 4)) + [255])
         return rgba, None
     elif x in list(C.keys()):
         return C[x], None
@@ -313,8 +319,9 @@ def is_color(x):  # Can be an hexadecimal value, a constant name, or an RGBa val
         except:
             return None, _('must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)') % x
         else:
-            if isinstance(x, tuple) and len(x) == 4 and all([0 <= v <= 255 for v in x]):
-                return x, None
+            if ((isinstance(x, tuple) or isinstance(x, list))
+                    and len(x) == 4 and all([0 <= v <= 255 for v in x])):
+                return tuple(x), None
             else:
                 x = str(x)
                 return None, _('should be (R,G,B,a) values each comprised between 0 and 255 (not %s)') % x

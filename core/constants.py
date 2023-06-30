@@ -2,9 +2,12 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+import sys
 from pyglet.graphics import OrderedGroup as Group
 from pathlib import Path
 
+REPLAY_MODE = len(sys.argv) > 1 and sys.argv[1] == '-r'
+REPLAY_STRIP_PROPORTION = 0.08
 
 C = COLORS = dict(WHITE=(255, 255, 255, 255),
                   WHITE_TRANSLUCENT=(255, 255, 255, 235),
@@ -13,6 +16,7 @@ C = COLORS = dict(WHITE=(255, 255, 255, 255),
                   RED=(241, 100, 100, 255),
                   BACKGROUND=(240, 240, 240, 255),
                   LIGHTGREY=(220, 220, 220, 255),
+                  DARKGREY=(50, 50, 50, 255),
                   GREY=(200, 200, 200, 255),
                   BLUE=(153, 204, 255, 255))
 
@@ -29,12 +33,12 @@ BFLIM = 15
 
 PATHS = {k.upper():Path('.', k) for k in ['plugins', 'sessions']}
 PATHS.update({k.upper():Path('.', 'includes', k)
-              for k in ['instructions', 'scenarios', 'sounds', 'questionnaires']})
+              for k in ['img', 'instructions', 'scenarios', 'sounds', 'questionnaires']})
 
 [path.mkdir(parents=False, exist_ok=True) for p, path in PATHS.items() if path.exists() is False]
 PATHS['SCENARIO_ERRORS'] = Path('.', 'last_scenario_errors.log')
 
-MATCHING_ALIAS = M =dict(sysmon=_('System monitoring'),
+MATCHING_ALIAS = M = dict(sysmon=_('System monitoring'),
                          track=_('Tracking'),
                          scheduling=_('Scheduling'),
                          communications=_('Communications'),

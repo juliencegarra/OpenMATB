@@ -4,7 +4,7 @@
 
 from pyglet.gl import *
 from core.container import Container
-from core.constants import COLORS as C, Group as G, FONT_SIZES as F
+from core.constants import COLORS as C, Group as G, FONT_SIZES as F, REPLAY_MODE
 from core.widgets import AbstractWidget
 from core.widgets import AbstractWidget
 from pyglet.text import Label
@@ -28,37 +28,19 @@ class Slider(AbstractWidget):
         self.hover = False
 
         # Enhance smoothing mode
-        glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glEnable (GL_BLEND)
-        glEnable (GL_LINE_SMOOTH)
-        glHint (GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
-        glLineWidth (3)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glEnable(GL_BLEND)
+        glEnable(GL_LINE_SMOOTH)
+        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
+        glLineWidth(3)
 
 
-        #self.set_main_container(y, width, height)
         self.set_sub_containers()
         self.set_slider_thumb_and_groove()
-        #self.vertex['text2'] = Label('TEST2', font_name=self.font_name,
-                                  #align='center', anchor_x='center',
-                                  #anchor_y='center', x=800, y=500, color=C['BLACK'],
-                                  #group=G(self.draw_order), font_size=F['MEDIUM'])
         self.show()
-        #self.update()
 
         self.win.push_handlers(self.on_mouse_press, self.on_mouse_drag,
                                self.on_mouse_release)
-
-
-    #def set_main_container(self, y, width, height):
-        #left = self.plugin_area.w * (1-width)/2
-        #bottom = self.plugin_area.h * y - self.plugin_area.h * height/2
-        #width = self.plugin_area.w * width
-        #height = self.plugin_area.h * height
-        #self.container = Container('main_container', left, bottom, width, height)
-
-        #v1 = self.vertice_border(self.container)
-        #self.add_vertex('main_container', 4, GL_QUADS, G(self.m_draw+4), ('v2f/static', v1),
-                        #('c4B/static', (C['WHITE']*4)))
 
 
     def set_sub_containers(self, slider_width=0.6):
@@ -82,7 +64,8 @@ class Slider(AbstractWidget):
         x, y = self.containers['value'].cx, self.containers['value'].cy
         self.vertex['value'] = Label(str(self.groove_value), align='center', anchor_x='center',
                                       anchor_y='center', x=x, y=y, color=C['BLACK'],
-                                      group=G(self.draw_order), font_size=F['MEDIUM'], font_name=self.font_name)
+                                      group=G(self.draw_order), font_size=F['MEDIUM'], 
+                                      font_name=self.font_name)
 
 
     def set_slider_thumb_and_groove(self):
@@ -95,17 +78,17 @@ class Slider(AbstractWidget):
 
         # The groove container comprises the whole groove movements area
         self.containers['allgroove'] = self.containers['slide'].get_reduced(slider_thumb_w,
-                                                                         slider_groove_h)
+                                                                            slider_groove_h)
 
         v1 = self.vertice_border(self.containers['thumb'])
         self.add_vertex('thumb', 4, GL_QUADS, G(self.draw_order+self.rank), ('v2f/static', v1),
                         ('c4B/static', (C['GREY']*4)))
 
         v2 = self.get_groove_vertices()
-        self.add_vertex('groove_b', len(v2)//2, GL_POLYGON, G(self.draw_order+self.rank), ('v2f/stream', v2),
-                        ('c4B/stream', (C['BLUE']*(len(v2)//2))))
-        self.add_vertex('groove', len(v2)//2, GL_LINE_LOOP, G(self.draw_order+self.rank), ('v2f/stream', v2),
-                        ('c4B/stream', (C['BLACK']*(len(v2)//2))))
+        self.add_vertex('groove_b', len(v2)//2, GL_POLYGON, G(self.draw_order+self.rank), 
+                        ('v2f/stream', v2), ('c4B/stream', (C['BLUE']*(len(v2)//2))))
+        self.add_vertex('groove', len(v2)//2, GL_LINE_LOOP, G(self.draw_order+self.rank), 
+                        ('v2f/stream', v2), ('c4B/stream', (C['BLACK']*(len(v2)//2))))
 
 
     def get_groove_vertices(self):
@@ -153,7 +136,7 @@ class Slider(AbstractWidget):
             x_min = self.containers['allgroove'].l
             x_max = self.containers['allgroove'].l + self.containers['allgroove'].w
             x = min(x_max, max(x_min, x))
-            ratio = (x - x_min) / (x_max - x_min)
+            ratio = (x-x_min)/(x_max-x_min)
             self.update_groove_value(ratio)
 
 
@@ -165,8 +148,10 @@ class Slider(AbstractWidget):
         self.logger.record_state(self.name, 'value', str(self.groove_value))
         self.update()
 
+
     def get_title(self):
         return self.title
+
 
     def get_value(self):
         return self.groove_value
@@ -184,6 +169,7 @@ class Slider(AbstractWidget):
         if self.visible:
             self.set_groove_position()
             self.set_value_label()
+
 
     def hide(self):
         super().hide()

@@ -2,30 +2,32 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-from pyglet import font
+import sys
+from pyglet import font, image
 from pyglet.canvas import get_display
 from pyglet.window import Window, key as winkey
 from pyglet.graphics import Batch
-from pyglet.gl import GL_POLYGON
+from pyglet.gl import GL_POLYGON, glLineWidth
 from pyglet.text import Label
+from pyglet import image, sprite
 from core.container import Container
 from core.constants import COLORS as C, FONT_SIZES as F, Group as G, PLUGIN_TITLE_HEIGHT_PROPORTION
+from core.constants import PATHS as P
+from core.constants import REPLAY_MODE, REPLAY_STRIP_PROPORTION
 from core.modaldialog import ModalDialog
 from core.logger import logger
 from core.error import errors
-import os
-
+from core.utils import get_conf_value, find_the_last_session_number
 
 
 class Window(Window):
-    def __init__(self, screen_index, font_name, fullscreen, replay_mode, highlight_aoi, hide_on_pause,
-                 *args, **kwargs):
+    def __init__(self, *args, **kwargs):
 
         errors.win = self
 
         # Screen definition #
         try:
-            screen_index = int(screen_index)
+            screen_index = get_conf_value('Openmatb', 'screen_index')
         except:
             screen_index = 0
 
@@ -36,48 +38,43 @@ class Window(Window):
         else:
             screen = screens[screen_index]
 
+        self._width=screen.width
+        self._height=screen.height
+        self._fullscreen=get_conf_value('Openmatb', 'fullscreen')
 
-        # Font definition
-        # Font check
-        if len(font_name) == 0:
-            self.font_name = None
-        elif not font.have_font(font_name):
-            errors.add_error(_(f"In config.ini, the specified font is not available. A default font will be used."))
-            self.font_name = None
-        else:
-            self.font_name = font_name
+        super().__init__(fullscreen=self._fullscreen, width=self._width, height=self._height, 
+                            vsync=True, *args, **kwargs)
 
-
-        if replay_mode:
-            self._width=int(screen.width / 1.2)
-            self._height=int(screen.height / 1.2)
-        else:
-            self._width=screen.width
-            self._height=screen.height
-
-        self._fullscreen=fullscreen
-
-        super().__init__(fullscreen=self._fullscreen, width=self._width, height=self._height, vsync=True, *args, **kwargs)
+        img_path = P['IMG']
+        logo16 = image.load(img_path.joinpath('logo16.png'))
+        logo32 = image.load(img_path.joinpath('logo32.png'))
+        self.set_icon(logo16, logo32)
 
         self.set_size_and_location() # Postpone multiple monitor support
-        self.set_mouse_visible(replay_mode)
+        self.set_mouse_visible(REPLAY_MODE)
 
         self.batch = Batch()
         self.keyboard = dict() # Reproduce a simple KeyStateHandler
 
-        self.replay_mode = replay_mode
         self.create_MATB_background()
         self.alive = True
         self.modal_dialog = None
         self.slider_visible = False
 
         self.on_key_press_replay = None # used by the replay
-        self.highlight_aoi = highlight_aoi
-        self.hide_on_pause = hide_on_pause
 
-
-    def is_in_replay_mode(self):
-        return self.replay_mode is True
+        # Display the session ID if need be, at window instanciation
+        if REPLAY_MODE == True:
+            if len(sys.argv) > 2:
+                replay_session_id = int(sys.argv[2])
+            else:
+                replay_session_id = find_the_last_session_number()
+            msg = _('Replay session ID: %s') % replay_session_id
+            self.modal_dialog = ModalDialog(self, msg, title='OpenMATB replay')
+            
+        elif get_conf_value('Openmatb', 'display_session_number'):
+            msg = _('Session ID: %s') % logger.session_id
+            self.modal_dialog = ModalDialog(self, msg, title='OpenMATB')
 
 
     def set_size_and_location(self):
@@ -88,8 +85,6 @@ class Window(Window):
 
 
     def create_MATB_background(self):
-        self.replay_margin_h, self.replay_margin_w = (0.07, 0.1) if self.replay_mode else (0, 0)
-
         MATB_container = self.get_container('fullscreen')
         l, b, w, h = MATB_container.get_lbwh()
         container_title_h = PLUGIN_TITLE_HEIGHT_PROPORTION/2
@@ -119,32 +114,26 @@ class Window(Window):
 
 
     def is_mouse_necessary(self):
-        return self.modal_dialog == True or self.slider_visible == True
-
-
-    def is_modal_dialog_on(self):
-        return self.modal_dialogs > 0
+        return self.slider_visible == True or REPLAY_MODE == True
 
 
     # Log any keyboard input, either plugins accept it or not
     def on_key_press(self, symbol, modifiers):
-        if self.modal_dialog is not None:
-            return
+        if self.modal_dialog is None:
+            keystr = winkey.symbol_string(symbol)
+            self.keyboard[keystr] = True  # KeyStateHandler
 
-        keystr = winkey.symbol_string(symbol)
-        self.keyboard[keystr] = True  # KeyStateHandler
+            if keystr == 'ESCAPE':
+                self.exit_prompt()
+            elif keystr == 'P':
+                self.pause_prompt()
 
-        if keystr == 'ESCAPE':
-            self.exit_prompt()
-        elif keystr == 'P':
-            self.pause_prompt()
+            if REPLAY_MODE:
+                if self.on_key_press_replay != None:
+                    self.on_key_press_replay(symbol, modifiers)
+                return
 
-        if self.replay_mode:
-            if self.on_key_press_replay != None:
-                self.on_key_press_replay(symbol, modifiers)
-            return
-
-        logger.record_input('keyboard', keystr, 'press')
+            logger.record_input('keyboard', keystr, 'press')
 
 
     def on_key_release(self, symbol, modifiers):
@@ -174,8 +163,9 @@ class Window(Window):
 
 
     def get_container_list(self):
-        w, h = (1-self.replay_margin_w) * self.width, (1 - self.replay_margin_h)*self.height
-        b = self.height*self.replay_margin_h
+        mar = REPLAY_STRIP_PROPORTION if REPLAY_MODE else 0
+        w, h = (1-mar) * self.width, (1-mar)*self.height
+        b = self.height*mar
 
         # Vertical bounds
         x1, x2 = (int(w * bound) for bound in [0.35, 0.85])  # Top row
@@ -192,8 +182,8 @@ class Window(Window):
                 Container('bottomleft', 0, b, x3, h/2),
                 Container('bottommid', x3, b, x4 - x3, h/2),
                 Container('bottomright', x4, b, w - x4, h/2),
-                Container('mediastrip', 0, 0, self._width, b),
-                Container('inputstrip', w, b, self._width*self.replay_margin_w, h)]
+                Container('mediastrip', 0, 0, self._width*(1+mar), b),
+                Container('inputstrip', w, b, self._width*mar, h)]
 
 
     def get_container(self, placement_name):

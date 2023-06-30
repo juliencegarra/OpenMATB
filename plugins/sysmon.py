@@ -2,15 +2,19 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-from random import choice, sample
+from core.pseudorandom import choice, sample
 from core.container import Container
 from core.constants import COLORS as C
 from core.widgets import Scale, Light
 from plugins.abstract import AbstractPlugin
 
 class Sysmon(AbstractPlugin):
-    def __init__(self, window, taskplacement='topleft', taskupdatetime=200):
-        super().__init__(window, taskplacement, taskupdatetime)
+    def __init__(self, taskplacement='topleft', taskupdatetime=200):
+        super().__init__(taskplacement, taskupdatetime)
+
+        self.keys = {'F1', 'F2', 'F3', 'F4', 'F5', 'F6'}
+        self.moving_seed = 1                # Useful for pseudorandom generation of 
+                                            # multiple values at once (arrows move)
 
         new_par = dict(alerttimeout=10000, automaticsolver=False, automaticsolverdelay=1000,
                        displayautomationstate=True, allowanykey=False, feedbackduration=1500,
@@ -106,10 +110,13 @@ class Sysmon(AbstractPlugin):
 
         # Compute arrows next position
         for scale_n, scale in self.parameters['scales'].items():
+            self.moving_seed += 1
+            # Manage the case where the arrow must change its zone
             if scale['_pos'] not in self.scale_zones[scale['_zone']]:
-                scale['_pos'] = sample(self.scale_zones[scale['_zone']], 1)[0]
-            else:
-                direction = sample([-1, 1], 1)[0]
+                scale['_pos'] = sample(self.scale_zones[scale['_zone']], self.alias, 
+                                       self.scenario_time, self.moving_seed)
+            else:   # Move into a delimited zone
+                direction = sample([-1, 1], self.alias, self.scenario_time, self.moving_seed)
                 if scale['_pos'] + direction in self.scale_zones[scale['_zone']]:
                     scale['_pos'] += direction
                 else:
@@ -167,7 +174,9 @@ class Sysmon(AbstractPlugin):
                 gauge['on'] = not gauge['default'] == 'on'
             else:  # Scale case
                 if gauge['side'] not in [-1, 1]:
-                    gauge['side'] = choice([-1, 1])
+                    add = self.get_gauge_key(gauge) # Specify a gauge integer to generate
+                                                    # a unique seed    
+                    gauge['side'] = choice([-1, 1], self.alias, self.scenario_time, int(add))
                 gauge['_zone'] = gauge['side']
         gauge['failure'] = False
 
@@ -227,6 +236,13 @@ class Sysmon(AbstractPlugin):
         return self.get_gauges_key_value('key', key)[0]
 
 
+    def get_gauge_key(self, gauge):
+        for key in ['lights', 'scales']:
+            for k, v in self.parameters[key].items():
+                if gauge == v:
+                    return k
+
+
     def get_gauges_on_failure(self):
         return self.get_gauges_key_value('_onfailure', True)
 
@@ -250,8 +266,8 @@ class Sysmon(AbstractPlugin):
         gauge['_feedbacktimer'] = self.parameters['feedbackduration']
 
 
-    def do_on_key(self, key, state):
-        super().do_on_key(key, state)
+    def do_on_key(self, key, state, emulate):
+        key = super().do_on_key(key, state, emulate)
         if key is None:
             return
 

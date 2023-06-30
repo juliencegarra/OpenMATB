@@ -4,55 +4,49 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-import gettext, configparser
+import gettext, sys
 from pathlib import Path
-
-# Read the configuration file
-config = configparser.ConfigParser()
-config.read("config.ini")
-
 
 # Read and install the specified language iso
 # The LOCALE_PATH constant can't be set into constants.py because
 # the latter must be translated itself
 LOCALE_PATH = Path('.', 'locales')
-language_iso = config['Openmatb']['language']
+
+# Only language is accessed manually from the config.ini to avoid circular imports
+# (i.e., utils needing translation needing utils and so on)
+language_iso = [l for l in open('config.ini', 'r').readlines()
+                if 'language=' in l][0].split('=')[-1].strip()
 language = gettext.translation('openmatb', LOCALE_PATH, [language_iso])
 language.install()
 
 # Only after language installation, import core modules (they must be translated)
-from core import Window, Scenario, Scheduler
-from core.constants import PATHS as P
 from core.error import errors
-
-# Check boolean values
-for param in ['fullscreen', 'highlight_aoi', 'hide_on_pause', 'display_session_number']:
-    if config['Openmatb'][param].lower() in ['true', 'false']:
-        if config['Openmatb'][param].lower() == 'true':
-            globals()[param] = True
-        else:
-            globals()[param] = False
-    else:
-        globals()[param] = False
-        errors.add_error(_(f"In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False") % (param, config['Openmatb'][param]))
-
+from core import LogReader, Window, Scenario, Scheduler, ReplayScheduler
+from core.constants import PATHS as P, REPLAY_MODE
+from core.logger import logger
+from core.utils import get_conf_value, find_the_first_available_session_number, find_the_last_session_number
 
 class OpenMATB:
     def __init__(self):
-        # The MATB window must be bordeless (in non-fullscreen mode)
-        window = Window(screen_index=config['Openmatb']['screen_index'], font_name=config['Openmatb']['font_name'],
-                        fullscreen=fullscreen, replay_mode=False, 
-                        style=Window.WINDOW_STYLE_BORDERLESS, highlight_aoi=highlight_aoi, hide_on_pause=hide_on_pause)
+        # The MATB window must be bordeless (for non-fullscreen mode)
+        window = Window(style=Window.WINDOW_STYLE_BORDERLESS)
 
-        scenario_path = P['SCENARIOS'].joinpath(config['Openmatb']['scenario_path'])
-        scenario = Scenario(scenario_path, window)
+        if not REPLAY_MODE:
+            content = Scenario()
+            cls = Scheduler
+        else:
+            content = LogReader()
+            cls = ReplayScheduler
 
-        errors.show_errors()
-
-        self.scheduler = Scheduler(scenario.events, scenario.plugins, window,
-                                   config['Openmatb']['clock_speed'],
-                                   display_session_number)
+        self.scheduler = cls(window, content)
         self.scheduler.run()
 
 if __name__ == '__main__':
     app = OpenMATB()
+
+
+    # window.on_key_press_replay = self.on_key_press
+
+            # self.container_media = window.get_container('mediastrip')
+            # self.container_input = window.get_container('inputstrip')
+

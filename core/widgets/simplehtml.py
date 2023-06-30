@@ -7,12 +7,14 @@ from pyglet.resource import FileLocation
 from core.widgets.abstractwidget import *
 from core.constants import FONT_SIZES as F
 from core.constants import COLORS as C
+from core.utils import get_conf_value
 
 
 class SimpleHTML(AbstractWidget):
     def __init__(self, name, container, win, text, draw_order=1, x=0.5, y=0.5, wrap_width=1):
         super().__init__(name, container, win)
         self.win = win
+        self.font_name = get_conf_value('Openmatb', 'font_name')
         text = self.preparse(text)
 
         x = int(self.container.l + x * self.container.w)
@@ -40,11 +42,11 @@ class SimpleHTML(AbstractWidget):
         hs = html_sizes = {k:get_nearest_size_of_pt(v) for k,v in F.items()}
 
         pars_dict = {
-        '<h1>':f"<center><strong><font size={hs['XLARGE']} face={self.win.font_name}>",
+        '<h1>':f"<center><strong><font size={hs['XLARGE']} face={self.font_name}>",
         '</h1>':f"</font></strong></center><br>",
-        '<h2>':f"<center><font size={hs['XLARGE']} face={self.win.font_name}><em>",
+        '<h2>':f"<center><font size={hs['XLARGE']} face={self.font_name}><em>",
         '</h2>':f"</em></font></center><br>",
-        '<p>':f"<p><font size={hs['LARGE']} face={self.win.font_name}>",
+        '<p>':f"<p><font size={hs['LARGE']} face={self.font_name}>",
         '</p>':f"</font></p>"
         }
         

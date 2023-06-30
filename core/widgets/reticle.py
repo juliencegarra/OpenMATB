@@ -5,11 +5,15 @@
 from core.widgets.abstractwidget import *
 
 class Reticle(AbstractWidget):
-    def __init__(self, name, container, win, cursorcolor, target_proportion=0.1):
+    def __init__(self, name, container, win, cursorcolor, target_proportion=0.1, m_draw=None):
         super().__init__(name, container, win)
+        
+        if m_draw is not None:
+            self.m_draw=m_draw
 
         # Set cursor variables
-        self.cursor_relative = [0, 0]
+        self.cursor_relative = (0, 0)
+        self.cursor_proportional = self.relative_to_proportional()
         self.cursor_radius = self.container.w/2 * 0.08
         self.cursor_absolute = self.relative_to_absolute()
 
@@ -104,6 +108,7 @@ class Reticle(AbstractWidget):
         v = self.get_cursor_vertice()
         self.on_batch['cursor'].vertices = v
         self.logger.record_state(self.name, 'cursor_relative', (x, y))
+        self.logger.record_state(self.name, 'cursor_proportional', self.relative_to_proportional())
         
     
     def get_cursor_absolute_position(self):
@@ -111,8 +116,18 @@ class Reticle(AbstractWidget):
     
 
     def relative_to_absolute(self):
-        return [self.cursor_relative[i] + c
-                for i, c in zip((0, 1), (self.container.cx, self.container.cy))]
+        return tuple([self.cursor_relative[i] + c
+                for i, c in zip((0, 1), (self.container.cx, self.container.cy))])
+
+
+    def relative_to_proportional(self):
+        return tuple([self.cursor_relative[i]/c
+                for i, c in zip((0, 1), (self.container.w, self.container.h))])
+
+
+    def proportional_to_relative(self, cursor_proportional):
+        return tuple([cursor_proportional[i]*c
+                for i, c in zip((0, 1), (self.container.w, self.container.h))])
 
 
     def set_cursor_color(self, color):

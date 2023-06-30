@@ -5,13 +5,13 @@
 from plugins import Instructions
 
 try:
-    from core import pylsl
+    import pylsl
 except:
     print("unable to import pylsl")
 
 class Labstreaminglayer(Instructions):
-    def __init__(self, window):
-        super().__init__(window)
+    def __init__(self):
+        super().__init__()
 
         self.parameters.update({'marker':'', 'streamsession':False,
                                 'pauseatstart':False})
