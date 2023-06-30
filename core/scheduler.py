@@ -2,25 +2,35 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-from sys import exit
+import sys
 from pyglet.app import EventLoop
 from core.scenario import Event
 from core.clock import Clock
 from core.modaldialog import ModalDialog
 from core.logger import logger
+from core.utils import get_conf_value
+from core.constants import REPLAY_MODE
+from core.error import errors
 
-import pyglet.clock
-import sys
+
 
 class Scheduler:
     """
     This class manages events execution.
     """
 
-    def __init__(self, events, plugins, win, clock_speed, display_session_number):
-        self.events = events
-        self.plugins = plugins
-        self.display_session_number = display_session_number
+    def __init__(self, window, scenario):
+
+        self.win = window
+        self.events = scenario.events
+        self.plugins = scenario.plugins
+
+        # Attribute window to plugins in use, and push their handles to window
+        for p in self.plugins:
+            self.plugins[p].win = self.win
+            if not REPLAY_MODE:
+                self.win.push_handlers(self.plugins[p].on_key_press,
+                                       self.plugins[p].on_key_release)
 
         logger.log_manual_entry(open('VERSION', 'r').read().strip(), key='version')
 
@@ -31,17 +41,10 @@ class Scheduler:
         if 'performance' in self.plugins:
             self.plugins['performance'].plugins = self.plugins
 
-        # Attribute Window to plugins
-        self.win = win
-        for i, p in self.plugins.items():
-            p.win = self.win
-
-        self.clock = Clock(clock_speed, 'main')
+        self.clock = Clock('main')
         self.pause_scenario_time = False
-        self.scenariotime = 0
+        self.scenario_time = 0
 
-        # Used in replay to stop simulate clock
-        self.target_time = 0
         # We store events in a list in case their execution is delayed by a blocking event
         self.events_queue = list()
         self.blocking_plugin = None
@@ -49,38 +52,65 @@ class Scheduler:
         # Store the plugins that could be paused by a *blocking* event
         self.paused_plugins = list()
 
-        # Display window and create the event loop
-        self.win.set_visible(True)
-
+        # Create the event loop
         self.clock.schedule(self.update)
         self.event_loop = EventLoop()
 
 
+    def initialize_plugins(self):
+        pass
 
-    def update(self, dt):
+
+    def update(self, dt):    
         if self.win.modal_dialog is not None:
             return
+        elif errors.is_empty() == False:
+            errors.show_errors()
+            
+        self.update_timers(dt)
+        self.update_active_plugins()
+        self.execute_events()
+        self.check_if_must_exit()
 
-        # Display the session ID if need be
-        if self.display_session_number:
-            msg = _('Session ID: %s') % logger.session_id
-            self.win.modal_dialog = ModalDialog(self.win, msg, title='Session ID')
-            self.display_session_number = False
 
-
+    def update_timers(self, dt):
         # Update timers with dt
         if not self.is_scenario_time_paused():
-            self.scenariotime += dt
-            logger.set_scenariotime(self.scenariotime)
+            self.scenario_time += dt
+            logger.set_scenario_time(self.scenario_time)
 
 
+    def update_active_plugins(self):
+        # Check if there are active plugins...
+        if len(self.get_active_plugins()) > 0:
+            # ... if so, update them
+            [p.update(self.scenario_time) for p in self.get_active_plugins()]
+
+
+    def check_if_must_exit(self):
+        # If no active plugin, and no remaining events, close the OpenMATB
+        if len(self.get_active_plugins()) == 0 and len(self.events_queue) == 0:
+            self.exit()
+
+        # If the windows has been killed, exit the program
+        if self.win.alive == False:
+            # Be careful to stop all the plugins in case they’re not
+            # (so we have a stop time for each plugin, in case we must compute this somewhere)
+            for p_name, plugin in self.plugins.items():
+                if plugin.alive == True:
+                    stop_event = Event(0, int(self.scenario_time), p_name, 'stop')
+                    self.execute_one_event(stop_event)
+            self.exit()
+
+
+    def execute_events(self):
         # Detect a potential blocking plugin
         active_blocking_plugin = self.get_active_blocking_plugin()
 
         # Execute scenario events in case the scenario timer is running
         if not self.is_scenario_time_paused():
             if active_blocking_plugin is None:
-                event = self.get_event_at_scenario_time(self.scenariotime)
+                event = self.get_event_at_scenario_time(self.scenario_time)
                 if event is not None:
                     self.execute_one_event(event)
 
@@ -88,37 +118,35 @@ class Scheduler:
             elif active_blocking_plugin.alive:
                 # Toggle scenario_time pause only once
                 if not self.is_scenario_time_paused():
-                    self.pause_scenario_time = True
+                    self.pause_scenario()
                     self.paused_plugins = self.get_active_non_blocking_plugins()
-                    self.execute_plugins_methods(self.paused_plugins, methods=[['pause']])
+                    self.execute_plugins_methods(self.paused_plugins, methods=['pause', 'hide'])
 
-        elif active_blocking_plugin is None:
+        # In Replay mode: IT IS the play/pause button that manages the scenario resuming
+        elif active_blocking_plugin is None and REPLAY_MODE == False:
             if len(self.paused_plugins) > 0:
-                self.execute_plugins_methods(self.paused_plugins, methods=[['resume']])
+                self.execute_plugins_methods(self.paused_plugins, methods=['show', 'resume'])
                 self.paused_plugins = list()
-            self.pause_scenario_time = False
-
-
-        # Check if there are active plugins...
-        ap = self.get_active_plugins()
-
-        # ... if so, update them
-        if len(ap) > 0:
-            [p.update(self.scenariotime) for p in ap]
-        # ... if not, and no remaining events, close the OpenMATB
-        elif len(self.events_queue) == 0:
-            self.exit()
-
-        # If the windows has been killed, exit the program
-        if self.win.alive == False:
-            self.exit()
-
-        # else:
-        #    self.move_scenario_time_to(0) # in replay restart
+            self.resume_scenario()
 
 
     def is_scenario_time_paused(self):
-        return self.pause_scenario_time is True
+        return self.pause_scenario_time == True
+
+
+    def pause_scenario(self):
+        self.pause_scenario_time = True
+        return self.is_scenario_time_paused()
+
+
+    def resume_scenario(self):
+        self.pause_scenario_time = False
+        return self.is_scenario_time_paused()
+
+
+    def toogle_scenario(self):
+        self.pause_scenario_time = not self.pause_scenario_time
+        return self.is_scenario_time_paused()
 
 
     def get_active_blocking_plugin(self):
@@ -136,9 +164,6 @@ class Scheduler:
 
 
     def execute_one_event(self, event):
-        # IDEA : the event could be scheduled (immediately) by the plugin clock
-        # (all the events should be processed the same way)
-
         # Set the plugin corresponding to the event
         plugin = self.plugins[event.plugin]
 
@@ -152,8 +177,9 @@ class Scheduler:
 
         event.done = 1
 
-        if self.win.replay_mode:
-            plugin.update(0)
+        # Utile ?
+        # if self.replay_mode:
+            # plugin.update(0)
 
         # The event can be logged whenever inside the method, since self.durations remain
         # constant all along it
@@ -169,7 +195,8 @@ class Scheduler:
 
         for m in methods:
             for p in plugins:
-                self.execute_one_event(Event(0, 0, p.alias, m))
+                # self.execute_one_event(Event(0, 0, p.alias, m)) DO NOT create new events
+                getattr(p, m)()
 
 
     def get_plugins_by_states(self, attribute_state_list):
@@ -180,18 +207,10 @@ class Scheduler:
 
 
     def get_event_at_scenario_time(self, scenario_time: float):
-        if self.win.replay_mode and scenario_time > self.target_time:
-           self.scenario_clock.pause('replay')
-           return self.unqueue_event()
-
         # Retrieve (simultaneous) events matching scenario_duration_sec
         # We look to the most precise point in the near future that might matches a set of event time(s)
         events_time = [event for event in self.events
                        if event.time_sec <= scenario_time]
-
-        # In replay filter events that are under the target time limit
-        events_time = [event for event in events_time
-                       if not self.win.replay_mode or event.time_sec <= self.target_time]
 
         # Filter events that are either done or already in the queue
         events_time = [event for event in events_time
@@ -216,45 +235,9 @@ class Scheduler:
         return None
 
 
-    def move_scenario_time_to(self, time: float):
-        if time < self.scenario_clock.get_time():
-            # moving backward, we need to reset plugins, done events and restart from zero
-            for plugin in self.plugins:
-                self.plugins[plugin].stop(0)
-
-            for event in self.events:
-                event.done = False
-
-            self.initialize_plugins()
-
-            self.scenario_clock.set_time(0)
-
-
-        # moving forward
-        replay_acceleration_factor = 100
-
-        self.target_time = time
-        self.scenario_clock.set_speed(10.1)
-        self.scenario_clock.resume('replay')
-        self.clock.set_speed(replay_acceleration_factor)
-
-
-    def play_scenario(self, target_time):
-        self.clock.set_speed(5)
-        self.scenario_clock.set_speed(5)
-        self.scenario_clock.resume('replay')
-        self.target_time = target_time
-
-
-    def stop_scenario(self):
-        # TODO: check if remaining events
-        self.scenario_clock.pause('replay')
-
-
     def exit(self):
         logger.log_manual_entry('end')
         self.event_loop.exit()
-        self.win.close()
         sys.exit(0)
 
 

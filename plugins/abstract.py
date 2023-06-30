@@ -12,21 +12,23 @@ from core.logger import logger
 
 class AbstractPlugin:
     """Any plugin (or task) depends on this meta-class"""
-    def __init__(self, window, taskplacement='fullscreen', taskupdatetime=-1):
+    def __init__(self, taskplacement='fullscreen', taskupdatetime=-1):
 
-        self.alias = self.__class__.__name__.lower()  #   A lower version of the plugin class name
-        self.widgets = dict()                         #   To store the widget objects of a plugin
-        self.win = window                             #   The window to which the plugin is attached
-        self.container = None                         #   The visual area of the plugin (object)
+        self.alias = self.__class__.__name__.lower()    #   A lower version of the plugin class name
+        self.widgets = dict()                           #   To store the widget objects of a plugin
+        self.win = None                                 #   The window to which the plugin is attached
+        self.container = None                           #   The visual area of the plugin (object)
         self.logger = logger
 
         self.can_receive_keys = False
-        self.keys = list()                            #   Handle the keys that are allowed
+        self.can_execute_keys = False
+        self.keys = set()                               #   Handle the keys that are allowed
         self.display_title = taskplacement != 'invisible'
         self.automode_string = str()
 
         self.next_refresh_time = 0
-        self.scenariotime = 0
+        self.scenario_time = 0
+
 
                                             #  If True
         self.blocking = False               # :blocks all other plugins when alive
@@ -42,25 +44,18 @@ class AbstractPlugin:
                                                               blinkdurationms=1000)))
 
         # Private parameters
-        self.parameters['taskfeedback']['overdue'].update({'_nexttoggletime':0, '_is_visible':False})
+        self.parameters['taskfeedback']['overdue'].update({'_nexttoggletime':0, 
+                                                           '_is_visible':False})
 
         # Define minimal draw order depending on task placement
         self.m_draw = BFLIM if self.parameters['taskplacement'] == 'fullscreen' else 0
 
-        if not self.win.is_in_replay_mode():
-            self.win.push_handlers(self.on_key_press, self.on_key_release)
 
-
-    # def initialize(self, window):
-        # self.win = window
-
-
-
-
-    def update(self, scenariotime):
-        self.scenariotime = scenariotime
+    def update(self, scenario_time):
+        self.scenario_time = scenario_time
         self.compute_next_plugin_state()
         self.refresh_widgets()
+        self.update_can_receive_key()
 
 
     # State handling
@@ -73,6 +68,7 @@ class AbstractPlugin:
 
         if self.verbose:
             print('Show ', self.alias)
+
         self.visible = True
         self.update_can_receive_key()
 
@@ -88,8 +84,10 @@ class AbstractPlugin:
         """
         if not self.is_visible():
             return
+
         if self.verbose:
             print('Hide ', self.alias)
+
         self.visible = False
         self.update_can_receive_key()
 
@@ -107,9 +105,6 @@ class AbstractPlugin:
 
             if self.get_widget('foreground') is not None:
                 self.get_widget('foreground').show()
-
-        # if self.win._mouse_visible == True:
-        #     self.win.set_mouse_visible(self.win.replay_mode)
 
 
     def pause(self):
@@ -130,9 +125,8 @@ class AbstractPlugin:
         if self.verbose:
             print('Start ', self.alias)
         self.alive = True
-        if len(self.keys) == 0:  # Because communications keys are already defined
-            self.keys = self.find_response_keys(self.parameters, 'key')
         self.create_widgets()
+        self.log_all_parameters(self.parameters)
         self.show()
         self.resume()
 
@@ -173,27 +167,36 @@ class AbstractPlugin:
 
 
     def update_can_receive_key(self):
-        if self.paused is True or not self.is_visible():
+        '''Update the ability of the plugin to receive either material or emulated inputs'''
+        
+        if self.paused == True or self.is_visible() == False:
             self.can_receive_keys = False
         else:
             if 'automaticsolver' in self.parameters:
                 self.can_receive_keys = not self.parameters['automaticsolver']
             else:
                 self.can_receive_keys = True
-
+        
+        if REPLAY_MODE == True:
+            self.can_receive_keys = False
+            self.can_execute_keys = True
+        else:
+            self.can_execute_keys = self.can_receive_keys
+        
 
     def compute_next_plugin_state(self):
-        if not self.scenariotime >= self.next_refresh_time or self.is_paused():
+        if not self.scenario_time >= self.next_refresh_time or self.is_paused():
             return 0
+        
         if self.verbose:
             print(self.alias, 'Compute next state')
 
-        self.next_refresh_time = self.scenariotime + self.parameters['taskupdatetime']/1000
+        self.next_refresh_time = self.scenario_time + self.parameters['taskupdatetime']/1000
 
         # Should an automation state (string) be displayed ?
         if 'displayautomationstate' in self.parameters and self.parameters['displayautomationstate']:
             if 'automaticsolver' in self.parameters:
-                self.automode_string = _('MANUAL') if not self.parameters['automaticsolver'] else _('AUTO')
+                self.automode_string = _('MANUAL') if self.parameters['automaticsolver'] == False else _('AUTO')
             else:
                 self.automode_string = _('MANUAL')
         else:
@@ -201,10 +204,13 @@ class AbstractPlugin:
         return 1
 
 
-
     def refresh_widgets(self):
+
         if not self.is_visible():
             return 0
+
+        if self.verbose:
+            print(self.alias, 'Refreshing widgets')
 
         if self.get_widget('foreground') is not None:
             self.get_widget('foreground').set_visibility(False)
@@ -230,9 +236,9 @@ class AbstractPlugin:
                     overdue['_is_visible'] = True
                 else:  # Blink case
                     if overdue['_nexttoggletime'] == 0:  # First toggle
-                        overdue['_nexttoggletime'] = self.scenariotime
+                        overdue['_nexttoggletime'] = self.scenario_time
 
-                    if self.scenariotime >= overdue['_nexttoggletime']:
+                    if self.scenario_time >= overdue['_nexttoggletime']:
                         overdue['_nexttoggletime'] += overdue['blinkdurationms']/1000
                         overdue['_is_visible'] = not overdue['_is_visible']
             else:
@@ -247,60 +253,47 @@ class AbstractPlugin:
         return 1
 
 
-    def find_response_keys(self, search_dict, field):
-        # https://stackoverflow.com/questions/14962485/finding-a-key-recursively-in-a-dictionary
-        fields_found = []
-
-        for key, value in search_dict.items():
-            if key == field:
-                fields_found.append(value)
-
-            elif isinstance(value, dict):
-                results = self.find_response_keys(value, field)
-                for result in results:
-                    fields_found.append(result)
-
-            elif isinstance(value, list):
-                for item in value:
-                    if isinstance(item, dict):
-                        more_results = self.find_response_keys(item, field)
-                        for another_result in more_results:
-                            fields_found.append(another_result)
-
-        return fields_found
-
-
-    def filter_key(self, symbol):
-        if self.can_receive_keys == True:
-            sym_string = winkey.symbol_string(symbol)
-            keystr = sym_string if sym_string in self.keys else None
+    def filter_key(self, keystr):
+        if self.can_execute_keys == False:
+            return
+        
+        if self.win.modal_dialog is None:
+            keystr = keystr if keystr in self.keys else None
             return keystr
-        else:
-            return None
+        
+        return
 
 
     def on_key_press(self, symbol, modifiers):
-        key = self.filter_key(symbol)
-        self.do_on_key(key, 'press')
+        if self.can_receive_keys == False:
+            return
+        keystr = winkey.symbol_string(symbol)
+        self.do_on_key(keystr, 'press', False)
 
 
     def on_key_release(self, symbol, modifiers):
-        key = self.filter_key(symbol)
-        self.do_on_key(key, 'release')
+        if self.can_receive_keys == False:
+            return
+        keystr = winkey.symbol_string(symbol)
+        self.do_on_key(keystr, 'release', False)
 
 
-    def do_on_key(self, key, state):   # JC: pour le solver, devrait prendre un parametre is_solver_action pour separer de vraies actions du participant
-        pass
+    def do_on_key(self, keystr, state, emulate=False):   # JC: pour le solver, devrait prendre un parametre is_solver_action pour separer de vraies actions du participant
+        if REPLAY_MODE == True and emulate == False:
+            return  # During replay, ignore keys that are not emulated
+        return self.filter_key(keystr)
 
 
-    def is_key_state(self, key, is_pressed):
-        if key in self.win.keyboard:
-            return self.win.keyboard[key] == is_pressed
+    def is_key_state(self, keystr, is_pressed):
+        if keystr in self.win.keyboard:
+            return self.win.keyboard[keystr] == is_pressed
         else:
-            return None
+            return
 
 
     def create_widgets(self):
+        if self.verbose:
+            print(self.alias, 'Creating widgets')
         pthp = PLUGIN_TITLE_HEIGHT_PROPORTION
 
         self.container = self.win.get_container(self.parameters['taskplacement'])
@@ -353,12 +346,24 @@ class AbstractPlugin:
         dic = self.parameters
         for key in keys_list[:-1]:
             dic = dic.setdefault(key, {})
+        old_value = dic[keys_list[-1]]
         dic[keys_list[-1]] = value
 
-        # If a key is changed, renew the self.keys dict
+        # If a key is changed, renew the self.keys list
         if 'key' in keys_str:
-            self.keys = self.find_response_keys(self.parameters, 'key')
+            self.keys.add(value)
+            if old_value in self.keys:
+                self.keys.remove(old_value)
         return dic
+
+
+    def log_all_parameters(self, search_dict, key_prefix=''):
+        for key, value in search_dict.items():
+            new_key_prefix = str(key) if len(key_prefix) == 0 else key_prefix + '-' + str(key)
+            if isinstance(value, dict): # Recursion search
+                self.log_all_parameters(value, new_key_prefix)
+            else: # Value found
+                logger.record_parameter(self.alias, new_key_prefix, value)
 
 
     def log_performance(self, name, value):
@@ -378,9 +383,10 @@ class AbstractPlugin:
 
 
 class BlockingPlugin(AbstractPlugin):
-    def __init__(self, window, taskplacement='fullscreen', taskupdatetime=15):
-        super().__init__(window, taskplacement, taskupdatetime)
+    def __init__(self, taskplacement='fullscreen', taskupdatetime=15):
+        super().__init__(taskplacement, taskupdatetime)
 
+        self.keys.update({'SPACE'})
         new_par = dict(boldtitle=False)
         self.parameters.update(new_par)
 
@@ -446,7 +452,6 @@ class BlockingPlugin(AbstractPlugin):
                     self.blocking = False
 
 
-
     def make_slide_graphs(self):
         # Extract the title from the slide string if relevant
         slide_content = self.current_slide.split('\n')
@@ -478,13 +483,13 @@ class BlockingPlugin(AbstractPlugin):
             super().on_key_press(symbol, modifiers)
 
 
-    def do_on_key(self, key, state):
-        super().do_on_key(key, state)
-        if key is None:
+    def do_on_key(self, keystr, state, emulate=False):
+        keystr = super().do_on_key(keystr, state, emulate)
+        if keystr is None:
             return
 
         # Waiting for the key release to advance one slide at the time
-        if key.lower() == 'space' and state == 'release':
+        if keystr.lower() == 'space' and state == 'release':
             self.go_to_next_slide = True
 
 

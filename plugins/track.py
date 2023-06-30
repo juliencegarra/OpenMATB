@@ -2,18 +2,20 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+
+
 from math import sin, pi, ceil
 from pyglet.input import get_joysticks
 from plugins.abstract import AbstractPlugin
 from core.widgets import Reticle
 from core.error import errors
 from core.container import Container
-from core.constants import Group as G, COLORS as C, FONT_SIZES as F
+from core.constants import Group as G, COLORS as C, FONT_SIZES as F, REPLAY_MODE
 
 
 class Track(AbstractPlugin):
-    def __init__(self, window, taskplacement='topmid', taskupdatetime=20, silent=False):
-        super().__init__(window, taskplacement, taskupdatetime)
+    def __init__(self, taskplacement='topmid', taskupdatetime=20, silent=False):
+        super().__init__(taskplacement, taskupdatetime)
 
         new_par = dict(cursorcolor=C['BLACK'], cursorcoloroutside=C['RED'], automaticsolver=False,
                        displayautomationstate=True, targetproportion=0.25, joystickforce=1,
@@ -30,7 +32,7 @@ class Track(AbstractPlugin):
         self.joystick = None
         self.silent = silent
 
-        if not self.win.replay_mode:
+        if not REPLAY_MODE:
             joysticks = get_joysticks()
             if len(joysticks) > 0:
                 self.joystick = joysticks[0]
@@ -70,7 +72,12 @@ class Track(AbstractPlugin):
     def compute_next_plugin_state(self):
         if super().compute_next_plugin_state() == 0:
             return
-        self.cursor_position = next(self.cursor_path_gen)
+
+        # In case of replay, do not compute cursor position.
+        # : the ReplayScheduler will master it.
+        if not REPLAY_MODE: 
+            self.cursor_position = next(self.cursor_path_gen)
+
         self.cursor_color_key = 'cursorcolor' if self.reticle.is_cursor_in_target() \
                     else 'cursorcoloroutside'
         self.log_performance('cursor_in_target', self.reticle.is_cursor_in_target())
@@ -123,6 +130,8 @@ class Track(AbstractPlugin):
                         compx, compy = self.joystick.x, -self.joystick.y
                     else:
                         compx, compy = -self.joystick.x, self.joystick.y
+                    self.record_input(self.alias, 'joystick_x', compx)
+                    self.record_input(self.alias, 'joystick_y', compy)
 
                 compx = compx * self.parameters['joystickforce']
                 compy = compy * self.parameters['joystickforce']

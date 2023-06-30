@@ -43,6 +43,7 @@ class Frame(AbstractWidget):
         rig_vertices = self.vertice_border(self.container.reduce_and_translate(l_r_th, 1, 1, 0))
         return top_vertices + bot_vertices + lef_vertices + rig_vertices
 
+
     def set_border_thickness(self, thickness):
         if thickness == self.get_border_thickness():
             return

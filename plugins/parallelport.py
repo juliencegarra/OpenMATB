@@ -8,8 +8,8 @@ from core.logger import logger
 from core.error import errors
 
 class Parallelport(AbstractPlugin):
-    def __init__(self, window, taskplacement='invisible', taskupdatetime=5):
-        super().__init__(window, taskplacement, taskupdatetime)
+    def __init__(self, taskplacement='invisible', taskupdatetime=5):
+        super().__init__(taskplacement, taskupdatetime)
 
         try:
             import parallel

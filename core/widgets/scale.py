@@ -3,7 +3,6 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from pyglet.gl import *
-from random import sample
 from core.container import Container
 from core.constants import COLORS as C, FONT_SIZES as F
 from core.constants import Group as G

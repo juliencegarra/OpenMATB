@@ -25,7 +25,7 @@ class PumpFlow(AbstractWidget):
 
 
     def pump_string(self, value):
-        return f"{self.label}\t\t\t\t\t\t\t\t\t\t\t\t{value}"
+        return f"{self.label}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t{value}"
 
 
     def set_flow(self, flow):

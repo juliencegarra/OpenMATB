@@ -4,12 +4,12 @@
 
 from pyglet.font import load as load_font
 from pyglet.window import key as winkey
-import gettext
 from pyglet.text import HTMLLabel, Label
 from core.container import Container
-from core.logger import logger
 from pyglet.gl import *
+from core.logger import logger
 from core.constants import FONT_SIZES as F, PATHS as P, Group as G, COLORS as C
+from core.utils import get_conf_value
 
 class ModalDialog:
     def __init__(self, window, msg, title='OpenMATB', continue_key='SPACE', exit_key=None):
@@ -23,9 +23,10 @@ class ModalDialog:
         self.win.modal_dialog = self
         self.continue_key = continue_key
         self.exit_key = exit_key
+        self.hide_on_pause = get_conf_value('Openmatb', 'hide_on_pause')
 
         # Hide background ?
-        if self.win.hide_on_pause:
+        if self.hide_on_pause:
             MATB_container = self.win.get_container('fullscreen')
             l, b, w, h = MATB_container.get_lbwh()
             self.back_vertice = self.win.batch.add(4, GL_POLYGON, G(20), 
@@ -39,12 +40,12 @@ class ModalDialog:
         if isinstance(msg, str):
             msg = [msg]
 
-        html = '<center><p><strong><font face=%s>' % self.win.font_name
+        html = '<center><p><strong><font face=%s>' % 'sans'
         html += '%s</font></strong></p></center>' % title
         for m in msg:
-            html += '<center><p><font face=%s>' % self.win.font_name
+            html += '<center><p><font face=%s>' % 'sans'
             html += '%s</font></p></center>' % m
-        html += '<center><p><em><font face=%s>' % self.win.font_name
+        html += '<center><p><em><font face=%s>' % 'sans'
         if exit_key is not None:
             html += '[%s]' % _(exit_key.capitalize())
             html += ' %s' % _('Exit')
@@ -78,14 +79,11 @@ class ModalDialog:
         l, b, w, h = self.container.get_lbwh()
 
         # Container background
-        import pyglet
-        
         self.back_dialog = self.win.batch.add(4, GL_POLYGON, G(21), 
                                               ('v2f/static', (l, b+h, l+w, b+h, l+w, b, l, b)),
                                               ('c4B', C['WHITE_TRANSLUCENT'] * 4))
 
         # Container border
-        glLineWidth(2);
         self.border_dialog = self.win.batch.add(8, GL_LINES, G(21), 
                                                ('v2f/static', (l, b+h, l+w, b+h, 
                                                                l+w, b+h, l+w, b,

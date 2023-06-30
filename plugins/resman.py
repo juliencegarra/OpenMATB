@@ -9,8 +9,10 @@ from plugins.abstract import AbstractPlugin
 
 
 class Resman(AbstractPlugin):
-    def __init__(self, window, taskplacement='bottommid', taskupdatetime=2000):
-        super().__init__(window, taskplacement, taskupdatetime)
+    def __init__(self, taskplacement='bottommid', taskupdatetime=2000):
+        super().__init__(taskplacement, taskupdatetime)
+
+        self.keys = {'NUM_1','NUM_2','NUM_3','NUM_4','NUM_5','NUM_6','NUM_7', 'NUM_8'}
 
         new_par = dict(automaticsolver=False, displayautomationstate=True, pumpcoloroff=C['WHITE'],
                        pumpcoloron=C['GREEN'], pumpcolorfailure=C['RED'], toleranceradius=250,
@@ -278,8 +280,8 @@ class Resman(AbstractPlugin):
             return pump[0]
 
 
-    def do_on_key(self, key, state):
-        super().do_on_key(key, state)
+    def do_on_key(self, key, state, emulate):
+        key = super().do_on_key(key, state, emulate)
         if key is None:
             return
 

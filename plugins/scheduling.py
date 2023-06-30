@@ -10,8 +10,8 @@ from core.container import Container
 
 
 class Scheduling(AbstractPlugin):
-    def __init__(self, window, taskplacement='topright', taskupdatetime=1000):
-        super().__init__(window, taskplacement, taskupdatetime)
+    def __init__(self, taskplacement='topright', taskupdatetime=1000):
+        super().__init__(taskplacement, taskupdatetime)
 
         self.parameters.update(dict(minduration=8, displaychronometer=True, reversechronometer=False,
                                     displayedplugins=['sysmon', 'track', 'communications', 'resman']))
@@ -123,7 +123,7 @@ class Scheduling(AbstractPlugin):
 
 
     def get_elapsed_time_sec(self):
-        return int(self.scenariotime)
+        return int(self.scenario_time)
 
 
     def get_elapsed_time_string(self):
@@ -132,7 +132,7 @@ class Scheduling(AbstractPlugin):
 
 
     def get_remaining_time_sec(self):
-        return int(self.maximum_time_sec) - int(self.scenariotime)
+        return int(self.maximum_time_sec) - int(self.scenario_time)
 
 
     def get_remaining_time_string(self):
