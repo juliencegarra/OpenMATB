@@ -23,13 +23,14 @@ def find_the_first_available_session_number():
     # If no session has been manually removed, it will be max+1
     if len(session_numbers) == 0:
         first_avail = 1
-
-    for n in range(1, max(session_numbers)+1):
-        if n not in session_numbers and first_avail is None:
-            first_avail = n
+    else:
+        for n in range(1, max(session_numbers)+1):
+            if n not in session_numbers and first_avail is None:
+                first_avail = n
 
     if first_avail is None:
         first_avail = max(session_numbers) + 1
+
     return first_avail
 
 

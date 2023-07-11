@@ -39,13 +39,13 @@ PATHS.update({k.upper():Path('.', 'includes', k)
 PATHS['SCENARIO_ERRORS'] = Path('.', 'last_scenario_errors.log')
 
 MATCHING_ALIAS = M = dict(sysmon=_('System monitoring'),
-                         track=_('Tracking'),
-                         scheduling=_('Scheduling'),
-                         communications=_('Communications'),
-                         resman=_('Resources management'),
-                         parallelport=_('Parallel port'),
-                         labstreaminglayer=_('Lab streaming layer'),
-                         instructions=_('Instructions'),
-                         genericscales=_('Generic scales'),
-                         eyetracker=_('Eye tracker'),
-                         performance=_('Performance'))
+                          track=_('Tracking'),
+                          scheduling=_('Scheduling'),
+                          communications=_('Communications'),
+                          resman=_('Resources management'),
+                          parallelport=_('Parallel port'),
+                          labstreaminglayer=_('Lab streaming layer'),
+                          instructions=_('Instructions'),
+                          genericscales=_('Generic scales'),
+                          eyetracker=_('Eye tracker'),
+                          performance=_('Performance'))
