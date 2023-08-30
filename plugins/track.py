@@ -11,6 +11,7 @@ from core.widgets import Reticle
 from core.error import errors
 from core.container import Container
 from core.constants import Group as G, COLORS as C, FONT_SIZES as F, REPLAY_MODE
+from core.logger import logger
 
 
 class Track(AbstractPlugin):
@@ -130,8 +131,8 @@ class Track(AbstractPlugin):
                         compx, compy = self.joystick.x, -self.joystick.y
                     else:
                         compx, compy = -self.joystick.x, self.joystick.y
-                    self.record_input(self.alias, 'joystick_x', compx)
-                    self.record_input(self.alias, 'joystick_y', compy)
+                    logger.record_input(self.alias, 'joystick_x', compx)
+                    logger.record_input(self.alias, 'joystick_y', compy)
 
                 compx = compx * self.parameters['joystickforce']
                 compy = compy * self.parameters['joystickforce']
