@@ -77,7 +77,7 @@ communications,airbandmaxvariationMhz,Maximum frequency variation of the target 
 communications,voiceidiom,Voice idiom. The corresponding folder must be present in the Sound directory,`english` or `french`,french
 communications,voicegender,Voice gender. The corresponding folder must be present in the selected idiom directory,`male` or `female`,female
 communications,radioprompt,Use it to trigger either a target (own) or a distractor (other) prompt [own or other]. Initially empty. Will be emptied at the end of the prompt,`own` or `other`,(empty)
-communications,promptlist,"List of radio labels, in their order of appearance. Each corresponding file must be available in the sound folder. This list is used both for target and distractors radio lists.","[NAV1, NAV2, COM1, COM2]",
+communications,promptlist,"List of radio labels, in their order of appearance. Each corresponding file must be available in the sound folder. This list is used both for target and distractors radio lists.",(list of string),"[NAV1, NAV2, COM1, COM2]"
 communications,maxresponsedelay,Maximum response delay (ms),(positive integer),20000
 communications,feedbackduration,Duration (ms) of the feedbacks when enabled,(positive integer),1500
 communications,feedbacks-positive-active,Is the positive feedback (correct response) enabled?,(boolean),False
@@ -157,6 +157,7 @@ instructions,taskupdatetime,Delay between plugin updates (ms),(positive integer)
 instructions,filename,Name of the instructions file to use,(string),(empty)
 instructions,response-text,String chain to prompt the subject to press a continuing key,(string),'Press SPACE to continue’
 instructions,response-key,Keyboard key to continue,(keyboard key),space
+instructions,maxdurationsec,Maximum displaying duration (seconds),(positive integer),0
 genericscales,title,"Title of the task, displayed if the plugin is visible",(string),Generic scales
 genericscales,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",fullscreen
 genericscales,taskupdatetime,Delay between plugin updates (ms),(positive integer),15
