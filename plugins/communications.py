@@ -50,9 +50,23 @@ class Communications(AbstractPlugin):
                                             '_feedbacktimer': None, '_feedbacktype':None}
         self.lastradioselected = None
         self.frequency_modulation = 0.1
+        self.sound_path = None
 
-        self.sound_path = P['SOUNDS'].joinpath(self.parameters['voiceidiom'],
-                                               self.parameters['voicegender'])
+        self.set_sample_sounds()
+
+        self.automode_position = (0.5, 0.2)
+
+
+    def get_sounds_path(self):
+        return P['SOUNDS'].joinpath(self.parameters['voiceidiom'], self.parameters['voicegender'])
+
+
+    def set_sample_sounds(self):
+        new_path = self.get_sounds_path()
+        if new_path == self.sound_path:
+            return
+
+        self.sound_path = new_path
         self.samples_path = [self.sound_path.joinpath(f'{i}.wav')
                              for i in [s for s in digits + ascii_lowercase] +
                              [this_radio.lower() for this_radio in self.parameters['promptlist']] +
@@ -61,8 +75,6 @@ class Communications(AbstractPlugin):
         for sample_needed in self.samples_path:
             if not sample_needed.exists():
                 print(sample_needed, _(' does not exist'))
-
-        self.automode_position = (0.5, 0.2)
 
 
     def regenerate_callsigns(self):
@@ -122,6 +134,7 @@ class Communications(AbstractPlugin):
         group = SourceGroup()
         for f in list_of_sounds:
             source = load(str(self.sound_path.joinpath(f'{f}.wav')), streaming=False)
+            print(f)
             group.add(source)
         return group
 
@@ -231,6 +244,8 @@ class Communications(AbstractPlugin):
             self.regenerate_callsigns()
             self.old_regex = str(self.parameters['callsignregex'])
 
+
+        self.set_sample_sounds()  # Check if sounds path has been renewed
 
         if self.parameters['radioprompt'].lower() in ['own', 'other']:
             radio_name_to_prompt = None
