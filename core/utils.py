@@ -1,7 +1,7 @@
 # Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
-
+from pyglet import font
 from core.constants import PATHS as P
 import configparser
 
@@ -85,6 +85,6 @@ def get_conf_value(section, key, val_type=None):
             elif not font.have_font(value):
                 raise TypeError(_(f"In config.ini, the specified font is not available. A default font will be used."))
             else:
-                return font_name
+                return value
 
         return value
