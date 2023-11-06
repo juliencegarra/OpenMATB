@@ -1,7 +1,7 @@
 # Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
-
+from pyglet import font
 from core.constants import PATHS as P
 import configparser
 
