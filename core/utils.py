@@ -85,6 +85,6 @@ def get_conf_value(section, key, val_type=None):
             elif not font.have_font(value):
                 raise TypeError(_(f"In config.ini, the specified font is not available. A default font will be used."))
             else:
-                return font_name
+                return value
 
         return value
