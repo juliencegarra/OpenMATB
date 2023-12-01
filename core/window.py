@@ -168,8 +168,8 @@ class Window(Window):
         b = self.height*mar
 
         # Vertical bounds
-        x1, x2 = (int(w * bound) for bound in [0.35, 0.85])  # Top row
-        x3, x4 = (int(w * bound) for bound in [0.30, 0.85])  # Bottom row
+        x1, x2 = (int(w * bound) for bound in get_conf_value('Openmatb', 'top_bounds'))  # Top row
+        x3, x4 = (int(w * bound) for bound in get_conf_value('Openmatb', 'bottom_bounds'))  # Bottom row
 
         # Horizontal bound
         y1 = b + h/2
