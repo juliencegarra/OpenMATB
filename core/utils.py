@@ -76,6 +76,15 @@ def get_conf_value(section, key, val_type=None):
         else:
             return value
 
+    # List values
+    elif key in ['top_bounds', 'bottom_bounds']:
+        try:
+            value = eval(value)
+        except:
+            raise TypeError(_(f"In config.ini, [%s] parameter must be a list of floats (not %s)") % (key, value))
+        else:
+            return value
+
     # String value
     else:
         # Font definition & check
