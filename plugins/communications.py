@@ -11,11 +11,28 @@ from core.widgets import Radio, Simpletext
 from core.container import Container
 from core.constants import PATHS as P, COLORS as C, REPLAY_MODE
 from core.pseudorandom import randint, uniform, choice, xeger
+from core import validation
 
 
 class Communications(AbstractPlugin):
     def __init__(self, taskplacement='bottomleft', taskupdatetime=80):
         super().__init__(taskplacement, taskupdatetime)
+
+        self.validation_dict = {
+            'owncallsign' : validation.is_callsign,
+            'othercallsign' : validation.is_callsign_or_list_of,  # othercallsign can be a list of callsigns
+            'voiceidiom': (validation.is_in_list, [p.name.lower() for p in P['SOUNDS'].iterdir()]),
+            'voicegender': (validation.is_in_list, ['male', 'female']),
+            'othercallsignnumber': validation.is_positive_integer,
+            'airbandminMhz': validation.is_positive_float,
+            'airbandmaxMhz': validation.is_positive_float,
+            'airbandminvariationMhz': validation.is_positive_integer,
+            'airbandmaxvariationMhz': validation.is_positive_integer,
+            'radioprompt' : (validation.is_in_list, ['own', 'other']),
+            'promptlist': (validation.is_in_list, ['NAV_1', 'NAV_2', 'COM_1', 'COM_2']),
+            'maxresponsedelay': validation.is_positive_integer,
+            'callsignregex': validation.is_a_regex}
+
 
         self.keys = {'UP', 'DOWN', 'RIGHT', 'LEFT', 'ENTER'}
         self.callsign_seed = 1  # Useful to pseudorandomly generate different callsign when
@@ -177,7 +194,7 @@ class Communications(AbstractPlugin):
         return [r for _, r in self.parameters['radios'].items() if r['targetfreq'] is not None]
 
 
-    def get_non_target_radios_list(self):   
+    def get_non_target_radios_list(self):
         # Multiple radios can have a target frequency at the same time
         # because of a potential delay in reactions
         return [r for _, r in self.parameters['radios'].items() if r['targetfreq'] is None]
@@ -254,10 +271,10 @@ class Communications(AbstractPlugin):
             if self.parameters['radioprompt'].lower() == 'own':
                 non_target_radios = self.get_non_target_radios_list()
                 if len(non_target_radios) > 0:
-                    radio_name_to_prompt = choice(non_target_radios, self.alias, 
+                    radio_name_to_prompt = choice(non_target_radios, self.alias,
                                                   self.scenario_time, 1)['name']
             elif self.parameters['radioprompt'].lower() == 'other':
-                radio_name_to_prompt = choice(self.parameters['promptlist'], self.alias, 
+                radio_name_to_prompt = choice(self.parameters['promptlist'], self.alias,
                                               self.scenario_time, 1)
 
             if radio_name_to_prompt is not None:
@@ -270,8 +287,8 @@ class Communications(AbstractPlugin):
                     prompting_radio = prompting_radio_list[0]
                     prompting_radio['is_prompting'] = False
                     self.logger.log_manual_entry(f"Target {prompting_radio['name']}:{prompting_radio['targetfreq']}")
-                
-                self.prompt_for_a_new_target(self.parameters['radioprompt'].lower(), 
+
+                self.prompt_for_a_new_target(self.parameters['radioprompt'].lower(),
                                              radio_name_to_prompt)
             else:
                 self.log_manual_entry('Error. Could not trigger prompt', key='manual')

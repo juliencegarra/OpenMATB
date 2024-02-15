@@ -2,8 +2,6 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-
-
 from math import sin, pi, ceil
 from pyglet.input import get_joysticks
 from plugins.abstract import AbstractPlugin
@@ -12,11 +10,18 @@ from core.error import errors
 from core.container import Container
 from core.constants import Group as G, COLORS as C, FONT_SIZES as F, REPLAY_MODE
 from core.logger import logger
-
+from core import validation
 
 class Track(AbstractPlugin):
     def __init__(self, taskplacement='topmid', taskupdatetime=20, silent=False):
         super().__init__(taskplacement, taskupdatetime)
+
+        self.validation_dict = {
+            'cursorcolor': validation.is_color,
+            'cursorcoloroutside': validation.is_color,
+            'targetproportion': validation.is_in_unit_interval,
+            'joystickforce': validation.is_natural_integer,
+            'inverseaxis': validation.is_boolean}
 
         new_par = dict(cursorcolor=C['BLACK'], cursorcoloroutside=C['RED'], automaticsolver=False,
                        displayautomationstate=True, targetproportion=0.25, joystickforce=1,
@@ -76,7 +81,7 @@ class Track(AbstractPlugin):
 
         # In case of replay, do not compute cursor position.
         # : the ReplayScheduler will master it.
-        if not REPLAY_MODE: 
+        if not REPLAY_MODE:
             self.cursor_position = next(self.cursor_path_gen)
 
         self.cursor_color_key = 'cursorcolor' if self.reticle.is_cursor_in_target() \
