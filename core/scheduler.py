@@ -61,12 +61,12 @@ class Scheduler:
         pass
 
 
-    def update(self, dt):    
+    def update(self, dt):
         if self.win.modal_dialog is not None:
             return
         elif errors.is_empty() == False:
             errors.show_errors()
-            
+
         self.update_timers(dt)
         self.update_active_plugins()
         self.execute_events()
@@ -238,6 +238,7 @@ class Scheduler:
     def exit(self):
         logger.log_manual_entry('end')
         self.event_loop.exit()
+        self.win.close() # needed for windows clean exit
         sys.exit(0)
 
 
