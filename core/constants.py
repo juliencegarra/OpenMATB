@@ -48,4 +48,5 @@ MATCHING_ALIAS = M = dict(sysmon=_('System monitoring'),
                           instructions=_('Instructions'),
                           genericscales=_('Generic scales'),
                           eyetracker=_('Eye tracker'),
-                          performance=_('Performance'))
+                          performance=_('Performance'),
+                          generictrigger=_('Generic Trigger'))

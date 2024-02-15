@@ -97,7 +97,9 @@ class Scenario:
             if not hasattr(globals()['plugins'], event.plugin.capitalize()):
                 errors.add_error(_('Scenario error: %s is not a valid plugin name (l. %s)') % (event.plugin, event.line), fatal = True)
 
-        # Instanciate plugins
+        # Instantiate plugins
+        print(self.get_plugins_name_list())
+        #print(getattr(globals()['plugins'], name.capitalize()))
         self.plugins = {name: getattr(globals()['plugins'], name.capitalize())()
                         for name in self.get_plugins_name_list()}
 
@@ -617,6 +619,8 @@ validation_dict = {
     'trigger': is_positive_integer,
     'delayms':is_positive_integer,
 
+    # Generic trigger
+    'state': is_string,
 
     # Performance
     'levelmin':is_positive_integer,

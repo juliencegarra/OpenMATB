@@ -179,3 +179,5 @@ labstreaminglayer,streamsession,Should the whole session log be streamed through
 labstreaminglayer,pauseatstart,"Should a pause screen be proposed at LSL start, to allow the user to add the stream in the LabRecorder?",(boolean),False
 parallelport,trigger,"Set this parameter with a 8-bit integer (1-256), to change the parallel port state",(positive integer),0
 parallelport,delayms,Delay (ms) before the parallel port is set back to its default value (0),(positive integer),5
+generictrigger,state,"Set the state of the trigger",(string),""
+
