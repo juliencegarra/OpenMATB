@@ -5,11 +5,20 @@
 from core.constants import *
 from core.widgets import Performancescale
 from plugins.abstract import AbstractPlugin
-
+from core import validation
 
 class Performance(AbstractPlugin):
     def __init__(self, taskplacement='topright', taskupdatetime=50):
         super().__init__(taskplacement, taskupdatetime)
+
+        self.validation_dict = {
+            'levelmin': validation.is_positive_integer,
+            'levelmax': validation.is_positive_integer,
+            'ticknumber': validation.is_positive_integer,
+            'criticallevel': validation.is_positive_integer,
+            'shadowundercritical': validation.is_boolean,
+            'defaultcolor': validation.is_color,
+            'criticalcolor': validation.is_color}
 
         new_par = dict(levelmin=0, levelmax=100, ticknumber=5, criticallevel=20,
                        shadowundercritical=True, defaultcolor=C['GREEN'], criticalcolor=C['RED'])

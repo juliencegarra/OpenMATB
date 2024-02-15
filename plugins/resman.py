@@ -6,11 +6,79 @@ from core.constants import *
 from core.container import Container
 from core.widgets import Pump, Tank, PumpFlow, Simpletext, Frame
 from plugins.abstract import AbstractPlugin
+from core import validation
 
 
 class Resman(AbstractPlugin):
     def __init__(self, taskplacement='bottommid', taskupdatetime=2000):
         super().__init__(taskplacement, taskupdatetime)
+
+        self.validation_dict = {
+            'pumpcoloroff': validation.is_color,
+            'pumpcoloron': validation.is_color,
+            'pumpcolorfailure': validation.is_color,
+            'toleranceradius': validation.is_positive_integer,
+            'statuslocation': validation.is_task_location,
+            'displaystatus': validation.is_boolean,
+            'tolerancecolor': validation.is_color,
+            'tolerancecoloroutside': validation.is_color,
+
+            'pump-1-flow': validation.is_positive_integer,
+            'pump-1-state': (validation.is_in_list, ['off', 'on', 'failure']),
+            'pump-1-key': validation.is_keyboard_key,
+            'pump-2-flow': validation.is_positive_integer,
+            'pump-2-state': (validation.is_in_list, ['off', 'on', 'failure']),
+            'pump-2-key': validation.is_keyboard_key,
+            'pump-3-flow': validation.is_positive_integer,
+            'pump-3-state': (validation.is_in_list, ['off', 'on', 'failure']),
+            'pump-3-key': validation.is_keyboard_key,
+            'pump-4-flow': validation.is_positive_integer,
+            'pump-4-state': (validation.is_in_list, ['off', 'on', 'failure']),
+            'pump-4-key': validation.is_keyboard_key,
+            'pump-5-flow': validation.is_positive_integer,
+            'pump-5-state': (validation.is_in_list, ['off', 'on', 'failure']),
+            'pump-5-key': validation.is_keyboard_key,
+            'pump-6-flow': validation.is_positive_integer,
+            'pump-6-state': (validation.is_in_list, ['off', 'on', 'failure']),
+            'pump-6-key': validation.is_keyboard_key,
+            'pump-7-flow': validation.is_positive_integer,
+            'pump-7-state': (validation.is_in_list, ['off', 'on', 'failure']),
+            'pump-7-key': validation.is_keyboard_key,
+            'pump-8-flow': validation.is_positive_integer,
+            'pump-8-state': (validation.is_in_list, ['off', 'on', 'failure']),
+            'pump-8-key': validation.is_keyboard_key,
+
+            'tank-a-level': validation.is_natural_integer,
+            'tank-a-max': validation.is_positive_integer,
+            'tank-a-target': validation.is_positive_integer,
+            'tank-a-depletable': validation.is_boolean,
+            'tank-a-lossperminute': validation.is_natural_integer,
+            'tank-b-level': validation.is_natural_integer,
+            'tank-b-max': validation.is_positive_integer,
+            'tank-b-target': validation.is_positive_integer,
+            'tank-b-depletable': validation.is_boolean,
+            'tank-b-lossperminute': validation.is_natural_integer,
+            'tank-c-level': validation.is_natural_integer,
+            'tank-c-max': validation.is_positive_integer,
+            'tank-c-target': validation.is_positive_integer,
+            'tank-c-depletable': validation.is_boolean,
+            'tank-c-lossperminute': validation.is_natural_integer,
+            'tank-d-level': validation.is_natural_integer,
+            'tank-d-max': validation.is_positive_integer,
+            'tank-d-target': validation.is_positive_integer,
+            'tank-d-depletable': validation.is_boolean,
+            'tank-d-lossperminute': validation.is_natural_integer,
+            'tank-e-level': validation.is_natural_integer,
+            'tank-e-max': validation.is_positive_integer,
+            'tank-e-target': validation.is_positive_integer,
+            'tank-e-depletable': validation.is_boolean,
+            'tank-e-lossperminute': validation.is_natural_integer,
+            'tank-f-level': validation.is_natural_integer,
+            'tank-f-max': validation.is_positive_integer,
+            'tank-f-target': validation.is_positive_integer,
+            'tank-f-depletable': validation.is_boolean,
+            'tank-f-lossperminute': validation.is_natural_integer}
+
 
         self.keys = {'NUM_1','NUM_2','NUM_3','NUM_4','NUM_5','NUM_6','NUM_7', 'NUM_8'}
 

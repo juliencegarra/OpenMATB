@@ -6,10 +6,16 @@ from plugins.abstract import AbstractPlugin
 from core.constants import PATHS as P
 from core.logger import logger
 from core.error import errors
+from core import validation
+
 
 class Parallelport(AbstractPlugin):
     def __init__(self, taskplacement='invisible', taskupdatetime=5):
         super().__init__(taskplacement, taskupdatetime)
+
+        self.validation_dict = {
+            'trigger': validation.is_positive_integer,
+            'delayms': validation.is_positive_integer}
 
         try:
             import parallel

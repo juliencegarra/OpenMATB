@@ -7,13 +7,55 @@ from core.container import Container
 from core.constants import COLORS as C
 from core.widgets import Scale, Light
 from plugins.abstract import AbstractPlugin
+from core import validation
+
 
 class Sysmon(AbstractPlugin):
     def __init__(self, taskplacement='topleft', taskupdatetime=200):
         super().__init__(taskplacement, taskupdatetime)
 
+        self.validation_dict = {
+            'alerttimeout': validation.is_positive_integer,
+            'automaticsolverdelay': validation.is_positive_integer,
+            'allowanykey': validation.is_boolean,
+            'lights-1-name': validation.is_string,
+            'lights-1-failure': validation.is_boolean,
+            'lights-1-on': validation.is_boolean,
+            'lights-1-default': (validation.is_in_list, ['on', 'off']),
+            'lights-1-oncolor': validation.is_color,
+            'lights-1-key': validation.is_keyboard_key,
+            'lights-1-onfailure': validation.is_boolean,
+            'lights-2-name': validation.is_string,
+            'lights-2-failure': validation.is_boolean,
+            'lights-2-on': validation.is_boolean,
+            'lights-2-default': (validation.is_in_list, ['on', 'off']),
+            'lights-2-oncolor': validation.is_color,
+            'lights-2-key': validation.is_keyboard_key,
+            'lights-2-onfailure': validation.is_boolean,
+            'scales-1-name': validation.is_string,
+            'scales-1-failure': validation.is_boolean,
+            'scales-1-side': (validation.is_in_list, ['-1', '0', '1']),
+            'scales-1-key': validation.is_keyboard_key,
+            'scales-1-onfailure': validation.is_boolean,
+            'scales-2-name': validation.is_string,
+            'scales-2-failure': validation.is_boolean,
+            'scales-2-side': (validation.is_in_list, ['-1', '0', '1']),
+            'scales-2-key': validation.is_keyboard_key,
+            'scales-2-onfailure': validation.is_boolean,
+            'scales-3-name': validation.is_string,
+            'scales-3-failure': validation.is_boolean,
+            'scales-3-side': (validation.is_in_list, ['-1', '0', '1']),
+            'scales-3-key': validation.is_keyboard_key,
+            'scales-3-onfailure': validation.is_boolean,
+            'scales-4-name': validation.is_string,
+            'scales-4-failure': validation.is_boolean,
+            'scales-4-side': (validation.is_in_list, ['-1', '0', '1']),
+            'scales-4-key': validation.is_keyboard_key,
+            'scales-4-onfailure': validation.is_boolean}
+
+
         self.keys = {'F1', 'F2', 'F3', 'F4', 'F5', 'F6'}
-        self.moving_seed = 1                # Useful for pseudorandom generation of 
+        self.moving_seed = 1                # Useful for pseudorandom generation of
                                             # multiple values at once (arrows move)
 
         new_par = dict(alerttimeout=10000, automaticsolver=False, automaticsolverdelay=1000,
@@ -113,7 +155,7 @@ class Sysmon(AbstractPlugin):
             self.moving_seed += 1
             # Manage the case where the arrow must change its zone
             if scale['_pos'] not in self.scale_zones[scale['_zone']]:
-                scale['_pos'] = sample(self.scale_zones[scale['_zone']], self.alias, 
+                scale['_pos'] = sample(self.scale_zones[scale['_zone']], self.alias,
                                        self.scenario_time, self.moving_seed)
             else:   # Move into a delimited zone
                 direction = sample([-1, 1], self.alias, self.scenario_time, self.moving_seed)
@@ -175,7 +217,7 @@ class Sysmon(AbstractPlugin):
             else:  # Scale case
                 if gauge['side'] not in [-1, 1]:
                     add = self.get_gauge_key(gauge) # Specify a gauge integer to generate
-                                                    # a unique seed    
+                                                    # a unique seed
                     gauge['side'] = choice([-1, 1], self.alias, self.scenario_time, int(add))
                 gauge['_zone'] = gauge['side']
         gauge['failure'] = False

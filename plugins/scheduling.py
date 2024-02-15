@@ -7,11 +7,19 @@ from core.widgets import Timeline, Schedule, Simpletext
 from plugins.abstract import AbstractPlugin
 from core.constants import COLORS as C
 from core.container import Container
+from core import validation
 
 
 class Scheduling(AbstractPlugin):
     def __init__(self, taskplacement='topright', taskupdatetime=1000):
         super().__init__(taskplacement, taskupdatetime)
+
+        self.validation_dict = {
+            'minduration': validation.is_positive_integer,
+            'displaychronometer': validation.is_boolean,
+            'reversechronometer': validation.is_boolean,
+            'displayedplugins': (validation.is_in_list, ['sysmon', 'track', 'resman', 'communications'])}
+
 
         self.parameters.update(dict(minduration=8, displaychronometer=True, reversechronometer=False,
                                     displayedplugins=['sysmon', 'track', 'communications', 'resman']))
