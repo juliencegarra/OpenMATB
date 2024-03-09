@@ -16,33 +16,23 @@ from core.constants import PATHS as P
 from core.constants import REPLAY_MODE, REPLAY_STRIP_PROPORTION
 from core.modaldialog import ModalDialog
 from core.logger import logger
-from core.error import errors
+import core.error
 from core.utils import get_conf_value, find_the_last_session_number
 
+MainWindow = None
 
 class Window(Window):
     def __init__(self, *args, **kwargs):
 
-        errors.win = self
+        MainWindow = self
 
-        # Screen definition #
-        try:
-            screen_index = get_conf_value('Openmatb', 'screen_index')
-        except:
-            screen_index = 0
+        screen = self.get_screen()
 
-        screens = get_display().get_screens()
-        if screen_index + 1 > len(screens):
-            screen = screens[-1]
-            errors.add_error(_(f"In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected.") % len(get_display().get_screens()))
-        else:
-            screen = screens[screen_index]
+        self._width=int(screen.width * 0.5)
+        self._height=int(screen.height *0.5)
+        self._fullscreen=False #get_conf_value('Openmatb', 'fullscreen')
 
-        self._width=screen.width
-        self._height=screen.height
-        self._fullscreen=get_conf_value('Openmatb', 'fullscreen')
-
-        super().__init__(fullscreen=self._fullscreen, width=self._width, height=self._height, 
+        super().__init__(fullscreen=self._fullscreen, width=self._width, height=self._height,
                             vsync=True, *args, **kwargs)
 
         img_path = P['IMG']
@@ -50,7 +40,7 @@ class Window(Window):
         logo32 = image.load(img_path.joinpath('logo32.png'))
         self.set_icon(logo16, logo32)
 
-        self.set_size_and_location() # Postpone multiple monitor support
+        self.set_size_and_location(screen) # Postpone multiple monitor support
         self.set_mouse_visible(REPLAY_MODE)
 
         self.batch = Batch()
@@ -71,16 +61,31 @@ class Window(Window):
                 replay_session_id = find_the_last_session_number()
             msg = _('Replay session ID: %s') % replay_session_id
             self.modal_dialog = ModalDialog(self, msg, title='OpenMATB replay')
-            
+
         elif get_conf_value('Openmatb', 'display_session_number'):
             msg = _('Session ID: %s') % logger.session_id
             self.modal_dialog = ModalDialog(self, msg, title='OpenMATB')
 
+    def get_screen(self):
+        # Screen definition
+        try:
+            screen_index = get_conf_value('Openmatb', 'screen_index')
+        except:
+            screen_index = 0
 
-    def set_size_and_location(self):
+        screens = get_display().get_screens()
+        if screen_index + 1 > len(screens):
+            screen = screens[-1]
+            errors.add_error(_(f"In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected.") % len(get_display().get_screens()))
+        else:
+            screen = screens[screen_index]
+
+        return screen
+
+    def set_size_and_location(self, screen):
         self.switch_to()        # The Window must be active before setting the location
-        target_x = (self.screen.x + self.screen.width / 2) - self.screen.width / 2
-        target_y = (self.screen.y + self.screen.height / 2) - self.screen.height / 2
+        target_x = (screen.x + screen.width / 2) - screen.width / 2
+        target_y = (screen.y + screen.height / 2) - screen.height / 2
         self.set_location(int(target_x), int(target_y))
 
 
