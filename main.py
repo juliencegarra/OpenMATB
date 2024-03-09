@@ -19,6 +19,7 @@ language_iso = [l for l in open('config.ini', 'r').readlines()
 language = gettext.translation('openmatb', LOCALE_PATH, [language_iso])
 language.install()
 
+
 # Only after language installation, import core modules (they must be translated)
 from core.error import errors
 from core import LogReader, Scenario, Scheduler, ReplayScheduler
@@ -27,10 +28,10 @@ from core.logger import logger
 from core.utils import get_conf_value, find_the_first_available_session_number, find_the_last_session_number
 from core.window import Window
 
+
 class OpenMATB:
     def __init__(self):
-        # The MATB window must be bordeless (for non-fullscreen mode)
-
+        # The MATB window must be borderless (for non-fullscreen mode)
         Window(style=Window.WINDOW_STYLE_BORDERLESS)
 
         if not REPLAY_MODE:
