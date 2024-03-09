@@ -9,7 +9,7 @@ from core.error import errors
 from core.scenario import Scenario
 from core.event import Event
 from core.utils import find_the_last_session_number
-
+from core.utils import get_replay_session_id
 # Some plugins must not be replayed for now
 IGNORE_PLUGINS = ['labstreaminglayer', 'parallelport', 'genericscales', 'instructions']
 
@@ -24,11 +24,7 @@ class LogReader:
         self.start_sec, self.end_sec = 0, 0
         self.line_n = 0
 
-        if len(sys.argv) > 2:
-            replay_session_id = int(sys.argv[2])
-        else:
-            replay_session_id = find_the_last_session_number()
-
+        replay_session_id = get_replay_session_id()
 
         # Check if the desired session file exists. If so, load and parse it.
         session_file_list = [f for f in P['SESSIONS'].glob(f'**/{replay_session_id}_*.csv')]

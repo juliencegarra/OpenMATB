@@ -3,7 +3,7 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 from pyglet import font
 from core.constants import PATHS as P, CONFIG
-
+import sys
 
 def get_session_numbers():
     try:
@@ -93,3 +93,12 @@ def get_conf_value(section, key, val_type=None):
                 return value
 
         return value
+
+
+def get_replay_session_id()->int:
+    if len(sys.argv) > 2:
+        return int(sys.argv[2])
+    elif has_conf_value('Replay', 'replay_session_id'):
+        return int(get_conf_value('Replay', 'replay_session_id'))
+    else:
+        return int(find_the_last_session_number())

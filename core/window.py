@@ -17,7 +17,7 @@ from core.constants import REPLAY_MODE, REPLAY_STRIP_PROPORTION
 from core.modaldialog import ModalDialog
 from core.logger import logger
 import core.error
-from core.utils import has_conf_value, get_conf_value, find_the_last_session_number
+from core.utils import get_replay_session_id, get_conf_value
 
 class Window(Window):
 
@@ -31,7 +31,7 @@ class Window(Window):
         screen = self.get_screen()
 
         self._width=int(screen.width * 0.5)
-        self._height=int(screen.height *0.5)
+        self._height=int(screen.height * 0.5)
         self._fullscreen=False #get_conf_value('Openmatb', 'fullscreen')
 
         super().__init__(fullscreen=self._fullscreen, width=self._width, height=self._height,
@@ -55,9 +55,12 @@ class Window(Window):
 
         self.on_key_press_replay = None # used by the replay
 
+        self.display_session_id()
+
+    def display_session_id(self):
         # Display the session ID if need be, at window instanciation
-        if REPLAY_MODE == True:
-            msg = _('Replay session ID: %s') % self.get_replay_session_id()
+        if REPLAY_MODE:
+            msg = _('Replay session ID: %s') % get_replay_session_id()
             title='OpenMATB replay'
 
         elif get_conf_value('Openmatb', 'display_session_number'):
@@ -66,13 +69,6 @@ class Window(Window):
 
         self.modal_dialog = ModalDialog(self, msg, title)
 
-    def get_replay_session_id(self)->int:
-        if len(sys.argv) > 2:
-            return int(sys.argv[2])
-        elif has_conf_value('Replay', 'replay_session_id'):
-            return int(get_conf_value('Replay', 'replay_session_id'))
-        else:
-            return int(find_the_last_session_number())
 
 
     def get_screen(self):
@@ -128,11 +124,15 @@ class Window(Window):
 
 
     def is_mouse_necessary(self):
-        return self.slider_visible == True or REPLAY_MODE == True
+        return self.slider_visible or REPLAY_MODE
 
 
     # Log any keyboard input, either plugins accept it or not
+    # is subclassed in replay mode
     def on_key_press(self, symbol, modifiers):
+        if REPLAY_MODE:
+            return
+
         if self.modal_dialog is None:
             keystr = winkey.symbol_string(symbol)
             self.keyboard[keystr] = True  # KeyStateHandler
@@ -142,17 +142,15 @@ class Window(Window):
             elif keystr == 'P':
                 self.pause_prompt()
 
-            if REPLAY_MODE:
-                if self.on_key_press_replay != None:
-                    self.on_key_press_replay(symbol, modifiers)
-                return
-
             logger.record_input('keyboard', keystr, 'press')
 
 
     def on_key_release(self, symbol, modifiers):
         if self.modal_dialog is not None:
             self.modal_dialog.on_key_release(symbol, modifiers)
+            return
+
+        if REPLAY_MODE:
             return
 
         keystr = winkey.symbol_string(symbol)
