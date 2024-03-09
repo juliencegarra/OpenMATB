@@ -6,7 +6,8 @@ import csv, sys
 from pathlib import Path
 from core.constants import PATHS as P
 from core.error import errors
-from core.scenario import Event, Scenario
+from core.scenario import Scenario
+from core.event import Event
 from core.utils import find_the_last_session_number
 
 # Some plugins must not be replayed for now
@@ -27,7 +28,7 @@ class LogReader:
             replay_session_id = int(sys.argv[2])
         else:
             replay_session_id = find_the_last_session_number()
-    
+
 
         # Check if the desired session file exists. If so, load and parse it.
         session_file_list = [f for f in P['SESSIONS'].glob(f'**/{replay_session_id}_*.csv')]
@@ -60,7 +61,7 @@ class LogReader:
 
                         # State case
                         elif row['type'] == 'state':
-                            
+
                             # Record communications radio frequencies
                             # AND track cursor positions
                             if ('radio_frequency' in row['address']

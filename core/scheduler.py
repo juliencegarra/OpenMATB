@@ -4,7 +4,7 @@
 
 import sys
 from pyglet.app import EventLoop
-from core.scenario import Event
+from core.event import Event
 from core.clock import Clock
 from core.modaldialog import ModalDialog
 from core.logger import logger
