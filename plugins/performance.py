@@ -32,6 +32,10 @@ class Performance(AbstractPlugin):
         self.under_critical = None
 
 
+    def on_scenario_loaded(self, scenario):
+        self.plugins = scenario.plugins
+
+
     def create_widgets(self):
         super().create_widgets()
 

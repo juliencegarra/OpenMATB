@@ -148,7 +148,8 @@ class Scheduling(AbstractPlugin):
         return _('Remaining time \t %s') % str_time
 
 
-    def set_planning(self, events):  # Executed by the scheduler
+    def on_scenario_loaded(self, scenario):
+        events = scenario.events
         # TODO: Remove redundant events (stop -> stop), keep the earliest.
         start_stop_labels = ['start', 'stop', 'resume', 'pause']
         auto_labels = ['automaticsolver']
