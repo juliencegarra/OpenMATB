@@ -11,28 +11,37 @@ from core.logger import logger
 from core.utils import get_conf_value
 from core.constants import REPLAY_MODE
 from core.error import errors
-
-
+from core import Window
 
 class Scheduler:
     """
     This class manages events execution.
     """
 
-    def __init__(self, window, scenario):
+    def __init__(self):
+        logger.log_manual_entry(open('VERSION', 'r').read().strip(), key='version')
 
-        self.win = window
+        self.window = Window(style=Window.WINDOW_STYLE_BORDERLESS)
+
+        self.clock = Clock('main')
+        self.scenario_time = 0
+
+        # Create the event loop
+        self.clock.schedule(self.update)
+        self.event_loop = EventLoop()
+
+
+    def set_scenario(self, scenario):
         self.events = scenario.events
         self.plugins = scenario.plugins
 
         # Attribute window to plugins in use, and push their handles to window
         for p in self.plugins:
-            self.plugins[p].win = self.win
+            self.plugins[p].win = self.window
             if not REPLAY_MODE:
-                self.win.push_handlers(self.plugins[p].on_key_press,
+                self.window.push_handlers(self.plugins[p].on_key_press,
                                        self.plugins[p].on_key_release)
 
-        logger.log_manual_entry(open('VERSION', 'r').read().strip(), key='version')
 
         if 'scheduling' in self.plugins:
             self.plugins['scheduling'].set_planning(self.events)
@@ -41,9 +50,10 @@ class Scheduler:
         if 'performance' in self.plugins:
             self.plugins['performance'].plugins = self.plugins
 
-        self.clock = Clock('main')
-        self.pause_scenario_time = False
+
         self.scenario_time = 0
+        self.pause_scenario_time = False
+
 
         # We store events in a list in case their execution is delayed by a blocking event
         self.events_queue = list()
@@ -52,9 +62,6 @@ class Scheduler:
         # Store the plugins that could be paused by a *blocking* event
         self.paused_plugins = list()
 
-        # Create the event loop
-        self.clock.schedule(self.update)
-        self.event_loop = EventLoop()
 
 
     def initialize_plugins(self):
@@ -62,7 +69,7 @@ class Scheduler:
 
 
     def update(self, dt):
-        if self.win.modal_dialog is not None:
+        if self.window.modal_dialog is not None:
             return
         elif errors.is_empty() == False:
             errors.show_errors()
@@ -93,7 +100,7 @@ class Scheduler:
             self.exit()
 
         # If the windows has been killed, exit the program
-        if self.win.alive == False:
+        if self.window.alive == False:
             # Be careful to stop all the plugins in case they’re not
             # (so we have a stop time for each plugin, in case we must compute this somewhere)
             for p_name, plugin in self.plugins.items():
@@ -238,7 +245,7 @@ class Scheduler:
     def exit(self):
         logger.log_manual_entry('end')
         self.event_loop.exit()
-        self.win.close() # needed for windows clean exit
+        self.window.close() # needed for windows clean exit
         sys.exit(0)
 
 

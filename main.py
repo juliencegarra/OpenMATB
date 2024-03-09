@@ -21,7 +21,7 @@ language.install()
 
 # Only after language installation, import core modules (they must be translated)
 from core.error import errors
-from core import LogReader, Window, Scenario, Scheduler, ReplayScheduler
+from core import LogReader, Scenario, Scheduler, ReplayScheduler
 from core.constants import PATHS as P, REPLAY_MODE
 from core.logger import logger
 from core.utils import get_conf_value, find_the_first_available_session_number, find_the_last_session_number
@@ -29,17 +29,15 @@ from core.utils import get_conf_value, find_the_first_available_session_number, 
 class OpenMATB:
     def __init__(self):
         # The MATB window must be bordeless (for non-fullscreen mode)
-        window = Window(style=Window.WINDOW_STYLE_BORDERLESS)
 
         if not REPLAY_MODE:
-            content = Scenario()
-            cls = Scheduler
+            cls = Scheduler()
+            cls.set_scenario(Scenario())
         else:
-            content = LogReader()
-            cls = ReplayScheduler
+            cls = ReplayScheduler()
+            cls.set_scenario(LogReader())
+        cls.run()
 
-        self.scheduler = cls(window, content)
-        self.scheduler.run()
 
 if __name__ == '__main__':
     app = OpenMATB()
