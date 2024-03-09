@@ -5,6 +5,7 @@
 import sys
 from pyglet.graphics import OrderedGroup as Group
 from pathlib import Path
+import configparser
 
 REPLAY_MODE = len(sys.argv) > 1 and sys.argv[1] == '-r'
 REPLAY_STRIP_PROPORTION = 0.08
@@ -31,6 +32,9 @@ PLUGIN_TITLE_HEIGHT_PROPORTION = 0.1
 # Limit between the background and the foreground in relation with draw order
 BFLIM = 15
 
+# Ignore these plugins arguments
+DEPRECATED = ['pumpstatus', 'end', 'cutofffrequency', 'equalproportions']
+
 PATHS = {k.upper():Path('.', k) for k in ['plugins', 'sessions']}
 PATHS.update({k.upper():Path('.', 'includes', k)
               for k in ['img', 'instructions', 'scenarios', 'sounds', 'questionnaires']})
@@ -50,3 +54,9 @@ MATCHING_ALIAS = M = dict(sysmon=_('System monitoring'),
                           eyetracker=_('Eye tracker'),
                           performance=_('Performance'),
                           generictrigger=_('Generic Trigger'))
+
+
+
+# Read the configuration file
+CONFIG = configparser.ConfigParser()
+CONFIG.read(PATHS['PLUGINS'].parent.joinpath('config.ini'))
