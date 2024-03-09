@@ -8,12 +8,12 @@ from core.constants import COLORS as C, Group as G, FONT_SIZES as F, REPLAY_MODE
 from core.widgets import AbstractWidget
 from core.widgets import AbstractWidget
 from pyglet.text import Label
-
+from core.window import Window
 
 class Slider(AbstractWidget):
-    def __init__(self, name, container, win, title, label_min, label_max,
+    def __init__(self, name, container, title, label_min, label_max,
                  value_min, value_max, value_default, rank, draw_order=1):
-        super().__init__(name, container, win)
+        super().__init__(name, container)
 
         self.title = title
         self.label_min = label_min
@@ -39,7 +39,7 @@ class Slider(AbstractWidget):
         self.set_slider_thumb_and_groove()
         self.show()
 
-        self.win.push_handlers(self.on_mouse_press, self.on_mouse_drag,
+        Window.MainWindow.push_handlers(self.on_mouse_press, self.on_mouse_drag,
                                self.on_mouse_release)
 
 
@@ -64,7 +64,7 @@ class Slider(AbstractWidget):
         x, y = self.containers['value'].cx, self.containers['value'].cy
         self.vertex['value'] = Label(str(self.groove_value), align='center', anchor_x='center',
                                       anchor_y='center', x=x, y=y, color=C['BLACK'],
-                                      group=G(self.draw_order), font_size=F['MEDIUM'], 
+                                      group=G(self.draw_order), font_size=F['MEDIUM'],
                                       font_name=self.font_name)
 
 
@@ -85,9 +85,9 @@ class Slider(AbstractWidget):
                         ('c4B/static', (C['GREY']*4)))
 
         v2 = self.get_groove_vertices()
-        self.add_vertex('groove_b', len(v2)//2, GL_POLYGON, G(self.draw_order+self.rank), 
+        self.add_vertex('groove_b', len(v2)//2, GL_POLYGON, G(self.draw_order+self.rank),
                         ('v2f/stream', v2), ('c4B/stream', (C['BLUE']*(len(v2)//2))))
-        self.add_vertex('groove', len(v2)//2, GL_LINE_LOOP, G(self.draw_order+self.rank), 
+        self.add_vertex('groove', len(v2)//2, GL_LINE_LOOP, G(self.draw_order+self.rank),
                         ('v2f/stream', v2), ('c4B/stream', (C['BLACK']*(len(v2)//2))))
 
 
@@ -159,10 +159,10 @@ class Slider(AbstractWidget):
 
     def update_cursor_appearance(self):
         if self.hover is True:
-            cursor = self.win.get_system_mouse_cursor(self.win.CURSOR_SIZE_LEFT_RIGHT)
+            cursor = Window.MainWindow.get_system_mouse_cursor(self.win.CURSOR_SIZE_LEFT_RIGHT)
         else:
-            cursor = self.win.get_system_mouse_cursor(self.win.CURSOR_DEFAULT)
-        self.win.set_mouse_cursor(cursor)
+            cursor = Window.MainWindow.get_system_mouse_cursor(self.win.CURSOR_DEFAULT)
+        Window.MainWindow.set_mouse_cursor(cursor)
 
 
     def update(self):
@@ -173,9 +173,9 @@ class Slider(AbstractWidget):
 
     def hide(self):
         super().hide()
-        self.win.slider_visible = False
+        Window.MainWindow.slider_visible = False
 
 
     def show(self):
         super().show()
-        self.win.slider_visible = True
+        Window.MainWindow.slider_visible = True

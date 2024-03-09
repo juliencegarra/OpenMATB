@@ -11,6 +11,7 @@ from core.container import Container
 from core.constants import Group as G, COLORS as C, FONT_SIZES as F, REPLAY_MODE
 from core.logger import logger
 from core import validation
+from core.window import Window
 
 class Track(AbstractPlugin):
     def __init__(self, taskplacement='topmid', taskupdatetime=20, silent=False):
@@ -49,7 +50,7 @@ class Track(AbstractPlugin):
                     errors.add_error(_('No joystick found'))
 
         if self.joystick is not None:
-            self.joystick.push_handlers(self.win)
+            self.joystick.push_handlers(Window.MainWindow)
 
     def get_response_timers(self):
         return [self.response_time]

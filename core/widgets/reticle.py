@@ -5,9 +5,9 @@
 from core.widgets.abstractwidget import *
 
 class Reticle(AbstractWidget):
-    def __init__(self, name, container, win, cursorcolor, target_proportion=0.1, m_draw=None):
-        super().__init__(name, container, win)
-        
+    def __init__(self, name, container, cursorcolor, target_proportion=0.1, m_draw=None):
+        super().__init__(name, container)
+
         if m_draw is not None:
             self.m_draw=m_draw
 
@@ -82,14 +82,14 @@ class Reticle(AbstractWidget):
         v.extend([self.cursor_absolute[0], self.cursor_absolute[1] - self.cursor_radius,
                   self.cursor_absolute[0], self.cursor_absolute[1] + self.cursor_radius])
         return v
-    
+
 
     def is_cursor_in_target(self):
         if self.target_radius > 0:
             return self.is_cursor_in_radius(self.target_radius)
         else:
             return float('nan')
-        
+
 
     def return_deviation(self):
         return math.sqrt(self.cursor_relative[0]**2 + self.cursor_relative[1]**2)
@@ -109,11 +109,11 @@ class Reticle(AbstractWidget):
         self.on_batch['cursor'].vertices = v
         self.logger.record_state(self.name, 'cursor_relative', (x, y))
         self.logger.record_state(self.name, 'cursor_proportional', self.relative_to_proportional())
-        
-    
+
+
     def get_cursor_absolute_position(self):
         return self.cursor_absolute
-    
+
 
     def relative_to_absolute(self):
         return tuple([self.cursor_relative[i] + c

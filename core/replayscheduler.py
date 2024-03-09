@@ -11,7 +11,7 @@ from core.logreader import LogReader
 from core.container import Container
 from core.utils import get_conf_value
 from random import uniform
-
+from core.window import Window
 
 class ReplayScheduler(Scheduler):
     """
@@ -45,36 +45,36 @@ class ReplayScheduler(Scheduler):
 
     def set_inputs_buttons(self):
         # Plot the keyboard keys that are available in the present plugins
-        input_container = self.window.get_container('inputstrip')
+        input_container = Window.MainWindow.get_container('inputstrip')
         key_container = input_container.reduce_and_translate(width=0.9,
                                                              height=0.8,
                                                              y=0, x=0.5)
-        self.key_widget = SimpleHTML('replay_keys', key_container, self.window, '<strong>Keyboard history:\n</strong>')
+        self.key_widget = SimpleHTML('replay_keys', key_container, '<strong>Keyboard history:\n</strong>')
         self.key_widget.show()
 
 
     def set_media_buttons(self):
 
         # Media strip
-        media_container = self.window.get_container('mediastrip')
-        self.media_back = Frame('media_background', media_container, self.window,
+        media_container = Window.MainWindow.get_container('mediastrip')
+        self.media_back = Frame('media_background', media_container,
                                 fill_color=C['DARKGREY'], draw_order=1)
         self.media_back.show()
         pp_container = media_container.reduce_and_translate(width=0.06, height=1, x=0)
         time_container = media_container.reduce_and_translate(width=0.03, height=1, x=0.8)
 
-        self.playpause = PlayPause('Play_pause_button', pp_container, self.window,
+        self.playpause = PlayPause('Play_pause_button', pp_container,
                                    self.toogle_scenario)
-        self.time = Simpletext('elapsed_time', time_container, self.window,
+        self.time = Simpletext('elapsed_time', time_container,
                                text=self.get_time_hms_str(), font_size=F['LARGE'], color=C['WHITE'])
 
 
-        self.slider = Slider('timeline', media_container, self.window, None, '', '', 0, 1, 0, 1)
+        self.slider = Slider('timeline', media_container, None, '', '', 0, 1, 0, 1)
         self.time.show()
 
         # Inputs strip
-        input_container = self.window.get_container('inputstrip')
-        self.inputs_back = Frame('inputs_background', input_container, self.window,
+        input_container = Window.MainWindow.get_container('inputstrip')
+        self.inputs_back = Frame('inputs_background', input_container,
                                 fill_color=C['LIGHTGREY'], draw_order=1)
         self.inputs_back.show()
 
@@ -83,7 +83,7 @@ class ReplayScheduler(Scheduler):
         l = input_container.l + 0.1*input_container.w
         b = input_container.b + 0.85*input_container.h
         joy_container = Container('replay_reticle', l,b,w,h)
-        self.replay_reticle = Reticle('replay_reticle', joy_container, self.window, C['BLACK'],
+        self.replay_reticle = Reticle('replay_reticle', joy_container, C['BLACK'],
                                       target_proportion = 0, m_draw=5)
         self.replay_reticle.show()
 
@@ -102,7 +102,7 @@ class ReplayScheduler(Scheduler):
 
     def check_if_must_exit(self):
         # In replay mode, exit conditions are differents. Exit only if the Window is killed.
-        if not self.window.alive:
+        if not Window.MainWindow.alive:
             self.exit()
 
 
@@ -177,8 +177,8 @@ class ReplayScheduler(Scheduler):
                 # # 3. Re-initialize plugins
                 logreader = LogReader(get_conf_value('Replay', 'replay_session_id'))
                 self.plugins = logreader.scenario.plugins
-                for p, plugin in self.plugins.items():
-                    plugin.win = self.window
+                #for p, plugin in self.plugins.items():
+                #    plugin.win = self.window #TOREMOVE!!
 
                 self.events = self.logreader.scenario.events
                 self.inputs_queue = list(self.logreader.inputs)  # Copy inputs, and empty progressively

@@ -7,7 +7,7 @@ from core.container import Container
 from core.widgets import Pump, Tank, PumpFlow, Simpletext, Frame
 from plugins.abstract import AbstractPlugin
 from core import validation
-
+from core.window import Window
 
 class Resman(AbstractPlugin):
     def __init__(self, taskplacement='bottommid', taskupdatetime=2000):
@@ -171,7 +171,7 @@ class Resman(AbstractPlugin):
         if self.parameters['displaystatus'] is True:
             # Get the pump status container
             pthp = PLUGIN_TITLE_HEIGHT_PROPORTION
-            status_container = self.win.get_container(self.parameters['statuslocation'])
+            status_container = Window.MainWindow.get_container(self.parameters['statuslocation'])
             status_title_container = status_container.reduce_and_translate(height=pthp,   y=1)
             status_task_container  = status_container.reduce_and_translate(height=1-pthp, y=0)
 

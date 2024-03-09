@@ -1,5 +1,4 @@
-from core.modaldialog import ModalDialog
-import core.window
+from core.window import Window
 
 class Errors:
 	def __init__(self):
@@ -17,13 +16,13 @@ class Errors:
 
 
 	def show_errors(self):
-		if MainWindow is not None:
+		if Window.MainWindow is not None:
 			if not self.is_empty():
 				pass_list = list(self.errors_list)
 				self.errors_list = list()
 				title = _('Warning') if not self.some_fatals else _('Error(s)')
 				continue_key = None if self.some_fatals else 'SPACE'
-				MainWindow.modal_dialog = ModalDialog(MainWindow, pass_list, title=title,
+				Window.MainWindow.open_modal_window(pass_list, title=title,
 					  								continue_key=continue_key, exit_key='Q')
 
 errors = Errors()

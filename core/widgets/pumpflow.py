@@ -5,8 +5,8 @@
 from core.widgets.abstractwidget import *
 
 class PumpFlow(AbstractWidget):
-    def __init__(self, name, container, win, label, flow):
-        super().__init__(name, container, win)
+    def __init__(self, name, container, label, flow):
+        super().__init__(name, container)
 
         self.label = label
         self.flow = flow
@@ -34,6 +34,6 @@ class PumpFlow(AbstractWidget):
         self.vertex[self.label].text = self.pump_string(flow)
         self.logger.record_state(self.name, self.label, flow)
 
-    
+
     def get_flow(self):
         return self.vertex[self.label].text
