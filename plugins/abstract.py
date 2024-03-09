@@ -50,6 +50,9 @@ class AbstractPlugin:
         self.m_draw = BFLIM if self.parameters['taskplacement'] == 'fullscreen' else 0
 
 
+    def on_scenario_loaded(self, scenario):
+        pass
+
     def update(self, scenario_time):
         self.scenario_time = scenario_time
         self.compute_next_plugin_state()
