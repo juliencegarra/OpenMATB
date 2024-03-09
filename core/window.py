@@ -17,7 +17,7 @@ from core.constants import REPLAY_MODE, REPLAY_STRIP_PROPORTION
 from core.modaldialog import ModalDialog
 from core.logger import logger
 import core.error
-from core.utils import get_conf_value, find_the_last_session_number
+from core.utils import has_conf_value, get_conf_value, find_the_last_session_number
 
 class Window(Window):
 
@@ -57,16 +57,23 @@ class Window(Window):
 
         # Display the session ID if need be, at window instanciation
         if REPLAY_MODE == True:
-            if len(sys.argv) > 2:
-                replay_session_id = int(sys.argv[2])
-            else:
-                replay_session_id = find_the_last_session_number()
-            msg = _('Replay session ID: %s') % replay_session_id
-            self.modal_dialog = ModalDialog(self, msg, title='OpenMATB replay')
+            msg = _('Replay session ID: %s') % self.get_replay_session_id()
+            title='OpenMATB replay'
 
         elif get_conf_value('Openmatb', 'display_session_number'):
             msg = _('Session ID: %s') % logger.session_id
-            self.modal_dialog = ModalDialog(self, msg, title='OpenMATB')
+            title='OpenMATB'
+
+        self.modal_dialog = ModalDialog(self, msg, title)
+
+    def get_replay_session_id(self)->int:
+        if len(sys.argv) > 2:
+            return int(sys.argv[2])
+        elif has_conf_value('Replay', 'replay_session_id'):
+            return int(get_conf_value('Replay', 'replay_session_id'))
+        else:
+            return int(find_the_last_session_number())
+
 
     def get_screen(self):
         # Screen definition
