@@ -11,8 +11,8 @@ from pyglet.text import Label
 
 
 class Scale(AbstractWidget):
-    def __init__(self, name, container, win, label, arrow_position=5):
-        super().__init__(name, container, win)
+    def __init__(self, name, container, label, arrow_position=5):
+        super().__init__(name, container)
 
         self.background_color = (255, 255, 255)
         self.feedback_visible = False

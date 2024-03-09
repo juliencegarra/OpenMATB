@@ -6,8 +6,8 @@ from core.widgets.abstractwidget import *
 from core.container import Container
 
 class Performancescale(AbstractWidget):
-    def __init__(self, name, container, win, level_min, level_max, tick_number, color):
-        super().__init__(name, container, win)
+    def __init__(self, name, container, level_min, level_max, tick_number, color):
+        super().__init__(name, container)
 
         self.performance_level = level_max
         self.performance_color = color

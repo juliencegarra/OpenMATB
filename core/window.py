@@ -19,12 +19,14 @@ from core.logger import logger
 import core.error
 from core.utils import get_conf_value, find_the_last_session_number
 
-MainWindow = None
-
 class Window(Window):
+
+    # Static variable
+    MainWindow = None
+
     def __init__(self, *args, **kwargs):
 
-        MainWindow = self
+        Window.MainWindow = self # correct way to set it as a static
 
         screen = self.get_screen()
 
@@ -197,3 +199,8 @@ class Window(Window):
             return container[0]
         else:
             print(_('Error. No placement found for the [%s] alias') % placement_name)
+
+
+    def open_modal_window(self, pass_list, title, continue_key, exit_key):
+        self.modal_dialog = ModalDialog(self, pass_list, title=title,
+                                                      continue_key=continue_key, exit_key='Q')

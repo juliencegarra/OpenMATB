@@ -11,17 +11,19 @@ from core.logger import logger
 from core.utils import get_conf_value
 from core.constants import REPLAY_MODE
 from core.error import errors
-from core import Window
+from core.window import Window
 
 class Scheduler:
     """
     This class manages events execution.
     """
 
+    # Static variables
+    events = []
+    plugins = []
+
     def __init__(self):
         logger.log_manual_entry(open('VERSION', 'r').read().strip(), key='version')
-
-        self.window = Window(style=Window.WINDOW_STYLE_BORDERLESS)
 
         self.clock = Clock('main')
         self.scenario_time = 0
@@ -32,22 +34,22 @@ class Scheduler:
 
 
     def set_scenario(self, scenario):
-        self.events = scenario.events
-        self.plugins = scenario.plugins
+        Scheduler.events = scenario.events
+        Scheduler.plugins = scenario.plugins
 
         # Attribute window to plugins in use, and push their handles to window
         for p in self.plugins:
-            self.plugins[p].win = self.window
+            self.plugins[p].win = Window.MainWindow
             if not REPLAY_MODE:
-                self.window.push_handlers(self.plugins[p].on_key_press,
+                Window.MainWindow.push_handlers(self.plugins[p].on_key_press,
                                        self.plugins[p].on_key_release)
 
 
-        if 'scheduling' in self.plugins:
+        if 'scheduling' in Scheduler.plugins:
             self.plugins['scheduling'].set_planning(self.events)
 
         # Link performance plugin to other plugins
-        if 'performance' in self.plugins:
+        if 'performance' in Scheduler.plugins:
             self.plugins['performance'].plugins = self.plugins
 
 
@@ -69,7 +71,7 @@ class Scheduler:
 
 
     def update(self, dt):
-        if self.window.modal_dialog is not None:
+        if Window.MainWindow.modal_dialog is not None:
             return
         elif errors.is_empty() == False:
             errors.show_errors()
@@ -100,7 +102,7 @@ class Scheduler:
             self.exit()
 
         # If the windows has been killed, exit the program
-        if self.window.alive == False:
+        if Window.MainWindow.alive == False:
             # Be careful to stop all the plugins in case they’re not
             # (so we have a stop time for each plugin, in case we must compute this somewhere)
             for p_name, plugin in self.plugins.items():
@@ -245,7 +247,7 @@ class Scheduler:
     def exit(self):
         logger.log_manual_entry('end')
         self.event_loop.exit()
-        self.window.close() # needed for windows clean exit
+        Window.MainWindow.close() # needed for windows clean exit
         sys.exit(0)
 
 

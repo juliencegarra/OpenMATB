@@ -3,10 +3,11 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from core.widgets.abstractwidget import *
+from core.window import Window
 
 class Radio(AbstractWidget):
-    def __init__(self, name, container, win, label, frequency, on):
-        super().__init__(name, container, win)
+    def __init__(self, name, container, label, frequency, on):
+        super().__init__(name, container)
 
         self.arrows = dict(arrow_up=   dict(x_ratio=-0.23, angle=0),
                            arrow_down= dict(x_ratio=-0.2, angle=math.pi),
@@ -20,7 +21,7 @@ class Radio(AbstractWidget):
         self.vertex['radio_frequency'] = Label(self.get_frequency_string(frequency), font_size=F['SMALL'],
                                                x=self.container.cx, y=self.container.cy, font_name=self.font_name,
                                                anchor_x='center', anchor_y='center',
-                                               color=C['BLACK'], batch=self.win.batch, group=G(self.m_draw+1))
+                                               color=C['BLACK'], batch=Window.MainWindow.batch, group=G(self.m_draw+1))
 
         # Arrows vertices #
         # Only a change in vertices is needed to show/hide arrows --> (0, 0, 0...) = hide
@@ -77,7 +78,7 @@ class Radio(AbstractWidget):
             return
         self.vertex['radio_frequency'].text = self.get_frequency_string(frequency)
         self.logger.record_state(self.name, 'radio_frequency', frequency)
-    
+
 
     def set_feedback_color(self, color):
         if color == self.get_vertex_color('feedback_lines'):

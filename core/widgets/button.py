@@ -8,10 +8,11 @@ from core.constants import Group as G
 from pyglet.text import Label
 from pyglet import image, sprite
 from pyglet.gl import *
+from core.window import Window
 
 class Button(AbstractWidget):
-    def __init__(self, name, container, win, callback):
-        super().__init__(name, container, win)
+    def __init__(self, name, container, callback):
+        super().__init__(name, container)
 
         self.padding = 0.1
         self.hover = False
@@ -21,13 +22,13 @@ class Button(AbstractWidget):
         self.active_area = self.container.get_reduced(1-self.padding, 1-self.padding)
         button_vertice = self.vertice_border(self.active_area)
 
-        self.add_vertex('background', 4, GL_QUADS, G(self.m_draw+self.m_draw+1), 
+        self.add_vertex('background', 4, GL_QUADS, G(self.m_draw+self.m_draw+1),
                         ('v2f/static', button_vertice), ('c4B/static', (C['DARKGREY']*4)))
-        self.add_vertex('border', 8, GL_LINES, G(self.m_draw+self.m_draw+3), 
-                        ("v2f/static", self.vertice_strip(button_vertice)), 
+        self.add_vertex('border', 8, GL_LINES, G(self.m_draw+self.m_draw+3),
+                        ("v2f/static", self.vertice_strip(button_vertice)),
                         ('c4B/static', (C['BLACK']*8)))
 
-        self.win.push_handlers(self.on_mouse_press, self.on_mouse_release)
+        Window.MainWindow.push_handlers(self.on_mouse_press, self.on_mouse_release)
 
 
     def on_mouse_press(self, x, y, button, modifiers):
@@ -53,8 +54,8 @@ class Button(AbstractWidget):
 
 
 class PlayPause(Button):
-    def __init__(self, name, container, win, callback):
-        super().__init__(name, container, win, callback)
+    def __init__(self, name, container, callback):
+        super().__init__(name, container, callback)
         self.current_image = None
 
         img_path = P['IMG']
@@ -69,7 +70,7 @@ class PlayPause(Button):
                         1: sprite.Sprite(img=self.pause_img)}
 
         for pause, sp in self.sprites.items():
-            sp.batch = self.win.batch if pause == 1 else None
+            sp.batch = Window.MainWindow.batch if pause == 1 else None
             sp.x=self.container.cx
             sp.y=self.container.cy
             sp.group=G(self.m_draw+8)
@@ -80,4 +81,4 @@ class PlayPause(Button):
 
     def update_button_sprite(self, is_paused):
         self.sprites[int(is_paused)].batch = None
-        self.sprites[int(not is_paused)].batch = self.win.batch
+        self.sprites[int(not is_paused)].batch = Window.MainWindow.batch

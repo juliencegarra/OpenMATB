@@ -6,14 +6,14 @@ from core.widgets.abstractwidget import *
 from core.constants import M
 
 class Schedule(AbstractWidget):
-    def __init__(self, name, container, win, label):
-        super().__init__(name, container, win)
+    def __init__(self, name, container, label):
+        super().__init__(name, container)
         self.label = M[label]  # Get full and translated label version into constants
 
         self.line_radius = int(self.container.h / 200)
         self.bound_radius = int(self.container.h / 70)
         self.box_radius = self.bound_radius * 1.5
-        
+
         self.vertex['letter'] = Label(self.label[0].upper(), font_size=F['MEDIUM'], font_name=self.font_name,
                                       x=self.container.cx, y=self.container.y2 - 15,
                                       anchor_x='center', anchor_y='top', color=C['BLACK'], group=G(1))

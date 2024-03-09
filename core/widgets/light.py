@@ -5,8 +5,8 @@
 from core.widgets.abstractwidget import *
 
 class Light(AbstractWidget):
-    def __init__(self, name, container, win, label, color):
-        super().__init__(name, container, win)
+    def __init__(self, name, container, label, color):
+        super().__init__(name, container)
 
         # Compute vertices
         self.border_vertice = self.vertice_border(self.container)
@@ -29,8 +29,8 @@ class Light(AbstractWidget):
             return
         self.vertex['label'].text = label_to_upper
         self.logger.record_state(self.name, 'label', label_to_upper)
-    
-    
+
+
     def get_label(self):
         return self.vertex['label'].text
 

@@ -9,7 +9,7 @@ from core.window import Window
 class Eyetracker(AbstractPlugin):
     def __init__(self, taskplacement='invisible', taskupdatetime=10):
         super().__init__(taskplacement, taskupdatetime)
-        
+
         new_par = {
                    # ~ 'paintGaze': False,
                    'trackertype': 'dummy',
@@ -22,15 +22,15 @@ class Eyetracker(AbstractPlugin):
                    # ~ 'backgroundcolor': (125, 125, 125, 255),
                    # ~ 'foregroundcolor': (0, 0, 0, 255),
                    # ~ 'getFromSample': ['gazeLX', 'gazeLY', 'positionLX', 'positionLY', 'positionLZ',
-                                     # ~ 'diamL', 'gazeRX', 'gazeRY', 'positionRX', 'positionRY', 
+                                     # ~ 'diamL', 'gazeRX', 'gazeRY', 'positionRX', 'positionRY',
                                      # ~ 'positionRZ', 'diamR']
                    }
         self.parameters.update(new_par)
         self.tracker = None
-    
+
     def start(self, dt):
         super().start(0)
-        self.tracker = eyetracker.EyeTracker(display = self.win._display,
+        self.tracker = eyetracker.EyeTracker(display = Window.MainWindow._display,
                                              trackertype = self.parameters['trackertype'])
         self.tracker.calibrate()
         self.tracker.start_recording()
