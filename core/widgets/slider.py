@@ -159,9 +159,9 @@ class Slider(AbstractWidget):
 
     def update_cursor_appearance(self):
         if self.hover is True:
-            cursor = Window.MainWindow.get_system_mouse_cursor(self.win.CURSOR_SIZE_LEFT_RIGHT)
+            cursor = Window.MainWindow.get_system_mouse_cursor(Window.MainWindow.CURSOR_SIZE_LEFT_RIGHT)
         else:
-            cursor = Window.MainWindow.get_system_mouse_cursor(self.win.CURSOR_DEFAULT)
+            cursor = Window.MainWindow.get_system_mouse_cursor(Window.MainWindow.CURSOR_DEFAULT)
         Window.MainWindow.set_mouse_cursor(cursor)
 
 
