@@ -1,4 +1,4 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -35,10 +35,10 @@ class Scheduler:
 
     def set_scenario(self, events = None):
 
-        scenario = Scenario(events)
+        self.scenario = Scenario(events)
 
-        self.events = scenario.events
-        self.plugins = scenario.plugins
+        self.events = self.scenario.events
+        self.plugins = self.scenario.plugins
 
         # Attribute window to plugins in use, and push their handles to window
         for p in self.plugins:
@@ -46,7 +46,7 @@ class Scheduler:
                 Window.MainWindow.push_handlers(self.plugins[p].on_key_press,
                                        self.plugins[p].on_key_release)
 
-            self.plugins[p].on_scenario_loaded(scenario)
+            self.plugins[p].on_scenario_loaded(self.scenario)
 
         self.scenario_time = 0
         self.pause_scenario_time = False
@@ -57,11 +57,6 @@ class Scheduler:
 
         # Store the plugins that could be paused by a *blocking* event
         self.paused_plugins = list()
-
-
-
-    def initialize_plugins(self):
-        pass
 
 
     def update(self, dt):
@@ -147,7 +142,7 @@ class Scheduler:
         return self.is_scenario_time_paused()
 
 
-    def toogle_scenario(self):
+    def toggle_scenario(self):
         self.pause_scenario_time = not self.pause_scenario_time
         return self.is_scenario_time_paused()
 
