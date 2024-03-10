@@ -18,11 +18,13 @@ class Scheduling(AbstractPlugin):
             'minduration': validation.is_positive_integer,
             'displaychronometer': validation.is_boolean,
             'reversechronometer': validation.is_boolean,
-            'displayedplugins': (validation.is_in_list, ['sysmon', 'track', 'resman', 'communications'])}
+            'displayedplugins': (validation.is_in_list, ['sysmon', 'track', 'resman', 'communications']),
+            'labels': (validation.is_in_list, ['S', 'T', 'C', 'R'])}
 
 
         self.parameters.update(dict(minduration=8, displaychronometer=True, reversechronometer=False,
-                                    displayedplugins=['sysmon', 'track', 'communications', 'resman']))
+                                    displayedplugins=['sysmon', 'track', 'communications', 'resman'],
+                                    labels=['S', 'T', 'C', 'R']))
 
         for i, p in enumerate(self.parameters['displayedplugins']):
             self.parameters['displayedplugins'][i] = _(self.parameters['displayedplugins'][i])
@@ -55,8 +57,7 @@ class Scheduling(AbstractPlugin):
                                            self.task_container.b + self.task_container.h * 0.20,
                                            self.task_container.w * 0.17,
                                            self.task_container.h * 0.7)
-
-            self.add_widget(name, Schedule, container=planning_container, label=name)
+            self.add_widget(name, Schedule, container=planning_container, label=self.parameters['labels'][p])
 
 
     def refresh_widgets(self):
