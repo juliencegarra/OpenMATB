@@ -1,4 +1,4 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -12,12 +12,13 @@ from core import validation
 from core.event import Event
 import plugins
 
+
+
 class Scenario:
     '''
     This object converts scenario to Events, loads the corresponding plugins,
     and checks that some criteria are met (e.g., acceptable values)
     '''
-
     def __init__(self, contents=None):
         self.events = list()
         self.plugins = dict()
@@ -42,7 +43,7 @@ class Scenario:
             if not hasattr(globals()['plugins'], event.plugin.capitalize()):
                 errors.add_error(_('Scenario error: %s is not a valid plugin name (l. %s)') % (event.plugin, event.line), fatal = True)
 
-        # Instantiate plugins
+
         self.plugins = {name: getattr(globals()['plugins'], name.capitalize())()
                         for name in self.get_plugins_name_list()}
 
@@ -60,6 +61,22 @@ class Scenario:
 
         if len(event_errors) > 0:
             errors.add_error(_(f"There were some errors in the scenario. See the %s file.") % P['SCENARIO_ERRORS'].name, fatal = True)
+
+
+    def reload_plugins(self):
+        for name, plugin in self.plugins.items():
+            for w, widget in plugin.widgets.items():
+                widget.empty_batch()
+
+            plugin.widgets = dict()
+
+            del plugin
+
+            if hasattr(globals()['plugins'], name):
+                delattr(globals()['plugins'], name)
+
+            # Instantiate plugins
+            self.plugins[name] = getattr(globals()['plugins'], name.capitalize())()
 
 
     def events_retrocompatibility(self):
