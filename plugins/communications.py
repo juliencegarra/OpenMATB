@@ -15,8 +15,8 @@ from core import validation
 
 
 class Communications(AbstractPlugin):
-    def __init__(self, taskplacement='bottomleft', taskupdatetime=80):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='bottomleft', taskupdatetime=80):
+        super().__init__(_('Communications'), taskplacement, taskupdatetime)
 
         self.validation_dict = {
             'owncallsign' : validation.is_callsign,

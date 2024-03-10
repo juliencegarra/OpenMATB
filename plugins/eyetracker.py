@@ -7,8 +7,8 @@ from plugins import AbstractPlugin
 from core.window import Window
 
 class Eyetracker(AbstractPlugin):
-    def __init__(self, taskplacement='invisible', taskupdatetime=10):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='invisible', taskupdatetime=10):
+        super().__init__(_('Eye tracker'), taskplacement, taskupdatetime)
 
         new_par = {
                    # ~ 'paintGaze': False,

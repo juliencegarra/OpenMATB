@@ -10,8 +10,8 @@ from core import validation
 from core.window import Window
 
 class Resman(AbstractPlugin):
-    def __init__(self, taskplacement='bottommid', taskupdatetime=2000):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='bottommid', taskupdatetime=2000):
+        super().__init__(_('Resources management'), taskplacement, taskupdatetime)
 
         self.validation_dict = {
             'pumpcoloroff': validation.is_color,
