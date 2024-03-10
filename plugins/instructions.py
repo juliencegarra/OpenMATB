@@ -1,4 +1,4 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -18,5 +18,5 @@ class Instructions(BlockingPlugin):
 
     def make_slide_graphs(self):
         super().make_slide_graphs()
-        self.add_widget('instructions', SimpleHTML, container=self.container, 
+        self.add_widget('instructions', SimpleHTML, container=self.container,
                         text=self.current_slide, wrap_width=0.8, draw_order=self.m_draw+1)
