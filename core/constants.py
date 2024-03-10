@@ -42,21 +42,6 @@ PATHS.update({k.upper():Path('.', 'includes', k)
 [path.mkdir(parents=False, exist_ok=True) for p, path in PATHS.items() if path.exists() is False]
 PATHS['SCENARIO_ERRORS'] = Path('.', 'last_scenario_errors.log')
 
-MATCHING_ALIAS = M = dict(sysmon=_('System monitoring'),
-                          track=_('Tracking'),
-                          scheduling=_('Scheduling'),
-                          communications=_('Communications'),
-                          resman=_('Resources management'),
-                          parallelport=_('Parallel port'),
-                          labstreaminglayer=_('Lab streaming layer'),
-                          instructions=_('Instructions'),
-                          genericscales=_('Generic scales'),
-                          eyetracker=_('Eye tracker'),
-                          performance=_('Performance'),
-                          generictrigger=_('Generic Trigger'))
-
-
-
 # Read the configuration file
 CONFIG = configparser.ConfigParser()
 CONFIG.read(PATHS['PLUGINS'].parent.joinpath('config.ini'))
