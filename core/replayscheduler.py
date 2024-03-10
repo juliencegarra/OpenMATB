@@ -2,6 +2,7 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from pyglet.window import key
 from core.scheduler import Scheduler
 from core.error import errors
 from core.widgets import PlayPause, Simpletext, Slider, Frame, Reticle, SimpleHTML
@@ -9,7 +10,7 @@ from core.constants import COLORS as C, FONT_SIZES as F
 from time import strftime, gmtime, sleep
 from core.logreader import LogReader
 from core.container import Container
-from core.utils import get_conf_value
+from core.utils import get_conf_value, get_replay_session_id
 from random import uniform
 from core.window import Window
 
@@ -18,30 +19,42 @@ class ReplayScheduler(Scheduler):
     This class manages events execution in the context of the OpenMATB replay.
     """
     def __init__(self):
-        super().__init__()
-
         self.set_media_buttons()
 
         self.set_inputs_buttons()
 
+        Window.MainWindow.on_key_press = self.on_key_press_replay
 
-    def set_scenario(self, logreader):
-        self.logreader = logreader
-        self.inputs_queue = list(logreader.inputs)  # Copy inputs, and empty progressively
+        # Init is done after UX is set
+        super().__init__()
+
+
+    def set_scenario(self):
+        replay_session_id = get_replay_session_id()
+
+        self.logreader = LogReader(replay_session_id)
+
+        self.inputs_queue = list(self.logreader.inputs)  # Copy inputs, and empty progressively
         self.keyboard_inputs = [i for i in self.inputs_queue if i['module'] == 'keyboard']
         self.joystick_inputs = [i for i in self.inputs_queue if 'joystick' in i['address']]
-        self.states_queue = list(logreader.states)  # Copy states, //
+        self.states_queue = list(self.logreader.states)  # Copy states, //
+
+        #print("-")
+        #print(self.logreader.events)
+        super().set_scenario(self.logreader.contents)
+        #print("--")
+        #print(self.events)
+
 
         self.keys_history = list()
-
-        self.slider.value_max = self.logreader.duration_sec
 
         self.sliding = False    # The scheduler must know if the time is currently sliding
                                 # to prevent update repetitions
         self.was_the_scenario_paused = False
 
-        super().set_scenario(logreader.scenario)
+        self.slider.value_max = self.logreader.duration_sec
 
+        self.update_time_string()
 
     def set_inputs_buttons(self):
         # Plot the keyboard keys that are available in the present plugins
@@ -66,7 +79,7 @@ class ReplayScheduler(Scheduler):
         self.playpause = PlayPause('Play_pause_button', pp_container,
                                    self.toogle_scenario)
         self.time = Simpletext('elapsed_time', time_container,
-                               text=self.get_time_hms_str(), font_size=F['LARGE'], color=C['WHITE'])
+                               text='', font_size=F['LARGE'], color=C['WHITE'])
 
 
         self.slider = Slider('timeline', media_container, None, '', '', 0, 1, 0, 1)
@@ -87,6 +100,19 @@ class ReplayScheduler(Scheduler):
                                       target_proportion = 0, m_draw=5)
         self.replay_reticle.show()
 
+
+    def on_key_press_replay(self, symbol, modifier):
+        if symbol==key.ESCAPE:
+            Window.MainWindow.exit_prompt()
+        elif symbol==key.HOME:
+            self.set_scenario_time(0)
+        elif symbol==key.ENTER:
+            self.test_cleanup()
+
+
+    def test_cleanup(self):
+        print("space")
+        self.logreader.reload_plugins()
 
     def update(self, dt):
         super().update(dt)
@@ -160,47 +186,61 @@ class ReplayScheduler(Scheduler):
             self.sliding = False
             desired_time_sec = self.slider.groove_value
 
-            ################ TODO: BACKWARD HERE (NOT WORKING)
-            if desired_time_sec < self.scenario_time:
-                # Handle the case where the desired time position is backward
-                # No need to reset the clock anymore since we provide it a relative target
-                # (i.e., the clock is always moving forward)
 
-                # 1. Reset the scenario time
-                self.scenario_time = 0
-
-                # 2. Stop the current active plugins
-                self.plugins = dict()
-                # for plugin in self.get_active_plugins():
-                #     del self.plugins
-
-                # # 3. Re-initialize plugins
-                logreader = LogReader(get_conf_value('Replay', 'replay_session_id'))
-                self.plugins = logreader.scenario.plugins
-                #for p, plugin in self.plugins.items():
-                #    plugin.win = self.window #TOREMOVE!!
-
-                self.events = self.logreader.scenario.events
-                self.inputs_queue = list(self.logreader.inputs)  # Copy inputs, and empty progressively
-                self.keyboard_inputs = [i for i in self.inputs_queue if i['module'] == 'keyboard']
-                self.states_queue = list(self.logreader.states)  # Copy states, //
             ##########################################################################@
 
-            if self.is_scenario_time_paused():
-                self.resume_scenario()
 
-            # Target time sent to the clock must be relative because the clock never pauses
-            advance_time = self.slider.groove_value - self.scenario_time
-            target_time = self.clock.get_time() + advance_time
-
-            self.clock.set_target_time(target_time)
-
+            self.set_scenario_time(desired_time_sec)
 
         # Soon as the clock target is reached, control if the scenario must switch back to pause
         if self.clock.is_target_reached():
             if self.was_the_scenario_paused:
                 self.was_the_scenario_paused = False
                 self.pause_scenario()
+
+
+    def set_scenario_time(self, desired_time_sec):
+
+        #self.scenario_time = scenario_time
+
+        #if self.is_scenario_time_paused():
+        #    self.resume_scenario()
+
+
+        self.slider.groove_value = desired_time_sec
+
+        ################ TODO: BACKWARD HERE (NOT WORKING)
+        if desired_time_sec < self.scenario_time:
+            # Handle the case where the desired time position is backward
+            # No need to reset the clock anymore since we provide it a relative target
+            # (i.e., the clock is always moving forward)
+
+            # 1. Reset the scenario time
+            self.scenario_time = 0
+
+##                # 2. Stop the current active plugins
+
+#                for p, plugin in self.plugins.items():
+#                     del plugin
+
+#                self.plugins = dict()
+##
+##                # # 3. Re-initialize plugins
+##                logreader = LogReader(get_conf_value('Replay', 'replay_session_id'))
+##                self.plugins = logreader.scenario.plugins
+##                #for p, plugin in self.plugins.items():
+##                #    plugin.win = self.window #TOREMOVE!!
+
+            self.set_scenario()
+
+
+
+        # Target time sent to the clock must be relative because the clock never pauses
+        advance_time = self.slider.groove_value - self.scenario_time
+        target_time = self.clock.get_time() + advance_time
+
+        self.clock.set_target_time(target_time)
+
 
 
     def emulate_keyboard_inputs(self):
@@ -250,21 +290,21 @@ class ReplayScheduler(Scheduler):
                 state = past_sta[this_disp_idx][1]
 
                 # 1. Cursor position
-                if 'cursor_proportional' in state['address']:
-                    cursor_relative = self.plugins['track'].reticle.proportional_to_relative(state['value'])
-                    self.plugins['track'].cursor_position = cursor_relative
-
-                # 2. Radio frequencies
-                elif 'radio_frequency' in state['address']:
-                    radio_name = state['address'].replace(', radio_frequency', '').replace('radio_', '')
-                    radio = self.plugins['communications'].get_radios_by_key_value('name', radio_name)[0]
-                    radio['currentfreq'] = state['value']
-
-                # 3. Genericscales slider values
-                elif 'slider_' in state['address']:
-                    slider_name = state['address'].replace(', value', '')
-                    slider = self.plugins['genericscales'].sliders[slider_name]
-                    slider.groove_value = state['value']
+##                if 'cursor_proportional' in state['address']:
+##                    cursor_relative = self.plugins['track'].reticle.proportional_to_relative(state['value'])
+##                    self.plugins['track'].cursor_position = cursor_relative
+##
+##                # 2. Radio frequencies
+##                elif 'radio_frequency' in state['address']:
+##                    radio_name = state['address'].replace(', radio_frequency', '').replace('radio_', '')
+##                    radio = self.plugins['communications'].get_radios_by_key_value('name', radio_name)[0]
+##                    radio['currentfreq'] = state['value']
+##
+##                # 3. Genericscales slider values
+##                elif 'slider_' in state['address']:
+##                    slider_name = state['address'].replace(', value', '')
+##                    slider = self.plugins['genericscales'].sliders[slider_name]
+##                    slider.groove_value = state['value']
 
 
             # Delete states that have been just played from the queue
@@ -301,46 +341,3 @@ class ReplayScheduler(Scheduler):
 ##                    self.replay_reticle.set_cursor_position(rel_x, rel_y)
 
 
-
-    # def get_event_at_scenario_time(self, scenario_time: float):
-    #     if self.replay_mode and scenario_time > self.target_time:
-    #            self.scenario_clock.pause('replay')
-    #            return self.unqueue_event()
-    # +++
-    # In replay filter events that are under the target time limit
-        # events_time = [event for event in events_time
-        #                if not self.replay_mode or event.time_sec <= self.target_time]
-
-    # def move_scenario_time_to(self, time: float):
-    #     if time < self.scenario_clock.get_time():
-    #         # moving backward, we need to reset plugins, done events and restart from zero
-    #         for plugin in self.plugins:
-    #             self.plugins[plugin].stop(0)
-
-    #         for event in self.events:
-    #             event.done = False
-
-    #         self.initialize_plugins()
-
-    #         self.scenario_clock.set_time(0)
-
-
-    #     # moving forward
-    #     replay_acceleration_factor = 100
-
-    #     self.target_time = time
-    #     self.scenario_clock.set_speed(10.1)
-    #     self.scenario_clock.resume('replay')
-    #     self.clock.set_speed(replay_acceleration_factor)
-
-
-    # def play_scenario(self, target_time):
-    #     self.clock.set_speed(5)
-    #     self.scenario_clock.set_speed(5)
-    #     self.scenario_clock.resume('replay')
-    #     self.target_time = target_time
-
-
-    # def stop_scenario(self):
-    #     # TODO: check if remaining events
-    #     self.scenario_clock.pause('replay')
