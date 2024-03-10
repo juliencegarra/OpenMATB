@@ -14,8 +14,8 @@ from core import validation
 from core.window import Window
 
 class Track(AbstractPlugin):
-    def __init__(self, taskplacement='topmid', taskupdatetime=20, silent=False):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='topmid', taskupdatetime=20, silent=False):
+        super().__init__(_('Tracking'), taskplacement, taskupdatetime)
 
         self.validation_dict = {
             'cursorcolor': validation.is_color,

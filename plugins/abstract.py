@@ -12,8 +12,9 @@ from core.window import Window
 
 class AbstractPlugin:
     """Any plugin (or task) depends on this meta-class"""
-    def __init__(self, taskplacement='fullscreen', taskupdatetime=-1):
+    def __init__(self, label='', taskplacement='fullscreen', taskupdatetime=-1):
 
+        self.label = label                              #   The name as displayed on the interface
         self.alias = self.__class__.__name__.lower()    #   A lower version of the plugin class name
         self.widgets = dict()                           #   To store the widget objects of a plugin
         self.container = None                           #   The visual area of the plugin (object)
@@ -36,7 +37,7 @@ class AbstractPlugin:
         self.visible = False                # :all the plugins widgets are shown
         self.verbose = False
 
-        self.parameters = dict(title=M[self.alias], taskplacement=taskplacement,
+        self.parameters = dict(title=self.label, taskplacement=taskplacement,
                                taskupdatetime=taskupdatetime,
                                taskfeedback=dict(overdue=dict(active=False, color=C['RED'],
                                                               delayms=2000,
@@ -74,8 +75,23 @@ class AbstractPlugin:
         self.visible = True
         self.update_can_receive_key()
 
-        for name, widget in self.widgets.items():
-            widget.show()
+#        for name, widget in self.widgets.items():
+#            widget.show()
+
+        if self.parameters['taskplacement'] == 'fullscreen':
+            for name, widget in self.widgets.items():
+                widget.show()
+
+        elif self.parameters['taskplacement'] != 'invisible':
+            for name, widget in self.widgets.items():
+                widget.show()
+
+            if self.get_widget('foreground') is not None:
+                self.get_widget('foreground').hide()
+
+            if self.get_widget('border') is not None:
+                self.get_widget('borer').hide()
+
 
 
     def hide(self):
@@ -138,7 +154,8 @@ class AbstractPlugin:
             print('Stop ', self.alias)
         self.alive = False
         self.pause()
-        self.hide()
+        #self.hide()
+        #self.show()
 
 
     def is_a_widget_name(self, name):

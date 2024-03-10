@@ -8,8 +8,8 @@ from plugins.abstract import AbstractPlugin
 from core import validation
 
 class Performance(AbstractPlugin):
-    def __init__(self, taskplacement='topright', taskupdatetime=50):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='topright', taskupdatetime=50):
+        super().__init__(_('Performance'), taskplacement, taskupdatetime)
 
         self.validation_dict = {
             'levelmin': validation.is_positive_integer,

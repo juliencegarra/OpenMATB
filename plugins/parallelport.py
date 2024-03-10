@@ -10,8 +10,8 @@ from core import validation
 
 
 class Parallelport(AbstractPlugin):
-    def __init__(self, taskplacement='invisible', taskupdatetime=5):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='invisible', taskupdatetime=5):
+        super().__init__(_('Parallel port'), taskplacement, taskupdatetime)
 
         self.validation_dict = {
             'trigger': validation.is_positive_integer,

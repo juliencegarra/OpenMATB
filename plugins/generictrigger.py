@@ -10,8 +10,8 @@ import sys
 from core import validation
 
 class Generictrigger(AbstractPlugin):
-    def __init__(self, taskplacement='invisible', taskupdatetime=5):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='invisible', taskupdatetime=5):
+        super().__init__(_('Generic Trigger'), taskplacement, taskupdatetime)
 
         self.validation_dict =  { 'state': validation.is_string }
 

@@ -11,8 +11,8 @@ from core import validation
 
 
 class Sysmon(AbstractPlugin):
-    def __init__(self, taskplacement='topleft', taskupdatetime=200):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='topleft', taskupdatetime=200):
+        super().__init__(_('System monitoring'), taskplacement, taskupdatetime)
 
         self.validation_dict = {
             'alerttimeout': validation.is_positive_integer,
