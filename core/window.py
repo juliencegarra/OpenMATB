@@ -1,4 +1,4 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -17,7 +17,7 @@ from core.constants import REPLAY_MODE, REPLAY_STRIP_PROPORTION
 from core.modaldialog import ModalDialog
 from core.logger import logger
 import core.error
-from core.utils import get_replay_session_id, get_conf_value
+from core.utils import get_conf_value
 
 class Window(Window):
 
@@ -57,18 +57,14 @@ class Window(Window):
 
         self.display_session_id()
 
-    def display_session_id(self):
-        # Display the session ID if need be, at window instanciation
-        if REPLAY_MODE:
-            msg = _('Replay session ID: %s') % get_replay_session_id()
-            title='OpenMATB replay'
 
-        elif get_conf_value('Openmatb', 'display_session_number'):
+    def display_session_id(self):
+        # Display the session ID if needed at window instanciation
+        if not REPLAY_MODE and get_conf_value('Openmatb', 'display_session_number'):
             msg = _('Session ID: %s') % logger.session_id
             title='OpenMATB'
 
-        self.modal_dialog = ModalDialog(self, msg, title)
-
+            self.modal_dialog = ModalDialog(self, msg, title)
 
 
     def get_screen(self):
