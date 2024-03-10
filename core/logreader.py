@@ -13,18 +13,17 @@ from core.utils import get_replay_session_id
 # Some plugins must not be replayed for now
 IGNORE_PLUGINS = ['labstreaminglayer', 'parallelport', 'genericscales', 'instructions']
 
-class LogReader:
+class LogReader():
     '''
     The log reader takes a session file as input and is able to return its entries depending on
     their onset time. Relevant entries are scenario events and user inputs, which are combined to
     simulate what happened during the session.
     '''
-    def __init__(self):
-        events, self.inputs, self.states, self.duration_sec,  = [], [], [], 0
+    def __init__(self, replay_session_id = None):
+
+        self.contents, self.inputs, self.states, self.duration_sec,  = [], [], [], 0
         self.start_sec, self.end_sec = 0, 0
         self.line_n = 0
-
-        replay_session_id = get_replay_session_id()
 
         # Check if the desired session file exists. If so, load and parse it.
         session_file_list = [f for f in P['SESSIONS'].glob(f'**/{replay_session_id}_*.csv')]
@@ -49,7 +48,7 @@ class LogReader:
 
                         # Event case
                         if row['type'] == 'event':
-                            events.append(self.session_event_to_str(row))
+                            self.contents.append(self.session_event_to_str(row))
 
                         # Input case
                         elif row['type'] == 'input':
@@ -69,8 +68,6 @@ class LogReader:
                 # The last row browsed contains the ending time
                 self.end_sec = float(row['scenario_time'])
                 self.duration_sec = self.end_sec - self.start_sec
-
-        self.scenario = Scenario(events)
 
 
     def session_event_to_str(self, event_row):

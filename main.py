@@ -32,25 +32,12 @@ from core.window import Window
 class OpenMATB:
     def __init__(self):
         # The MATB window must be borderless (for non-fullscreen mode)
-        Window(style=Window.WINDOW_STYLE_BORDERLESS)
+        Window(style=Window.WINDOW_STYLE_DIALOG, resizable = True)
 
-        if not REPLAY_MODE:
-            scheduler = Scheduler()
-            scenario = Scenario()
+        if REPLAY_MODE:
+            ReplayScheduler()
         else:
-            scheduler = ReplayScheduler()
-            scenario = LogReader()
-
-        scheduler.set_scenario(scenario)
-        scheduler.run()
-
+            Scheduler()
 
 if __name__ == '__main__':
     app = OpenMATB()
-
-
-    # window.on_key_press_replay = self.on_key_press
-
-            # self.container_media = window.get_container('mediastrip')
-            # self.container_input = window.get_container('inputstrip')
-

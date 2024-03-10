@@ -12,6 +12,7 @@ from core.utils import get_conf_value
 from core.constants import REPLAY_MODE
 from core.error import errors
 from core.window import Window
+from core.scenario import Scenario
 
 class Scheduler:
     """
@@ -28,14 +29,19 @@ class Scheduler:
         self.clock.schedule(self.update)
         self.event_loop = EventLoop()
 
+        self.set_scenario()
 
-    def set_scenario(self, scenario):
+        self.event_loop.run()
+
+    def set_scenario(self, events = None):
+
+        scenario = Scenario(events)
+
         self.events = scenario.events
         self.plugins = scenario.plugins
 
         # Attribute window to plugins in use, and push their handles to window
         for p in self.plugins:
-            #self.plugins[p].win = Window.MainWindow
             if not REPLAY_MODE:
                 Window.MainWindow.push_handlers(self.plugins[p].on_key_press,
                                        self.plugins[p].on_key_release)
@@ -44,7 +50,6 @@ class Scheduler:
 
         self.scenario_time = 0
         self.pause_scenario_time = False
-
 
         # We store events in a list in case their execution is delayed by a blocking event
         self.events_queue = list()
@@ -238,7 +243,3 @@ class Scheduler:
         self.event_loop.exit()
         Window.MainWindow.close() # needed for windows clean exit
         sys.exit(0)
-
-
-    def run(self):
-        self.event_loop.run()
