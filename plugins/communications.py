@@ -254,7 +254,7 @@ class Communications(AbstractPlugin):
 
 
     def compute_next_plugin_state(self):
-        if super().compute_next_plugin_state() == 0:
+        if not super().compute_next_plugin_state():
             return
 
         if self.parameters['callsignregex'] != self.old_regex:
