@@ -1,4 +1,4 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -95,6 +95,9 @@ class AbstractWidget:
             else:
                 self.on_batch[name].delete()
                 del self.on_batch[name]
+
+        self.vertex = dict()
+        self.on_batch = dict()
 
 
     def add_vertex(self, name, *args):
