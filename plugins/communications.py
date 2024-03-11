@@ -6,7 +6,7 @@ from string import ascii_uppercase, digits, ascii_lowercase
 from math import copysign
 from pathlib import Path
 from pyglet.media import Player, SourceGroup, load
-from plugins.abstract import AbstractPlugin
+from plugins.abstractplugin import AbstractPlugin
 from core.widgets import Radio, Simpletext
 from core.container import Container
 from core.constants import PATHS as P, COLORS as C, REPLAY_MODE

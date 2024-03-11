@@ -1,11 +1,11 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from core.constants import *
 from core.container import Container
 from core.widgets import Pump, Tank, PumpFlow, Simpletext, Frame
-from plugins.abstract import AbstractPlugin
+from plugins.abstractplugin import AbstractPlugin
 from core import validation
 from core.window import Window
 
