@@ -180,7 +180,7 @@ class Sysmon(AbstractPlugin):
 
 
     def refresh_widgets(self):
-        if super().refresh_widgets() == 0:
+        if not super().refresh_widgets():
             return
         for scale_n, scale in self.parameters['scales'].items():
             scale['widget'].set_arrow_position(scale['_pos'])

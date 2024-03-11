@@ -99,7 +99,7 @@ class Track(AbstractPlugin):
 
 
     def refresh_widgets(self):
-        if super().refresh_widgets() == 0:
+        if not super().refresh_widgets():
             return
         self.reticle.set_cursor_position(*self.cursor_position)
         self.reticle.set_cursor_color(self.parameters[self.cursor_color_key])

@@ -314,7 +314,7 @@ class Resman(AbstractPlugin):
 
 
     def refresh_widgets(self):
-        if super().refresh_widgets() == 0:
+        if not super().refresh_widgets():
             return
         tanks = self.parameters['tank']
         pumps = self.parameters['pump']

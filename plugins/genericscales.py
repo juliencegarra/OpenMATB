@@ -64,7 +64,7 @@ class Genericscales(BlockingPlugin):
 
     def refresh_widgets(self):
         # Useful for replay mode (refresh groove positions)
-        if super().refresh_widgets() == 0:
+        if not super().refresh_widgets():
             return
 
         for slider_name, slider in self.sliders.items():

@@ -223,10 +223,9 @@ class AbstractPlugin:
         return 1
 
 
-    def refresh_widgets(self):
-
+    def refresh_widgets(self) -> bool:
         if not self.is_visible():
-            return 0
+            return False
 
         if self.verbose:
             print(self.alias, 'Refreshing widgets')
@@ -269,7 +268,7 @@ class AbstractPlugin:
         if 'widget' in overdue:
             overdue['widget'].set_visibility(overdue['_is_visible'])
             overdue['widget'].set_border_color(overdue['color'])
-        return 1
+        return True
 
 
     def filter_key(self, keystr):
