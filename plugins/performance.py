@@ -120,7 +120,7 @@ class Performance(AbstractPlugin):
 
 
     def refresh_widgets(self):
-        if super().refresh_widgets() == 0:
+        if not super().refresh_widgets():
             return
         self.widgets['performance_bar'].set_performance_level(self.displayed_level)
         self.widgets['performance_bar'].set_performance_color(self.displayed_color)

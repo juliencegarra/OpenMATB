@@ -61,7 +61,7 @@ class Scheduling(AbstractPlugin):
 
 
     def refresh_widgets(self):
-        if super().refresh_widgets() == 0:
+        if not super().refresh_widgets():
             return
         # This plugin can not be paused for now.
         # When visible, it is just synchronized with the elapsed time

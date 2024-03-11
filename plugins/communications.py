@@ -354,7 +354,7 @@ class Communications(AbstractPlugin):
 
 
     def refresh_widgets(self):
-        if super().refresh_widgets() == 0:
+        if not super().refresh_widgets():
             return
 
         self.widgets['communications_callsign'].set_text(self.parameters['owncallsign'])
@@ -383,7 +383,6 @@ class Communications(AbstractPlugin):
 
 
     def record_target_missing(self, target_radio):
-
         self.log_performance('target_radio', target_radio['name'])
         self.log_performance('target_frequency', target_radio['targetfreq'])
         self.log_performance('response_was_needed', True)
