@@ -203,9 +203,9 @@ class AbstractPlugin:
             self.can_execute_keys = self.can_receive_keys
 
 
-    def compute_next_plugin_state(self):
+    def compute_next_plugin_state(self) -> bool:
         if not self.scenario_time >= self.next_refresh_time or self.is_paused():
-            return 0
+            return False
 
         if self.verbose:
             print(self.alias, 'Compute next state')
@@ -220,7 +220,7 @@ class AbstractPlugin:
                 self.automode_string = _('MANUAL')
         else:
             self.automode_string = ''
-        return 1
+        return True
 
 
     def refresh_widgets(self) -> bool:

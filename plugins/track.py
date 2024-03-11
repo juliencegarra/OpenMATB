@@ -77,7 +77,7 @@ class Track(AbstractPlugin):
 
 
     def compute_next_plugin_state(self):
-        if super().compute_next_plugin_state() == 0:
+        if not super().compute_next_plugin_state():
             return
 
         # In case of replay, do not compute cursor position.

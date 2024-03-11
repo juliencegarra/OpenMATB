@@ -225,7 +225,7 @@ class Resman(AbstractPlugin):
 
 
     def compute_next_plugin_state(self):
-        if super().compute_next_plugin_state() == 0:
+        if not super().compute_next_plugin_state():
             return
 
         tanks = self.parameters['tank']

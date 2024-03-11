@@ -54,7 +54,7 @@ class Parallelport(AbstractPlugin):
 
     def compute_next_plugin_state(self):
         '''Send the trigger value defined in upvalue, lasting for delayms'''
-        if super().compute_next_plugin_state() == 0:
+        if not super().compute_next_plugin_state():
             return
 
         # If the trigger value is not null...
