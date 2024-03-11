@@ -1,10 +1,10 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from math import sin, pi, ceil
 from pyglet.input import get_joysticks
-from plugins.abstract import AbstractPlugin
+from plugins.abstractplugin import AbstractPlugin
 from core.widgets import Reticle
 from core.error import errors
 from core.container import Container

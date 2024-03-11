@@ -1,8 +1,8 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-from plugins.abstract import AbstractPlugin
+from plugins.abstractplugin import AbstractPlugin
 from core.constants import PATHS as P
 from core.logger import logger
 from core.error import errors

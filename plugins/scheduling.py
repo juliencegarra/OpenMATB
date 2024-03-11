@@ -4,7 +4,7 @@
 
 from time import strftime, gmtime
 from core.widgets import Timeline, Schedule, Simpletext
-from plugins.abstract import AbstractPlugin
+from plugins.abstractplugin import AbstractPlugin
 from core.constants import COLORS as C
 from core.container import Container
 from core import validation
