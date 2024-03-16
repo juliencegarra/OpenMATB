@@ -5,6 +5,14 @@ from pyglet import font
 from core.constants import PATHS as P, CONFIG
 import sys
 
+def clamp(x, val_min, val_max):
+    if x < val_min:
+        return val_min
+    elif x > val_max:
+        return val_max
+    return x
+
+
 def get_session_numbers():
     try:
         session_numbers = [int(s.name.split('_')[0])
