@@ -75,22 +75,23 @@ class AbstractPlugin:
         self.visible = True
         self.update_can_receive_key()
 
-#        for name, widget in self.widgets.items():
-#            widget.show()
+        for name, widget in self.widgets.items():
+            widget.show()
 
-        if self.parameters['taskplacement'] == 'fullscreen':
-            for name, widget in self.widgets.items():
-                widget.show()
-
-        elif self.parameters['taskplacement'] != 'invisible':
-            for name, widget in self.widgets.items():
-                widget.show()
-
-            if self.get_widget('foreground') is not None:
-                self.get_widget('foreground').hide()
-
-            if self.get_widget('border') is not None:
-                self.get_widget('borer').hide()
+##      TODO: Check why we do not reverse the hide() like this
+##        if self.parameters['taskplacement'] == 'fullscreen':
+##            for name, widget in self.widgets.items():
+##                widget.show()
+##
+##        elif self.parameters['taskplacement'] != 'invisible':
+##            for name, widget in self.widgets.items():
+##                widget.show()
+##
+##            if self.get_widget('foreground') is not None:
+##                self.get_widget('foreground').hide()
+##
+##            if self.get_widget('border') is not None:
+##                self.get_widget('borer').hide()
 
 
 
@@ -154,8 +155,7 @@ class AbstractPlugin:
             print('Stop ', self.alias)
         self.alive = False
         self.pause()
-        #self.hide()
-        #self.show()
+        self.hide()
 
 
     def is_a_widget_name(self, name):
@@ -453,7 +453,6 @@ class BlockingPlugin(AbstractPlugin):
 
 
     def update(self, dt):
-        #print(self.paused, self.visible)
         super().update(dt)
         if self.go_to_next_slide == True:
             self.go_to_next_slide = False
