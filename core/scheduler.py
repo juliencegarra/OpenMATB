@@ -175,10 +175,6 @@ class Scheduler:
 
         event.done = 1
 
-        # Utile ?
-        # if self.replay_mode:
-            # plugin.update(0)
-
         # The event can be logged whenever inside the method, since self.durations remain
         # constant all along it
         logger.record_event(event)
