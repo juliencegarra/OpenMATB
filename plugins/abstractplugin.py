@@ -402,7 +402,7 @@ class AbstractPlugin:
 
 class BlockingPlugin(AbstractPlugin):
     def __init__(self, taskplacement='fullscreen', taskupdatetime=15):
-        super().__init__(taskplacement, taskupdatetime)
+        super().__init__(None, taskplacement, taskupdatetime)
 
         self.keys.update({'SPACE'})
         new_par = dict(boldtitle=False)
