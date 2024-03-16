@@ -1,4 +1,4 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -18,11 +18,7 @@ class Logger:
         self.session_id = None
         self.lsl = None
 
-        
         self.session_id = find_the_first_available_session_number()
-        self.path = PATHS['SESSIONS'].joinpath(self.datetime.strftime("%Y-%m-%d"),
-                                f'{self.session_id}_{self.datetime.strftime("%y%m%d_%H%M%S")}.csv')
-        self.path.parent.mkdir(parents=True, exist_ok=True)
         self.mode = 'w'
 
         self.scenario_time = 0  # Updated by the scheduler class
@@ -32,8 +28,10 @@ class Logger:
         self.queue = list()
 
         if not REPLAY_MODE:
+            self.path = PATHS['SESSIONS'].joinpath(self.datetime.strftime("%Y-%m-%d"),
+                                f'{self.session_id}_{self.datetime.strftime("%y%m%d_%H%M%S")}.csv')
+            self.path.parent.mkdir(parents=True, exist_ok=True)
             self.open()
-
 
     # TODO: see if we can/should merge record_* methods into one
     def record_event(self, event):
@@ -154,6 +152,6 @@ class Logger:
 
     def set_scenario_time(self, scenario_time):
         self.scenario_time = scenario_time
-        
+
 
 logger = Logger()
