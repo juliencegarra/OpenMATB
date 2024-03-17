@@ -7,7 +7,7 @@ from pyglet.graphics import OrderedGroup as Group
 from pathlib import Path
 import configparser
 
-REPLAY_MODE = True # len(sys.argv) > 1 and sys.argv[1] == '-r'
+REPLAY_MODE = len(sys.argv) > 1 and sys.argv[1] == '-r'
 REPLAY_STRIP_PROPORTION = 0.08
 
 C = COLORS = dict(WHITE=(255, 255, 255, 255),
