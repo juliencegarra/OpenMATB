@@ -13,8 +13,6 @@ from core.utils import get_replay_session_id
 # Some plugins must not be replayed for now
 IGNORE_PLUGINS = ['labstreaminglayer', 'parallelport', 'genericscales', 'instructions']
 
-#TODO: Put contents, inputs and so on in a specific class. Backup the instance to prevent reloading the file
-
 class LogReader():
     '''
     The log reader takes a session file as input and is able to return its entries depending on
@@ -45,9 +43,11 @@ class LogReader():
         if self.session_file_path is None:
             return
 
-        self.contents, self.inputs, self.states, self.duration_sec,  = [], [], [], 0
-        self.start_sec, self.end_sec = 0, 0
+        self.contents, self.inputs, self.states = [], [], []
+        self.start_sec, self.end_sec, self.duration_sec = 0, 0, 0
         self.line_n = 0
+        self.keyboard_inputs = []
+        self.joystick_inputs = []
 
         with open(self.session_file_path, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
@@ -64,10 +64,13 @@ class LogReader():
                     # Input case
                     elif row['type'] == 'input':
                         self.inputs.append(row)
+                        if row['module'] == 'keyboard':
+                            self.keyboard_inputs.append(row)
+                        elif 'joystick' in row['address']:
+                            self.joystick_inputs.append(row)
 
                     # State case
                     elif row['type'] == 'state':
-
                         # Record communications radio frequencies
                         # AND track cursor positions
                         if ('radio_frequency' in row['address']
@@ -79,7 +82,6 @@ class LogReader():
             # The last row browsed contains the ending time
             self.end_sec = float(row['scenario_time'])
             self.duration_sec = self.end_sec - self.start_sec
-
 
     def session_event_to_str(self, event_row):
         time_sec = int(float(event_row['scenario_time']))

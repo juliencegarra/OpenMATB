@@ -57,10 +57,10 @@ class ReplayScheduler(Scheduler):
         if self.logreader is None or replay_session_id != self.logreader.replay_session_id:
             self.logreader = LogReader(replay_session_id)
 
-            self.inputs_queue = list(self.logreader.inputs)  # Copy inputs
-            self.keyboard_inputs = [i for i in self.inputs_queue if i['module'] == 'keyboard']
-            self.joystick_inputs = [i for i in self.inputs_queue if 'joystick' in i['address']]
-            self.states_queue = list(self.logreader.states)  # Copy states, //
+##            self.inputs_queue = list(self.logreader.inputs)  # Copy inputs
+##            self.keyboard_inputs = [i for i in self.inputs_queue if i['module'] == 'keyboard']
+##            self.joystick_inputs = [i for i in self.inputs_queue if 'joystick' in i['address']]
+##            self.states_queue = list(self.logreader.states)  # Copy states, //
 
 
         super().set_scenario(self.logreader.contents)
@@ -293,27 +293,25 @@ class ReplayScheduler(Scheduler):
 
 
     def emulate_keyboard_inputs(self):
-        if len(self.keyboard_inputs) > 0:
+        self.keys_history = []
 
-            self.keys_history = []
+        for input in self.logreader.keyboard_inputs:
+            # display actions from 0.5 secs before that time
+            if float(input['scenario_time']) > self.scenario_time - (0.5) and float(input['scenario_time']) <= self.scenario_time:
 
-            for input in self.keyboard_inputs:
-                # display actions from 0.5 secs before that time
-                if float(input['scenario_time']) > self.scenario_time - (0.5) and float(input['scenario_time']) <= self.scenario_time:
+                # execute actions if on time
+                if float(input['scenario_time']) == self.scenario_time:
+                    for plugin_name, plugin in self.plugins.items():
+                        plugin.do_on_key(input['address'], input['value'], True)
 
-                    # execute actions if on time
-                    if float(input['scenario_time']) == self.scenario_time:
-                        for plugin_name, plugin in self.plugins.items():
-                            plugin.do_on_key(input['address'], input['value'], True)
+                cmd = f"{input['address']} ({input['value']})"
+                if len(self.keys_history) > 0 and cmd != self.keys_history[-1]:
+                    self.keys_history.append(cmd)
+                elif len(self.keys_history) == 0:
+                    self.keys_history.append(cmd)
 
-                    cmd = f"{input['address']} ({input['value']})"
-                    if len(self.keys_history) > 0 and cmd != self.keys_history[-1]:
-                        self.keys_history.append(cmd)
-                    elif len(self.keys_history) == 0:
-                        self.keys_history.append(cmd)
-
-                    if len(self.keys_history) > 30:
-                        del self.keys_history[0]
+                if len(self.keys_history) > 30:
+                    del self.keys_history[0]
 
 
         history_str = f"<strong>Keyboard history:\n</strong>" + '<br>'.join([kh for kh in self.keys_history])
@@ -330,7 +328,7 @@ class ReplayScheduler(Scheduler):
 
         # Get candidates states (and their index) for being displayed,
         # retrieve the most recent for each state category
-        past_sta = [(i,s) for i,s in enumerate(self.states_queue)
+        past_sta = [(i,s) for i,s in enumerate(self.logreader.states)
                     if float(s['scenario_time']) > self.scenario_time - CLOCK_STEP and float(s['scenario_time']) <= self.scenario_time]
 
         if len(past_sta) == 0:
@@ -359,18 +357,18 @@ class ReplayScheduler(Scheduler):
 
     def display_joystick_inputs(self):
         x, y = None, None
-        past_joy = [(i,s) for i,s in enumerate(self.joystick_inputs)
+        past_joy = [(i,s) for i,s in enumerate(self.logreader.joystick_inputs)
                     if float(s['scenario_time']) > self.scenario_time - CLOCK_STEP and float(s['scenario_time']) <= self.scenario_time]
 
 
         for s in past_joy:
-                joy_input = s[1]
+            joy_input = s[1]
 
-                # X case
-                if '_x' in joy_input['address']:
-                    x = float(joy_input['value'])
-                elif '_y' in joy_input['address']:
-                    y = float(joy_input['value'])
+            # X case
+            if '_x' in joy_input['address']:
+                x = float(joy_input['value'])
+            elif '_y' in joy_input['address']:
+                y = float(joy_input['value'])
 
         if x is not None and y is not None:
             rel_x, rel_y = self.replay_reticle.proportional_to_relative((x,y))
