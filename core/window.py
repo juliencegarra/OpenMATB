@@ -203,5 +203,7 @@ class Window(Window):
 
 
     def open_modal_window(self, pass_list, title, continue_key, exit_key):
+        #TODO: would be better to use callbacks than to detect the alive variable
+        # for example to close
         self.modal_dialog = ModalDialog(self, pass_list, title=title,
                                                       continue_key=continue_key, exit_key='Q')

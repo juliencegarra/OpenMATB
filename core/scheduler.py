@@ -34,7 +34,6 @@ class Scheduler:
         self.event_loop.run()
 
     def set_scenario(self, events = None):
-
         self.scenario = Scenario(events)
 
         self.events = self.scenario.events
