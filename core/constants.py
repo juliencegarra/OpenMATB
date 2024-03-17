@@ -1,4 +1,4 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -7,7 +7,7 @@ from pyglet.graphics import OrderedGroup as Group
 from pathlib import Path
 import configparser
 
-REPLAY_MODE = len(sys.argv) > 1 and sys.argv[1] == '-r'
+REPLAY_MODE = True # len(sys.argv) > 1 and sys.argv[1] == '-r'
 REPLAY_STRIP_PROPORTION = 0.08
 
 C = COLORS = dict(WHITE=(255, 255, 255, 255),
