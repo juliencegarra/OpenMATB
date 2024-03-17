@@ -57,22 +57,17 @@ class ReplayScheduler(Scheduler):
         if self.logreader is None or replay_session_id != self.logreader.replay_session_id:
             self.logreader = LogReader(replay_session_id)
 
+            self.inputs_queue = list(self.logreader.inputs)  # Copy inputs
+            self.keyboard_inputs = [i for i in self.inputs_queue if i['module'] == 'keyboard']
+            self.joystick_inputs = [i for i in self.inputs_queue if 'joystick' in i['address']]
+            self.states_queue = list(self.logreader.states)  # Copy states, //
 
-
-        self.inputs_queue = list(self.logreader.inputs)  # Copy inputs, and empty progressively
-        self.keyboard_inputs = [i for i in self.inputs_queue if i['module'] == 'keyboard']
-        self.joystick_inputs = [i for i in self.inputs_queue if 'joystick' in i['address']]
-        self.states_queue = list(self.logreader.states)  # Copy states, //
 
         super().set_scenario(self.logreader.contents)
-
-        self.keys_history = list()
 
         self.sliding = False
 
         self.slider.value_max = self.logreader.duration_sec
-
-        self.update_time_string()
 
         self.pause_scenario()
 
@@ -285,7 +280,6 @@ class ReplayScheduler(Scheduler):
         # we need to suspend the clock as it schedules old events
         self.clock.unschedule(self.update)
 
-        self.states_queue.clear()
 
         self.clock.set_time(0)
         self.clock.tick()
