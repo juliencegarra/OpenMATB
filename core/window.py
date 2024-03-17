@@ -30,9 +30,9 @@ class Window(Window):
 
         screen = self.get_screen()
 
-        self._width=int(screen.width * 0.5)
-        self._height=int(screen.height * 0.5)
-        self._fullscreen=False #get_conf_value('Openmatb', 'fullscreen')
+        self._width=int(screen.width)
+        self._height=int(screen.height)
+        self._fullscreen=get_conf_value('Openmatb', 'fullscreen')
 
         super().__init__(fullscreen=self._fullscreen, width=self._width, height=self._height,
                             vsync=True, *args, **kwargs)
