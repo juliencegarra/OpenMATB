@@ -4,14 +4,17 @@
 
 
 #TODO:
-#- Slider
-#- To handle blocking plugin we need to:
+#- eyetracker (from lsl?)
+#- joystick display
+
+#- To handle blocking plugins in replay we need to:
 #  - use logtime and not scenariotime
 #  - load logtime from logreader
 #  - manage replay pause with logtime
-#  - synchronize logtime and scenariotime to display events
+#  - synchronize logtime and scenariotime (to manage all events)
 #  - handle update() of scheduler (not replayscheduler) accordingly
-#- eyetracker
+
+
 
 from pyglet.window import key
 from core.scheduler import Scheduler
@@ -24,6 +27,8 @@ from core.container import Container
 from core.utils import get_conf_value, get_replay_session_id, clamp
 from random import uniform
 from core.window import Window
+
+CLOCK_STEP = 0.1
 
 class ReplayScheduler(Scheduler):
     """
@@ -43,14 +48,13 @@ class ReplayScheduler(Scheduler):
         super().__init__()
 
         self.is_paused = True
+        square = shapes.Rectangle(x=200, y=200, width=200, height=200, color=(55, 55, 255))
 
 
     def set_scenario(self):
         replay_session_id = get_replay_session_id()
 
-        if self.logreader is not None and replay_session_id == self.logreader.replay_session_id:
-            self.logreader.reload_session()
-        else:
+        if self.logreader is None or replay_session_id != self.logreader.replay_session_id:
             self.logreader = LogReader(replay_session_id)
 
 
@@ -296,22 +300,28 @@ class ReplayScheduler(Scheduler):
 
     def emulate_keyboard_inputs(self):
         if len(self.keyboard_inputs) > 0:
-            next_input = self.keyboard_inputs[0]
-            if float(next_input['scenario_time']) <= self.scenario_time:
-                for plugin_name, plugin in self.plugins.items():
-                    plugin.do_on_key(next_input['address'], next_input['value'], True)
 
-                cmd = f"{next_input['address']} ({next_input['value']})"
-                if len(self.keys_history) > 0 and cmd != self.keys_history[-1]:
-                    self.keys_history.append(cmd)
-                elif len(self.keys_history) == 0:
-                    self.keys_history.append(cmd)
+            self.keys_history = []
 
-                if len(self.keys_history) > 30:
-                    del self.keys_history[0]
-                del self.keyboard_inputs[0]
+            for input in self.keyboard_inputs:
+                # display actions from 0.5 secs before that time
+                if float(input['scenario_time']) > self.scenario_time - (0.5) and float(input['scenario_time']) <= self.scenario_time:
 
-        # Parse key history
+                    # execute actions if on time
+                    if float(input['scenario_time']) == self.scenario_time:
+                        for plugin_name, plugin in self.plugins.items():
+                            plugin.do_on_key(input['address'], input['value'], True)
+
+                    cmd = f"{input['address']} ({input['value']})"
+                    if len(self.keys_history) > 0 and cmd != self.keys_history[-1]:
+                        self.keys_history.append(cmd)
+                    elif len(self.keys_history) == 0:
+                        self.keys_history.append(cmd)
+
+                    if len(self.keys_history) > 30:
+                        del self.keys_history[0]
+
+
         history_str = f"<strong>Keyboard history:\n</strong>" + '<br>'.join([kh for kh in self.keys_history])
         self.key_widget.set_text(history_str)
 
@@ -327,60 +337,40 @@ class ReplayScheduler(Scheduler):
         # Get candidates states (and their index) for being displayed,
         # retrieve the most recent for each state category
         past_sta = [(i,s) for i,s in enumerate(self.states_queue)
-                    if float(s['scenario_time']) <= self.scenario_time]
+                    if float(s['scenario_time']) > self.scenario_time - CLOCK_STEP and float(s['scenario_time']) <= self.scenario_time]
 
-        if len(past_sta) > 0 :
-            states_idx_to_del = [s[0] for s in past_sta]    # All past states will be removed from
-            display_idx = list()                            # the list
-            for adr in set([s[1]['address'] for s in past_sta]):  # Browse each category
-                cat_sta = [s for s in past_sta if s[1]['address'] == adr]
-                display_idx.append(max([s[0] for s in cat_sta]))
+        if len(past_sta) == 0:
+            return
 
+        for item in past_sta:
+            state = item[1]
 
-            for this_disp_idx in display_idx:
-                state = past_sta[this_disp_idx][1]
+            # 1. Cursor position
+            if 'cursor_proportional' in state['address'] and 'track' in self.plugins:
+                cursor_relative = self.plugins['track'].reticle.proportional_to_relative(state['value'])
+                self.plugins['track'].cursor_position = cursor_relative
 
-                # 1. Cursor position
-                if 'cursor_proportional' in state['address'] and 'track' in self.plugins:
-                    #print(self.plugins['track'])
-                    cursor_relative = self.plugins['track'].reticle.proportional_to_relative(state['value'])
-                    self.plugins['track'].cursor_position = cursor_relative
+            # 2. Radio frequencies
+            elif 'radio_frequency' in state['address'] and 'communications' in self.plugins:
+                radio_name = state['address'].replace(', radio_frequency', '').replace('radio_', '')
+                radio = self.plugins['communications'].get_radios_by_key_value('name', radio_name)[0]
+                radio['currentfreq'] = state['value']
 
-                # 2. Radio frequencies
-                elif 'radio_frequency' in state['address'] and 'communications' in self.plugins:
-                    radio_name = state['address'].replace(', radio_frequency', '').replace('radio_', '')
-                    radio = self.plugins['communications'].get_radios_by_key_value('name', radio_name)[0]
-                    radio['currentfreq'] = state['value']
-
-                # 3. Genericscales slider values
-                elif 'slider_' in state['address'] and 'genericscales' in self.plugins:
-                    slider_name = state['address'].replace(', value', '')
-                    slider = self.plugins['genericscales'].sliders[slider_name]
-                    slider.groove_value = state['value']
-
-
-            # Delete states that have been just played from the queue
-            # NOTE: delete in reverse order to avoid changing indexes while iterating
-            # TODO: we are removing, but events perhaps not happened, we need to remove
-            # only when executed
-            for del_idx in sorted(states_idx_to_del, reverse=True):
-                del self.states_queue[del_idx]
+            # 3. Genericscales slider values
+            elif 'slider_' in state['address'] and 'genericscales' in self.plugins:
+                slider_name = state['address'].replace(', value', '')
+                slider = self.plugins['genericscales'].sliders[slider_name]
+                slider.groove_value = state['value']
 
 
     def display_joystick_inputs(self):
         x, y = None, None
         past_joy = [(i,s) for i,s in enumerate(self.joystick_inputs)
-                    if float(s['scenario_time']) <= self.scenario_time]
+                    if float(s['scenario_time']) > self.scenario_time - CLOCK_STEP and float(s['scenario_time']) <= self.scenario_time]
 
-        if len(past_joy) > 0 :
-            states_idx_to_del = [s[0] for s in past_joy]    # All past states will be removed from
-            display_idx = list()
-            for adr in set([s[1]['address'] for s in past_joy]):  # Browse each category
-                cat_joy = [s for s in past_joy if s[1]['address'] == adr]
-                display_idx.append(max([s[0] for s in cat_joy]))
 
-            for this_disp_idx in display_idx:
-                joy_input = past_joy[this_disp_idx][1]
+        for s in past_joy:
+                joy_input = s[1]
 
                 # X case
                 if '_x' in joy_input['address']:
@@ -388,10 +378,8 @@ class ReplayScheduler(Scheduler):
                 elif '_y' in joy_input['address']:
                     y = float(joy_input['value'])
 
-                if x is not None and y is not None:
-                    x = max(x, 0.01)
-                    y = max(y, 0.01)
-                    rel_x, rel_y = self.replay_reticle.proportional_to_relative((x,y))
-                    self.replay_reticle.set_cursor_position(rel_x, rel_y)
+        if x is not None and y is not None:
+            rel_x, rel_y = self.replay_reticle.proportional_to_relative((x,y))
+            self.replay_reticle.set_cursor_position(rel_x, rel_y)
 
 
