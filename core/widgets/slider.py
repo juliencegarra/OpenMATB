@@ -9,6 +9,7 @@ from core.widgets import AbstractWidget
 from core.widgets import AbstractWidget
 from pyglet.text import Label
 from core.window import Window
+import math
 
 class Slider(AbstractWidget):
     def __init__(self, name, container, title, label_min, label_max,
@@ -141,11 +142,11 @@ class Slider(AbstractWidget):
 
 
     def update_groove_value(self, ratio):
-        new_value = int(round(ratio * (self.value_max - self.value_min) + self.value_min))
-        if new_value == self.groove_value:
+        val = float(ratio * (self.value_max - self.value_min) + self.value_min)
+        if math.isclose(val, self.groove_value):
             return
-        self.groove_value = new_value
-        self.logger.record_state(self.name, 'value', str(self.groove_value))
+        self.groove_value = val
+        self.logger.record_state(self.name, 'value', str(int(round(val))))
         self.update()
 
 
