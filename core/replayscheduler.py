@@ -2,6 +2,17 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+
+#TODO:
+#- Slider
+#- To handle blocking plugin we need to:
+#  - use logtime and not scenariotime
+#  - load logtime from logreader
+#  - manage replay pause with logtime
+#  - synchronize logtime and scenariotime to display events
+#  - handle update() of scheduler (not replayscheduler) accordingly
+#- eyetracker
+
 from pyglet.window import key
 from core.scheduler import Scheduler
 from core.error import errors
@@ -19,6 +30,9 @@ class ReplayScheduler(Scheduler):
     This class manages events execution in the context of the OpenMATB replay.
     """
     def __init__(self):
+        self.logreader = None
+        self.target_time = 0
+
         self.set_media_buttons()
 
         self.set_inputs_buttons()
@@ -28,13 +42,18 @@ class ReplayScheduler(Scheduler):
         # Init is done after UX is set
         super().__init__()
 
-        self.pause_scenario()
+        self.is_paused = True
 
 
     def set_scenario(self):
         replay_session_id = get_replay_session_id()
 
-        self.logreader = LogReader(replay_session_id)
+        if self.logreader is not None and replay_session_id == self.logreader.replay_session_id:
+            self.logreader.reload_session()
+        else:
+            self.logreader = LogReader(replay_session_id)
+
+
 
         self.inputs_queue = list(self.logreader.inputs)  # Copy inputs, and empty progressively
         self.keyboard_inputs = [i for i in self.inputs_queue if i['module'] == 'keyboard']
@@ -45,13 +64,13 @@ class ReplayScheduler(Scheduler):
 
         self.keys_history = list()
 
-        self.sliding = False    # The scheduler must know if the time is currently sliding
-                                # to prevent update repetitions
-        self.was_the_scenario_paused = False
+        self.sliding = False
 
         self.slider.value_max = self.logreader.duration_sec
 
         self.update_time_string()
+
+        self.pause_scenario()
 
 
     def set_inputs_buttons(self):
@@ -75,7 +94,7 @@ class ReplayScheduler(Scheduler):
         time_container = media_container.reduce_and_translate(width=0.03, height=1, x=0.78)
 
         self.playpause = PlayPause('Play_pause_button', pp_container,
-                                   self.toggle_scenario)
+                                   self.toggle_playpause)
         self.time = Simpletext('elapsed_time', time_container,
                                text='', font_size=F['LARGE'], color=C['WHITE'])
 
@@ -103,23 +122,34 @@ class ReplayScheduler(Scheduler):
         if symbol==key.ESCAPE:
             Window.MainWindow.exit_prompt()
         elif symbol==key.SPACE:
-            self.toggle_scenario()
+            self.toggle_playpause()
         elif symbol==key.HOME:
-            self.set_scenario_time(0)
+            self.set_target_time(0)
         elif symbol==key.END:
-            self.set_scenario_time(self.logreader.duration_sec)
+            self.set_target_time(self.logreader.duration_sec)
         elif symbol==key.LEFT:
-            self.set_scenario_time(self.scenario_time - 0.1)
+            self.set_target_time(self.scenario_time - 0.1)
         elif symbol==key.RIGHT:
-            self.set_scenario_time(self.scenario_time + 0.1)
+            self.set_target_time(self.scenario_time + 0.1)
         elif symbol==key.UP:
             self.clock.increase_speed()
         elif symbol==key.DOWN:
             self.clock.decrease_speed()
 
     def update(self, dt):
-        super().update(dt) # also updates the scenario_time
+        self.pause_if_end_reached()
+        self.update_time_string()
+        self.slider_control_update()
 
+        if not self.is_paused:
+            dt = min(dt, self.target_time - self.scenario_time)
+
+            if dt > 0:
+                super().update(dt) # updates the scenario_time
+        else:
+            # HACK: required as update is not called in pause
+            # it would be better to update modaldialog to use a callback
+            self.check_if_must_exit()
 
         # as update manage a queue we need to empty that queue first before
         # processing inputs and states
@@ -130,11 +160,10 @@ class ReplayScheduler(Scheduler):
         self.display_joystick_inputs()
         self.process_states()
 
-        self.pause_if_end_reached()
+
         #self.pause_if_clock_target_reached()
 
-        self.update_time_string()
-        self.slider_control_update()
+
 
 
 
@@ -156,8 +185,11 @@ class ReplayScheduler(Scheduler):
 
 
     def get_time_hms_str(self):
-        t = strftime('%H:%M:%S', gmtime(self.scenario_time))
-        ms = self.scenario_time %1 * 1000
+        # round to prevent displaying time as 0.099 instead of 0.1
+        timesec = round(self.scenario_time, 2)
+
+        t = strftime('%H:%M:%S', gmtime(timesec))
+        ms = timesec %1 * 1000
 
         return '%s.%03d' % (t, ms)
 
@@ -168,23 +200,29 @@ class ReplayScheduler(Scheduler):
 
 
     def pause_scenario(self):
-        is_paused = super().pause_scenario()
-        self.playpause.update_button_sprite(is_paused)
+        self.toggle_pause_to(True)
 
 
     def resume_scenario(self):
-        is_paused = super().resume_scenario()
-        self.playpause.update_button_sprite(is_paused)
+        self.toggle_pause_to(False)
 
 
-    def toggle_scenario(self):
-        is_paused = super().toggle_scenario()
-        self.playpause.update_button_sprite(is_paused)
+    def toggle_playpause(self):
+        self.toggle_pause_to(not self.is_paused)
 
+        if not self.is_paused:
+            self.target_time = self.logreader.end_sec
+        else:
+            self.target_time = self.scenario_time
+
+
+    def toggle_pause_to(self, status):
+        self.is_paused = status
+        self.playpause.update_button_sprite(self.is_paused)
 
     def slider_control_update(self):
         # Update the position of the slider if scenario time changed
-        if self.slider.groove_value != self.scenario_time:
+        if self.slider.groove_value != self.scenario_time and not self.sliding:
             self.slider.groove_value = self.scenario_time
             self.slider.set_groove_position()
 
@@ -192,17 +230,13 @@ class ReplayScheduler(Scheduler):
         # At THE FIRST slider mouse press, pause scenario if not already paused
         if self.slider.hover == True and self.sliding == False:
             self.sliding = True
-            self.was_the_scenario_paused = self.is_scenario_time_paused()
-            if not self.is_scenario_time_paused():
-                self.pause_scenario()
+            self.toggle_pause_to(True)
 
         # At THE FIRST slider mouse release, get back the scenario in its previous state (play/pause)
         # Record the target value (given by the groove position)
         if self.slider.hover == False and self.sliding == True:
             self.sliding = False
-            desired_time_sec = self.slider.groove_value
-
-            self.set_scenario_time(desired_time_sec)
+            self.set_target_time(self.slider.groove_value)
 
 
     def pause_if_clock_target_reached(self):
@@ -213,32 +247,33 @@ class ReplayScheduler(Scheduler):
 
 
 
-    def set_scenario_time(self, desired_time_sec):
+    def set_target_time(self, target_time):
         # We are already changing time, do not reenter this method
         if self.clock.isFastForward:
             return
 
         # clamp desired time
-        desired_time_sec = clamp(desired_time_sec, 0, self.logreader.duration_sec)
+        self.target_time = clamp(target_time, 0, self.logreader.duration_sec)
 
         # already on the right time
-        if desired_time_sec == self.scenario_time:
+        if self.target_time == self.scenario_time:
             self.pause_scenario()
             return
 
 
         # backward in time, we reload everything, reset, and move forward
-        if desired_time_sec < self.scenario_time:
+        if self.target_time < self.scenario_time:
             self.restart_scenario()
             self.scenario_time = 0
 
-        target_time = desired_time_sec - self.scenario_time
+        forward_time = self.target_time - self.scenario_time
 
         # Resuming is required as we want the clock to update the scheduler
-        if target_time > 0:
+        if forward_time > 0:
             self.resume_scenario()
-            self.clock.fastforward_time(target_time)
+            self.clock.fastforward_time(forward_time)
 
+        self.slider.set_groove_position()
         self.pause_scenario()
 
 
@@ -306,19 +341,19 @@ class ReplayScheduler(Scheduler):
                 state = past_sta[this_disp_idx][1]
 
                 # 1. Cursor position
-                if 'cursor_proportional' in state['address']:
+                if 'cursor_proportional' in state['address'] and 'track' in self.plugins:
                     #print(self.plugins['track'])
                     cursor_relative = self.plugins['track'].reticle.proportional_to_relative(state['value'])
                     self.plugins['track'].cursor_position = cursor_relative
 
                 # 2. Radio frequencies
-                elif 'radio_frequency' in state['address']:
+                elif 'radio_frequency' in state['address'] and 'communications' in self.plugins:
                     radio_name = state['address'].replace(', radio_frequency', '').replace('radio_', '')
                     radio = self.plugins['communications'].get_radios_by_key_value('name', radio_name)[0]
                     radio['currentfreq'] = state['value']
 
                 # 3. Genericscales slider values
-                elif 'slider_' in state['address']:
+                elif 'slider_' in state['address'] and 'genericscales' in self.plugins:
                     slider_name = state['address'].replace(', value', '')
                     slider = self.plugins['genericscales'].sliders[slider_name]
                     slider.groove_value = state['value']
@@ -326,6 +361,8 @@ class ReplayScheduler(Scheduler):
 
             # Delete states that have been just played from the queue
             # NOTE: delete in reverse order to avoid changing indexes while iterating
+            # TODO: we are removing, but events perhaps not happened, we need to remove
+            # only when executed
             for del_idx in sorted(states_idx_to_del, reverse=True):
                 del self.states_queue[del_idx]
 
