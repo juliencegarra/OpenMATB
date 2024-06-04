@@ -3,13 +3,12 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from math import sin, pi, ceil
-from pyglet.input import get_joysticks
+from core.joystick import joystick
 from plugins.abstract import AbstractPlugin
 from core.widgets import Reticle
-from core.error import errors
+# from core.error import errors
 from core.container import Container
 from core.constants import Group as G, COLORS as C, FONT_SIZES as F, REPLAY_MODE
-from core.logger import logger
 from core import validation
 
 class Track(AbstractPlugin):
@@ -28,34 +27,20 @@ class Track(AbstractPlugin):
                        inverseaxis=False)
         self.parameters.update(new_par)
 
-
         self.automode_position = (0.35, 0.1)
         self.cursor_path_gen = iter(self.compute_next_cursor_position())
         self.cursor_position = None
         self.cursor_color_key = 'cursorcolor'
         self.gain_ratio = 0.8  # The proportion of the reticle area the cursor should cover
         self.response_time = 0
-        self.joystick = None
-        self.silent = silent
+        self.x_input, self.y_input = 0, 0
 
-        if not REPLAY_MODE:
-            joysticks = get_joysticks()
-            if len(joysticks) > 0:
-                self.joystick = joysticks[0]
-                self.joystick.open()
-            else:
-                self.joystick = None
-                if self.silent == False:
-                    errors.add_error(_('No joystick found'))
-
-        if self.joystick is not None:
-            self.joystick.push_handlers(self.win)
 
     def get_response_timers(self):
         return [self.response_time]
 
 
-    def create_widgets(self):
+    def create_widgets(self):        
         super().create_widgets()
 
         # Compute the reticle widget coordinates (left, bottom, width, height)
@@ -73,6 +58,12 @@ class Track(AbstractPlugin):
         self.xgain = (self.reticle_container.w * self.gain_ratio)/2
         self.ygain = (self.reticle_container.h * self.gain_ratio)/2
         self.cursor_position = next(self.cursor_path_gen)
+
+
+    def get_joystick_inputs(self, x, y):
+        # Called by the scheduler (which dsitribute joystick inputs to plugins) at each update
+        self.x_input = x
+        self.y_input = y
 
 
     def compute_next_plugin_state(self):
@@ -131,13 +122,10 @@ class Track(AbstractPlugin):
 
                 # Else if a manual input (joystick) is recorded, apply its offset to the cursor,
                 # as a function of its gain
-                elif self.joystick is not None:
-                    if self.parameters['inverseaxis'] == False:
-                        compx, compy = self.joystick.x, -self.joystick.y
-                    else:
-                        compx, compy = -self.joystick.x, self.joystick.y
-                    logger.record_input(self.alias, 'joystick_x', compx)
-                    logger.record_input(self.alias, 'joystick_y', compy)
+                if self.parameters['inverseaxis'] == False:
+                    compx, compy = self.x_input, -self.y_input
+                else:
+                    compx, compy = -self.x_input, self.y_input
 
                 compx = compx * self.parameters['joystickforce']
                 compy = compy * self.parameters['joystickforce']

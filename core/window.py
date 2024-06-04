@@ -147,7 +147,8 @@ class Window(Window):
 
 
     def exit_prompt(self):
-        self.modal_dialog = ModalDialog(self, _('You hit the Escape key'), title=_('Exit OpenMATB?'), exit_key='q')
+        self.modal_dialog = ModalDialog(self, _('You hit the Escape key'), 
+                                        title=_('Exit OpenMATB?'), exit_key='q')
 
 
     def pause_prompt(self):
@@ -156,10 +157,6 @@ class Window(Window):
 
     def exit(self):
         self.alive = False
-
-
-    def on_joyaxis_motion(self, joystick, axis, value):
-        logger.record_input('joystick', axis, value)
 
 
     def get_container_list(self):

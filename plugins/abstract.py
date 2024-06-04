@@ -124,6 +124,7 @@ class AbstractPlugin:
     def start(self):
         if self.verbose:
             print('Start ', self.alias)
+            print('with keys ', self.keys)
         self.alive = True
         self.create_widgets()
         self.log_all_parameters(self.parameters)
@@ -264,6 +265,18 @@ class AbstractPlugin:
         return
 
 
+    def on_joy_key_press(self, keystr):
+        if self.can_receive_keys == False:
+            return
+        self.do_on_key(keystr, 'press', False)
+
+
+    def on_joy_key_release(self, keystr):
+        if self.can_receive_keys == False:
+            return
+        self.do_on_key(keystr, 'release', False)
+
+
     def on_key_press(self, symbol, modifiers):
         if self.can_receive_keys == False:
             return
@@ -287,6 +300,8 @@ class AbstractPlugin:
     def is_key_state(self, keystr, is_pressed):
         if keystr in self.win.keyboard:
             return self.win.keyboard[keystr] == is_pressed
+        elif self.joystick is not None and keystr in self.joystick.keys:
+            return self.joystick.keys[keystr] == is_pressed
         else:
             return
 

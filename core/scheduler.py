@@ -11,7 +11,7 @@ from core.logger import logger
 from core.utils import get_conf_value
 from core.constants import REPLAY_MODE
 from core.error import errors
-
+from core.joystick import joystick
 
 
 class Scheduler:
@@ -24,10 +24,12 @@ class Scheduler:
         self.win = window
         self.events = scenario.events
         self.plugins = scenario.plugins
+        self.joystick = joystick
 
-        # Attribute window to plugins in use, and push their handles to window
+        # Attribute window and joystick to plugins in use, and push their handles to window
         for p in self.plugins:
             self.plugins[p].win = self.win
+            self.plugins[p].joystick = self.joystick
             if not REPLAY_MODE:
                 self.win.push_handlers(self.plugins[p].on_key_press,
                                        self.plugins[p].on_key_release)
@@ -68,6 +70,7 @@ class Scheduler:
             errors.show_errors()
 
         self.update_timers(dt)
+        self.update_joystick()
         self.update_active_plugins()
         self.execute_events()
         self.check_if_must_exit()
@@ -85,6 +88,32 @@ class Scheduler:
         if len(self.get_active_plugins()) > 0:
             # ... if so, update them
             [p.update(self.scenario_time) for p in self.get_active_plugins()]
+
+
+    def update_joystick(self):
+        # Execute the update method of the joystick
+        if self.joystick is None:
+            return
+
+        self.joystick.update()
+        # Check if there are active plugins...
+        if len(self.get_active_plugins()) > 0:
+            for p in self.get_active_plugins():
+                # Send joystick inputs to appropriate plugin (tracking)
+                if hasattr(p, 'get_joystick_inputs'):
+                    p.get_joystick_inputs(self.joystick.x, self.joystick.y)
+
+                # ... if a joystick button has been just pressed/released
+                # ... execute the according on_key_press method in active plugins
+            if self.joystick.has_any_key_changed():
+                for k,v in self.joystick.key_change.items():
+                    if v == 'press':
+                        [p.on_joy_key_press(k) for p in self.get_active_plugins()]
+                    elif v == 'release':
+                        [p.on_joy_key_release(k) for p in self.get_active_plugins()]
+
+                    self.joystick.reset_key_change(k)
+
 
 
     def check_if_must_exit(self):
@@ -177,7 +206,7 @@ class Scheduler:
 
         event.done = 1
 
-        # Utile ?
+        # Useful?
         # if self.replay_mode:
             # plugin.update(0)
 
