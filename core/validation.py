@@ -7,6 +7,8 @@
 # each scenario parameter value is accepted.
 
 from core.constants import COLORS as C, PATHS as P
+from core.joystick import joykey
+from pyglet.window import key as winkey
 
 def is_string(x):
     # Should always be True as we are reading parameters from a text file
@@ -124,6 +126,27 @@ def is_keyboard_key(x):
         return x, None
     else:
         return None, _('should be an acceptable keyboard key value (not %s). See documentation.') % x
+
+
+def is_joystick_key(x):
+    if joykey is not None: # Means that the joystick is plugged
+        if x in joykey.keys():
+            return x, None
+        else:
+            return None, _('should be an acceptable joystick key value (not %s). See documentation.') % x
+    return None, None
+
+
+def is_key(x):
+    kk, kmsg = is_keyboard_key(x)
+    if kmsg is None:
+        return is_keyboard_key(x)
+
+    jk, jmsg = is_joystick_key(x)
+    if jmsg is None:
+        return is_joystick_key(x)
+
+    return None, _('should be an acceptable (keyboard or joystick) key value (not %s). See documentation.') % x
 
 
 def is_task_location(x):
