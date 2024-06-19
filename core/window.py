@@ -1,4 +1,4 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -16,33 +16,25 @@ from core.constants import PATHS as P
 from core.constants import REPLAY_MODE, REPLAY_STRIP_PROPORTION
 from core.modaldialog import ModalDialog
 from core.logger import logger
-from core.error import errors
-from core.utils import get_conf_value, find_the_last_session_number
-
+import core.error
+from core.utils import get_conf_value
 
 class Window(Window):
+
+    # Static variable
+    MainWindow = None
+
     def __init__(self, *args, **kwargs):
 
-        errors.win = self
+        Window.MainWindow = self # correct way to set it as a static
 
-        # Screen definition #
-        try:
-            screen_index = get_conf_value('Openmatb', 'screen_index')
-        except:
-            screen_index = 0
+        screen = self.get_screen()
 
-        screens = get_display().get_screens()
-        if screen_index + 1 > len(screens):
-            screen = screens[-1]
-            errors.add_error(_(f"In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected.") % len(get_display().get_screens()))
-        else:
-            screen = screens[screen_index]
-
-        self._width=screen.width
-        self._height=screen.height
+        self._width=int(screen.width)
+        self._height=int(screen.height)
         self._fullscreen=get_conf_value('Openmatb', 'fullscreen')
 
-        super().__init__(fullscreen=self._fullscreen, width=self._width, height=self._height, 
+        super().__init__(fullscreen=self._fullscreen, width=self._width, height=self._height,
                             vsync=True, *args, **kwargs)
 
         img_path = P['IMG']
@@ -50,7 +42,7 @@ class Window(Window):
         logo32 = image.load(img_path.joinpath('logo32.png'))
         self.set_icon(logo16, logo32)
 
-        self.set_size_and_location() # Postpone multiple monitor support
+        self.set_size_and_location(screen) # Postpone multiple monitor support
         self.set_mouse_visible(REPLAY_MODE)
 
         self.batch = Batch()
@@ -63,24 +55,38 @@ class Window(Window):
 
         self.on_key_press_replay = None # used by the replay
 
-        # Display the session ID if need be, at window instanciation
-        if REPLAY_MODE == True:
-            if len(sys.argv) > 2:
-                replay_session_id = int(sys.argv[2])
-            else:
-                replay_session_id = find_the_last_session_number()
-            msg = _('Replay session ID: %s') % replay_session_id
-            self.modal_dialog = ModalDialog(self, msg, title='OpenMATB replay')
-            
-        elif get_conf_value('Openmatb', 'display_session_number'):
+        self.display_session_id()
+
+
+    def display_session_id(self):
+        # Display the session ID if needed at window instanciation
+        if not REPLAY_MODE and get_conf_value('Openmatb', 'display_session_number'):
             msg = _('Session ID: %s') % logger.session_id
-            self.modal_dialog = ModalDialog(self, msg, title='OpenMATB')
+            title='OpenMATB'
+
+            self.modal_dialog = ModalDialog(self, msg, title)
 
 
-    def set_size_and_location(self):
+    def get_screen(self):
+        # Screen definition
+        try:
+            screen_index = get_conf_value('Openmatb', 'screen_index')
+        except:
+            screen_index = 0
+
+        screens = get_display().get_screens()
+        if screen_index + 1 > len(screens):
+            screen = screens[-1]
+            errors.add_error(_(f"In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected.") % len(get_display().get_screens()))
+        else:
+            screen = screens[screen_index]
+
+        return screen
+
+    def set_size_and_location(self, screen):
         self.switch_to()        # The Window must be active before setting the location
-        target_x = (self.screen.x + self.screen.width / 2) - self.screen.width / 2
-        target_y = (self.screen.y + self.screen.height / 2) - self.screen.height / 2
+        target_x = (screen.x + screen.width / 2) - screen.width / 2
+        target_y = (screen.y + screen.height / 2) - screen.height / 2
         self.set_location(int(target_x), int(target_y))
 
 
@@ -114,11 +120,15 @@ class Window(Window):
 
 
     def is_mouse_necessary(self):
-        return self.slider_visible == True or REPLAY_MODE == True
+        return self.slider_visible or REPLAY_MODE
 
 
     # Log any keyboard input, either plugins accept it or not
+    # is subclassed in replay mode
     def on_key_press(self, symbol, modifiers):
+        if REPLAY_MODE:
+            return
+
         if self.modal_dialog is None:
             keystr = winkey.symbol_string(symbol)
             self.keyboard[keystr] = True  # KeyStateHandler
@@ -128,17 +138,15 @@ class Window(Window):
             elif keystr == 'P':
                 self.pause_prompt()
 
-            if REPLAY_MODE:
-                if self.on_key_press_replay != None:
-                    self.on_key_press_replay(symbol, modifiers)
-                return
-
             logger.record_input('keyboard', keystr, 'press')
 
 
     def on_key_release(self, symbol, modifiers):
         if self.modal_dialog is not None:
             self.modal_dialog.on_key_release(symbol, modifiers)
+            return
+
+        if REPLAY_MODE:
             return
 
         keystr = winkey.symbol_string(symbol)
@@ -189,3 +197,10 @@ class Window(Window):
             return container[0]
         else:
             print(_('Error. No placement found for the [%s] alias') % placement_name)
+
+
+    def open_modal_window(self, pass_list, title, continue_key, exit_key):
+        #TODO: would be better to use callbacks than to detect the alive variable
+        # for example to close
+        self.modal_dialog = ModalDialog(self, pass_list, title=title,
+                                                      continue_key=continue_key, exit_key='Q')

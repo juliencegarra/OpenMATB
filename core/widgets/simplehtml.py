@@ -8,12 +8,11 @@ from core.widgets.abstractwidget import *
 from core.constants import FONT_SIZES as F
 from core.constants import COLORS as C
 from core.utils import get_conf_value
-
+from core.window import Window
 
 class SimpleHTML(AbstractWidget):
-    def __init__(self, name, container, win, text, draw_order=1, x=0.5, y=0.5, wrap_width=1):
-        super().__init__(name, container, win)
-        self.win = win
+    def __init__(self, name, container, text, draw_order=1, x=0.5, y=0.5, wrap_width=1):
+        super().__init__(name, container)
         self.font_name = get_conf_value('Openmatb', 'font_name')
         text = self.preparse(text)
 
@@ -22,7 +21,7 @@ class SimpleHTML(AbstractWidget):
         wrap_width = int(self.container.w * wrap_width)
 
         self.vertex['text'] = HTMLLabel(text, x=x, y=y, anchor_x='center',
-                                        anchor_y='center', group=G(draw_order), multiline=True, 
+                                        anchor_y='center', group=G(draw_order), multiline=True,
                                         width=wrap_width, location=FileLocation('includes/img'))
 
     def preparse(self, text):
@@ -49,7 +48,7 @@ class SimpleHTML(AbstractWidget):
         '<p>':f"<p><font size={hs['LARGE']} face={self.font_name}>",
         '</p>':f"</font></p>"
         }
-        
+
         for b in ['<h1>', '<h2>', '<p>']:
             for bb in [b, b.replace('<', '</')]:
                 text = text.replace(bb, pars_dict[bb])

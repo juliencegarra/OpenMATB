@@ -1,19 +1,19 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from math import sin, pi, ceil
 from core.joystick import joystick
-from plugins.abstract import AbstractPlugin
+from plugins.abstractplugin import AbstractPlugin
 from core.widgets import Reticle
-# from core.error import errors
 from core.container import Container
 from core.constants import Group as G, COLORS as C, FONT_SIZES as F, REPLAY_MODE
 from core import validation
+from core.window import Window
 
 class Track(AbstractPlugin):
-    def __init__(self, taskplacement='topmid', taskupdatetime=20, silent=False):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='topmid', taskupdatetime=20, silent=False):
+        super().__init__(_('Tracking'), taskplacement, taskupdatetime)
 
         self.validation_dict = {
             'cursorcolor': validation.is_color,
@@ -40,7 +40,7 @@ class Track(AbstractPlugin):
         return [self.response_time]
 
 
-    def create_widgets(self):        
+    def create_widgets(self):
         super().create_widgets()
 
         # Compute the reticle widget coordinates (left, bottom, width, height)
@@ -61,13 +61,13 @@ class Track(AbstractPlugin):
 
 
     def get_joystick_inputs(self, x, y):
-        # Called by the scheduler (which dsitribute joystick inputs to plugins) at each update
+        # Called by the scheduler (which distribute joystick inputs to plugins) at each update
         self.x_input = x
         self.y_input = y
 
 
     def compute_next_plugin_state(self):
-        if super().compute_next_plugin_state() == 0:
+        if not super().compute_next_plugin_state():
             return
 
         # In case of replay, do not compute cursor position.
@@ -89,7 +89,7 @@ class Track(AbstractPlugin):
 
 
     def refresh_widgets(self):
-        if super().refresh_widgets() == 0:
+        if not super().refresh_widgets():
             return
         self.reticle.set_cursor_position(*self.cursor_position)
         self.reticle.set_cursor_color(self.parameters[self.cursor_color_key])

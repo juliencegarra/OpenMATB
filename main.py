@@ -1,6 +1,6 @@
 #! .venv/bin/python3
 
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -19,34 +19,22 @@ language_iso = [l for l in open('config.ini', 'r').readlines()
 language = gettext.translation('openmatb', LOCALE_PATH, [language_iso])
 language.install()
 
+
 # Only after language installation, import core modules (they must be translated)
-from core.error import errors
-from core import LogReader, Window, Scenario, Scheduler, ReplayScheduler
-from core.constants import PATHS as P, REPLAY_MODE
-from core.logger import logger
-from core.utils import get_conf_value, find_the_first_available_session_number, find_the_last_session_number
+from core import Scheduler, ReplayScheduler
+from core.constants import REPLAY_MODE
+from core.window import Window
+
 
 class OpenMATB:
     def __init__(self):
-        # The MATB window must be bordeless (for non-fullscreen mode)
-        window = Window(style=Window.WINDOW_STYLE_BORDERLESS)
+        # The MATB window must be borderless (for non-fullscreen mode)
+        Window(style=Window.WINDOW_STYLE_DIALOG, resizable = True)
 
-        if not REPLAY_MODE:
-            content = Scenario()
-            cls = Scheduler
+        if REPLAY_MODE:
+            ReplayScheduler()
         else:
-            content = LogReader()
-            cls = ReplayScheduler
-
-        self.scheduler = cls(window, content)
-        self.scheduler.run()
+            Scheduler()
 
 if __name__ == '__main__':
     app = OpenMATB()
-
-
-    # window.on_key_press_replay = self.on_key_press
-
-            # self.container_media = window.get_container('mediastrip')
-            # self.container_input = window.get_container('inputstrip')
-

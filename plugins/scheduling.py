@@ -1,28 +1,30 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from time import strftime, gmtime
 from core.widgets import Timeline, Schedule, Simpletext
-from plugins.abstract import AbstractPlugin
+from plugins.abstractplugin import AbstractPlugin
 from core.constants import COLORS as C
 from core.container import Container
 from core import validation
 
 
 class Scheduling(AbstractPlugin):
-    def __init__(self, taskplacement='topright', taskupdatetime=1000):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='topright', taskupdatetime=1000):
+        super().__init__(_('Scheduling'), taskplacement, taskupdatetime)
 
         self.validation_dict = {
             'minduration': validation.is_positive_integer,
             'displaychronometer': validation.is_boolean,
             'reversechronometer': validation.is_boolean,
-            'displayedplugins': (validation.is_in_list, ['sysmon', 'track', 'resman', 'communications'])}
+            'displayedplugins': (validation.is_in_list, ['sysmon', 'track', 'resman', 'communications']),
+            'labels': (validation.is_in_list, ['S', 'T', 'C', 'R'])}
 
 
         self.parameters.update(dict(minduration=8, displaychronometer=True, reversechronometer=False,
-                                    displayedplugins=['sysmon', 'track', 'communications', 'resman']))
+                                    displayedplugins=['sysmon', 'track', 'communications', 'resman'],
+                                    labels=['S', 'T', 'C', 'R']))
 
         for i, p in enumerate(self.parameters['displayedplugins']):
             self.parameters['displayedplugins'][i] = _(self.parameters['displayedplugins'][i])
@@ -55,12 +57,11 @@ class Scheduling(AbstractPlugin):
                                            self.task_container.b + self.task_container.h * 0.20,
                                            self.task_container.w * 0.17,
                                            self.task_container.h * 0.7)
-
-            self.add_widget(name, Schedule, container=planning_container, label=name)
+            self.add_widget(name, Schedule, container=planning_container, label=self.parameters['labels'][p])
 
 
     def refresh_widgets(self):
-        if super().refresh_widgets() == 0:
+        if not super().refresh_widgets():
             return
         # This plugin can not be paused for now.
         # When visible, it is just synchronized with the elapsed time
@@ -148,7 +149,8 @@ class Scheduling(AbstractPlugin):
         return _('Remaining time \t %s') % str_time
 
 
-    def set_planning(self, events):  # Executed by the scheduler
+    def on_scenario_loaded(self, scenario):
+        events = scenario.events
         # TODO: Remove redundant events (stop -> stop), keep the earliest.
         start_stop_labels = ['start', 'stop', 'resume', 'pause']
         auto_labels = ['automaticsolver']

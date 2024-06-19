@@ -1,4 +1,4 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -10,13 +10,12 @@ from pyglet import sprite
 from core.logger import logger
 from core.constants import BFLIM
 from core.utils import get_conf_value
-
+from core.window import Window
 
 class AbstractWidget:
-    def __init__(self, name, container, win):
+    def __init__(self, name, container):
         self.name = name
         self.container = container
-        self.win = win
         self.font_name = get_conf_value('Openmatb', 'font_name')
         self.vertex = dict()
         self.on_batch = dict()
@@ -24,7 +23,7 @@ class AbstractWidget:
         self.logger = logger
         self.highlight_aoi = get_conf_value('Openmatb', 'highlight_aoi')
         glLineWidth(2)
-        
+
         self.m_draw = 0
         self.verbose = False
 
@@ -84,9 +83,9 @@ class AbstractWidget:
     def assign_vertices_to_batch(self):
         for name, v_tuple in self.vertex.items():
             if isinstance(v_tuple, Label) or isinstance(v_tuple, HTMLLabel) or isinstance(v_tuple, sprite.Sprite):
-                v_tuple.batch = self.win.batch
+                v_tuple.batch = Window.MainWindow.batch
             else:
-                self.on_batch[name] = self.win.batch.add(*v_tuple)
+                self.on_batch[name] = Window.MainWindow.batch.add(*v_tuple)
 
 
     def empty_batch(self):
@@ -96,6 +95,9 @@ class AbstractWidget:
             else:
                 self.on_batch[name].delete()
                 del self.on_batch[name]
+
+        self.vertex = dict()
+        self.on_batch = dict()
 
 
     def add_vertex(self, name, *args):

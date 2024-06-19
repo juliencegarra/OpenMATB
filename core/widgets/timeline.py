@@ -5,8 +5,8 @@
 from core.widgets.abstractwidget import *
 
 class Timeline(AbstractWidget):
-    def __init__(self, name, container, win, max_time_minute):
-        super().__init__(name, container, win)
+    def __init__(self, name, container, max_time_minute):
+        super().__init__(name, container)
         self.max_time_minute = int(max_time_minute)
         self.graduation_width = 0.41 * self.container.w
         self.unit_padding = 0.06 * self.container.h

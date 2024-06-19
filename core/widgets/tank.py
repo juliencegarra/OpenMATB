@@ -6,9 +6,9 @@ from core.widgets.abstractwidget import *
 from core.container import Container
 
 class Tank(AbstractWidget):
-    def __init__(self, name, container, win, letter, level, fluid_label, level_max, target,
+    def __init__(self, name, container, letter, level, fluid_label, level_max, target,
                  toleranceradius, infoside):
-        super().__init__(name, container, win)
+        super().__init__(name, container)
 
         self.tolerance_cont = None
         self.infoside = infoside

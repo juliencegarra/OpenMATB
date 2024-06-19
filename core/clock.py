@@ -1,4 +1,4 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -6,30 +6,49 @@ import pyglet.clock
 
 class Clock(pyglet.clock.Clock):
     """
-    A special implementation of the pyglet Clock whose speed can be changed.
+    A special implementation of the pyglet Clock allowing speed changes.
     """
     _time: float = 0.0
+    _speed: int = 1
 
     def __init__(self, name: str):
         self.name = name
 
         pyglet.clock.Clock.__init__(self, time_function=self.get_time)
         pyglet.clock.schedule(self.advance)
-        self.target_time = None
+
+        # necessary variable as an unschedule then schedule seems to produce unexpected crashes
+        self.isFastForward = False
 
 
-    def advance(self, time: float):
-        self.set_time(self._time + time)
-        self.tick()
-        if self.target_time is not None:
-            if self.target_time >= self.get_time():
-                self.advance(0.1)   # Recursion
-            else:
-                self.target_time = None
+    def advance(self, dt: float):
+        if self.isFastForward:
+            return
+
+        for i in range(0, self._speed):
+            self.set_time(self._time + dt)
+
+            self.tick()
 
 
     def get_time(self) -> float:
         return self._time
+
+
+    def increase_speed(self):
+        self._speed += 1
+        if self._speed > 10:
+            self._speed = 10
+
+
+    def decrease_speed(self):
+        self._speed -= 1
+        if self._speed < 1:
+            self._speed = 1
+
+
+    def reset_speed(self):
+        self._speed = 1
 
 
     # set time in scenario_time for replay
@@ -37,28 +56,16 @@ class Clock(pyglet.clock.Clock):
         self._time = time
 
 
-    def set_target_time(self, target_time):
-        if target_time < self.get_time():
-            print('Warning. The clock was sent a bad target time (back in time)')
-        self.target_time = target_time
-        return self.target_time
+    def fastforward_time(self, target_time: float):
+        # loop on advance() like method to tick the replayscheduler/scheduler update()
+        self.isFastForward = True
 
+        while target_time > 0:
+            dt = min(target_time, 0.1)
 
-    def is_target_defined(self):
-        return self.target_time is not None
+            self.set_time(self.get_time() + dt)
+            self.tick()
 
+            target_time -= dt
 
-    def get_target_time(self):
-        if self.is_target_defined():
-            return self.target_time
-        return
-
-
-    def is_target_reached(self):
-        if self.target_time is not None:
-            if self.target_time <= self.get_time():
-                return True
-            else:
-                return False
-        else:
-            return False
+        self.isFastForward = False

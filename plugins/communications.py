@@ -1,4 +1,4 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -6,7 +6,7 @@ from string import ascii_uppercase, digits, ascii_lowercase
 from math import copysign
 from pathlib import Path
 from pyglet.media import Player, SourceGroup, load
-from plugins.abstract import AbstractPlugin
+from plugins.abstractplugin import AbstractPlugin
 from core.widgets import Radio, Simpletext
 from core.container import Container
 from core.constants import PATHS as P, COLORS as C, REPLAY_MODE
@@ -15,8 +15,8 @@ from core import validation
 
 
 class Communications(AbstractPlugin):
-    def __init__(self, taskplacement='bottomleft', taskupdatetime=80):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='bottomleft', taskupdatetime=80):
+        super().__init__(_('Communications'), taskplacement, taskupdatetime)
 
         self.validation_dict = {
             'owncallsign' : validation.is_callsign,
@@ -261,7 +261,7 @@ class Communications(AbstractPlugin):
 
 
     def compute_next_plugin_state(self):
-        if super().compute_next_plugin_state() == 0:
+        if not super().compute_next_plugin_state():
             return
 
         if self.parameters['callsignregex'] != self.old_regex:
@@ -361,7 +361,7 @@ class Communications(AbstractPlugin):
 
 
     def refresh_widgets(self):
-        if super().refresh_widgets() == 0:
+        if not super().refresh_widgets():
             return
 
         self.widgets['communications_callsign'].set_text(self.parameters['owncallsign'])
@@ -390,7 +390,6 @@ class Communications(AbstractPlugin):
 
 
     def record_target_missing(self, target_radio):
-
         self.log_performance('target_radio', target_radio['name'])
         self.log_performance('target_frequency', target_radio['targetfreq'])
         self.log_performance('response_was_needed', True)

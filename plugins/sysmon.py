@@ -1,4 +1,4 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -6,13 +6,13 @@ from core.pseudorandom import choice, sample
 from core.container import Container
 from core.constants import COLORS as C
 from core.widgets import Scale, Light
-from plugins.abstract import AbstractPlugin
+from plugins.abstractplugin import AbstractPlugin
 from core import validation
 
 
 class Sysmon(AbstractPlugin):
-    def __init__(self, taskplacement='topleft', taskupdatetime=200):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='topleft', taskupdatetime=200):
+        super().__init__(_('System monitoring'), taskplacement, taskupdatetime)
 
         self.validation_dict = {
             'alerttimeout': validation.is_positive_integer,
@@ -128,7 +128,7 @@ class Sysmon(AbstractPlugin):
 
 
     def compute_next_plugin_state(self):
-        if super().compute_next_plugin_state() == 0:
+        if not super().compute_next_plugin_state():
             return
 
         # For the gauges that are on failure
@@ -180,7 +180,7 @@ class Sysmon(AbstractPlugin):
 
 
     def refresh_widgets(self):
-        if super().refresh_widgets() == 0:
+        if not super().refresh_widgets():
             return
         for scale_n, scale in self.parameters['scales'].items():
             scale['widget'].set_arrow_position(scale['_pos'])

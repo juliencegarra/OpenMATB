@@ -12,9 +12,9 @@ class Frame(AbstractWidget):
     This widget is a simple frame that surrounds the task. It has a given color and thickness,
     and can be shown or hidden to generate various feedback effects (blinking alarm, colorful feedback).
     '''
-    def __init__(self, name, container, win, fill_color=C['BACKGROUND'],
+    def __init__(self, name, container, fill_color=C['BACKGROUND'],
                  border_color=C['BACKGROUND'], border_thickness=0, draw_order=1):
-        super().__init__(name, container, win)
+        super().__init__(name, container)
 
         self.border_thickness = border_thickness
 

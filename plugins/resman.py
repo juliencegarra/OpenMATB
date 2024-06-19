@@ -1,17 +1,17 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from core.constants import *
 from core.container import Container
 from core.widgets import Pump, Tank, PumpFlow, Simpletext, Frame
-from plugins.abstract import AbstractPlugin
+from plugins.abstractplugin import AbstractPlugin
 from core import validation
-
+from core.window import Window
 
 class Resman(AbstractPlugin):
-    def __init__(self, taskplacement='bottommid', taskupdatetime=2000):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='bottommid', taskupdatetime=2000):
+        super().__init__(_('Resources management'), taskplacement, taskupdatetime)
 
         self.validation_dict = {
             'pumpcoloroff': validation.is_color,
@@ -171,7 +171,7 @@ class Resman(AbstractPlugin):
         if self.parameters['displaystatus'] is True:
             # Get the pump status container
             pthp = PLUGIN_TITLE_HEIGHT_PROPORTION
-            status_container = self.win.get_container(self.parameters['statuslocation'])
+            status_container = Window.MainWindow.get_container(self.parameters['statuslocation'])
             status_title_container = status_container.reduce_and_translate(height=pthp,   y=1)
             status_task_container  = status_container.reduce_and_translate(height=1-pthp, y=0)
 
@@ -225,7 +225,7 @@ class Resman(AbstractPlugin):
 
 
     def compute_next_plugin_state(self):
-        if super().compute_next_plugin_state() == 0:
+        if not super().compute_next_plugin_state():
             return
 
         tanks = self.parameters['tank']
@@ -314,7 +314,7 @@ class Resman(AbstractPlugin):
 
 
     def refresh_widgets(self):
-        if super().refresh_widgets() == 0:
+        if not super().refresh_widgets():
             return
         tanks = self.parameters['tank']
         pumps = self.parameters['pump']
