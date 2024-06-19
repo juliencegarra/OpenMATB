@@ -1,8 +1,8 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-from plugins.abstract import AbstractPlugin
+from plugins.abstractplugin import AbstractPlugin
 from core.constants import PATHS as P
 from core.logger import logger
 from core.error import errors
@@ -10,8 +10,8 @@ from core import validation
 
 
 class Parallelport(AbstractPlugin):
-    def __init__(self, taskplacement='invisible', taskupdatetime=5):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='invisible', taskupdatetime=5):
+        super().__init__(_('Parallel port'), taskplacement, taskupdatetime)
 
         self.validation_dict = {
             'trigger': validation.is_positive_integer,
@@ -54,7 +54,7 @@ class Parallelport(AbstractPlugin):
 
     def compute_next_plugin_state(self):
         '''Send the trigger value defined in upvalue, lasting for delayms'''
-        if super().compute_next_plugin_state() == 0:
+        if not super().compute_next_plugin_state():
             return
 
         # If the trigger value is not null...

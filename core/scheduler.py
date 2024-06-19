@@ -1,49 +1,55 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 import sys
 from pyglet.app import EventLoop
-from core.scenario import Event
+from core.event import Event
 from core.clock import Clock
 from core.modaldialog import ModalDialog
 from core.logger import logger
 from core.utils import get_conf_value
 from core.constants import REPLAY_MODE
 from core.error import errors
+from core.window import Window
+from core.scenario import Scenario
 from core.joystick import joystick
-
 
 class Scheduler:
     """
     This class manages events execution.
     """
 
-    def __init__(self, window, scenario):
+    def __init__(self):
+        logger.log_manual_entry(open('VERSION', 'r').read().strip(), key='version')
 
-        self.win = window
-        self.events = scenario.events
-        self.plugins = scenario.plugins
-        self.joystick = joystick
+        self.clock = Clock('main')
+        self.scenario_time = 0
 
-        # Attribute window and joystick to plugins in use, and push their handles to window
+        # Create the event loop
+        self.clock.schedule(self.update)
+        self.event_loop = EventLoop()
+
+        self.set_scenario()
+
+        self.event_loop.run()
+
+    def set_scenario(self, events = None):
+        self.scenario = Scenario(events)
+
+        self.events = self.scenario.events
+        self.plugins = self.scenario.plugins
+
+        # Attribute window to plugins in use, and push their handles to window
         for p in self.plugins:
             self.plugins[p].win = self.win
             self.plugins[p].joystick = self.joystick
             if not REPLAY_MODE:
-                self.win.push_handlers(self.plugins[p].on_key_press,
+                Window.MainWindow.push_handlers(self.plugins[p].on_key_press,
                                        self.plugins[p].on_key_release)
 
-        logger.log_manual_entry(open('VERSION', 'r').read().strip(), key='version')
+            self.plugins[p].on_scenario_loaded(self.scenario)
 
-        if 'scheduling' in self.plugins:
-            self.plugins['scheduling'].set_planning(self.events)
-
-        # Link performance plugin to other plugins
-        if 'performance' in self.plugins:
-            self.plugins['performance'].plugins = self.plugins
-
-        self.clock = Clock('main')
         self.pause_scenario_time = False
         self.scenario_time = 0
 
@@ -54,17 +60,9 @@ class Scheduler:
         # Store the plugins that could be paused by a *blocking* event
         self.paused_plugins = list()
 
-        # Create the event loop
-        self.clock.schedule(self.update)
-        self.event_loop = EventLoop()
-
-
-    def initialize_plugins(self):
-        pass
-
 
     def update(self, dt):
-        if self.win.modal_dialog is not None:
+        if Window.MainWindow.modal_dialog is not None:
             return
         elif errors.is_empty() == False:
             errors.show_errors()
@@ -122,7 +120,7 @@ class Scheduler:
             self.exit()
 
         # If the windows has been killed, exit the program
-        if self.win.alive == False:
+        if Window.MainWindow.alive == False:
             # Be careful to stop all the plugins in case they’re not
             # (so we have a stop time for each plugin, in case we must compute this somewhere)
             for p_name, plugin in self.plugins.items():
@@ -173,7 +171,7 @@ class Scheduler:
         return self.is_scenario_time_paused()
 
 
-    def toogle_scenario(self):
+    def toggle_scenario(self):
         self.pause_scenario_time = not self.pause_scenario_time
         return self.is_scenario_time_paused()
 
@@ -205,10 +203,6 @@ class Scheduler:
             getattr(plugin, 'set_parameter')(event.command[0], event.command[1])
 
         event.done = 1
-
-        # Useful?
-        # if self.replay_mode:
-            # plugin.update(0)
 
         # The event can be logged whenever inside the method, since self.durations remain
         # constant all along it
@@ -267,9 +261,5 @@ class Scheduler:
     def exit(self):
         logger.log_manual_entry('end')
         self.event_loop.exit()
-        self.win.close() # needed for windows clean exit
+        Window.MainWindow.close() # needed for windows clean exit
         sys.exit(0)
-
-
-    def run(self):
-        self.event_loop.run()

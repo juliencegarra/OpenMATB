@@ -1,15 +1,15 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from core.constants import *
 from core.widgets import Performancescale
-from plugins.abstract import AbstractPlugin
+from plugins.abstractplugin import AbstractPlugin
 from core import validation
 
 class Performance(AbstractPlugin):
-    def __init__(self, taskplacement='topright', taskupdatetime=50):
-        super().__init__(taskplacement, taskupdatetime)
+    def __init__(self, label='', taskplacement='topright', taskupdatetime=50):
+        super().__init__(_('Performance'), taskplacement, taskupdatetime)
 
         self.validation_dict = {
             'levelmin': validation.is_positive_integer,
@@ -32,6 +32,10 @@ class Performance(AbstractPlugin):
         self.under_critical = None
 
 
+    def on_scenario_loaded(self, scenario):
+        self.plugins = scenario.plugins
+
+
     def create_widgets(self):
         super().create_widgets()
 
@@ -46,7 +50,7 @@ class Performance(AbstractPlugin):
 
 
     def compute_next_plugin_state(self):
-        if super().compute_next_plugin_state() == 0:
+        if not super().compute_next_plugin_state():
             return
 
         # Below is a specific policy to compute the global performance level
@@ -116,7 +120,7 @@ class Performance(AbstractPlugin):
 
 
     def refresh_widgets(self):
-        if super().refresh_widgets() == 0:
+        if not super().refresh_widgets():
             return
         self.widgets['performance_bar'].set_performance_level(self.displayed_level)
         self.widgets['performance_bar'].set_performance_color(self.displayed_color)

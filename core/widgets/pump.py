@@ -5,9 +5,9 @@
 from core.widgets.abstractwidget import *
 
 class Pump(AbstractWidget):
-    def __init__(self, name, container, win, from_cont, to_cont, pump_n, color, pump_width,
+    def __init__(self, name, container, from_cont, to_cont, pump_n, color, pump_width,
                  y_offset=0):
-        super().__init__(name, container, win)
+        super().__init__(name, container)
         width = pump_width
 
         # If from_container and to_container are aligned (x or y axis)

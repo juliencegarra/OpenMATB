@@ -2,12 +2,20 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 from pyglet import font
-from core.constants import PATHS as P
-import configparser
+from core.constants import PATHS as P, CONFIG
+import sys
+
+def clamp(x, val_min, val_max):
+    if x < val_min:
+        return val_min
+    elif x > val_max:
+        return val_max
+    return x
+
 
 def get_session_numbers():
     try:
-        session_numbers = [int(s.name.split('_')[0]) 
+        session_numbers = [int(s.name.split('_')[0])
                            for s in P['SESSIONS'].glob('**/*.csv')]
     except:
         session_numbers = [0]
@@ -18,7 +26,7 @@ def get_session_numbers():
 def find_the_first_available_session_number():
     session_numbers = get_session_numbers()
     first_avail = None
-    
+
     # Take max session number + 1, and find the minimum available number into [1, max+1]
     # If no session has been manually removed, it will be max+1
     if len(session_numbers) == 0:
@@ -38,15 +46,11 @@ def find_the_last_session_number():
     session_numbers = get_session_numbers()
     return max(session_numbers)
 
+def has_conf_value(section, key):
+    return key in CONFIG
 
 def get_conf_value(section, key, val_type=None):
-
-    # Read the configuration file
-    config_path = P['PLUGINS'].parent.joinpath('config.ini')
-    config = configparser.ConfigParser()
-    config.read(config_path)
-
-    value = config[section][key]
+    value = CONFIG[section][key]
 
     # Boolean boolean values
     if key in ['fullscreen', 'highlight_aoi', 'hide_on_pause', 'display_session_number']:
@@ -97,3 +101,12 @@ def get_conf_value(section, key, val_type=None):
                 return value
 
         return value
+
+
+def get_replay_session_id()->int:
+    if len(sys.argv) > 2:
+        return int(sys.argv[2])
+    elif has_conf_value('Replay', 'replay_session_id'):
+        return int(get_conf_value('Replay', 'replay_session_id'))
+    else:
+        return int(find_the_last_session_number())

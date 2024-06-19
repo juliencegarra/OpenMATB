@@ -1,4 +1,4 @@
-# Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2024, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
@@ -8,15 +8,15 @@ from core.widgets import Simpletext, SimpleHTML, Frame
 from core.constants import *
 from core.container import Container
 from core.logger import logger
-
+from core.window import Window
 
 class AbstractPlugin:
     """Any plugin (or task) depends on this meta-class"""
-    def __init__(self, taskplacement='fullscreen', taskupdatetime=-1):
+    def __init__(self, label='', taskplacement='fullscreen', taskupdatetime=-1):
 
+        self.label = label                              #   The name as displayed on the interface
         self.alias = self.__class__.__name__.lower()    #   A lower version of the plugin class name
         self.widgets = dict()                           #   To store the widget objects of a plugin
-        self.win = None                                 #   The window to which the plugin is attached
         self.container = None                           #   The visual area of the plugin (object)
         self.logger = logger
 
@@ -37,19 +37,22 @@ class AbstractPlugin:
         self.visible = False                # :all the plugins widgets are shown
         self.verbose = False
 
-        self.parameters = dict(title=M[self.alias], taskplacement=taskplacement,
+        self.parameters = dict(title=self.label, taskplacement=taskplacement,
                                taskupdatetime=taskupdatetime,
                                taskfeedback=dict(overdue=dict(active=False, color=C['RED'],
                                                               delayms=2000,
                                                               blinkdurationms=1000)))
 
         # Private parameters
-        self.parameters['taskfeedback']['overdue'].update({'_nexttoggletime':0, 
+        self.parameters['taskfeedback']['overdue'].update({'_nexttoggletime':0,
                                                            '_is_visible':False})
 
         # Define minimal draw order depending on task placement
         self.m_draw = BFLIM if self.parameters['taskplacement'] == 'fullscreen' else 0
 
+
+    def on_scenario_loaded(self, scenario):
+        pass
 
     def update(self, scenario_time):
         self.scenario_time = scenario_time
@@ -74,6 +77,22 @@ class AbstractPlugin:
 
         for name, widget in self.widgets.items():
             widget.show()
+
+##      TODO: Check why we do not reverse the hide() like this
+##        if self.parameters['taskplacement'] == 'fullscreen':
+##            for name, widget in self.widgets.items():
+##                widget.show()
+##
+##        elif self.parameters['taskplacement'] != 'invisible':
+##            for name, widget in self.widgets.items():
+##                widget.show()
+##
+##            if self.get_widget('foreground') is not None:
+##                self.get_widget('foreground').hide()
+##
+##            if self.get_widget('border') is not None:
+##                self.get_widget('borer').hide()
+
 
 
     def hide(self):
@@ -169,7 +188,7 @@ class AbstractPlugin:
 
     def update_can_receive_key(self):
         '''Update the ability of the plugin to receive either material or emulated inputs'''
-        
+
         if self.paused == True or self.is_visible() == False:
             self.can_receive_keys = False
         else:
@@ -177,7 +196,7 @@ class AbstractPlugin:
                 self.can_receive_keys = not self.parameters['automaticsolver']
             else:
                 self.can_receive_keys = True
-        
+
         if REPLAY_MODE == True:
             self.can_receive_keys = False
             self.can_execute_keys = True
@@ -185,10 +204,11 @@ class AbstractPlugin:
             self.can_execute_keys = self.can_receive_keys
         
 
-    def compute_next_plugin_state(self):
+
+    def compute_next_plugin_state(self) -> bool:
         if not self.scenario_time >= self.next_refresh_time or self.is_paused():
-            return 0
-        
+            return False
+
         if self.verbose:
             print(self.alias, 'Compute next state')
 
@@ -202,13 +222,12 @@ class AbstractPlugin:
                 self.automode_string = _('MANUAL')
         else:
             self.automode_string = ''
-        return 1
+        return True
 
 
-    def refresh_widgets(self):
-
+    def refresh_widgets(self) -> bool:
         if not self.is_visible():
-            return 0
+            return False
 
         if self.verbose:
             print(self.alias, 'Refreshing widgets')
@@ -251,17 +270,17 @@ class AbstractPlugin:
         if 'widget' in overdue:
             overdue['widget'].set_visibility(overdue['_is_visible'])
             overdue['widget'].set_border_color(overdue['color'])
-        return 1
+        return True
 
 
     def filter_key(self, keystr):
         if self.can_execute_keys == False:
             return
-        
-        if self.win.modal_dialog is None:
+
+        if Window.MainWindow.modal_dialog is None:
             keystr = keystr if keystr in self.keys else None
             return keystr
-        
+
         return
 
 
@@ -298,11 +317,11 @@ class AbstractPlugin:
 
 
     def is_key_state(self, keystr, is_pressed):
-        if keystr in self.win.keyboard:
-            return self.win.keyboard[keystr] == is_pressed
-        elif self.joystick is not None and keystr in self.joystick.keys:
-            return self.joystick.keys[keystr] == is_pressed
-        else:
+        if keystr in Window.MainWindow.keyboard:
+            return Window.MainWindow.keyboard[keystr] == is_pressed
+	elif self.joystick is not None and keystr in self.joystick.keys:
+            return self.joystick.keys[keystr] == is_pressed        
+	else:
             return
 
 
@@ -311,7 +330,7 @@ class AbstractPlugin:
             print(self.alias, 'Creating widgets')
         pthp = PLUGIN_TITLE_HEIGHT_PROPORTION
 
-        self.container = self.win.get_container(self.parameters['taskplacement'])
+        self.container = Window.MainWindow.get_container(self.parameters['taskplacement'])
         self.title_container = self.container.reduce_and_translate(height=pthp,   y=1)
         self.task_container  = self.container.reduce_and_translate(height=1-pthp, y=0)
 
@@ -347,7 +366,7 @@ class AbstractPlugin:
 
     def add_widget(self, name, cls, container, **kwargs):
         fullname = self.get_widget_fullname(name)
-        self.widgets[fullname] = cls(fullname, container, self.win, **kwargs)
+        self.widgets[fullname] = cls(fullname, container, **kwargs)
 
         # Record the area coordinates of the widget if it has a container
         if container is not None:
@@ -399,7 +418,7 @@ class AbstractPlugin:
 
 class BlockingPlugin(AbstractPlugin):
     def __init__(self, taskplacement='fullscreen', taskupdatetime=15):
-        super().__init__(taskplacement, taskupdatetime)
+        super().__init__(None, taskplacement, taskupdatetime)
 
         self.keys.update({'SPACE'})
         new_par = dict(boldtitle=False)
@@ -450,7 +469,6 @@ class BlockingPlugin(AbstractPlugin):
 
 
     def update(self, dt):
-        #print(self.paused, self.visible)
         super().update(dt)
         if self.go_to_next_slide == True:
             self.go_to_next_slide = False

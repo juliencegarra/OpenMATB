@@ -1,7 +1,6 @@
 # Copyright 2023, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
-
 from pyglet.font import load as load_font
 from pyglet.window import key as winkey
 from pyglet.text import HTMLLabel, Label
@@ -11,31 +10,31 @@ from core.logger import logger
 from core.constants import FONT_SIZES as F, PATHS as P, Group as G, COLORS as C
 from core.utils import get_conf_value
 
+
 class ModalDialog:
-    def __init__(self, window, msg, title='OpenMATB', continue_key='SPACE', exit_key=None):
+    def __init__(self, win, msg, title='OpenMATB', continue_key='SPACE', exit_key=None):
 
         # Allow for drawing of transparent vertices
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
+        self.win = win
         self.name = title
-        self.win = window
-        self.win.modal_dialog = self
         self.continue_key = continue_key
         self.exit_key = exit_key
         self.hide_on_pause = get_conf_value('Openmatb', 'hide_on_pause')
 
         # Hide background ?
         if self.hide_on_pause:
-            MATB_container = self.win.get_container('fullscreen')
+            MATB_container = Window.MainWindow.get_container('fullscreen')
             l, b, w, h = MATB_container.get_lbwh()
-            self.back_vertice = self.win.batch.add(4, GL_POLYGON, G(20), 
+            self.back_vertice = Window.MainWindow.batch.add(4, GL_POLYGON, G(20),
                                             ('v2f/static', (l, b+h, l+w, b+h, l+w, b, l, b)),
                                             ('c4B', C['BACKGROUND'] * 4))
         else:
             self.back_vertice = None
 
-        
+
         # HTML list definition #
         if isinstance(msg, str):
             msg = [msg]
@@ -58,8 +57,8 @@ class ModalDialog:
             html += ' %s' % _('Continue')
         html += '</font></em></p></center>'
 
-        self.html_label = HTMLLabel(html, x=0, y=0, anchor_x='center', anchor_y='center', 
-                                    group=G(22), batch=self.win.batch, multiline=True, 
+        self.html_label = HTMLLabel(html, x=0, y=0, anchor_x='center', anchor_y='center',
+                                    group=G(22), batch=self.win.batch, multiline=True,
                                     width=self.win.width)
         # # # # # # # # # # # #
 
@@ -79,19 +78,19 @@ class ModalDialog:
         l, b, w, h = self.container.get_lbwh()
 
         # Container background
-        self.back_dialog = self.win.batch.add(4, GL_POLYGON, G(21), 
+        self.back_dialog = self.win.batch.add(4, GL_POLYGON, G(21),
                                               ('v2f/static', (l, b+h, l+w, b+h, l+w, b, l, b)),
                                               ('c4B', C['WHITE_TRANSLUCENT'] * 4))
 
         # Container border
-        self.border_dialog = self.win.batch.add(8, GL_LINES, G(21), 
-                                               ('v2f/static', (l, b+h, l+w, b+h, 
+        self.border_dialog = self.win.batch.add(8, GL_LINES, G(21),
+                                               ('v2f/static', (l, b+h, l+w, b+h,
                                                                l+w, b+h, l+w, b,
                                                                l+w, b, l, b,
                                                                l, b, l, b+h)),
                                                ('c4B', C['GREY'] * 8))
 
-        
+
 
         # HTMLLabel placement #
         self.html_label.x = self.container.cx
