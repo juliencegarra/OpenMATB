@@ -2,6 +2,7 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+import sys
 from core.scheduler import Scheduler
 from core.error import errors
 from core.widgets import PlayPause, Simpletext, Slider, Frame, Reticle, SimpleHTML
@@ -9,7 +10,7 @@ from core.constants import COLORS as C, FONT_SIZES as F
 from time import strftime, gmtime, sleep
 from core.logreader import LogReader
 from core.container import Container
-from core.utils import get_conf_value
+from core.utils import get_conf_value, find_the_last_session_number
 from random import uniform
 
 
@@ -18,6 +19,12 @@ class ReplayScheduler(Scheduler):
     This class manages events execution in the context of the OpenMATB replay.
     """
     def __init__(self, window, logreader):
+
+        if len(sys.argv) > 2:
+            self.replay_session_id = int(sys.argv[2])
+        else:
+            self.replay_session_id = find_the_last_session_number()
+
         self.scenario = logreader.scenario
         self.logreader = logreader
         self.inputs_queue = list(logreader.inputs)  # Copy inputs, and empty progressively
@@ -165,7 +172,7 @@ class ReplayScheduler(Scheduler):
                 #     del self.plugins
 
                 # # 3. Re-initialize plugins
-                logreader = LogReader(get_conf_value('Replay', 'replay_session_id'))
+                logreader = LogReader()
                 self.plugins = logreader.scenario.plugins
                 for p, plugin in self.plugins.items():
                     plugin.win = self.win
