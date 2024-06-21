@@ -202,7 +202,7 @@ class AbstractPlugin:
             self.can_execute_keys = True
         else:
             self.can_execute_keys = self.can_receive_keys
-        
+
 
 
     def compute_next_plugin_state(self) -> bool:
@@ -319,9 +319,9 @@ class AbstractPlugin:
     def is_key_state(self, keystr, is_pressed):
         if keystr in Window.MainWindow.keyboard:
             return Window.MainWindow.keyboard[keystr] == is_pressed
-	elif self.joystick is not None and keystr in self.joystick.keys:
-            return self.joystick.keys[keystr] == is_pressed        
-	else:
+        elif self.joystick is not None and keystr in self.joystick.keys:
+            return self.joystick.keys[keystr] == is_pressed
+        else:
             return
 
 
