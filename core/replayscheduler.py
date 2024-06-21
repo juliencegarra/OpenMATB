@@ -73,48 +73,48 @@ class ReplayScheduler(Scheduler):
 
 
     def set_inputs_buttons(self):
-        pass
         # Plot the keyboard keys that are available in the present plugins
-##        input_container = Window.MainWindow.get_container('inputstrip')
-##        key_container = input_container.reduce_and_translate(width=0.9,
-##                                                             height=0.8,
-##                                                             y=0, x=0.5)
-##        self.key_widget = SimpleHTML('replay_keys', key_container, '<strong>Keyboard history:\n</strong>')
-##        self.key_widget.show()
+        input_container = Window.MainWindow.get_container('inputstrip')
+        key_container = input_container.reduce_and_translate(width=0.9,
+                                                             height=0.8,
+                                                             y=0, x=0.5)
+        self.key_widget = SimpleHTML('replay_keys', key_container, '<strong>Keyboard history:\n</strong>')
+        self.key_widget.show()
 
 
     def set_media_buttons(self):
+
         # Media strip
         media_container = Window.MainWindow.get_container('mediastrip')
         self.media_back = Frame('media_background', media_container,
-                            fill_color=C['DARKGREY'], draw_order=1)
-##        self.media_back.show()
+                                fill_color=C['DARKGREY'], draw_order=1)
+        self.media_back.show()
         pp_container = media_container.reduce_and_translate(width=0.06, height=1, x=0)
         time_container = media_container.reduce_and_translate(width=0.03, height=1, x=0.78)
-##
-##        self.playpause = PlayPause('Play_pause_button', pp_container,
-##                                   self.toggle_playpause)
+
+        self.playpause = PlayPause('Play_pause_button', pp_container,
+                                   self.toggle_playpause)
         self.time = Simpletext('elapsed_time', time_container,
-                        text='', font_size=F['LARGE'], color=C['WHITE'])
-##
-##
+                               text='', font_size=F['LARGE'], color=C['WHITE'])
+
+
         self.slider = Slider('timeline', media_container, None, '', '', 0, 1, 0, 1)
-##        self.time.show()
-##
+        self.time.show()
+
         # Inputs strip
         input_container = Window.MainWindow.get_container('inputstrip')
         self.inputs_back = Frame('inputs_background', input_container,
-                            fill_color=C['LIGHTGREY'], draw_order=1)
+                                fill_color=C['LIGHTGREY'], draw_order=1)
         self.inputs_back.show()
-##
-##        # Manually compute the joystick container to ensure it is a square
-##        w = h = input_container.w * 0.8
-##        l = input_container.l + 0.1*input_container.w
-##        b = input_container.b + 0.85*input_container.h
-##        joy_container = Container('replay_reticle', l,b,w,h)
-##        self.replay_reticle = Reticle('replay_reticle', joy_container, C['BLACK'],
-##                                      target_proportion = 0, m_draw=5)
-##        self.replay_reticle.show()
+
+        # Manually compute the joystick container to ensure it is a square
+        w = h = input_container.w * 0.8
+        l = input_container.l + 0.1*input_container.w
+        b = input_container.b + 0.85*input_container.h
+        joy_container = Container('replay_reticle', l,b,w,h)
+        self.replay_reticle = Reticle('replay_reticle', joy_container, C['BLACK'],
+                                      target_proportion = 0, m_draw=5)
+        self.replay_reticle.show()
 
 
     def on_key_press_replay(self, symbol, modifier):
