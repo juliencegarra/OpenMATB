@@ -51,10 +51,7 @@ class LogReader():
 
         with open(self.session_file_path, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
-            try:
-                first_row = next(reader)
-            except:
-                pass
+            first_row = next(reader)
             for row in reader:
                 # Define what type of entry must be retrieved for replaying
                 if not row['module'] in IGNORE_PLUGINS:
@@ -82,9 +79,8 @@ class LogReader():
                             row['value'] = eval(row['value'])
                             self.states.append(row)
 
-                # The last row contains the ending time
-                self.end_sec = float(row['scenario_time'])
-
+            # The last row browsed contains the ending time
+            self.end_sec = float(row['scenario_time'])
             self.duration_sec = self.end_sec - self.start_sec
 
     def session_event_to_str(self, event_row):
