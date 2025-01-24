@@ -96,7 +96,7 @@ class AbstractWidget:
                 self.on_batch[name].delete()
                 del self.on_batch[name]
 
-        self.vertex = dict()
+        #self.vertex = dict()
         self.on_batch = dict()
 
 
