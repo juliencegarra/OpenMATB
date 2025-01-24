@@ -39,7 +39,7 @@ class Communications(AbstractPlugin):
             'keys-validateresponse' : validation.is_key}
 
 
-        # self.keys = {'UP', 'DOWN', 'RIGHT', 'LEFT', 'ENTER'}
+        self.keys = {'UP', 'DOWN', 'RIGHT', 'LEFT', 'ENTER'}
         self.callsign_seed = 1  # Useful to pseudorandomly generate different callsign when
                                 # trying to generate multiple callsigns at once
 
@@ -158,7 +158,7 @@ class Communications(AbstractPlugin):
         group = SourceGroup()
         for f in list_of_sounds:
             source = load(str(self.sound_path.joinpath(f'{f}.wav')), streaming=False)
-            print(f)
+            # print(f)
             group.add(source)
         return group
 

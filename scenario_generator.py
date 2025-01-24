@@ -33,19 +33,19 @@ from plugins import *
 
 # Constants #
 EVENTS_REFRACTORY_DURATION = 1 # Delay before the next event is allowed (in seconds)
-DIFFICULTY_MIN = 0.05
-DIFFICULTY_MAX = 1
-DIFFICULTY_STEP_NUMBER = 10
+DIFFICULTY_MIN = 0.25
+DIFFICULTY_MAX = 0.85
+DIFFICULTY_STEP_NUMBER = 3
 DIFFICULTY_STEP = (DIFFICULTY_MAX - DIFFICULTY_MIN) / (DIFFICULTY_STEP_NUMBER - 1)
 STEP_DURATION_SEC = 60
 COMMUNICATIONS_TARGET_RATIO = 0.50  # Proportion of target communications
 AVERAGE_AUDITORY_PROMPT_DURATION = 13
-SCENARIO_NAME = 'incapacitation'
+SCENARIO_NAME = 'three_load_levels'
 
 # Specify a scenario that should be added at the beginning
 ADD_SCENARIO_PATH = PATHS['SCENARIOS'].joinpath('custom_generator.txt')
 
-win = Window(0, '', False, False, False, False)
+win = Window()
 win.set_visible(False)
 
 # Plugin instances #
