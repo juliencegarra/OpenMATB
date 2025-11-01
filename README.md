@@ -1,4 +1,3 @@
-
 # OpenMATB: An open-source version of the Multi-Attribute Task Battery (MATB)
 
 First presented at a NASA Technical memorandum (Comstock & Arnegard, 1992), the Multi-Attribute Task Battery (MATB) contained a set of interactive tasks that were representative of those performed in aircraft piloting. The MATB requires participants to engage in four tasks presented simultaneously on a computer screen. They consist of (1) a monitoring task, (2) a tracking task, (3) an auditory communication task, and (4) a resources management task. The display screen also encompasses a scheduling view (5) for displaying a chart of incoming task events
@@ -34,7 +33,7 @@ The program is compatible with Windows, Mac and Linux systems. To run perfectly,
 
 ## Cross-platform installation
 
-The first thing to do is to [install python 3.9](https://www.python.org/downloads/) on your computer.
+The first thing to do is to [install python 3.9](https://www.python.org/downloads/) (or above) on your computer.
 
 To execute OpenMATB on most platforms, simply clone the current repository to a given local folder. Then, make sure you installed the correct python libraries with pip. The correct library versions are written in `requirements.txt`. You can use the `-r` flag of `pip` to install everything at once.
 
