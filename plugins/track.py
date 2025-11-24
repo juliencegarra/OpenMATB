@@ -117,8 +117,11 @@ class Track(AbstractPlugin):
                 # Potential compensations of cursor movement
                 # If the automode is enabled, apply automatic compensation to the cursor drift
                 if self.parameters['automaticsolver'] == True:
-                    compx = 1 if -self.reticle.cursor_relative[0] >= 0 else -1
-                    compy = 1 if -self.reticle.cursor_relative[1] >= 0 else -1
+                    autocompx = 1 if -self.reticle.cursor_relative[0] >= 0 else -1
+                    autocompy = 1 if -self.reticle.cursor_relative[1] >= 0 else -1
+                else:
+                    autocompx = 0
+                    autocompy = 0
 
                 # Else if a manual input (joystick) is recorded, apply its offset to the cursor,
                 # as a function of its gain
@@ -127,8 +130,8 @@ class Track(AbstractPlugin):
                 else:
                     compx, compy = -self.x_input, self.y_input
 
-                compx = compx * self.parameters['joystickforce']
-                compy = compy * self.parameters['joystickforce']
+                compx = autocompx + compx * self.parameters['joystickforce']
+                compy = autocompy + compy * self.parameters['joystickforce']
 
                 moffx = moffx + compx
                 moffy = moffy + compy
