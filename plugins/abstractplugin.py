@@ -189,7 +189,7 @@ class AbstractPlugin:
     def update_can_receive_key(self):
         '''Update the ability of the plugin to receive either material or emulated inputs'''
 
-        if self.paused == True or self.is_visible() == False:
+        if self.paused or not self.is_visible():
             self.can_receive_keys = False
         else:
             if 'automaticsolver' in self.parameters:
@@ -197,7 +197,7 @@ class AbstractPlugin:
             else:
                 self.can_receive_keys = True
 
-        if REPLAY_MODE == True:
+        if REPLAY_MODE:
             self.can_receive_keys = False
             self.can_execute_keys = True
         else:
@@ -217,7 +217,7 @@ class AbstractPlugin:
         # Should an automation state (string) be displayed ?
         if 'displayautomationstate' in self.parameters and self.parameters['displayautomationstate']:
             if 'automaticsolver' in self.parameters:
-                self.automode_string = _('MANUAL') if self.parameters['automaticsolver'] == False else _('AUTO')
+                self.automode_string = _('MANUAL') if not self.parameters['automaticsolver'] else _('AUTO')
             else:
                 self.automode_string = _('MANUAL')
         else:
@@ -239,7 +239,7 @@ class AbstractPlugin:
         if self.get_widget('automode') is not None:
             self.get_widget('automode').set_text(self.automode_string)
 
-        if self.display_title == True:
+        if self.display_title:
             self.get_widget('task_title').set_text(self.parameters['title'].upper())
 
 
@@ -274,7 +274,7 @@ class AbstractPlugin:
 
 
     def filter_key(self, keystr):
-        if self.can_execute_keys == False:
+        if not self.can_execute_keys:
             return
 
         if Window.MainWindow.modal_dialog is None:
@@ -285,33 +285,33 @@ class AbstractPlugin:
 
 
     def on_joy_key_press(self, keystr):
-        if self.can_receive_keys == False:
+        if not self.can_receive_keys:
             return
         self.do_on_key(keystr, 'press', False)
 
 
     def on_joy_key_release(self, keystr):
-        if self.can_receive_keys == False:
+        if not self.can_receive_keys:
             return
         self.do_on_key(keystr, 'release', False)
 
 
     def on_key_press(self, symbol, modifiers):
-        if self.can_receive_keys == False:
+        if not self.can_receive_keys:
             return
         keystr = winkey.symbol_string(symbol)
         self.do_on_key(keystr, 'press', False)
 
 
     def on_key_release(self, symbol, modifiers):
-        if self.can_receive_keys == False:
+        if not self.can_receive_keys:
             return
         keystr = winkey.symbol_string(symbol)
         self.do_on_key(keystr, 'release', False)
 
 
     def do_on_key(self, keystr, state, emulate=False):   # JC: pour le solver, devrait prendre un parametre is_solver_action pour separer de vraies actions du participant
-        if REPLAY_MODE == True and emulate == False:
+        if REPLAY_MODE and not emulate:
             return  # During replay, ignore keys that are not emulated
         return self.filter_key(keystr)
 
@@ -349,7 +349,7 @@ class AbstractPlugin:
                             border_color=C['RED'], fill_color=None)
 
 
-        if self.display_title == True:
+        if self.display_title:
             self.add_widget('task_title', Simpletext, container=self.title_container,
                             text=self.parameters['title'].upper(), color=C['WHITE'],
                             font_size=F['MEDIUM'])
@@ -455,7 +455,7 @@ class BlockingPlugin(AbstractPlugin):
             self.slides.append(str())                      # Create the first slide
             lines = self.input_path.open(encoding='utf8').readlines()
 
-            if self.ignore_empty_lines == True:
+            if self.ignore_empty_lines:
                 lines = [l for l in lines if len(l.strip()) > 0]
 
             for line in lines:
@@ -470,7 +470,7 @@ class BlockingPlugin(AbstractPlugin):
 
     def update(self, dt):
         super().update(dt)
-        if self.go_to_next_slide == True:
+        if self.go_to_next_slide:
             self.go_to_next_slide = False
             if len(self.slides) > 0:  # Are there remaining slides ?
                 self.hide()          # If so retrieve the next slide and show it
@@ -504,7 +504,7 @@ class BlockingPlugin(AbstractPlugin):
         # Renew the current slide content
         self.current_slide = '\n'.join(slide_content)
 
-        if self.parameters['allowkeypress'] == True:
+        if self.parameters['allowkeypress']:
             key_name = self.parameters['response']['key'].lower()
             response_text = '<center><p>'+self.parameters['response']['text']+'</p></center>'
             self.add_widget(f'press_{key_name}', SimpleHTML, container=self.container,
@@ -512,7 +512,7 @@ class BlockingPlugin(AbstractPlugin):
 
 
     def on_key_press(self, symbol, modifiers):
-        if self.parameters['allowkeypress'] == True:
+        if self.parameters['allowkeypress']:
             super().on_key_press(symbol, modifiers)
 
 

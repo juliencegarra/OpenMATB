@@ -61,7 +61,7 @@ class Parallelport(AbstractPlugin):
         if self.parameters['trigger'] != self._downvalue:
 
             # ... and no trigger being sent: send it
-            if self.is_trigger_being_sent() == False:
+            if not self.is_trigger_being_sent():
                 self.set_trigger_value(self.parameters['trigger'])
 
             # but if a trigger is already being sent, store it
@@ -82,5 +82,5 @@ class Parallelport(AbstractPlugin):
             self.set_trigger_value(self._downvalue)
 
         # Grow timer of not-null trigger
-        if self.is_trigger_being_sent() == True:
+        if self.is_trigger_being_sent():
             self._triggertimerms += self.parameters['taskupdatetime']

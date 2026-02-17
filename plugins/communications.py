@@ -242,7 +242,7 @@ class Communications(AbstractPlugin):
 
         return [r for _, r in self.parameters['radios'].items()
                 if r in self.get_target_radios_list()
-                and r['is_prompting'] == False]
+                and not r['is_prompting']]
 
 
     def get_max_pos(self):
@@ -301,7 +301,7 @@ class Communications(AbstractPlugin):
                 self.log_manual_entry('Error. Could not trigger prompt', key='manual')
 
 
-        if self.can_receive_keys == True:
+        if self.can_receive_keys:
             self.modulate_frequency()
 
         # If a target is defined + auditory prompt has ended
@@ -312,7 +312,7 @@ class Communications(AbstractPlugin):
         # Browse targeted radios
         for radio in target_radios:
             # Increment response time as soon as auditory prompting has ended
-            if radio['is_prompting'] == False:
+            if not radio['is_prompting']:
                 radio['response_time'] += self.parameters['taskupdatetime']
 
                 # Record potential target miss
@@ -326,7 +326,7 @@ class Communications(AbstractPlugin):
 
         # If multiple radios must be modified
         # The automatic solver sticks to the first one (until it is tuned)
-        if self.parameters['automaticsolver'] is True and REPLAY_MODE == False:
+        if self.parameters['automaticsolver'] is True and not REPLAY_MODE:
             waiting_radios = self.get_waiting_response_radios()
 
             # Only if a radio is waiting autosolving, do it
@@ -470,7 +470,7 @@ class Communications(AbstractPlugin):
         if not response_needed:
             self.set_feedback(responded_radio, ft='negative')
         else:
-            if good_radio == True and deviation == 0:
+            if good_radio and deviation == 0:
                 self.disable_radio_target(responded_radio)
                 self.set_feedback(responded_radio, ft='positive')
             else:

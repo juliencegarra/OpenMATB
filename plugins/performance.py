@@ -98,7 +98,7 @@ class Performance(AbstractPlugin):
                     if len(plugin.performance['correct_radio']) >= 4:
                         perf_radio = plugin.performance['correct_radio'][-4:]
                         perf_freq = plugin.performance['response_deviation'][-4:]
-                        all_good = [r == True and round(f, 1) == 0 for r, f in zip(perf_radio, perf_freq)]
+                        all_good = [r and round(f, 1) == 0 for r, f in zip(perf_radio, perf_freq)]
 
                         self.performance_levels[p] = sum(all_good) / len(all_good)
 

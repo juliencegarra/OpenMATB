@@ -32,12 +32,12 @@ class Button(AbstractWidget):
 
 
     def on_mouse_press(self, x, y, button, modifiers):
-        if self.mouse_is_in_active_area(x, y) and self.hover == False:
+        if self.mouse_is_in_active_area(x, y) and not self.hover:
             self.hover = True
 
 
     def on_mouse_release(self, x, y, button, modifiers):
-        if self.hover == True:
+        if self.hover:
             self.on_mouse_click()
             self.hover = False
 

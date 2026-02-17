@@ -203,12 +203,12 @@ class Sysmon(AbstractPlugin):
 
 
     def determine_light_color(self, light):
-        color = light['oncolor'] if light['on'] == True else C['BACKGROUND']
+        color = light['oncolor'] if light['on'] else C['BACKGROUND']
         return color
 
 
     def start_failure(self, gauge):
-        if gauge['_onfailure'] == True:
+        if gauge['_onfailure']:
             pass  # TODO : warn in case of multiple failure on the same gauge
         else:
             gauge['_onfailure'] = True
@@ -234,7 +234,7 @@ class Sysmon(AbstractPlugin):
         gauge['_failuretimer'] = None
 
         # Set the (potential) feedback type (ft)
-        ft = 'positive' if self.parameters['automaticsolver'] or success == True else 'negative'
+        ft = 'positive' if self.parameters['automaticsolver'] or success else 'negative'
 
         # Does this feedback type (positive or negative) is currently active ?
         # If so, set the feedback type and duration, if the gauge has got one

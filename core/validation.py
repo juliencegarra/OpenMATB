@@ -94,9 +94,9 @@ def is_in_list(x, li):
     result = True if all([el in li for el in x]) else False
 
     # Retrieve erroneous elements
-    errors = [el for el in x if el not in li] if result == False else list()
+    errors = [el for el in x if el not in li] if not result else list()
 
-    if result == True:  # If all elements of x are in target (li) list
+    if result:  # If all elements of x are in target (li) list
     # Try to get an evaluated version of the (x) input
         try:
             x = [eval(el) for el in x]
@@ -173,7 +173,7 @@ def is_callsign_or_list_of(x):
     # Check that all elements are valid callsigns
     result = all([is_callsign(el)[0] is not None for el in x])
 
-    if result == True:
+    if result:
         return x, None
     else:
         # Retrieve unallowed callsigns

@@ -329,7 +329,7 @@ class Resman(AbstractPlugin):
 
         for tank_letter, this_tank in tanks.items():
             this_tank['widget'].set_fluid_level(this_tank['level'], this_tank['max'])
-            fluid_label = str(this_tank['level']) if this_tank['depletable'] == True else ''
+            fluid_label = str(this_tank['level']) if this_tank['depletable'] else ''
             this_tank['widget'].set_fluid_label(fluid_label)
 
             # Apply modification that are specific to target tanks

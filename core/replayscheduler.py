@@ -227,13 +227,13 @@ class ReplayScheduler(Scheduler):
 
 
         # At THE FIRST slider mouse press, pause scenario if not already paused
-        if self.slider.hover == True and self.sliding == False:
+        if self.slider.hover and not self.sliding:
             self.sliding = True
             self.toggle_pause_to(True)
 
         # At THE FIRST slider mouse release, get back the scenario in its previous state (play/pause)
         # Record the target value (given by the groove position)
-        if self.slider.hover == False and self.sliding == True:
+        if not self.slider.hover and self.sliding:
             self.sliding = False
             self.set_target_time(self.slider.groove_value)
 
