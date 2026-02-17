@@ -3,7 +3,7 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 import sys
-from pyglet.graphics import OrderedGroup as Group
+from pyglet.graphics import Group
 from pathlib import Path
 import configparser
 

@@ -2,11 +2,12 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-from pyglet.gl import *
+from pyglet.gl import GL_LINES, GL_TRIANGLES
 from core.container import Container
 from core.constants import COLORS as C, FONT_SIZES as F
 from core.constants import Group as G
 from core.widgets.abstractwidget import AbstractWidget
+from core.rendering import GL_QUADS
 from pyglet.text import Label
 
 

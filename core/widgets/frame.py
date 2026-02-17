@@ -5,7 +5,7 @@
 from core.container import Container
 from core.constants import COLORS as C, Group as G
 from core.widgets import AbstractWidget
-from pyglet.gl import GL_QUADS
+from core.rendering import GL_QUADS
 
 class Frame(AbstractWidget):
     '''
