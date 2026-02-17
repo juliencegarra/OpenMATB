@@ -17,7 +17,7 @@ def get_session_numbers():
     try:
         session_numbers = [int(s.name.split('_')[0])
                            for s in P['SESSIONS'].glob('**/*.csv')]
-    except:
+    except (ValueError, IndexError):
         session_numbers = [0]
 
     return session_numbers
@@ -66,7 +66,7 @@ def get_conf_value(section, key, val_type=None):
     elif key in ['screen_index']:
         try:
             value = int(value)
-        except:
+        except (ValueError, TypeError):
             raise TypeError(_(f"In config.ini, [%s] parameter must be an integer (not %s)") % (key, value))
         else:
             return value
@@ -75,7 +75,7 @@ def get_conf_value(section, key, val_type=None):
     elif key in ['clock_speed']:
         try:
             value = float(value)
-        except:
+        except (ValueError, TypeError):
             raise TypeError(_(f"In config.ini, [%s] parameter must be a float (not %s)") % (key, value))
         else:
             return value
@@ -84,7 +84,7 @@ def get_conf_value(section, key, val_type=None):
     elif key in ['top_bounds', 'bottom_bounds']:
         try:
             value = eval(value)
-        except:
+        except (ValueError, TypeError, SyntaxError, NameError):
             raise TypeError(_(f"In config.ini, [%s] parameter must be a list of floats (not %s)") % (key, value))
         else:
             return value

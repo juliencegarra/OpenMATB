@@ -50,7 +50,7 @@ class TestGetSessionNumbers:
     @patch('core.utils.P')
     def test_empty_dir_returns_zero(self, mock_paths):
         """Empty sessions directory returns [0]."""
-        mock_paths.__getitem__ = lambda self, k: MagicMock(glob=MagicMock(side_effect=Exception))
+        mock_paths.__getitem__ = lambda self, k: MagicMock(glob=MagicMock(side_effect=ValueError))
         result = get_session_numbers()
         assert result == [0]
 

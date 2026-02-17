@@ -70,7 +70,7 @@ class Window(Window):
         # Screen definition
         try:
             screen_index = get_conf_value('Openmatb', 'screen_index')
-        except:
+        except (KeyError, TypeError):
             screen_index = 0
 
         screens = get_display().get_screens()

@@ -19,13 +19,13 @@ class Parallelport(AbstractPlugin):
 
         try:
             import parallel
-        except:
+        except ImportError:
             errors.add_error(_('Python Parallel module is missing. Skipping parallel plugin'))
             return
 
         try:
             self._port = parallel.Parallel()
-        except:  # Exception under Linux platforms : FileNotFoundError (/dev/parport0)
+        except OSError:  # Exception under Linux platforms : FileNotFoundError (/dev/parport0)
             errors.add_error(_('The physical parallel port was not found.'))
         else:
 

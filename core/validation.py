@@ -25,7 +25,7 @@ def is_natural_integer(x):
     try:
         x = eval(x)
         x = int(x)
-    except:
+    except (ValueError, TypeError, SyntaxError, NameError):
         return None, msg
     else:
         if x >= 0:
@@ -61,7 +61,7 @@ def is_color(x):  # Can be an hexadecimal value, a constant name, or an RGBa val
     else:
         try:
             x = eval(x)
-        except:
+        except (ValueError, TypeError, SyntaxError, NameError):
             return None, _('must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)') % x
         else:
             if ((isinstance(x, tuple) or isinstance(x, list))
