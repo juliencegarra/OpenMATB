@@ -5,7 +5,7 @@
 from pyglet.window import key
 from core.scheduler import Scheduler
 from core.error import errors
-from core.widgets import PlayPause, Simpletext, Slider, Frame, Reticle, SimpleHTML
+from core.widgets import PlayPause, MuteButton, Simpletext, Slider, Frame, Reticle, SimpleHTML
 from core.constants import COLORS as C, FONT_SIZES as F
 from time import strftime, gmtime, sleep
 from core.logreader import LogReader
@@ -22,12 +22,14 @@ class ReplayScheduler(Scheduler):
     """
     This class manages events execution in the context of the OpenMATB replay.
     """
-    def __init__(self):
+    def __init__(self, session_path=None):
         self.logreader = None
+        self._session_path = session_path
         self.target_time = 0
         self.replay_time = 0
         self._executed_key_indices = set()
         self.keys_history = []
+        self._muted = True
 
         self.set_media_buttons()
 
@@ -42,10 +44,22 @@ class ReplayScheduler(Scheduler):
 
 
     def set_scenario(self):
-        replay_session_id = get_replay_session_id()
+        need_new_logreader = False
 
-        if self.logreader is None or replay_session_id != self.logreader.replay_session_id:
-            self.logreader = LogReader(replay_session_id)
+        if self._session_path is not None:
+            # Direct path from file selector
+            need_new_logreader = self.logreader is None
+        else:
+            # Legacy: look up by session ID
+            replay_session_id = get_replay_session_id()
+            need_new_logreader = (self.logreader is None
+                                  or replay_session_id != self.logreader.replay_session_id)
+
+        if need_new_logreader:
+            if self._session_path is not None:
+                self.logreader = LogReader(session_path=self._session_path)
+            else:
+                self.logreader = LogReader(replay_session_id)
             # Pre-compute sorted time arrays for O(log n) bisect lookup
             self._key_times = [float(i['scenario_time']) for i in self.logreader.keyboard_inputs]
             self._joy_times = [float(i['scenario_time']) for i in self.logreader.joystick_inputs]
@@ -90,6 +104,16 @@ class ReplayScheduler(Scheduler):
                                text='', font_size=F['LARGE'], color=C['WHITE'])
 
 
+        margin = 10
+        btn_w = media_container.h * 1.8
+        pad_b = 4
+        mute_container = Container('mute_btn',
+                                   Window.MainWindow.width - margin - btn_w,
+                                   media_container.b + pad_b,
+                                   btn_w, media_container.h - 2 * pad_b)
+        self.mute_button = MuteButton('mute_button', mute_container,
+                                       self.toggle_mute)
+
         self.slider = Slider('timeline', media_container, None, '', '', 0, 1, 0, 1)
         self.time.show()
 
@@ -126,6 +150,8 @@ class ReplayScheduler(Scheduler):
             self.clock.increase_speed()
         elif symbol==key.DOWN:
             self.clock.decrease_speed()
+        elif symbol==key.M:
+            self.toggle_mute()
 
 
     def update_timers(self, dt):
@@ -160,6 +186,7 @@ class ReplayScheduler(Scheduler):
         self.emulate_keyboard_inputs()
         self.display_joystick_inputs()
         self.process_states()
+        self._enforce_mute()
 
 
     def check_plugins_alive(self):
@@ -202,8 +229,22 @@ class ReplayScheduler(Scheduler):
         self.playpause.update_button_sprite(False)
 
 
+    def toggle_mute(self):
+        self._muted = not self._muted
+        self.mute_button.update_mute_state(self._muted)
+        self._enforce_mute()
+
+    def _enforce_mute(self):
+        if 'communications' in self.plugins:
+            player = getattr(self.plugins['communications'], 'player', None)
+            if player is not None:
+                player.volume = 0.0 if self._muted else 1.0
+
     def toggle_playpause(self):
         if self.is_paused:
+            # If at the end, restart from beginning
+            if self.replay_time >= self.logreader.session_duration:
+                self.set_target_time(0)
             self.resume_playback()
             self.target_time = self.logreader.session_duration
         else:
@@ -212,16 +253,16 @@ class ReplayScheduler(Scheduler):
 
 
     def slider_control_update(self):
-        # Update the position of the slider if replay time changed
-        if self.slider.groove_value != self.replay_time and not self.sliding:
-            self.slider.groove_value = self.replay_time
-            self.slider.set_groove_position()
-
         # At THE FIRST slider mouse press, save the play/pause state, then pause
         if self.slider.hover and not self.sliding:
             self.sliding = True
             self._was_paused_before_slide = self.is_paused
             self.pause_playback()
+
+        # Update the position of the slider if replay time changed (only when not interacting)
+        if self.slider.groove_value != self.replay_time and not self.sliding:
+            self.slider.groove_value = self.replay_time
+            self.slider.set_groove_position()
 
         # At THE FIRST slider mouse release, navigate to the selected time
         # then restore the previous play/pause state

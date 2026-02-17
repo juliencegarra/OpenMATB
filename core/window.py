@@ -54,8 +54,6 @@ class Window(Window):
 
         self.on_key_press_replay = None # used by the replay
 
-        self.display_session_id()
-
 
     def display_session_id(self):
         # Display the session ID if needed at window instanciation

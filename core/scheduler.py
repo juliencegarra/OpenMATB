@@ -20,12 +20,13 @@ class Scheduler:
     This class manages events execution.
     """
 
-    def __init__(self):
+    def __init__(self, scenario_path=None):
         with open('VERSION', 'r') as f:
             logger.log_manual_entry(f.read().strip(), key='version')
 
         self.clock = Clock('main')
         self.scenario_time = 0
+        self.scenario_path = scenario_path
 
         # Create the event loop
         self.clock.schedule(self.update)
@@ -34,10 +35,12 @@ class Scheduler:
         self.joystick = joystick
         self.set_scenario()
 
+        Window.MainWindow.display_session_id()
         self.event_loop.run()
 
     def set_scenario(self, events = None):
-        self.scenario = Scenario(events)
+        scenario_path = self.scenario_path if events is None else None
+        self.scenario = Scenario(events, scenario_path=scenario_path)
 
         self.events = self.scenario.events
         self.plugins = self.scenario.plugins

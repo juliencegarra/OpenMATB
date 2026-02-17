@@ -25,17 +25,29 @@ language.install()
 from core import Scheduler, ReplayScheduler
 from core.constants import REPLAY_MODE
 from core.window import Window
+from core.selector import FileSelector
 
 
 class OpenMATB:
     def __init__(self):
         # The MATB window must be borderless (for non-fullscreen mode)
-        Window(style=Window.WINDOW_STYLE_DIALOG, resizable = True)
+        Window(style=Window.WINDOW_STYLE_DIALOG, resizable=True)
+
+        # Skip the selector when a replay session ID is given via command line
+        show_selector = not (REPLAY_MODE and len(sys.argv) > 2)
+
+        if show_selector:
+            mode = 'replay' if REPLAY_MODE else 'scenario'
+            selected = FileSelector(Window.MainWindow, mode).run()
+            if selected is None:
+                sys.exit(0)
+        else:
+            selected = None
 
         if REPLAY_MODE:
-            ReplayScheduler()
+            ReplayScheduler(session_path=selected)
         else:
-            Scheduler()
+            Scheduler(scenario_path=selected)
 
 if __name__ == '__main__':
     app = OpenMATB()
