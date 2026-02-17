@@ -38,6 +38,7 @@ class ReplayScheduler(Scheduler):
         self.logreader = None
         self.target_time = 0
         self._executed_key_indices = set()
+        self.keys_history = []
 
         self.set_media_buttons()
 
@@ -286,6 +287,7 @@ class ReplayScheduler(Scheduler):
         self.clock.unschedule(self.update)
 
         self._executed_key_indices = set()
+        self.keys_history = []
         self.clock.set_time(0)
         self.clock.tick()
         self.scenario_time = 0
@@ -298,30 +300,22 @@ class ReplayScheduler(Scheduler):
 
 
     def emulate_keyboard_inputs(self):
-        self.keys_history = []
-
         for idx, input in enumerate(self.logreader.keyboard_inputs):
             input_time = float(input['scenario_time'])
-            # display actions from 0.5 secs before that time
-            if input_time > self.scenario_time - 0.5 and input_time <= self.scenario_time:
 
-                # execute actions within the current tick window, only once per input
-                if idx not in self._executed_key_indices and input_time > self.scenario_time - CLOCK_STEP:
-                    self._executed_key_indices.add(idx)
-                    for plugin_name, plugin in self.plugins.items():
-                        plugin.do_on_key(input['address'], input['value'], True)
+            # Execute actions within the current tick window, only once per input
+            if idx not in self._executed_key_indices and input_time > self.scenario_time - CLOCK_STEP and input_time <= self.scenario_time:
+                self._executed_key_indices.add(idx)
+                for plugin_name, plugin in self.plugins.items():
+                    plugin.do_on_key(input['address'], input['value'], True)
 
                 cmd = f"{input['address']} ({input['value']})"
-                if len(self.keys_history) > 0 and cmd != self.keys_history[-1]:
+                if len(self.keys_history) == 0 or cmd != self.keys_history[-1]:
                     self.keys_history.append(cmd)
-                elif len(self.keys_history) == 0:
-                    self.keys_history.append(cmd)
-
                 if len(self.keys_history) > 30:
                     del self.keys_history[0]
 
-
-        history_str = f"<strong>Keyboard history:\n</strong>" + '<br>'.join([kh for kh in self.keys_history])
+        history_str = f"<strong>Keyboard history:\n</strong>" + '<br>'.join(self.keys_history)
         self.key_widget.set_text(history_str)
 
 
