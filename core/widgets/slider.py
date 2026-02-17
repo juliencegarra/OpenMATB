@@ -12,7 +12,8 @@ import math
 
 class Slider(AbstractWidget):
     def __init__(self, name, container, title, label_min, label_max,
-                 value_min, value_max, value_default, rank, draw_order=1):
+                 value_min, value_max, value_default, rank, draw_order=1,
+                 interactive=True):
         super().__init__(name, container)
 
         self.title = title
@@ -39,8 +40,9 @@ class Slider(AbstractWidget):
         self.set_slider_thumb_and_groove()
         self.show()
 
-        Window.MainWindow.push_handlers(self.on_mouse_press, self.on_mouse_drag,
-                               self.on_mouse_release)
+        if interactive:
+            Window.MainWindow.push_handlers(self.on_mouse_press, self.on_mouse_drag,
+                                   self.on_mouse_release)
 
 
     def set_sub_containers(self, slider_width=0.6):
@@ -109,9 +111,10 @@ class Slider(AbstractWidget):
 
 
     def set_value_label(self):
-        if str(self.groove_value) == self.vertex['value'].text:
+        display_value = str(int(round(self.groove_value)))
+        if display_value == self.vertex['value'].text:
             return
-        self.vertex['value'].text = str(self.groove_value)
+        self.vertex['value'].text = display_value
 
 
     #TODO: hide cursor when finished
@@ -145,7 +148,7 @@ class Slider(AbstractWidget):
         if math.isclose(val, self.groove_value):
             return
         self.groove_value = val
-        self.logger.record_state(self.name, 'value', str(int(round(val))))
+        self.logger.record_state(self.name, 'value', str(val))
         self.update()
 
 

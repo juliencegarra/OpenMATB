@@ -4,7 +4,7 @@
 
 from plugins.abstractplugin import BlockingPlugin
 from core.widgets import Simpletext, Slider, Frame
-from core.constants import FONT_SIZES as F, PATHS as P, COLORS as C
+from core.constants import FONT_SIZES as F, PATHS as P, COLORS as C, REPLAY_MODE
 from re import match as regex_match
 
 class Genericscales(BlockingPlugin):
@@ -59,7 +59,8 @@ class Genericscales(BlockingPlugin):
                                 container=slider_container,
                                 title=title, label_min=label_min, label_max=label_max,
                                 value_min=value_min, value_max=value_max,
-                                value_default=value_default, rank=l, draw_order=self.m_draw+3)
+                                value_default=value_default, rank=l, draw_order=self.m_draw+3,
+                                interactive=not REPLAY_MODE)
 
 
     def refresh_widgets(self):

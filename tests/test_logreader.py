@@ -2,7 +2,7 @@
 
 from unittest.mock import patch, MagicMock
 from core.event import Event
-from core.logreader import LogReader, IGNORE_PLUGINS
+from core.logreader import LogReader, IGNORE_PLUGINS, BLOCKING_THRESHOLD
 
 
 def _make_logreader(**overrides):
@@ -17,8 +17,12 @@ def _make_logreader(**overrides):
     lr.start_sec = 0
     lr.end_sec = 0
     lr.duration_sec = 0
+    lr.session_duration = 0
     lr.keyboard_inputs = []
     lr.joystick_inputs = []
+    lr.blocking_segments = []
+    lr._bp_replay_times = [0.0]
+    lr._bp_scenario_times = [0.0]
     lr.__dict__.update(overrides)
     return lr
 
@@ -194,17 +198,65 @@ class TestReloadSession:
         assert len(lr.states) == 1
         assert lr.states[0]['value'] == (110.0,)
 
+    def test_session_duration_from_logtime(self, tmp_path):
+        """session_duration is based on normalized logtime, not scenario_time."""
+        csv_file = tmp_path / 'session.csv'
+        csv_file.write_text(
+            'logtime,scenario_time,type,module,address,value\n'
+            '100.0,0.0,event,sysmon,self,start\n'
+            '110.0,10.0,event,sysmon,self,stop\n'
+        )
+        lr = _make_logreader(session_file_path=csv_file)
+        lr.reload_session()
+        assert lr.session_duration == 10.0  # 110 - 100
+
+    def test_normalized_logtime_in_inputs(self, tmp_path):
+        """Inputs have normalized_logtime field."""
+        csv_file = tmp_path / 'session.csv'
+        csv_file.write_text(
+            'logtime,scenario_time,type,module,address,value\n'
+            '100.0,0.0,event,sysmon,self,start\n'
+            '105.0,5.0,input,keyboard,F1,press\n'
+        )
+        lr = _make_logreader(session_file_path=csv_file)
+        lr.reload_session()
+        assert lr.keyboard_inputs[0]['normalized_logtime'] == 5.0
+
+    def test_instructions_events_not_ignored(self, tmp_path):
+        """Instructions events are now included (not in IGNORE_PLUGINS)."""
+        csv_file = tmp_path / 'session.csv'
+        csv_file.write_text(
+            'logtime,scenario_time,type,module,address,value\n'
+            '0.0,0.0,event,sysmon,self,start\n'
+            '5.0,5.0,event,instructions,self,start\n'
+            '10.0,10.0,event,sysmon,self,stop\n'
+        )
+        lr = _make_logreader(session_file_path=csv_file)
+        lr.reload_session()
+        assert any('instructions' in c for c in lr.contents)
+
+    def test_genericscales_events_not_ignored(self, tmp_path):
+        """Genericscales events are now included (not in IGNORE_PLUGINS)."""
+        csv_file = tmp_path / 'session.csv'
+        csv_file.write_text(
+            'logtime,scenario_time,type,module,address,value\n'
+            '0.0,0.0,event,sysmon,self,start\n'
+            '5.0,5.0,event,genericscales,self,start\n'
+            '10.0,10.0,event,sysmon,self,stop\n'
+        )
+        lr = _make_logreader(session_file_path=csv_file)
+        lr.reload_session()
+        assert any('genericscales' in c for c in lr.contents)
+
 
 # ── IGNORE_PLUGINS constant ─────────────────────
 
 
 class TestIgnorePlugins:
     def test_contains_expected_plugins(self):
-        """Blacklist includes hardware and UI-only plugins."""
+        """Blacklist includes hardware-only plugins."""
         assert 'labstreaminglayer' in IGNORE_PLUGINS
         assert 'parallelport' in IGNORE_PLUGINS
-        assert 'genericscales' in IGNORE_PLUGINS
-        assert 'instructions' in IGNORE_PLUGINS
 
     def test_does_not_contain_logic_plugins(self):
         """Core logic plugins are not blacklisted."""
@@ -212,3 +264,145 @@ class TestIgnorePlugins:
         assert 'track' not in IGNORE_PLUGINS
         assert 'resman' not in IGNORE_PLUGINS
         assert 'communications' not in IGNORE_PLUGINS
+
+    def test_blocking_plugins_not_ignored(self):
+        """Blocking plugins (instructions, genericscales) are no longer ignored."""
+        assert 'genericscales' not in IGNORE_PLUGINS
+        assert 'instructions' not in IGNORE_PLUGINS
+
+
+# ── Blocking segment detection ───────────────────
+
+
+class TestBlockingSegmentDetection:
+    def test_no_segments_normal_session(self, tmp_path):
+        """No blocking segments in a session without frozen scenario_time."""
+        csv_file = tmp_path / 'session.csv'
+        csv_file.write_text(
+            'logtime,scenario_time,type,module,address,value\n'
+            '0.0,0.0,event,sysmon,self,start\n'
+            '5.0,5.0,event,sysmon,self,pause\n'
+            '10.0,10.0,event,sysmon,self,stop\n'
+        )
+        lr = _make_logreader(session_file_path=csv_file)
+        lr.reload_session()
+        assert lr.blocking_segments == []
+
+    def test_detects_blocking_segment(self, tmp_path):
+        """Detects a period where scenario_time is frozen."""
+        csv_file = tmp_path / 'session.csv'
+        csv_file.write_text(
+            'logtime,scenario_time,type,module,address,value\n'
+            '0.0,0.0,event,sysmon,self,start\n'
+            '5.0,5.0,event,instructions,self,start\n'
+            '5.1,5.0,input,keyboard,SPACE,press\n'
+            '8.0,5.0,input,keyboard,SPACE,press\n'
+            '12.0,5.0,input,keyboard,SPACE,press\n'
+            '12.1,5.1,event,sysmon,self,resume\n'
+            '20.0,13.0,event,sysmon,self,stop\n'
+        )
+        lr = _make_logreader(session_file_path=csv_file)
+        lr.reload_session()
+        assert len(lr.blocking_segments) == 1
+        lt_start, lt_end, frozen_st = lr.blocking_segments[0]
+        assert frozen_st == 5.0
+        assert lt_start == 5.0  # normalized logtime of first frozen row
+        assert lt_end == 12.0   # normalized logtime of last frozen row
+
+    def test_ignores_short_same_time_groups(self, tmp_path):
+        """Groups of same scenario_time shorter than threshold are not blocking."""
+        csv_file = tmp_path / 'session.csv'
+        csv_file.write_text(
+            'logtime,scenario_time,type,module,address,value\n'
+            '0.0,0.0,event,sysmon,self,start\n'
+            '5.0,5.0,event,sysmon,light-1-color,green\n'
+            '5.1,5.0,event,sysmon,light-2-color,red\n'
+            '10.0,10.0,event,sysmon,self,stop\n'
+        )
+        lr = _make_logreader(session_file_path=csv_file)
+        lr.reload_session()
+        assert lr.blocking_segments == []
+
+    def test_multiple_blocking_segments(self, tmp_path):
+        """Detects multiple blocking segments in one session."""
+        csv_file = tmp_path / 'session.csv'
+        csv_file.write_text(
+            'logtime,scenario_time,type,module,address,value\n'
+            '0.0,0.0,event,sysmon,self,start\n'
+            # First block: scenario_time frozen at 5.0, logtime 5.0-15.0
+            '5.0,5.0,event,instructions,self,start\n'
+            '10.0,5.0,input,keyboard,SPACE,press\n'
+            '15.0,5.0,input,keyboard,SPACE,press\n'
+            # Normal
+            '15.1,5.1,event,sysmon,self,resume\n'
+            '25.0,15.0,event,sysmon,self,pause\n'
+            # Second block: scenario_time frozen at 15.0, logtime 25.0-35.0
+            '25.0,15.0,event,genericscales,self,start\n'
+            '30.0,15.0,input,keyboard,SPACE,press\n'
+            '35.0,15.0,input,keyboard,SPACE,press\n'
+            '35.1,15.1,event,sysmon,self,resume\n'
+            '45.0,25.0,event,sysmon,self,stop\n'
+        )
+        lr = _make_logreader(session_file_path=csv_file)
+        lr.reload_session()
+        assert len(lr.blocking_segments) == 2
+
+
+# ── replay_to_scenario_time mapping ──────────────
+
+
+class TestReplayToScenarioTime:
+    def test_identity_no_blocks(self):
+        """Without blocking segments, replay_time == scenario_time."""
+        lr = _make_logreader()
+        lr.blocking_segments = []
+        lr._build_replay_mapping()
+        assert lr.replay_to_scenario_time(0.0) == 0.0
+        assert lr.replay_to_scenario_time(5.0) == 5.0
+        assert lr.replay_to_scenario_time(100.0) == 100.0
+
+    def test_frozen_during_block(self):
+        """scenario_time is frozen during a blocking segment."""
+        lr = _make_logreader()
+        lr.blocking_segments = [(5.0, 15.0, 5.0)]
+        lr._build_replay_mapping()
+        # Before block
+        assert lr.replay_to_scenario_time(3.0) == 3.0
+        # At block start
+        assert lr.replay_to_scenario_time(5.0) == 5.0
+        # During block
+        assert lr.replay_to_scenario_time(10.0) == 5.0
+        # At block end
+        assert lr.replay_to_scenario_time(15.0) == 5.0
+
+    def test_resumes_after_block(self):
+        """scenario_time resumes advancing after a blocking segment."""
+        lr = _make_logreader()
+        lr.blocking_segments = [(5.0, 15.0, 5.0)]
+        lr._build_replay_mapping()
+        # Just after block
+        assert lr.replay_to_scenario_time(15.1) == 5.1
+        assert lr.replay_to_scenario_time(20.0) == 10.0
+
+    def test_multiple_blocks(self):
+        """Mapping handles multiple blocking segments correctly."""
+        lr = _make_logreader()
+        lr.blocking_segments = [(5.0, 15.0, 5.0), (25.0, 35.0, 15.0)]
+        lr._build_replay_mapping()
+        # Before first block
+        assert lr.replay_to_scenario_time(3.0) == 3.0
+        # During first block
+        assert lr.replay_to_scenario_time(10.0) == 5.0
+        # Between blocks
+        assert lr.replay_to_scenario_time(20.0) == 10.0
+        # During second block
+        assert lr.replay_to_scenario_time(30.0) == 15.0
+        # After second block
+        assert lr.replay_to_scenario_time(40.0) == 20.0
+
+    def test_zero_time(self):
+        """replay_time=0 always returns scenario_time=0."""
+        lr = _make_logreader()
+        lr.blocking_segments = [(5.0, 15.0, 5.0)]
+        lr._build_replay_mapping()
+        assert lr.replay_to_scenario_time(0.0) == 0.0
