@@ -3,13 +3,12 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 import sys
-from pyglet import font, image
+from pyglet import font, image, sprite
 from pyglet.canvas import get_display
 from pyglet.window import Window, key as winkey
 from pyglet.graphics import Batch
 from pyglet.gl import GL_POLYGON, glLineWidth
 from pyglet.text import Label
-from pyglet import image, sprite
 from core.container import Container
 from core.constants import COLORS as C, FONT_SIZES as F, Group as G, PLUGIN_TITLE_HEIGHT_PROPORTION
 from core.constants import PATHS as P
