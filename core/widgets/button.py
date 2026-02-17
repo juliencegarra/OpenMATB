@@ -7,8 +7,6 @@ from core.constants import COLORS as C, FONT_SIZES as F, PATHS as P
 from core.constants import Group as G
 from pyglet.text import Label
 from pyglet import image, sprite
-from pyglet.gl import GL_LINES
-from core.rendering import GL_QUADS
 from core.window import Window
 
 class Button(AbstractWidget):
@@ -23,11 +21,10 @@ class Button(AbstractWidget):
         self.active_area = self.container.get_reduced(1-self.padding, 1-self.padding)
         button_vertice = self.vertice_border(self.active_area)
 
-        self.add_vertex('background', 4, GL_QUADS, G(self.m_draw+self.m_draw+1),
-                        ('v2f/static', button_vertice), ('c4B/static', (C['DARKGREY']*4)))
-        self.add_vertex('border', 8, GL_LINES, G(self.m_draw+self.m_draw+3),
-                        ("v2f/static", self.vertice_strip(button_vertice)),
-                        ('c4B/static', (C['BLACK']*8)))
+        self.add_quad('background', G(self.m_draw+self.m_draw+1),
+                      button_vertice, C['DARKGREY']*4)
+        self.add_lines('border', G(self.m_draw+self.m_draw+3),
+                       self.vertice_strip(button_vertice), C['BLACK']*8)
 
         Window.MainWindow.push_handlers(self.on_mouse_press, self.on_mouse_release)
 

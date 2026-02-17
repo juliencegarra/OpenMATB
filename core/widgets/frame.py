@@ -5,7 +5,6 @@
 from core.container import Container
 from core.constants import COLORS as C, Group as G
 from core.widgets import AbstractWidget
-from core.rendering import GL_QUADS
 
 class Frame(AbstractWidget):
     '''
@@ -19,12 +18,9 @@ class Frame(AbstractWidget):
         self.border_thickness = border_thickness
 
         if fill_color is not None:
-            self.add_vertex('fillarea', 4, GL_QUADS, G(draw_order),
-                            ('v2f/static', (0,)*8),
-                            ('c4B/static', (fill_color*4)))
+            self.add_quad('fillarea', G(draw_order), (0,)*8, fill_color*4)
 
-        self.add_vertex('border', 16, GL_QUADS, G(draw_order+1), ('v2f/dynamic', (0,)*32),
-                        ('c4B/dynamic', (border_color * 16)))
+        self.add_quad('border', G(draw_order+1), (0,)*32, border_color * 16)
 
 
     def get_border_vertices(self):
@@ -51,7 +47,7 @@ class Frame(AbstractWidget):
         self.logger.record_state(self.name, 'border_thickness', thickness)
 
         if self.is_visible():
-            self.on_batch['border'].vertices = self.get_border_vertices()
+            self.on_batch['border'].position[:] = self.get_border_vertices()
 
 
     def get_border_thickness(self):
@@ -76,11 +72,10 @@ class Frame(AbstractWidget):
 
         if 'border' in self.on_batch:
             v =  self.get_border_vertices() if self.is_visible() else (0,)*32
-            self.on_batch['border'].vertices = v
+            self.on_batch['border'].position[:] = v
 
         if 'fillarea' in self.on_batch:
             v = self.vertice_border(self.container) if self.is_visible() else (0,)*8
-            self.on_batch['fillarea'].vertices = v
+            self.on_batch['fillarea'].position[:] = v
 
         self.logger.record_state(self.name, 'visibility', visible)
-

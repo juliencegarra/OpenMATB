@@ -26,17 +26,13 @@ class Radio(AbstractWidget):
         # Arrows vertices #
         # Only a change in vertices is needed to show/hide arrows --> (0, 0, 0...) = hide
         for name, info in self.arrows.items():
-            self.add_vertex(name, 3, GL_TRIANGLES, G(self.m_draw+2),
-                            ('v2f/dynamic', (0, 0, 0, 0, 0, 0)),
-                            ('c4B/static', (C['BLACK']*3)))
+            self.add_triangles(name, G(self.m_draw+2), (0, 0, 0, 0, 0, 0), C['BLACK']*3)
 
 
         # Feedback vertices #
         # A frame slightly smaller than the radio container
         vertices = self.vertice_line_border(container.get_reduced(0.6,0.9))
-        self.add_vertex('feedback_lines', 8, GL_LINES, G(self.m_draw+3),
-                        ('v2f/dynamic', vertices),
-                        ('c4B/dynamic', (C['BACKGROUND'] * 8)))  # Background color = invisible
+        self.add_lines('feedback_lines', G(self.m_draw+3), vertices, C['BACKGROUND'] * 8)
         self.show()
 
     def show(self):
@@ -56,7 +52,7 @@ class Radio(AbstractWidget):
     def hide_arrows(self):
         for name, info in self.arrows.items():
             v = (0, 0)*3  # Get an invisible vertice (hide)
-            self.on_batch[name].vertices = v
+            self.on_batch[name].position[:] = v
         self.is_selected = False
         self.logger.record_state(self.name, 'selected', False)
 
@@ -64,7 +60,7 @@ class Radio(AbstractWidget):
     def show_arrows(self):
         for name, info in self.arrows.items():
             v = self.get_triangle_vertice(x_ratio=info['x_ratio'], angle=info['angle'])
-            self.on_batch[name].vertices = v
+            self.on_batch[name].position[:] = v
         self.is_selected = True
         self.logger.record_state(self.name, 'selected', True)
 

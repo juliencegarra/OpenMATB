@@ -2,12 +2,10 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-from pyglet.gl import GL_LINES, GL_TRIANGLES
 from core.container import Container
 from core.constants import COLORS as C, FONT_SIZES as F
 from core.constants import Group as G
 from core.widgets.abstractwidget import AbstractWidget
-from core.rendering import GL_QUADS
 from pyglet.text import Label
 
 
@@ -29,10 +27,10 @@ class Scale(AbstractWidget):
                                      color=C['BLACK'], batch=None, group=G(self.m_draw+1))
 
         scale_vertice = self.vertice_border(self.container)
-        self.add_vertex('background', 4, GL_QUADS, G(self.m_draw+self.m_draw+1), ('v2f/static', scale_vertice),
-                                     ('c3B/static', ((255, 255, 255)*4)))
-        self.add_vertex('border', 8, GL_LINES, G(self.m_draw+self.m_draw+3), ("v2f/static", self.vertice_strip(scale_vertice)),
-                                  ('c4B/static', (C['BLACK']*8)))
+        self.add_quad('background', G(self.m_draw+self.m_draw+1), scale_vertice,
+                      (255, 255, 255, 255)*4)
+        self.add_lines('border', G(self.m_draw+self.m_draw+3),
+                       self.vertice_strip(scale_vertice), C['BLACK']*8)
 
         # Compute widths
         self.tick_width = self.container.w * 0.25
@@ -47,12 +45,10 @@ class Scale(AbstractWidget):
                                                             # the right side of the scale
         self.feedback_height = 0.12 * self.container.h
 
-        self.add_vertex('ticks' , len(v)//2, GL_LINES, G(self.m_draw+3), ('v2f/static', v),
-                        ('c4B/static', (C['BLACK']*(len(v)//2))))
-        self.add_vertex('feedback', 4, GL_QUADS, G(self.m_draw+2), ('v2f/dynamic', (0, 0, 0, 0, 0, 0, 0, 0)),
-                        ('c4B/dynamic', (C['GREEN'] * 4)))
-        self.add_vertex('arrow', 3, GL_TRIANGLES, G(self.m_draw+2), ('v2f/stream', self.return_arrow_vertice(arrow_position)),
-                        ('c4B/static', (C['BLACK']*3)))
+        self.add_lines('ticks', G(self.m_draw+3), v, C['BLACK']*(len(v)//2))
+        self.add_quad('feedback', G(self.m_draw+2), (0, 0, 0, 0, 0, 0, 0, 0), C['GREEN'] * 4)
+        self.add_triangles('arrow', G(self.m_draw+2),
+                           self.return_arrow_vertice(arrow_position), C['BLACK']*3)
 
 
     def return_arrow_vertice(self, position):
@@ -71,7 +67,7 @@ class Scale(AbstractWidget):
         v = ((self.container.x1, self.container.y2 + h, self.container.x2, self.container.y2 + h,
              self.container.x2, self.container.y2, self.container.x1, self.container.y2)
              if visible else (0, 0)*4)
-        self.on_batch['feedback'].vertices = v
+        self.on_batch['feedback'].position[:] = v
         self.logger.record_state(self.name, 'feedback_visible', visible)
 
 
@@ -94,7 +90,7 @@ class Scale(AbstractWidget):
         if position == self.get_arrow_position():
             return
         self.position = position
-        self.on_batch['arrow'].vertices = self.return_arrow_vertice(self.position)
+        self.on_batch['arrow'].position[:] = self.return_arrow_vertice(self.position)
         self.logger.record_state(self.name, 'arrow', self.position)
 
 

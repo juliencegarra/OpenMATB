@@ -17,30 +17,28 @@ class Schedule(AbstractWidget):
                                       anchor_x='center', anchor_y='top', color=C['BLACK'], group=G(1))
 
         v = [self.container.cx, self.container.y1, self.container.cx, self.container.y2]
-        self.add_vertex('line', 2, GL_LINES, G(self.m_draw+1), ('v2f/static', v),
-                        ('c4B/static', (C['GREY']*2)))
+        self.add_lines('line', G(self.m_draw+1), v, C['GREY']*2)
 
-        self.add_vertex('top_bound', 4, GL_QUADS, G(self.m_draw+3),
-                        ('v2f/static', (self.container.cx - self.bound_radius,
-                                            self.container.y1+self.bound_radius*2,
-                                        self.container.cx + self.bound_radius,
-                                            self.container.y1+self.bound_radius*2,
-                                        self.container.cx + self.bound_radius, self.container.y1,
-                                        self.container.cx - self.bound_radius, self.container.y1)),
-                        ('c4B/static', (C['GREY'] * 4)))
+        self.add_quad('top_bound', G(self.m_draw+3),
+                      (self.container.cx - self.bound_radius,
+                           self.container.y1+self.bound_radius*2,
+                       self.container.cx + self.bound_radius,
+                           self.container.y1+self.bound_radius*2,
+                       self.container.cx + self.bound_radius, self.container.y1,
+                       self.container.cx - self.bound_radius, self.container.y1),
+                      C['GREY'] * 4)
 
-        self.add_vertex('bottom_bound', 4, GL_QUADS, G(self.m_draw+3),
-                        ('v2f/static', (self.container.cx - self.bound_radius,
-                                            self.container.y2 - self.bound_radius * 2,
-                                        self.container.cx + self.bound_radius,
-                                            self.container.y2 - self.bound_radius * 2,
-                                        self.container.cx + self.bound_radius, self.container.y2,
-                                        self.container.cx - self.bound_radius, self.container.y2)),
-                        ('c4B/static', (C['GREY'] * 4)))
+        self.add_quad('bottom_bound', G(self.m_draw+3),
+                      (self.container.cx - self.bound_radius,
+                           self.container.y2 - self.bound_radius * 2,
+                       self.container.cx + self.bound_radius,
+                           self.container.y2 - self.bound_radius * 2,
+                       self.container.cx + self.bound_radius, self.container.y2,
+                       self.container.cx - self.bound_radius, self.container.y2),
+                      C['GREY'] * 4)
 
         for g, t in enumerate(['running', 'manual']):
-            self.add_vertex(t, 4, GL_QUADS, G(self.m_draw+g+2),
-                            ('v2f/dynamic', (0, 0)*4), ('c4B/dynamic', (C['GREY'] * 4)))
+            self.add_quad(t, G(self.m_draw+g+2), (0, 0)*4, C['GREY'] * 4)
 
 
     def set_top_bound_color(self, bound_color):
@@ -62,8 +60,8 @@ class Schedule(AbstractWidget):
             y1, y2 = self.sec_to_y(start, max_sec), self.sec_to_y(end, max_sec)
             v.extend([self.container.cx - x_radius, y1, self.container.cx + x_radius, y1,
                       self.container.cx + x_radius, y2, self.container.cx - x_radius, y2])
-            self.on_batch[time_mode].resize(len(v)//2)    # Resize the vertex
-            self.on_batch[time_mode].vertices = v         # Inform new vertices
+            self.resize_quad(time_mode, len(v)//2)
+            self.on_batch[time_mode].position[:] = v
             self.on_batch[time_mode].colors[:] = list(color) * (len(v)//2)
 
 

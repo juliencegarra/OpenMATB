@@ -14,123 +14,7 @@ from core.constants import BFLIM
 from core.utils import get_conf_value
 from core.window import Window
 from core.rendering import (get_program, get_group, quad_indices, polygon_indices,
-                             line_loop_to_lines, colors_3to4,
-                             expand_colors_for_line_loop,
-                             GL_POLYGON, GL_QUADS, GL_LINE_LOOP)
-
-
-class VertexListCompat:
-    """Wrapper so that .vertices and .colors work like pyglet 1.5."""
-    def __init__(self, vlist):
-        self._vlist = vlist
-
-    @property
-    def vertices(self):
-        return list(self._vlist.position[:])
-
-    @vertices.setter
-    def vertices(self, value):
-        self._vlist.position[:] = value
-
-    @property
-    def colors(self):
-        return list(self._vlist.colors[:])
-
-    @colors.setter
-    def colors(self, value):
-        self._vlist.colors[:] = value
-
-    def delete(self):
-        self._vlist.delete()
-
-    def resize(self, count):
-        self._vlist.resize(count)
-
-
-def _parse_format(fmt_string):
-    """Parse a pyglet 1.5 vertex format string like 'v2f/static' or 'c4B/dynamic'.
-
-    Returns (prefix, count, type_char, usage) e.g. ('v', 2, 'f', 'static').
-    """
-    parts = fmt_string.split('/')
-    fmt = parts[0]
-    usage = parts[1] if len(parts) > 1 else 'static'
-
-    # Parse prefix (v, c), count (2, 3, 4), type (f, B, etc.)
-    prefix = fmt[0]
-    count = int(fmt[1])
-    type_char = fmt[2] if len(fmt) > 2 else 'f'
-    return prefix, count, type_char, usage
-
-
-def _build_vertex_list(batch, count, mode, group, data_pairs, program):
-    """Translate a legacy batch.add() call to pyglet 2.x API.
-
-    Args:
-        batch: pyglet.graphics.Batch
-        count: number of vertices
-        mode: GL primitive mode (GL_LINES, GL_TRIANGLES, or sentinel string)
-        group: pyglet Group
-        data_pairs: list of (format_string, data) tuples
-        program: ShaderProgram
-
-    Returns:
-        VertexListCompat wrapping the created vertex list
-    """
-    # Extract vertex and color data from the legacy format tuples
-    positions = None
-    colors = None
-    for fmt_str, data in data_pairs:
-        prefix, components, type_char, usage = _parse_format(fmt_str)
-        if prefix == 'v':
-            positions = data
-        elif prefix == 'c':
-            if components == 3:
-                colors = colors_3to4(data, count)
-            else:
-                colors = data
-
-    # Determine if we need indexed rendering and what the real GL mode is
-    need_indexed = False
-    indices = None
-    real_mode = mode
-
-    if mode == GL_POLYGON:
-        indices = polygon_indices(count)
-        real_mode = GL_TRIANGLES
-        need_indexed = True
-    elif mode == GL_QUADS:
-        indices = quad_indices(count)
-        real_mode = GL_TRIANGLES
-        need_indexed = True
-    elif mode == GL_LINE_LOOP:
-        # Convert LINE_LOOP to GL_LINES by duplicating vertices
-        new_positions, new_count = line_loop_to_lines(positions)
-        new_colors = expand_colors_for_line_loop(colors, count)
-        positions = new_positions
-        colors = new_colors
-        count = new_count
-        real_mode = GL_LINES
-        need_indexed = False
-
-    # Wrap the plain Group in a ShaderGroup for proper shader binding
-    shader_group = get_group(order=group.order, parent=group.parent)
-
-    # Build the vertex list
-    if need_indexed:
-        vlist = program.vertex_list_indexed(
-            count, real_mode, indices, batch=batch, group=shader_group,
-            position=('f', positions),
-            colors=('Bn', colors)
-        )
-    else:
-        vlist = program.vertex_list(
-            count, real_mode, batch=batch, group=shader_group,
-            position=('f', positions),
-            colors=('Bn', colors)
-        )
-
-    return VertexListCompat(vlist)
+                             line_loop_to_lines, expand_colors_for_line_loop)
 
 
 class AbstractWidget:
@@ -185,6 +69,27 @@ class AbstractWidget:
             self.visible = False
 
 
+    def add_quad(self, name, group, positions, colors):
+        """Register a quad (4 vertices, 2 triangles via indexing)."""
+        self.vertex[name] = ('quad', group, positions, colors)
+
+    def add_polygon(self, name, group, positions, colors):
+        """Register a convex polygon (fan triangulation via indexing)."""
+        self.vertex[name] = ('polygon', group, positions, colors)
+
+    def add_lines(self, name, group, positions, colors):
+        """Register GL_LINES segments."""
+        self.vertex[name] = ('lines', group, positions, colors)
+
+    def add_triangles(self, name, group, positions, colors):
+        """Register GL_TRIANGLES."""
+        self.vertex[name] = ('triangles', group, positions, colors)
+
+    def add_line_loop(self, name, group, positions, colors):
+        """Register a line loop (converted to GL_LINES on batch assignment)."""
+        self.vertex[name] = ('line_loop', group, positions, colors)
+
+
     def show_aoi_highlight(self):
         """Add some AOI vertices (frame and text)"""
         if self.container is None:
@@ -192,9 +97,8 @@ class AbstractWidget:
 
         if self.highlight_aoi is True:
             self.border_vertice = self.vertice_border(self.container)
-            self.add_vertex('highlight', 8, GL_LINES, G(self.m_draw+8),
-                            ('v2f/static', self.vertice_strip(self.border_vertice)),
-                            ('c4B/dynamic', (C['RED'] * 8)))
+            self.add_lines('highlight', G(self.m_draw+8),
+                           self.vertice_strip(self.border_vertice), C['RED'] * 8)
 
             self.vertex[self.name] = Label(self.name, x=self.container.x1 + 5,
                                            y=self.container.y1 - 15, color=C['RED'],
@@ -203,23 +107,41 @@ class AbstractWidget:
 
     def assign_vertices_to_batch(self):
         program = get_program()
-        for name, v_tuple in self.vertex.items():
-            if isinstance(v_tuple, Label) or isinstance(v_tuple, HTMLLabel) or isinstance(v_tuple, sprite.Sprite):
-                v_tuple.batch = Window.MainWindow.batch
+        batch = Window.MainWindow.batch
+        for name, v_def in self.vertex.items():
+            if isinstance(v_def, (Label, HTMLLabel, sprite.Sprite)):
+                v_def.batch = batch
             else:
-                # v_tuple is (count, mode, group, ('v2f/...', data), ('c4B/...', data), ...)
-                count = v_tuple[0]
-                mode = v_tuple[1]
-                group = v_tuple[2]
-                data_pairs = v_tuple[3:]
-                self.on_batch[name] = _build_vertex_list(
-                    Window.MainWindow.batch, count, mode, group, data_pairs, program
-                )
+                kind, group, positions, colors = v_def
+                sg = get_group(order=group.order, parent=group.parent)
+                count = len(positions) // 2
+
+                if kind == 'quad':
+                    indices = quad_indices(count)
+                    self.on_batch[name] = program.vertex_list_indexed(
+                        count, GL_TRIANGLES, indices, batch=batch, group=sg,
+                        position=('f', positions), colors=('Bn', colors))
+                elif kind == 'polygon':
+                    indices = polygon_indices(count)
+                    self.on_batch[name] = program.vertex_list_indexed(
+                        count, GL_TRIANGLES, indices, batch=batch, group=sg,
+                        position=('f', positions), colors=('Bn', colors))
+                elif kind == 'line_loop':
+                    new_pos, new_count = line_loop_to_lines(positions)
+                    new_colors = expand_colors_for_line_loop(colors, count)
+                    self.on_batch[name] = program.vertex_list(
+                        new_count, GL_LINES, batch=batch, group=sg,
+                        position=('f', new_pos), colors=('Bn', new_colors))
+                elif kind in ('lines', 'triangles'):
+                    gl_mode = GL_TRIANGLES if kind == 'triangles' else GL_LINES
+                    self.on_batch[name] = program.vertex_list(
+                        count, gl_mode, batch=batch, group=sg,
+                        position=('f', positions), colors=('Bn', colors))
 
 
     def empty_batch(self):
         for name in list(self.vertex.keys()):
-            if isinstance(self.vertex[name], Label) or isinstance(self.vertex[name], HTMLLabel):
+            if isinstance(self.vertex[name], (Label, HTMLLabel)):
                 self.vertex[name].batch = None
             else:
                 self.on_batch[name].delete()
@@ -228,8 +150,17 @@ class AbstractWidget:
         self.on_batch = dict()
 
 
-    def add_vertex(self, name, *args):
-        self.vertex[name] = args
+    def resize_quad(self, name, new_count):
+        """Resize an indexed quad vertex list, recalculating indices."""
+        vlist = self.on_batch[name]
+        new_indices = quad_indices(new_count)
+        vlist.resize(new_count, len(new_indices))
+        vlist.indices[:] = new_indices
+
+
+    def get_positions(self, name):
+        """Read vertex positions back as a list."""
+        return list(self.on_batch[name].position[:])
 
 
     def get_vertex_color(self, vertex_name):

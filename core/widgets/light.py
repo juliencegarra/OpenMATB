@@ -12,11 +12,10 @@ class Light(AbstractWidget):
         self.border_vertice = self.vertice_border(self.container)
         self.border_color = C['BLACK']
 
-        self.add_vertex('background', 4, GL_QUADS, G(self.m_draw), ('v2f/dynamic', self.border_vertice),
-                        ('c4B/dynamic', color*4))
+        self.add_quad('background', G(self.m_draw), self.border_vertice, color*4)
 
-        self.add_vertex('border', 8, GL_LINES, G(self.m_draw+1), ('v2f/static',
-                        self.vertice_strip(self.border_vertice)), ('c4B/static', self.border_color*8))
+        self.add_lines('border', G(self.m_draw+1),
+                       self.vertice_strip(self.border_vertice), self.border_color*8)
 
         self.vertex['label'] = Label(label.upper(), font_size=F['MEDIUM'], x=self.container.cx,
                                               y=self.container.cy, anchor_x='center', anchor_y='center',

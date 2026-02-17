@@ -15,11 +15,6 @@ from pyglet.gl import (GL_TRIANGLES, GL_LINES, GL_BLEND,
 from pyglet.graphics import Group
 from pyglet.graphics.shader import Shader, ShaderProgram
 
-# Sentinel constants for removed GL primitives
-GL_POLYGON = 'POLYGON'
-GL_QUADS = 'QUADS'
-GL_LINE_LOOP = 'LINE_LOOP'
-
 _VERTEX_SHADER_SRC = """#version 150 core
     in vec2 position;
     in vec4 colors;
