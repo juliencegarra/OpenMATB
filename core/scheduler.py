@@ -150,7 +150,7 @@ class Scheduler:
                     self.execute_plugins_methods(self.paused_plugins, methods=['pause', 'hide'])
 
         # In Replay mode: IT IS the play/pause button that manages the scenario resuming
-        elif active_blocking_plugin is None and not REPLAY_MODE:
+        elif active_blocking_plugin is None:
             if len(self.paused_plugins) > 0:
                 self.execute_plugins_methods(self.paused_plugins, methods=['show', 'resume'])
                 self.paused_plugins = list()

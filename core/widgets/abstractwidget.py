@@ -96,7 +96,7 @@ class AbstractWidget:
         for name in list(self.vertex.keys()):  # TODO: Complete and use show_vertex
             if isinstance(self.vertex[name], Label) or isinstance(self.vertex[name], HTMLLabel):
                 self.vertex[name].batch = None
-            else:
+            elif name in self.on_batch:
                 self.on_batch[name].delete()
                 del self.on_batch[name]
 
