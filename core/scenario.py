@@ -147,7 +147,7 @@ class Scenario:
                 errors.append(_('The (%s) plugin does not have a start command.') % plug_name)
 
             if self.plugins[plug_name].blocking is False:
-                if REPLAY_MODE == False:
+                if not REPLAY_MODE:
                     if not any(['stop' in e.command for e in self.get_plugin_events(plug_name)]):
                         errors.append(_('The (%s) plugin does not have a stop command.') % plug_name)
                 else:
@@ -180,7 +180,7 @@ class Scenario:
                 current_value, exists = self.get_parameters_value(e.plugin, e.command)
 
                 # If the current parameter exists in the plugin
-                if exists == True:
+                if exists:
                     method_args = None
 
                     # Check that the parameter has a verification method

@@ -100,7 +100,7 @@ def choices(l, k, randomize):
             shuffle(wl)
         nl.append(wl.pop())
 
-    if randomize == True:
+    if randomize:
         shuffle(nl)
     return nl
 

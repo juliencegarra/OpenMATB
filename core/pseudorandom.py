@@ -9,7 +9,7 @@ from core.logger import logger
 from rstr import xeger as rstrxeger
 
 
-SESSION_ID = logger.session_id if REPLAY_MODE == False else find_the_last_session_number()
+SESSION_ID = logger.session_id if not REPLAY_MODE else find_the_last_session_number()
 plugins_using_seed = ['communications', 'sysmon'] 		# Used to convert a plugin alias into 
 														# a unique integer
 

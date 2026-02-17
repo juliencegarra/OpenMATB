@@ -66,7 +66,7 @@ class Scheduler:
     def update(self, dt):
         if Window.MainWindow.modal_dialog is not None:
             return
-        elif errors.is_empty() == False:
+        elif not errors.is_empty():
             errors.show_errors()
 
         self.update_timers(dt)
@@ -122,11 +122,11 @@ class Scheduler:
             self.exit()
 
         # If the windows has been killed, exit the program
-        if Window.MainWindow.alive == False:
+        if not Window.MainWindow.alive:
             # Be careful to stop all the plugins in case they’re not
             # (so we have a stop time for each plugin, in case we must compute this somewhere)
             for p_name, plugin in self.plugins.items():
-                if plugin.alive == True:
+                if plugin.alive:
                     stop_event = Event(0, int(self.scenario_time), p_name, 'stop')
                     self.execute_one_event(stop_event)
             self.exit()
@@ -152,7 +152,7 @@ class Scheduler:
                     self.execute_plugins_methods(self.paused_plugins, methods=['pause', 'hide'])
 
         # In Replay mode: IT IS the play/pause button that manages the scenario resuming
-        elif active_blocking_plugin is None and REPLAY_MODE == False:
+        elif active_blocking_plugin is None and not REPLAY_MODE:
             if len(self.paused_plugins) > 0:
                 self.execute_plugins_methods(self.paused_plugins, methods=['show', 'resume'])
                 self.paused_plugins = list()
@@ -160,7 +160,7 @@ class Scheduler:
 
 
     def is_scenario_time_paused(self):
-        return self.pause_scenario_time == True
+        return self.pause_scenario_time
 
 
     def pause_scenario(self):
