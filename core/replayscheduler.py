@@ -227,16 +227,20 @@ class ReplayScheduler(Scheduler):
             self.slider.set_groove_position()
 
 
-        # At THE FIRST slider mouse press, pause scenario if not already paused
+        # At THE FIRST slider mouse press, save the play/pause state, then pause
         if self.slider.hover and not self.sliding:
             self.sliding = True
+            self._was_paused_before_slide = self.is_paused
             self.toggle_pause_to(True)
 
-        # At THE FIRST slider mouse release, get back the scenario in its previous state (play/pause)
-        # Record the target value (given by the groove position)
+        # At THE FIRST slider mouse release, navigate to the selected time
+        # then restore the previous play/pause state
         if not self.slider.hover and self.sliding:
             self.sliding = False
             self.set_target_time(self.slider.groove_value)
+            if not self._was_paused_before_slide:
+                self.resume_scenario()
+                self.target_time = self.logreader.end_sec
 
 
     def pause_if_clock_target_reached(self):
