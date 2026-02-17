@@ -3,7 +3,11 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 import math
-from pyglet.gl import GL_LINES, glLineWidth
+from pyglet.gl import (GL_LINES, GL_QUADS, GL_TRIANGLES, GL_POLYGON,
+                        GL_LINE_LOOP, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+                        GL_BLEND, GL_LINE_SMOOTH, GL_LINE_SMOOTH_HINT,
+                        GL_DONT_CARE, glLineWidth, glBlendFunc, glEnable,
+                        glHint)
 from pyglet.text import Label, HTMLLabel
 from core.constants import Group as G, COLORS as C, FONT_SIZES as F
 from pyglet import sprite
