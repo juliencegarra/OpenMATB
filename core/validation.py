@@ -6,6 +6,7 @@
 # The following methods, associated with the valid_type dictionary, allows to check that
 # each scenario parameter value is accepted.
 
+import re
 from core.constants import COLORS as C, PATHS as P
 from core.joystick import joykey
 from pyglet.window import key as winkey
