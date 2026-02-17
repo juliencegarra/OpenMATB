@@ -6,7 +6,7 @@ from pyglet.gl import GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_BLEND, glBlendFun
 from core.container import Container
 from core.constants import COLORS as C, Group as G, FONT_SIZES as F, REPLAY_MODE
 from core.widgets import AbstractWidget
-from core.rendering import GL_QUADS, GL_POLYGON, GL_LINE_LOOP
+from core.rendering import line_loop_to_lines
 from pyglet.text import Label
 from core.window import Window
 import math
@@ -79,14 +79,13 @@ class Slider(AbstractWidget):
                                                                             slider_groove_h)
 
         v1 = self.vertice_border(self.containers['thumb'])
-        self.add_vertex('thumb', 4, GL_QUADS, G(self.draw_order+self.rank), ('v2f/static', v1),
-                        ('c4B/static', (C['GREY']*4)))
+        self.add_quad('thumb', G(self.draw_order+self.rank), v1, C['GREY']*4)
 
         v2 = self.get_groove_vertices()
-        self.add_vertex('groove_b', len(v2)//2, GL_POLYGON, G(self.draw_order+self.rank),
-                        ('v2f/stream', v2), ('c4B/stream', (C['BLUE']*(len(v2)//2))))
-        self.add_vertex('groove', len(v2)//2, GL_LINE_LOOP, G(self.draw_order+self.rank),
-                        ('v2f/stream', v2), ('c4B/stream', (C['BLACK']*(len(v2)//2))))
+        self.add_polygon('groove_b', G(self.draw_order+self.rank),
+                         v2, C['BLUE']*(len(v2)//2))
+        self.add_line_loop('groove', G(self.draw_order+self.rank),
+                           v2, C['BLACK']*(len(v2)//2))
 
 
     def get_groove_vertices(self):
@@ -99,11 +98,12 @@ class Slider(AbstractWidget):
 
 
     def set_groove_position(self):
-        if self.get_groove_vertices() == self.on_batch['groove'].vertices:
+        new_verts = self.get_groove_vertices()
+        if new_verts == self.get_positions('groove_b'):
             return
-
-        self.on_batch['groove'].vertices = self.get_groove_vertices()
-        self.on_batch['groove_b'].vertices = self.get_groove_vertices()
+        self.on_batch['groove_b'].position[:] = new_verts
+        new_line_pos, _ = line_loop_to_lines(new_verts)
+        self.on_batch['groove'].position[:] = new_line_pos
 
 
     def set_value_label(self):

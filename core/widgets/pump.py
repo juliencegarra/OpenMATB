@@ -13,10 +13,9 @@ class Pump(AbstractWidget):
         # If from_container and to_container are aligned (x or y axis)
         if from_cont.cx == to_cont.cx or from_cont.cy == to_cont.cy:
             # Draw a straight line
-            self.add_vertex('connector_1', 2, GL_LINES, G(self.m_draw), ("v2f/static",
-                            (from_cont.cx, from_cont.cy + y_offset, to_cont.cx,
-                             to_cont.cy + y_offset)),
-                            ('c4B/static', (C['BLACK']*2)))
+            self.add_lines('connector_1', G(self.m_draw),
+                           (from_cont.cx, from_cont.cy + y_offset, to_cont.cx,
+                            to_cont.cy + y_offset), C['BLACK']*2)
 
             # Draw the pump in the middle of the line
             x1, x2 = min(from_cont.cx, to_cont.cx), max(from_cont.cx, to_cont.cx)
@@ -30,12 +29,12 @@ class Pump(AbstractWidget):
 
         else:  # If not, make an perpendicular node
             y_offset = -y_offset-20
-            self.add_vertex('connector_1', 2, GL_LINES, G(self.m_draw), ("v2f/static",
-                            (from_cont.cx, from_cont.cy, from_cont.cx, to_cont.cy + y_offset)),
-                            ('c4B/static', (C['BLACK']*2)))
-            self.add_vertex('connector_2', 2, GL_LINES, G(self.m_draw), ("v2f/static",
-                            (to_cont.cx, to_cont.cy + y_offset, from_cont.cx, to_cont.cy + y_offset)),
-                            ('c4B/static', (C['BLACK']*2)))
+            self.add_lines('connector_1', G(self.m_draw),
+                           (from_cont.cx, from_cont.cy, from_cont.cx,
+                            to_cont.cy + y_offset), C['BLACK']*2)
+            self.add_lines('connector_2', G(self.m_draw),
+                           (to_cont.cx, to_cont.cy + y_offset, from_cont.cx,
+                            to_cont.cy + y_offset), C['BLACK']*2)
 
             # And stick the pump to the source tank
             x = from_cont.cx
@@ -44,11 +43,10 @@ class Pump(AbstractWidget):
             self.pump_vertice = (x, y, x - w/2, y - w, x + w/2, y - w)
             self.num_location = (x, y - w/2 - 3)
 
-        self.add_vertex('triangle', 3, GL_TRIANGLES, G(self.m_draw+1), ('v2f/static', self.pump_vertice),
-                                   ('c4B/dynamic', (color*3)))
+        self.add_triangles('triangle', G(self.m_draw+1), self.pump_vertice, color*3)
 
-        self.add_vertex('border', 6, GL_LINES, G(self.m_draw+2), ('v2f/static',
-                        self.vertice_strip(self.pump_vertice)), ('c4B/static', (C['BLACK']*6)))
+        self.add_lines('border', G(self.m_draw+2),
+                       self.vertice_strip(self.pump_vertice), C['BLACK']*6)
 
         self.vertex['label'] = Label(str(pump_n), font_size=F['SMALL'], font_name=self.font_name,
                                      x=self.num_location[0], y=self.num_location[1],
