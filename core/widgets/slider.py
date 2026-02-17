@@ -2,10 +2,11 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-from pyglet.gl import *
+from pyglet.gl import GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_BLEND, glBlendFunc, glEnable, glLineWidth
 from core.container import Container
 from core.constants import COLORS as C, Group as G, FONT_SIZES as F, REPLAY_MODE
 from core.widgets import AbstractWidget
+from core.rendering import GL_QUADS, GL_POLYGON, GL_LINE_LOOP
 from pyglet.text import Label
 from core.window import Window
 import math
@@ -27,11 +28,8 @@ class Slider(AbstractWidget):
         self.groove_value = self.value_default
         self.hover = False
 
-        # Enhance smoothing mode
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glEnable(GL_BLEND)
-        glEnable(GL_LINE_SMOOTH)
-        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
         glLineWidth(3)
 
 

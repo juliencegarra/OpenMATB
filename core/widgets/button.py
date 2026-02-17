@@ -7,7 +7,8 @@ from core.constants import COLORS as C, FONT_SIZES as F, PATHS as P
 from core.constants import Group as G
 from pyglet.text import Label
 from pyglet import image, sprite
-from pyglet.gl import *
+from pyglet.gl import GL_LINES
+from core.rendering import GL_QUADS
 from core.window import Window
 
 class Button(AbstractWidget):

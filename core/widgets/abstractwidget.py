@@ -3,11 +3,9 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 import math
-from pyglet.gl import (GL_LINES, GL_QUADS, GL_TRIANGLES, GL_POLYGON,
-                        GL_LINE_LOOP, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
-                        GL_BLEND, GL_LINE_SMOOTH, GL_LINE_SMOOTH_HINT,
-                        GL_DONT_CARE, glLineWidth, glBlendFunc, glEnable,
-                        glHint)
+from pyglet.gl import (GL_LINES, GL_TRIANGLES,
+                        GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+                        GL_BLEND, glLineWidth, glBlendFunc, glEnable)
 from pyglet.text import Label, HTMLLabel
 from core.constants import Group as G, COLORS as C, FONT_SIZES as F
 from pyglet import sprite
@@ -15,6 +13,125 @@ from core.logger import logger
 from core.constants import BFLIM
 from core.utils import get_conf_value
 from core.window import Window
+from core.rendering import (get_program, get_group, quad_indices, polygon_indices,
+                             line_loop_to_lines, colors_3to4,
+                             expand_colors_for_line_loop,
+                             GL_POLYGON, GL_QUADS, GL_LINE_LOOP)
+
+
+class VertexListCompat:
+    """Wrapper so that .vertices and .colors work like pyglet 1.5."""
+    def __init__(self, vlist):
+        self._vlist = vlist
+
+    @property
+    def vertices(self):
+        return list(self._vlist.position[:])
+
+    @vertices.setter
+    def vertices(self, value):
+        self._vlist.position[:] = value
+
+    @property
+    def colors(self):
+        return list(self._vlist.colors[:])
+
+    @colors.setter
+    def colors(self, value):
+        self._vlist.colors[:] = value
+
+    def delete(self):
+        self._vlist.delete()
+
+    def resize(self, count):
+        self._vlist.resize(count)
+
+
+def _parse_format(fmt_string):
+    """Parse a pyglet 1.5 vertex format string like 'v2f/static' or 'c4B/dynamic'.
+
+    Returns (prefix, count, type_char, usage) e.g. ('v', 2, 'f', 'static').
+    """
+    parts = fmt_string.split('/')
+    fmt = parts[0]
+    usage = parts[1] if len(parts) > 1 else 'static'
+
+    # Parse prefix (v, c), count (2, 3, 4), type (f, B, etc.)
+    prefix = fmt[0]
+    count = int(fmt[1])
+    type_char = fmt[2] if len(fmt) > 2 else 'f'
+    return prefix, count, type_char, usage
+
+
+def _build_vertex_list(batch, count, mode, group, data_pairs, program):
+    """Translate a legacy batch.add() call to pyglet 2.x API.
+
+    Args:
+        batch: pyglet.graphics.Batch
+        count: number of vertices
+        mode: GL primitive mode (GL_LINES, GL_TRIANGLES, or sentinel string)
+        group: pyglet Group
+        data_pairs: list of (format_string, data) tuples
+        program: ShaderProgram
+
+    Returns:
+        VertexListCompat wrapping the created vertex list
+    """
+    # Extract vertex and color data from the legacy format tuples
+    positions = None
+    colors = None
+    for fmt_str, data in data_pairs:
+        prefix, components, type_char, usage = _parse_format(fmt_str)
+        if prefix == 'v':
+            positions = data
+        elif prefix == 'c':
+            if components == 3:
+                colors = colors_3to4(data, count)
+            else:
+                colors = data
+
+    # Determine if we need indexed rendering and what the real GL mode is
+    need_indexed = False
+    indices = None
+    real_mode = mode
+
+    if mode == GL_POLYGON:
+        indices = polygon_indices(count)
+        real_mode = GL_TRIANGLES
+        need_indexed = True
+    elif mode == GL_QUADS:
+        indices = quad_indices(count)
+        real_mode = GL_TRIANGLES
+        need_indexed = True
+    elif mode == GL_LINE_LOOP:
+        # Convert LINE_LOOP to GL_LINES by duplicating vertices
+        new_positions, new_count = line_loop_to_lines(positions)
+        new_colors = expand_colors_for_line_loop(colors, count)
+        positions = new_positions
+        colors = new_colors
+        count = new_count
+        real_mode = GL_LINES
+        need_indexed = False
+
+    # Wrap the plain Group in a ShaderGroup for proper shader binding
+    shader_group = get_group(order=group.order, parent=group.parent)
+
+    # Build the vertex list
+    if need_indexed:
+        vlist = program.vertex_list_indexed(
+            count, real_mode, indices, batch=batch, group=shader_group,
+            position=('f', positions),
+            colors=('Bn', colors)
+        )
+    else:
+        vlist = program.vertex_list(
+            count, real_mode, batch=batch, group=shader_group,
+            position=('f', positions),
+            colors=('Bn', colors)
+        )
+
+    return VertexListCompat(vlist)
+
 
 class AbstractWidget:
     def __init__(self, name, container):
@@ -85,22 +202,29 @@ class AbstractWidget:
 
 
     def assign_vertices_to_batch(self):
+        program = get_program()
         for name, v_tuple in self.vertex.items():
             if isinstance(v_tuple, Label) or isinstance(v_tuple, HTMLLabel) or isinstance(v_tuple, sprite.Sprite):
                 v_tuple.batch = Window.MainWindow.batch
             else:
-                self.on_batch[name] = Window.MainWindow.batch.add(*v_tuple)
+                # v_tuple is (count, mode, group, ('v2f/...', data), ('c4B/...', data), ...)
+                count = v_tuple[0]
+                mode = v_tuple[1]
+                group = v_tuple[2]
+                data_pairs = v_tuple[3:]
+                self.on_batch[name] = _build_vertex_list(
+                    Window.MainWindow.batch, count, mode, group, data_pairs, program
+                )
 
 
     def empty_batch(self):
-        for name in list(self.vertex.keys()):  # TODO: Complete and use show_vertex
+        for name in list(self.vertex.keys()):
             if isinstance(self.vertex[name], Label) or isinstance(self.vertex[name], HTMLLabel):
                 self.vertex[name].batch = None
             else:
                 self.on_batch[name].delete()
                 del self.on_batch[name]
 
-        #self.vertex = dict()
         self.on_batch = dict()
 
 

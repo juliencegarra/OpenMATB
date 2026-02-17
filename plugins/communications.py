@@ -155,10 +155,13 @@ class Communications(AbstractPlugin):
                           + [radio_name.lower()] + ['frequency'] + [c.lower().replace('.', 'point')
                                                                     for c in str(freq)] + ['empty']
 
-        group = SourceGroup()
+        sources = []
         for f in list_of_sounds:
             source = load(str(self.sound_path.joinpath(f'{f}.wav')), streaming=False)
-            # print(f)
+            sources.append(source)
+
+        group = SourceGroup(sources[0].audio_format, sources[0].video_format)
+        for source in sources:
             group.add(source)
         return group
 

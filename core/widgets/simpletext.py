@@ -9,7 +9,7 @@ from core.constants import COLORS as C
 
 class Simpletext(AbstractWidget):
     def __init__(self, name, container, text, draw_order=1, font_size=F['SMALL'], x=0.5, y=0.5, wrap_width=1,
-                 color=C['BLACK'], bold=False):
+                 color=C['BLACK']):
         super().__init__(name, container)
 
         x = self.container.l + x * self.container.w
@@ -18,7 +18,7 @@ class Simpletext(AbstractWidget):
 
         self.vertex['text'] = Label(text, font_size=font_size, x=x, y=y, align='center',
                                     anchor_x='center', anchor_y='center', color=color,
-                                    group=G(draw_order), multiline=True, width=wrap_width, bold=bold,
+                                    group=G(draw_order), multiline=True, width=wrap_width,
                                     font_name=self.font_name)
 
         #TODO   Is this first log needed ?

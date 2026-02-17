@@ -2,15 +2,15 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-import sys
 from pyglet import font, image, sprite
-from pyglet.canvas import get_display
+from pyglet.display import get_display
 from pyglet.window import Window, key as winkey
 from pyglet.graphics import Batch
-from pyglet.gl import GL_POLYGON, glLineWidth
+from pyglet.gl import GL_TRIANGLES, glClearColor
+from core.rendering import get_program, get_group, polygon_indices
 from pyglet.text import Label
 from core.container import Container
-from core.constants import COLORS as C, FONT_SIZES as F, Group as G, PLUGIN_TITLE_HEIGHT_PROPORTION
+from core.constants import COLORS as C, FONT_SIZES as F, PLUGIN_TITLE_HEIGHT_PROPORTION
 from core.constants import PATHS as P
 from core.constants import REPLAY_MODE, REPLAY_STRIP_PROPORTION
 from core.modaldialog import ModalDialog
@@ -93,27 +93,34 @@ class Window(Window):
         MATB_container = self.get_container('fullscreen')
         l, b, w, h = MATB_container.get_lbwh()
         container_title_h = PLUGIN_TITLE_HEIGHT_PROPORTION/2
+        program = get_program()
+        indices = polygon_indices(4)
 
         # Main background
-        self.batch.add(4, GL_POLYGON, G(-1), ('v2f/static', (l, b+h, l+w, b+h, l+w, b, l, b)),
-                                            ('c4B', C['BACKGROUND'] * 4))
+        program.vertex_list_indexed(
+            4, GL_TRIANGLES, indices, batch=self.batch, group=get_group(order=-1),
+            position=('f', (l, b+h, l+w, b+h, l+w, b, l, b)),
+            colors=('Bn', C['BACKGROUND'] * 4))
 
         # Upper band
-        self.batch.add(4, GL_POLYGON, G(-1),
-                  ('v2f/static', (l, b+h, l+w, b+h,
-                                  l+w, b+h*(1-container_title_h), l, b+h*(1-container_title_h))),
-                  ('c4B/static', C['BLACK'] * 4))
+        program.vertex_list_indexed(
+            4, GL_TRIANGLES, indices, batch=self.batch, group=get_group(order=-1),
+            position=('f', (l, b+h, l+w, b+h,
+                            l+w, b+h*(1-container_title_h), l, b+h*(1-container_title_h))),
+            colors=('Bn', C['BLACK'] * 4))
 
         # Middle band
-        self.batch.add(4, GL_POLYGON, G(0),
-                  ('v2f/static', (l,   b + h/2,   l+w, b + h/2,
-                                  l+w, b + h*(0.5-container_title_h),
-                                  0,   b + h*(0.5-container_title_h))),
-                  ('c4B/static', C['BLACK'] * 4))
+        program.vertex_list_indexed(
+            4, GL_TRIANGLES, indices, batch=self.batch, group=get_group(order=0),
+            position=('f', (l,   b + h/2,   l+w, b + h/2,
+                            l+w, b + h*(0.5-container_title_h),
+                            0,   b + h*(0.5-container_title_h))),
+            colors=('Bn', C['BLACK'] * 4))
 
 
     def on_draw(self):
         self.set_mouse_visible(self.is_mouse_necessary())
+        glClearColor(0, 0, 0, 1)
         self.clear()
         self.batch.draw()
 

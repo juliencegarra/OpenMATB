@@ -74,11 +74,12 @@ _KEY_NAMES = {
 # Create mock pyglet modules
 _pyglet_modules = [
     'pyglet', 'pyglet.gl', 'pyglet.window', 'pyglet.window.key',
-    'pyglet.graphics', 'pyglet.text', 'pyglet.clock', 'pyglet.app',
+    'pyglet.graphics', 'pyglet.graphics.shader', 'pyglet.text',
+    'pyglet.clock', 'pyglet.app',
     'pyglet.input', 'pyglet.media', 'pyglet.canvas', 'pyglet.image',
     'pyglet.sprite', 'pyglet.font',
     'pyglet.text.formats', 'pyglet.text.formats.html',
-    'pyglet.resource',
+    'pyglet.resource', 'pyglet.display',
 ]
 
 for mod_name in _pyglet_modules:
@@ -116,8 +117,17 @@ sys.modules['pyglet.window'].Window = _FakePygletWindow
 sys.modules['pyglet.window'].key = key_mod
 
 # pyglet.graphics
-sys.modules['pyglet.graphics'].OrderedGroup = lambda x: x
+class _MockGroup:
+    """Mock Group with order/parent attributes for rendering layer compatibility."""
+    def __init__(self, order=0, parent=None):
+        self.order = order
+        self.parent = parent
+sys.modules['pyglet.graphics'].Group = _MockGroup
 sys.modules['pyglet.graphics'].Batch = MagicMock
+
+# pyglet.graphics.shader
+sys.modules['pyglet.graphics.shader'].Shader = MagicMock
+sys.modules['pyglet.graphics.shader'].ShaderProgram = MagicMock
 
 # pyglet.text
 sys.modules['pyglet.text'].Label = MagicMock
@@ -135,8 +145,11 @@ sys.modules['pyglet.media'].Player = MagicMock
 sys.modules['pyglet.media'].SourceGroup = MagicMock
 sys.modules['pyglet.media'].load = MagicMock()
 
-# pyglet.canvas
+# pyglet.canvas (kept for backward compatibility)
 sys.modules['pyglet.canvas'].get_display = MagicMock()
+
+# pyglet.display (new in pyglet 2.x)
+sys.modules['pyglet.display'].get_display = MagicMock()
 
 # pyglet.image
 sys.modules['pyglet.image'].load = MagicMock()
@@ -161,6 +174,7 @@ pyglet_mod.text = sys.modules['pyglet.text']
 pyglet_mod.input = sys.modules['pyglet.input']
 pyglet_mod.media = sys.modules['pyglet.media']
 pyglet_mod.canvas = sys.modules['pyglet.canvas']
+pyglet_mod.display = sys.modules['pyglet.display']
 pyglet_mod.image = sys.modules['pyglet.image']
 pyglet_mod.sprite = sys.modules['pyglet.sprite']
 pyglet_mod.font = sys.modules['pyglet.font']

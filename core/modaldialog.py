@@ -5,7 +5,8 @@ from pyglet.font import load as load_font
 from pyglet.window import key as winkey
 from pyglet.text import HTMLLabel, Label
 from core.container import Container
-from pyglet.gl import glEnable, glBlendFunc, GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_POLYGON, GL_LINES
+from pyglet.gl import glEnable, glBlendFunc, GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_TRIANGLES, GL_LINES
+from core.rendering import get_program, get_group, polygon_indices
 from core.logger import logger
 from core.constants import FONT_SIZES as F, PATHS as P, Group as G, COLORS as C
 from core.utils import get_conf_value
@@ -26,11 +27,14 @@ class ModalDialog:
 
         # Hide background ?
         if self.hide_on_pause:
-            MATB_container = Window.MainWindow.get_container('fullscreen')
+            MATB_container = self.win.get_container('fullscreen')
             l, b, w, h = MATB_container.get_lbwh()
-            self.back_vertice = Window.MainWindow.batch.add(4, GL_POLYGON, G(20),
-                                            ('v2f/static', (l, b+h, l+w, b+h, l+w, b, l, b)),
-                                            ('c4B', C['BACKGROUND'] * 4))
+            program = get_program()
+            self.back_vertice = program.vertex_list_indexed(
+                4, GL_TRIANGLES, polygon_indices(4),
+                batch=self.win.batch, group=get_group(order=20),
+                position=('f', (l, b+h, l+w, b+h, l+w, b, l, b)),
+                colors=('Bn', C['BACKGROUND'] * 4))
         else:
             self.back_vertice = None
 
@@ -78,17 +82,22 @@ class ModalDialog:
         l, b, w, h = self.container.get_lbwh()
 
         # Container background
-        self.back_dialog = self.win.batch.add(4, GL_POLYGON, G(21),
-                                              ('v2f/static', (l, b+h, l+w, b+h, l+w, b, l, b)),
-                                              ('c4B', C['WHITE_TRANSLUCENT'] * 4))
+        program = get_program()
+        self.back_dialog = program.vertex_list_indexed(
+            4, GL_TRIANGLES, polygon_indices(4),
+            batch=self.win.batch, group=get_group(order=21),
+            position=('f', (l, b+h, l+w, b+h, l+w, b, l, b)),
+            colors=('Bn', C['WHITE_TRANSLUCENT'] * 4))
 
         # Container border
-        self.border_dialog = self.win.batch.add(8, GL_LINES, G(21),
-                                               ('v2f/static', (l, b+h, l+w, b+h,
-                                                               l+w, b+h, l+w, b,
-                                                               l+w, b, l, b,
-                                                               l, b, l, b+h)),
-                                               ('c4B', C['GREY'] * 8))
+        self.border_dialog = program.vertex_list(
+            8, GL_LINES,
+            batch=self.win.batch, group=get_group(order=21),
+            position=('f', (l, b+h, l+w, b+h,
+                            l+w, b+h, l+w, b,
+                            l+w, b, l, b,
+                            l, b, l, b+h)),
+            colors=('Bn', C['GREY'] * 8))
 
 
 
