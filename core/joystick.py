@@ -13,7 +13,7 @@ class Joystick:
         self.y = 0
         try: # Just in case Joystick is opened twice (?)
             self.open()
-        except:
+        except OSError:
             pass
 
         # Define joystick keys (BTN, HAT)

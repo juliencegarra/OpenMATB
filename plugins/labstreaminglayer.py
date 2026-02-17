@@ -7,7 +7,7 @@ from core import validation
 
 try:
     import pylsl
-except:
+except ImportError:
     print("unable to import pylsl")
 
 class Labstreaminglayer(Instructions):
