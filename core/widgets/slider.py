@@ -123,9 +123,15 @@ class Slider(AbstractWidget):
 
 
     def on_mouse_press(self, x, y, button, modifiers):
-        if self.coordinates_in_groove_container(x, y) and self.hover is False:
+        if self.containers['slide'].contains_xy(x, y) and self.hover is False:
             self.hover = True
             self.update_cursor_appearance()
+            # Jump groove to click position
+            x_min = self.containers['allgroove'].l
+            x_max = self.containers['allgroove'].l + self.containers['allgroove'].w
+            clamped_x = min(x_max, max(x_min, x))
+            ratio = (clamped_x - x_min) / (x_max - x_min)
+            self.update_groove_value(ratio)
 
 
     def on_mouse_release(self, x, y, button, modifiers):

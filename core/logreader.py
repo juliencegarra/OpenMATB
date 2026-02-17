@@ -24,23 +24,29 @@ class LogReader():
     their onset time. Relevant entries are scenario events and user inputs, which are combined to
     simulate what happened during the session.
     '''
-    def __init__(self, replay_session_id = None):
+    def __init__(self, replay_session_id=None, session_path=None):
         self.session_file_path = None
         self.replay_session_id = replay_session_id
 
-        # Check if the desired session file exists. If so, load and parse it.
-        session_file_list = [f for f in P['SESSIONS'].glob(f'**/{replay_session_id}_*.csv')]
+        if session_path is not None:
+            # Direct path provided (from file selector)
+            self.session_file_path = Path(session_path)
+            try:
+                self.replay_session_id = int(self.session_file_path.stem.split('_')[0])
+            except (ValueError, IndexError):
+                pass
+        else:
+            # Look up by session ID
+            session_file_list = [f for f in P['SESSIONS'].glob(f'**/{replay_session_id}_*.csv')]
 
-        if len(session_file_list) == 0:
-            errors.add_error(_('The desired session file (ID=%s) does not exist') % replay_session_id,
-                             fatal=True)
-        elif len(session_file_list) > 1:
-            errors.add_error(_('Multiple session files match the desired session ID (%s)') % replay_session_id,
-                             fatal=True)
-
-        # Correct case when only one session file is identified
-        elif len(session_file_list) == 1:
-            self.session_file_path = session_file_list[0]
+            if len(session_file_list) == 0:
+                errors.add_error(_('The desired session file (ID=%s) does not exist') % replay_session_id,
+                                 fatal=True)
+            elif len(session_file_list) > 1:
+                errors.add_error(_('Multiple session files match the desired session ID (%s)') % replay_session_id,
+                                 fatal=True)
+            elif len(session_file_list) == 1:
+                self.session_file_path = session_file_list[0]
 
         self.reload_session()
 

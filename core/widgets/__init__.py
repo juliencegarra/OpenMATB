@@ -3,7 +3,7 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from .abstractwidget import AbstractWidget
-from .button import PlayPause
+from .button import PlayPause, MuteButton
 from .scale import Scale
 from .light import Light
 from .reticle import Reticle

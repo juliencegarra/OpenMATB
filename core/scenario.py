@@ -19,18 +19,22 @@ class Scenario:
     This object converts scenario to Events, loads the corresponding plugins,
     and checks that some criteria are met (e.g., acceptable values)
     '''
-    def __init__(self, contents=None):
+    def __init__(self, contents=None, scenario_path=None):
         self.events = list()
         self.plugins = dict()
 
         if contents is None:
-            scenario_path = P['SCENARIOS'].joinpath(get_conf_value('Openmatb', 'scenario_path'))
-            if scenario_path.exists():
-                with open(scenario_path, 'r') as f:
-                    contents = f.readlines()
-                logger.log_manual_entry(scenario_path, key='scenario_path')
+            if scenario_path is not None:
+                sp = scenario_path
             else:
-                errors.add_error(_('%s was not found') % str(scenario_path), fatal = True)
+                sp = P['SCENARIOS'].joinpath(get_conf_value('Openmatb', 'scenario_path'))
+
+            if sp.exists():
+                with open(sp, 'r') as f:
+                    contents = f.readlines()
+                logger.log_manual_entry(sp, key='scenario_path')
+            else:
+                errors.add_error(_('%s was not found') % str(sp), fatal = True)
 
         # Convert the scenario content into a list of events #
         # (Squeeze empty and commented [#] lines)
