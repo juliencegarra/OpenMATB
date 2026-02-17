@@ -6,7 +6,6 @@ from pyglet.gl import *
 from core.container import Container
 from core.constants import COLORS as C, Group as G, FONT_SIZES as F, REPLAY_MODE
 from core.widgets import AbstractWidget
-from core.widgets import AbstractWidget
 from pyglet.text import Label
 from core.window import Window
 import math
