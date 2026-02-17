@@ -1,11 +1,16 @@
 """Tests for core.logger - Logger slot formatting, queue management, and record methods."""
 
+import importlib
 from collections import namedtuple
 from unittest.mock import patch, MagicMock, call
 import pytest
 
 from core.logger import Logger
 from core.event import Event
+
+# core.__init__ re-exports the Logger instance as `core.logger`, shadowing
+# the module.  Use importlib to get the actual module for patching.
+_logger_module = importlib.import_module('core.logger')
 
 
 def _make_logger(**overrides):
@@ -108,7 +113,7 @@ class TestSetters:
 
 
 class TestRecordEvent:
-    @patch('core.logger.perf_counter', return_value=1.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=1.0)
     def test_single_command_uses_self_address(self, _mock_pc):
         """Single-command event uses address='self'."""
         lg = _make_logger(scenario_time=10)
@@ -121,7 +126,7 @@ class TestRecordEvent:
         assert args[4] == 'self'
         assert args[5] == 'start'
 
-    @patch('core.logger.perf_counter', return_value=1.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=1.0)
     def test_two_command_uses_address_value(self, _mock_pc):
         """Two-command event uses command[0] as address, command[1] as value."""
         lg = _make_logger(scenario_time=10)
@@ -132,7 +137,7 @@ class TestRecordEvent:
         assert args[4] == 'pump-1-state'
         assert args[5] == 'on'
 
-    @patch('core.logger.perf_counter', return_value=1.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=1.0)
     def test_uses_current_scenario_time(self, _mock_pc):
         """Slot uses the logger's current scenario_time."""
         lg = _make_logger(scenario_time=99.5)
@@ -147,7 +152,7 @@ class TestRecordEvent:
 
 
 class TestRecordInput:
-    @patch('core.logger.perf_counter', return_value=2.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=2.0)
     def test_formats_input_slot(self, _mock_pc):
         """Builds slot with type='input', module, key, state."""
         lg = _make_logger(scenario_time=5)
@@ -161,7 +166,7 @@ class TestRecordInput:
 
 
 class TestRecordAoi:
-    @patch('core.logger.perf_counter', return_value=3.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=3.0)
     def test_parses_plugin_and_widget(self, _mock_pc):
         """Splits 'plugin_widget' name into plugin and widget parts."""
         lg = _make_logger(scenario_time=0)
@@ -175,7 +180,7 @@ class TestRecordAoi:
         assert args[4] == 'scale1'
         assert args[5] == (10, 70, 110, 20)
 
-    @patch('core.logger.perf_counter', return_value=3.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=3.0)
     def test_multi_underscore_widget_name(self, _mock_pc):
         """Widget name with multiple underscores keeps all parts after first."""
         lg = _make_logger(scenario_time=0)
@@ -192,7 +197,7 @@ class TestRecordAoi:
 
 
 class TestRecordState:
-    @patch('core.logger.perf_counter', return_value=4.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=4.0)
     def test_parses_graph_name(self, _mock_pc):
         """Splits graph_name into module and widget, builds address."""
         lg = _make_logger(scenario_time=0)
@@ -204,7 +209,7 @@ class TestRecordState:
         assert args[4] == 'light1, color'
         assert args[5] == '(255,0,0)'
 
-    @patch('core.logger.perf_counter', return_value=4.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=4.0)
     def test_multi_underscore_graph_name(self, _mock_pc):
         """Graph name with multiple underscores preserves widget parts."""
         lg = _make_logger(scenario_time=0)
@@ -219,7 +224,7 @@ class TestRecordState:
 
 
 class TestRecordParameter:
-    @patch('core.logger.perf_counter', return_value=5.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=5.0)
     def test_formats_parameter_slot(self, _mock_pc):
         """Builds slot with type='parameter'."""
         lg = _make_logger(scenario_time=10)
@@ -233,7 +238,7 @@ class TestRecordParameter:
 
 
 class TestLogPerformance:
-    @patch('core.logger.perf_counter', return_value=6.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=6.0)
     def test_formats_performance_slot(self, _mock_pc):
         """Builds slot with type='performance'."""
         lg = _make_logger(scenario_time=20)
@@ -247,7 +252,7 @@ class TestLogPerformance:
 
 
 class TestRecordPseudorandomValue:
-    @patch('core.logger.perf_counter', return_value=7.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=7.0)
     def test_writes_two_slots(self, _mock_pc):
         """Writes both seed_value and seed_output slots."""
         lg = _make_logger(scenario_time=0)
@@ -255,7 +260,7 @@ class TestRecordPseudorandomValue:
         lg.record_a_pseudorandom_value('communications', 42, 'result')
         assert lg.write_single_slot.call_count == 2
 
-    @patch('core.logger.perf_counter', return_value=7.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=7.0)
     def test_seed_value_slot(self, _mock_pc):
         """First slot has type='seed_value' with the seed."""
         lg = _make_logger(scenario_time=0)
@@ -265,7 +270,7 @@ class TestRecordPseudorandomValue:
         assert first_args[2] == 'seed_value'
         assert first_args[5] == 42
 
-    @patch('core.logger.perf_counter', return_value=7.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=7.0)
     def test_seed_output_slot(self, _mock_pc):
         """Second slot has type='seed_output' with the output."""
         lg = _make_logger(scenario_time=0)
@@ -280,7 +285,7 @@ class TestRecordPseudorandomValue:
 
 
 class TestLogManualEntry:
-    @patch('core.logger.perf_counter', return_value=8.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=8.0)
     def test_default_key(self, _mock_pc):
         """Default type is 'manual'."""
         lg = _make_logger(scenario_time=0)
@@ -290,7 +295,7 @@ class TestLogManualEntry:
         assert args[2] == 'manual'
         assert args[5] == 'user note'
 
-    @patch('core.logger.perf_counter', return_value=8.0)
+    @patch.object(_logger_module, 'perf_counter', return_value=8.0)
     def test_custom_key(self, _mock_pc):
         """Custom key replaces 'manual' type."""
         lg = _make_logger(scenario_time=0)
@@ -304,7 +309,7 @@ class TestLogManualEntry:
 
 
 class TestWriteSingleSlot:
-    @patch('core.logger.REPLAY_MODE', False)
+    @patch.object(_logger_module, 'REPLAY_MODE', False)
     def test_adds_to_queue_and_writes(self):
         """Slot is queued then written via write_row_queue."""
         lg = _make_logger()
@@ -314,7 +319,7 @@ class TestWriteSingleSlot:
         assert lg.queue == []
         lg.writer.writerow.assert_called_once()
 
-    @patch('core.logger.REPLAY_MODE', False)
+    @patch.object(_logger_module, 'REPLAY_MODE', False)
     def test_written_row_has_correct_fields(self):
         """Written dict has all 6 expected fields."""
         lg = _make_logger()
@@ -330,7 +335,7 @@ class TestWriteSingleSlot:
 
 
 class TestWriteRowQueue:
-    @patch('core.logger.REPLAY_MODE', False)
+    @patch.object(_logger_module, 'REPLAY_MODE', False)
     def test_writes_all_queued_rows(self):
         """All queued rows are written and queue is emptied."""
         lg = _make_logger()
@@ -342,7 +347,7 @@ class TestWriteRowQueue:
         assert lg.writer.writerow.call_count == 2
         assert lg.queue == []
 
-    @patch('core.logger.REPLAY_MODE', False)
+    @patch.object(_logger_module, 'REPLAY_MODE', False)
     def test_change_dict_overrides_fields(self):
         """change_dict overrides specific fields in each row."""
         lg = _make_logger()
@@ -351,14 +356,14 @@ class TestWriteRowQueue:
         written = lg.writer.writerow.call_args[0][0]
         assert written['module'] == 'OVERRIDE'
 
-    @patch('core.logger.REPLAY_MODE', False)
+    @patch.object(_logger_module, 'REPLAY_MODE', False)
     def test_empty_queue_prints_warning(self, capsys=None):
         """Empty queue prints a warning instead of writing."""
         lg = _make_logger()
         lg.write_row_queue()  # queue is empty
         lg.writer.writerow.assert_not_called()
 
-    @patch('core.logger.REPLAY_MODE', True)
+    @patch.object(_logger_module, 'REPLAY_MODE', True)
     def test_replay_mode_skips_writing(self):
         """In replay mode, nothing is written."""
         lg = _make_logger()
@@ -366,7 +371,7 @@ class TestWriteRowQueue:
         lg.write_row_queue()
         lg.writer.writerow.assert_not_called()
 
-    @patch('core.logger.REPLAY_MODE', False)
+    @patch.object(_logger_module, 'REPLAY_MODE', False)
     def test_lsl_push_when_enabled(self):
         """When lsl is set, each row is also pushed to LSL."""
         mock_lsl = MagicMock()
