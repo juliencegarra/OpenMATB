@@ -25,6 +25,7 @@ from time import strftime, gmtime, sleep
 from core.logreader import LogReader
 from core.container import Container
 from core.utils import get_conf_value, get_replay_session_id, clamp
+from bisect import bisect_right
 from random import uniform
 from core.window import Window
 
@@ -58,12 +59,10 @@ class ReplayScheduler(Scheduler):
 
         if self.logreader is None or replay_session_id != self.logreader.replay_session_id:
             self.logreader = LogReader(replay_session_id)
-
-##            self.inputs_queue = list(self.logreader.inputs)  # Copy inputs
-##            self.keyboard_inputs = [i for i in self.inputs_queue if i['module'] == 'keyboard']
-##            self.joystick_inputs = [i for i in self.inputs_queue if 'joystick' in i['address']]
-##            self.states_queue = list(self.logreader.states)  # Copy states, //
-
+            # Pre-compute sorted time arrays for O(log n) bisect lookup
+            self._key_times = [float(i['scenario_time']) for i in self.logreader.keyboard_inputs]
+            self._joy_times = [float(i['scenario_time']) for i in self.logreader.joystick_inputs]
+            self._state_times = [float(i['scenario_time']) for i in self.logreader.states]
 
         super().set_scenario(self.logreader.contents)
 
@@ -300,12 +299,13 @@ class ReplayScheduler(Scheduler):
 
 
     def emulate_keyboard_inputs(self):
-        for idx, input in enumerate(self.logreader.keyboard_inputs):
-            input_time = float(input['scenario_time'])
+        lo = bisect_right(self._key_times, self.scenario_time - CLOCK_STEP)
+        hi = bisect_right(self._key_times, self.scenario_time)
 
-            # Execute actions within the current tick window, only once per input
-            if idx not in self._executed_key_indices and input_time > self.scenario_time - CLOCK_STEP and input_time <= self.scenario_time:
+        for idx in range(lo, hi):
+            if idx not in self._executed_key_indices:
                 self._executed_key_indices.add(idx)
+                input = self.logreader.keyboard_inputs[idx]
                 for plugin_name, plugin in self.plugins.items():
                     plugin.do_on_key(input['address'], input['value'], True)
 
@@ -327,16 +327,11 @@ class ReplayScheduler(Scheduler):
         #   – 2. The frequency of each communications radio
         #   – 3. The value of each slider, in genericscales
 
-        # Get candidates states (and their index) for being displayed,
-        # retrieve the most recent for each state category
-        past_sta = [(i,s) for i,s in enumerate(self.logreader.states)
-                    if float(s['scenario_time']) > self.scenario_time - CLOCK_STEP and float(s['scenario_time']) <= self.scenario_time]
+        lo = bisect_right(self._state_times, self.scenario_time - CLOCK_STEP)
+        hi = bisect_right(self._state_times, self.scenario_time)
 
-        if len(past_sta) == 0:
-            return
-
-        for item in past_sta:
-            state = item[1]
+        for idx in range(lo, hi):
+            state = self.logreader.states[idx]
 
             # 1. Cursor position
             if 'cursor_proportional' in state['address'] and 'track' in self.plugins:
@@ -358,12 +353,11 @@ class ReplayScheduler(Scheduler):
 
     def display_joystick_inputs(self):
         x, y = None, None
-        past_joy = [(i,s) for i,s in enumerate(self.logreader.joystick_inputs)
-                    if float(s['scenario_time']) > self.scenario_time - CLOCK_STEP and float(s['scenario_time']) <= self.scenario_time]
+        lo = bisect_right(self._joy_times, self.scenario_time - CLOCK_STEP)
+        hi = bisect_right(self._joy_times, self.scenario_time)
 
-
-        for s in past_joy:
-            joy_input = s[1]
+        for idx in range(lo, hi):
+            joy_input = self.logreader.joystick_inputs[idx]
 
             # X case
             if '_x' in joy_input['address']:
