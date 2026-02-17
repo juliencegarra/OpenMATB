@@ -355,5 +355,7 @@ class Resman(AbstractPlugin):
 
         if state == 'press':
             pump_key = self.get_pump_by_key(key)
+            if pump_key is None:
+                return
             if pump_key['state'] != 'failure':
                 pump_key['state'] = 'on' if pump_key['state'] == 'off' else 'off'
