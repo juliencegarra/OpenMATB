@@ -46,7 +46,7 @@ class Communications(AbstractPlugin):
         self.letters, self.digits = ascii_uppercase, digits
 
         # Callsign regex must be defined first because it is needed by self.get_callsign()
-        self.parameters['callsignregex']='[A-Z][A-Z][A-Z]\d\d\d'
+        self.parameters['callsignregex']=r'[A-Z][A-Z][A-Z]\d\d\d'
         self.old_regex = str(self.parameters['callsignregex'])
         new_par = dict(owncallsign=str(), othercallsign=list(), othercallsignnumber=5,
                        airbandminMhz=108.0, airbandmaxMhz=137.0, airbandminvariationMhz=5,
