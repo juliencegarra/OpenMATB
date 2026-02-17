@@ -29,7 +29,7 @@ class Eyetracker(AbstractPlugin):
         self.tracker = None
 
     def start(self, dt):
-        super().start(0)
+        super().start()
         self.tracker = eyetracker.EyeTracker(display = Window.MainWindow._display,
                                              trackertype = self.parameters['trackertype'])
         self.tracker.calibrate()
