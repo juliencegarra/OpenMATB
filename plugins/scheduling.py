@@ -177,11 +177,19 @@ class Scheduling(AbstractPlugin):
 
             # If some automation events are specified, compute manual segments accordingly
             if len(auto_events) > 0:
-                while auto_events[0][1] is False:  # Be sure to begin with an (automaticsolver, True)
+                while len(auto_events) > 0 and auto_events[0][1] is False:  # Be sure to begin with an (automaticsolver, True)
                     del(auto_events[0])
 
-                stop_time = [e[0] for e in start_stop_events if e[1] == 'stop'][0]
-                start_time = [e[0] for e in start_stop_events if e[1] == 'start'][0]
+                if len(auto_events) == 0:
+                    continue
+
+                stop_times = [e[0] for e in start_stop_events if e[1] == 'stop']
+                start_times = [e[0] for e in start_stop_events if e[1] == 'start']
+                if not stop_times or not start_times:
+                    continue
+
+                stop_time = stop_times[0]
+                start_time = start_times[0]
 
                 self.planning[task]['manual'].append(start_time)
                 for ae in auto_events:
