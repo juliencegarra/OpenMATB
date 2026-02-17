@@ -48,7 +48,7 @@ class ReplayScheduler(Scheduler):
         super().__init__()
 
         self.is_paused = True
-        square = shapes.Rectangle(x=200, y=200, width=200, height=200, color=(55, 55, 255))
+        # square = shapes.Rectangle(x=200, y=200, width=200, height=200, color=(55, 55, 255))
 
 
     def set_scenario(self):
