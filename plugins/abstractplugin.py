@@ -5,7 +5,7 @@
 from pathlib import Path
 from pyglet.window import key as winkey
 from core.widgets import Simpletext, SimpleHTML, Frame
-from core.constants import *
+from core.constants import COLORS as C, FONT_SIZES as F, BFLIM, PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE
 from core.container import Container
 from core.logger import logger
 from core.window import Window

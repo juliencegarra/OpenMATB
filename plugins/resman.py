@@ -2,7 +2,7 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-from core.constants import *
+from core.constants import COLORS as C, FONT_SIZES as F, PLUGIN_TITLE_HEIGHT_PROPORTION
 from core.container import Container
 from core.widgets import Pump, Tank, PumpFlow, Simpletext, Frame
 from plugins.abstractplugin import AbstractPlugin

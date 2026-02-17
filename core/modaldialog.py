@@ -5,7 +5,7 @@ from pyglet.font import load as load_font
 from pyglet.window import key as winkey
 from pyglet.text import HTMLLabel, Label
 from core.container import Container
-from pyglet.gl import *
+from pyglet.gl import glEnable, glBlendFunc, GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_POLYGON, GL_LINES
 from core.logger import logger
 from core.constants import FONT_SIZES as F, PATHS as P, Group as G, COLORS as C
 from core.utils import get_conf_value
