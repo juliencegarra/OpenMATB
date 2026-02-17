@@ -37,6 +37,7 @@ class ReplayScheduler(Scheduler):
     def __init__(self):
         self.logreader = None
         self.target_time = 0
+        self._executed_key_indices = set()
 
         self.set_media_buttons()
 
@@ -280,7 +281,7 @@ class ReplayScheduler(Scheduler):
         # we need to suspend the clock as it schedules old events
         self.clock.unschedule(self.update)
 
-
+        self._executed_key_indices = set()
         self.clock.set_time(0)
         self.clock.tick()
         self.scenario_time = 0
@@ -295,12 +296,14 @@ class ReplayScheduler(Scheduler):
     def emulate_keyboard_inputs(self):
         self.keys_history = []
 
-        for input in self.logreader.keyboard_inputs:
+        for idx, input in enumerate(self.logreader.keyboard_inputs):
+            input_time = float(input['scenario_time'])
             # display actions from 0.5 secs before that time
-            if float(input['scenario_time']) > self.scenario_time - (0.5) and float(input['scenario_time']) <= self.scenario_time:
+            if input_time > self.scenario_time - 0.5 and input_time <= self.scenario_time:
 
-                # execute actions if on time
-                if float(input['scenario_time']) == self.scenario_time:
+                # execute actions within the current tick window, only once per input
+                if idx not in self._executed_key_indices and input_time > self.scenario_time - CLOCK_STEP:
+                    self._executed_key_indices.add(idx)
                     for plugin_name, plugin in self.plugins.items():
                         plugin.do_on_key(input['address'], input['value'], True)
 
