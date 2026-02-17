@@ -253,7 +253,7 @@ def add_scenario_phase(scenario_lines, task_difficulty_tuples, start_sec):
             if (event_num % d) == 0 and event_num>1:  # The number of events is a multiple of the
                 prompt_list = choices(promptlist, event_num, True)
                 p = prompt_list.count('own') / len(prompt_list)
-                while p != n/d:
+                while abs(p - n/d) > 1e-9:
                     prompt_list = choices(promptlist, event_num, True)
                     p = prompt_list.count('own') / len(prompt_list)
             else:
