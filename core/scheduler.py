@@ -21,7 +21,8 @@ class Scheduler:
     """
 
     def __init__(self):
-        logger.log_manual_entry(open('VERSION', 'r').read().strip(), key='version')
+        with open('VERSION', 'r') as f:
+            logger.log_manual_entry(f.read().strip(), key='version')
 
         self.clock = Clock('main')
         self.scenario_time = 0

@@ -26,7 +26,8 @@ class Scenario:
         if contents is None:
             scenario_path = P['SCENARIOS'].joinpath(get_conf_value('Openmatb', 'scenario_path'))
             if scenario_path.exists():
-                contents = open(scenario_path, 'r').readlines()
+                with open(scenario_path, 'r') as f:
+                    contents = f.readlines()
                 logger.log_manual_entry(scenario_path, key='scenario_path')
             else:
                 errors.add_error(_('%s was not found') % str(scenario_path), fatal = True)
@@ -51,13 +52,12 @@ class Scenario:
         self.events = self.events_retrocompatibility() # Apply retrocompatiblity to events
         event_errors = self.check_events()   # Check that events are properly expressed
 
-        errorf = open(P['SCENARIO_ERRORS'],'w')
-        if len(event_errors) > 0:
-            for this_error in event_errors:
-                print(this_error, file=errorf)
-        else:
-            print(_('No error'), file=errorf)
-        errorf.close()
+        with open(P['SCENARIO_ERRORS'], 'w') as errorf:
+            if len(event_errors) > 0:
+                for this_error in event_errors:
+                    print(this_error, file=errorf)
+            else:
+                print(_('No error'), file=errorf)
 
         if len(event_errors) > 0:
             errors.add_error(_(f"There were some errors in the scenario. See the %s file.") % P['SCENARIO_ERRORS'].name, fatal = True)
