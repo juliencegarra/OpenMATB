@@ -28,7 +28,7 @@ language.install()
 from core.scenario import Event
 from core.constants import PATHS
 from core.window import Window
-from plugins import *
+from plugins import Track, Sysmon, Communications, Resman
 
 
 # Constants #
