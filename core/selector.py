@@ -134,7 +134,7 @@ class FileSelector:
             y=h - self._margin - self._title_area // 2,
             anchor_x="center",
             anchor_y="center",
-            font_size=F["XLARGE"],
+            font_size=F["LARGE"],
             color=C["BLACK"],
             group=self._LABEL_GROUP,
             batch=self.win.batch,
