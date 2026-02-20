@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from bisect import bisect_right
 from time import gmtime, strftime
-from typing import Any, Optional
+from typing import Any
 
 from pyglet.window import key
 
@@ -28,9 +28,9 @@ class ReplayScheduler(Scheduler):
     This class manages events execution in the context of the OpenMATB replay.
     """
 
-    def __init__(self, session_path: Optional[str] = None) -> None:
-        self.logreader: Optional[LogReader] = None
-        self._session_path: Optional[str] = session_path
+    def __init__(self, session_path: str | None = None) -> None:
+        self.logreader: LogReader | None = None
+        self._session_path: str | None = session_path
         self.target_time: float = 0
         self.replay_time: float = 0
         self._executed_key_indices: set[int] = set()
@@ -97,7 +97,9 @@ class ReplayScheduler(Scheduler):
         time_container: Container = media_container.reduce_and_translate(width=0.03, height=1, x=0.78)
 
         self.playpause: PlayPause = PlayPause("Play_pause_button", pp_container, self.toggle_playpause)
-        self.time: Simpletext = Simpletext("elapsed_time", time_container, text="", font_size=F["LARGE"], color=C["WHITE"])
+        self.time: Simpletext = Simpletext(
+            "elapsed_time", time_container, text="", font_size=F["LARGE"], color=C["WHITE"]
+        )
 
         margin: int = 10
         btn_w: float = media_container.h * 1.8
@@ -125,7 +127,9 @@ class ReplayScheduler(Scheduler):
         l: float = input_container.l + 0.1 * input_container.w
         b: float = input_container.b + 0.85 * input_container.h
         joy_container: Container = Container("replay_reticle", l, b, w, h)
-        self.replay_reticle: Reticle = Reticle("replay_reticle", joy_container, C["BLACK"], target_proportion=0, m_draw=5)
+        self.replay_reticle: Reticle = Reticle(
+            "replay_reticle", joy_container, C["BLACK"], target_proportion=0, m_draw=5
+        )
         self.replay_reticle.show()
 
     def on_key_press_replay(self, symbol: int, modifier: int) -> None:
@@ -344,7 +348,9 @@ class ReplayScheduler(Scheduler):
 
             # 1. Cursor position
             if "cursor_proportional" in state["address"] and "track" in self.plugins:
-                cursor_relative: tuple[float, float] = self.plugins["track"].reticle.proportional_to_relative(state["value"])
+                cursor_relative: tuple[float, float] = self.plugins["track"].reticle.proportional_to_relative(
+                    state["value"]
+                )
                 self.plugins["track"].cursor_position = cursor_relative
 
             # 2. Radio frequencies
@@ -361,8 +367,8 @@ class ReplayScheduler(Scheduler):
                 slider.set_groove_position()
 
     def display_joystick_inputs(self) -> None:
-        x: Optional[float] = None
-        y: Optional[float] = None
+        x: float | None = None
+        y: float | None = None
         lo: int = bisect_right(self._joy_logtimes, self.replay_time - CLOCK_STEP)
         hi: int = bisect_right(self._joy_logtimes, self.replay_time)
 

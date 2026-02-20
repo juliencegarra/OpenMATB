@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from pyglet import image
 from pyglet.canvas import get_display
@@ -25,7 +25,7 @@ from core.utils import get_conf_value
 
 class Window(Window):
     # Static variable
-    MainWindow: Optional[Window] = None
+    MainWindow: Window | None = None
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         Window.MainWindow = self  # correct way to set it as a static
@@ -53,10 +53,10 @@ class Window(Window):
 
         self.create_MATB_background()
         self.alive: bool = True
-        self.modal_dialog: Optional[ModalDialog] = None
+        self.modal_dialog: ModalDialog | None = None
         self.slider_visible: bool = False
 
-        self.on_key_press_replay: Optional[Any] = None  # used by the replay
+        self.on_key_press_replay: Any | None = None  # used by the replay
 
     def display_session_id(self) -> None:
         # Display the session ID if needed at window instanciation
@@ -209,15 +209,14 @@ class Window(Window):
             Container("inputstrip", w, b, self._width * mar, h),
         ]
 
-    def get_container(self, placement_name: str) -> Optional[Container]:
+    def get_container(self, placement_name: str) -> Container | None:
         container: list[Container] = [c for c in self.get_container_list() if c.name == placement_name]
         if len(container) > 0:
             return container[0]
         else:
             print(_("Error. No placement found for the [%s] alias") % placement_name)
 
-    def open_modal_window(self, pass_list: list[str], title: str, continue_key: Optional[str],
-                          exit_key: str) -> None:
+    def open_modal_window(self, pass_list: list[str], title: str, continue_key: str | None, exit_key: str) -> None:
         # TODO: would be better to use callbacks than to detect the alive variable
         # for example to close
         self.modal_dialog = ModalDialog(self, pass_list, title=title, continue_key=continue_key, exit_key="Q")

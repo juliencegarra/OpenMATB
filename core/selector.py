@@ -7,7 +7,7 @@ from __future__ import annotations
 import time as _time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import pyglet
 from pyglet.gl import GL_POLYGON
@@ -35,7 +35,7 @@ class FileSelector:
         self.win: Any = win
         self.mode: str = mode
         self._done: bool = False
-        self._selected_path: Optional[Path] = None
+        self._selected_path: Path | None = None
 
         # Scan files
         self._files: list[Path] = self._scan_files()
@@ -260,7 +260,7 @@ class FileSelector:
         self._refresh_display()
         return True
 
-    def _row_index_at_y(self, y: int) -> Optional[int]:
+    def _row_index_at_y(self, y: int) -> int | None:
         row: int = int((self._list_top - y) / self._row_height)
         if 0 <= row < self._visible_rows:
             file_idx: int = self._scroll_offset + row
@@ -271,7 +271,7 @@ class FileSelector:
     def _on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> bool:
         if button != mouse.LEFT or not self._files:
             return True
-        idx: Optional[int] = self._row_index_at_y(y)
+        idx: int | None = self._row_index_at_y(y)
         if idx is None:
             return True
 
@@ -290,7 +290,7 @@ class FileSelector:
 
     # ---- Main loop ----
 
-    def run(self) -> Optional[Path]:
+    def run(self) -> Path | None:
         if not self._files:
             self._cleanup()
             return None

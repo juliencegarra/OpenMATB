@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from core import validation
 from core.constants import COLORS as C
@@ -296,7 +296,7 @@ class Sysmon(AbstractPlugin):
     def get_gauge_by_key(self, key: str) -> dict[str, Any]:
         return self.get_gauges_key_value("key", key)[0]
 
-    def get_gauge_key(self, gauge: dict[str, Any]) -> Optional[str]:
+    def get_gauge_key(self, gauge: dict[str, Any]) -> str | None:
         for key in ["lights", "scales"]:
             for k, v in self.parameters[key].items():
                 if gauge == v:

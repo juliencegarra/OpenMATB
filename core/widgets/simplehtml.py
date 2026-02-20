@@ -12,7 +12,16 @@ from core.widgets.abstractwidget import *
 
 
 class SimpleHTML(AbstractWidget):
-    def __init__(self, name: str, container: Any, text: str, draw_order: int = 1, x: float = 0.5, y: float = 0.5, wrap_width: float = 1) -> None:
+    def __init__(
+        self,
+        name: str,
+        container: Any,
+        text: str,
+        draw_order: int = 1,
+        x: float = 0.5,
+        y: float = 0.5,
+        wrap_width: float = 1,
+    ) -> None:
         super().__init__(name, container)
         self.font_name: str = get_conf_value("Openmatb", "font_name")
         text = self.preparse(text)

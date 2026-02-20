@@ -5,9 +5,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable, Optional, Union
-
-import plugins  # noqa: E402 — needed by globals()["plugins"] for dynamic plugin loading
+from typing import Any
 
 from core import validation
 from core.constants import DEPRECATED, REPLAY_MODE, SYSTEM_COMMANDS, SYSTEM_PSEUDO_PLUGIN
@@ -24,7 +22,7 @@ class Scenario:
     and checks that some criteria are met (e.g., acceptable values)
     """
 
-    def __init__(self, contents: Optional[list[str]] = None, scenario_path: Optional[Path] = None) -> None:
+    def __init__(self, contents: list[str] | None = None, scenario_path: Path | None = None) -> None:
         self.events: list[Event] = list()
         self.plugins: dict[str, Any] = dict()
 
@@ -135,7 +133,7 @@ class Scenario:
         else:
             return current_level[parameter_address[-1]], True
 
-    def try_retrocompatibility(self, plugin: str, command: list[str]) -> tuple[Any, Optional[bool]]:
+    def try_retrocompatibility(self, plugin: str, command: list[str]) -> tuple[Any, bool | None]:
         try:
             command[0] = retro[command[0]]  # noqa: F821
         except KeyError:
@@ -199,7 +197,7 @@ class Scenario:
 
                 # If the current parameter exists in the plugin
                 if exists:
-                    method_args: Optional[list[Any]] = None
+                    method_args: list[Any] | None = None
 
                     # Check that the parameter has a verification method
                     # either globally or in the plugins itself
@@ -245,7 +243,7 @@ class Scenario:
     def get_validation_dict(self, pluginname: str) -> dict[str, Any]:
         validation_dict: dict[str, Any] = global_validation_dict.copy()
 
-        plugin_validation_dict: Optional[dict[str, Any]] = getattr(self.plugins[pluginname], "validation_dict", None)
+        plugin_validation_dict: dict[str, Any] | None = getattr(self.plugins[pluginname], "validation_dict", None)
 
         if plugin_validation_dict is not None:
             validation_dict.update(plugin_validation_dict)

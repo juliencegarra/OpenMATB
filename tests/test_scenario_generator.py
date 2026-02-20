@@ -8,6 +8,7 @@ triggering that initialization, we extract function definitions via AST parsing.
 import ast
 import random
 from pathlib import Path
+from typing import Any, Optional, Union
 
 from core.event import Event
 
@@ -32,8 +33,6 @@ _ns = {
     "STEP_DURATION_SEC": 60,
 }
 
-# Add typing imports needed by type annotations in scenario_generator.py
-from typing import Any, Optional, Union
 _ns.update({"Any": Any, "Optional": Optional, "Union": Union})
 
 # Compile and exec each function definition in isolation

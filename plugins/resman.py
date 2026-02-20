@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from core import validation
 from core.constants import COLORS as C
@@ -161,7 +161,9 @@ class Resman(AbstractPlugin):
 
         # Tank left coordinates proportion
         l_prop_dict: dict[str, float] = dict(a=0.14, b=0.64, c=0.05, d=0.55, e=0.3, f=0.8)
-        l_coord_dict: dict[str, float] = {k: self.task_container.l + self.task_container.w * v for k, v in l_prop_dict.items()}
+        l_coord_dict: dict[str, float] = {
+            k: self.task_container.l + self.task_container.w * v for k, v in l_prop_dict.items()
+        }
 
         tank_container_dict: dict[str, Container] = dict(
             a=Container(name="tank_a", l=l_coord_dict["a"], b=upper_y, w=large, h=h),
@@ -368,7 +370,7 @@ class Resman(AbstractPlugin):
                 # b.    Is there a need to change the tolerance color ?
                 this_tank["widget"].set_tolerance_color(this_tank["_tolerance_color"])
 
-    def get_pump_by_key(self, key: str) -> Optional[dict[str, Any]]:
+    def get_pump_by_key(self, key: str) -> dict[str, Any] | None:
         pump: list[dict[str, Any]] = [p for _, p in self.parameters["pump"].items() if p["key"] == key]
         if len(pump) > 0:
             return pump[0]
@@ -379,7 +381,7 @@ class Resman(AbstractPlugin):
             return
 
         if state == "press":
-            pump_key: Optional[dict[str, Any]] = self.get_pump_by_key(key)
+            pump_key: dict[str, Any] | None = self.get_pump_by_key(key)
             if pump_key is None:
                 return
             if pump_key["state"] != "failure":

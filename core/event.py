@@ -4,8 +4,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from core.constants import DEPRECATED
 
 
@@ -47,7 +45,7 @@ class Event:
         seconds %= 60
         return "%01i:%02i:%02i" % (hours, minutes, seconds)
 
-    def get_command_str(self) -> Optional[str]:
+    def get_command_str(self) -> str | None:
         if len(self) == 1:
             return self.command[0]
         elif len(self) == 2:

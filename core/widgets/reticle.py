@@ -8,7 +8,14 @@ from core.widgets.abstractwidget import *
 
 
 class Reticle(AbstractWidget):
-    def __init__(self, name: str, container: Any, cursorcolor: tuple[int, ...], target_proportion: float = 0.1, m_draw: int | None = None) -> None:
+    def __init__(
+        self,
+        name: str,
+        container: Any,
+        cursorcolor: tuple[int, ...],
+        target_proportion: float = 0.1,
+        m_draw: int | None = None,
+    ) -> None:
         super().__init__(name, container)
 
         if m_draw is not None:

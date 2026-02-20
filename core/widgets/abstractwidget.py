@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Optional
+from typing import Any
 
 from pyglet import sprite
 from pyglet.gl import (  # noqa: F401
@@ -38,9 +38,9 @@ from core.window import Window
 
 
 class AbstractWidget:
-    def __init__(self, name: str, container: Optional[Container]) -> None:
+    def __init__(self, name: str, container: Container | None) -> None:
         self.name: str = name
-        self.container: Optional[Container] = container
+        self.container: Container | None = container
         self.font_name: str = get_conf_value("Openmatb", "font_name")
         self.vertex: dict[str, Any] = dict()
         self.on_batch: dict[str, Any] = dict()
@@ -129,7 +129,7 @@ class AbstractWidget:
     def get_vertex_color(self, vertex_name: str) -> tuple[int, int, int, int]:
         return tuple(self.on_batch[vertex_name].colors[:][0:4])
 
-    def vertice_strip(self, vertice: tuple[float, ...] | list[float]) -> Optional[list[float]]:
+    def vertice_strip(self, vertice: tuple[float, ...] | list[float]) -> list[float] | None:
         """Develop a list of vertice points to obtain a list of vertice segments"""
         vertice_strip_list: list[float] = list()
         if vertice is not None:
@@ -151,7 +151,14 @@ class AbstractWidget:
         w_ratio: float = (h_ratio * cont.h) / cont.w
         tcont: Container = cont.get_reduced(w_ratio, h_ratio)
         tcont = tcont.get_translated(x=x_ratio * cont.w)
-        vertice: tuple[float, ...] = (tcont.l, tcont.b, tcont.l + tcont.w, tcont.b, tcont.l + tcont.w / 2, tcont.b + tcont.h)
+        vertice: tuple[float, ...] = (
+            tcont.l,
+            tcont.b,
+            tcont.l + tcont.w,
+            tcont.b,
+            tcont.l + tcont.w / 2,
+            tcont.b + tcont.h,
+        )
         centroid: tuple[float, float] = self.get_triangle_centroid(vertice)
         vertice = self.rotate_vertice_list(centroid, vertice, angle)
         return vertice
@@ -164,7 +171,9 @@ class AbstractWidget:
     def grouped(self, iterable: tuple[float, ...] | list[float], n: int) -> zip:
         return zip(*[iter(iterable)] * n)
 
-    def rotate_vertice_list(self, origin: tuple[float, float], vertices_list: tuple[float, ...] | list[float], angle: float) -> list[float]:
+    def rotate_vertice_list(
+        self, origin: tuple[float, float], vertices_list: tuple[float, ...] | list[float], angle: float
+    ) -> list[float]:
         ox: float
         oy: float
         ox, oy = origin

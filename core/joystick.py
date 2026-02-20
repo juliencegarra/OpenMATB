@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 import pyglet.input
 
@@ -30,7 +30,7 @@ class Joystick:
         self.keys.update({f"JOY_HAT_{side}": False for side in hat_sides})
 
         # Create a parallel dict of keys for tracking key changes
-        self.key_change: dict[str, Optional[str]] = {key: None for key in self.keys}
+        self.key_change: dict[str, str | None] = {key: None for key in self.keys}
 
     def open(self) -> None:
         self.device.open()
@@ -87,8 +87,8 @@ class Joystick:
                 logger.record_input("Joystick", key, "release")
 
 
-joykey: Optional[dict[str, bool]] = None
-joystick: Optional[Joystick] = None
+joykey: dict[str, bool] | None = None
+joystick: Joystick | None = None
 # Search and find a joystick
 joysticks: list[Any] = pyglet.input.get_joysticks()
 

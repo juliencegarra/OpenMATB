@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from pyglet.app import EventLoop
 
@@ -25,13 +25,13 @@ class Scheduler:
     This class manages events execution.
     """
 
-    def __init__(self, scenario_path: Optional[Path] = None) -> None:
+    def __init__(self, scenario_path: Path | None = None) -> None:
         with open("VERSION", "r") as f:
             logger.log_manual_entry(f.read().strip(), key="version")
 
         self.clock: Clock = Clock("main")
         self.scenario_time: float = 0
-        self.scenario_path: Optional[Path] = scenario_path
+        self.scenario_path: Path | None = scenario_path
 
         # Create the event loop
         self.clock.schedule(self.update)
@@ -43,8 +43,8 @@ class Scheduler:
         Window.MainWindow.display_session_id()
         self.event_loop.run()
 
-    def set_scenario(self, events: Optional[list[str]] = None) -> None:
-        scenario_path: Optional[Path] = self.scenario_path if events is None else None
+    def set_scenario(self, events: list[str] | None = None) -> None:
+        scenario_path: Path | None = self.scenario_path if events is None else None
         self.scenario: Scenario = Scenario(events, scenario_path=scenario_path)
 
         self.events: list[Event] = self.scenario.events
@@ -64,7 +64,7 @@ class Scheduler:
 
         # We store events in a list in case their execution is delayed by a blocking event
         self.events_queue: list[Event] = list()
-        self.blocking_plugin: Optional[Any] = None
+        self.blocking_plugin: Any | None = None
 
         # Store the plugins that could be paused by a *blocking* event
         self.paused_plugins: list[Any] = list()
@@ -132,12 +132,12 @@ class Scheduler:
 
     def execute_events(self) -> None:
         # Detect a potential blocking plugin
-        active_blocking_plugin: Optional[Any] = self.get_active_blocking_plugin()
+        active_blocking_plugin: Any | None = self.get_active_blocking_plugin()
 
         # Execute scenario events in case the scenario timer is running
         if not self.is_scenario_time_paused():
             if active_blocking_plugin is None:
-                event: Optional[Event] = self.get_event_at_scenario_time(self.scenario_time)
+                event: Event | None = self.get_event_at_scenario_time(self.scenario_time)
                 if event is not None:
                     self.execute_one_event(event)
 
@@ -171,7 +171,7 @@ class Scheduler:
         self.pause_scenario_time = not self.pause_scenario_time
         return self.is_scenario_time_paused()
 
-    def get_active_blocking_plugin(self) -> Optional[Any]:
+    def get_active_blocking_plugin(self) -> Any | None:
         p: list[Any] = self.get_plugins_by_states([("blocking", True), ("paused", False)])
         if len(p) > 0:
             return p[0]
@@ -229,7 +229,7 @@ class Scheduler:
             plugins = {k: p for k, p in plugins.items() if getattr(p, attribute) == state}
         return [p for _, p in plugins.items()]
 
-    def get_event_at_scenario_time(self, scenario_time: float) -> Optional[Event]:
+    def get_event_at_scenario_time(self, scenario_time: float) -> Event | None:
         # Retrieve (simultaneous) events matching scenario_duration_sec
         # We look to the most precise point in the near future that might matches a set of event time(s)
         events_time: list[Event] = [event for event in self.events if event.time_sec <= scenario_time]
@@ -245,7 +245,7 @@ class Scheduler:
 
         return self.unqueue_event()
 
-    def unqueue_event(self) -> Optional[Event]:
+    def unqueue_event(self) -> Event | None:
         # If some events must be executed, unstack the next event
         if len(self.events_queue) > 0:
             event: Event = self.events_queue[0]

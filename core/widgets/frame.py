@@ -4,8 +4,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from pyglet.gl import GL_QUADS
 
 from core.constants import COLORS as C
@@ -24,7 +22,7 @@ class Frame(AbstractWidget):
         self,
         name: str,
         container: Container,
-        fill_color: Optional[tuple[int, int, int, int]] = C["BACKGROUND"],
+        fill_color: tuple[int, int, int, int] | None = C["BACKGROUND"],
         border_color: tuple[int, int, int, int] = C["BACKGROUND"],
         border_thickness: float = 0,
         draw_order: int = 1,
