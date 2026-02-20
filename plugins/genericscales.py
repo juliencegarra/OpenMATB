@@ -27,6 +27,14 @@ class Genericscales(BlockingPlugin):
 
 
     def make_slide_graphs(self):
+        # Remove old slider/label widgets from previous slide
+        for key in list(self.sliders):
+            fullname = self.get_widget_fullname(key)
+            self.widgets.pop(fullname, None)
+            label_fullname = self.get_widget_fullname(key.replace('slider_', 'label_'))
+            self.widgets.pop(label_fullname, None)
+        self.sliders.clear()
+
         super().make_slide_graphs()
 
         scales = self.current_slide.split('\n')
