@@ -99,7 +99,9 @@ class TestDynamicLayoutNoOverlap:
 
     def test_short_text_no_overlap(self, gs):
         slide = "My Title;My Question;Low/High;0/100/50"
-        containers = run_make_slide_graphs(gs, slide, {"My Title": 20, "My Question": 20})
+        containers = run_make_slide_graphs(
+            gs, slide, {"My Title": 20, "My Question": 20}
+        )
 
         title_c = containers["title_1"]
         question_c = containers["label_1"]
@@ -112,7 +114,12 @@ class TestDynamicLayoutNoOverlap:
     def test_long_text_no_overlap(self, gs):
         slide = "Section Header;A very long question that wraps across multiple lines on screen;Low/High;0/100/50"
         containers = run_make_slide_graphs(
-            gs, slide, {"Section Header": 30, "A very long question that wraps across multiple lines on screen": 90}
+            gs,
+            slide,
+            {
+                "Section Header": 30,
+                "A very long question that wraps across multiple lines on screen": 90,
+            },
         )
 
         title_c = containers["title_1"]
@@ -127,7 +134,9 @@ class TestDynamicLayoutNoOverlap:
         """Even when text measured heights exceed the container, no overlap."""
         slide = "Big Title;Enormous question;Low/High;0/100/50"
         # Heights exceed any reasonable container
-        containers = run_make_slide_graphs(gs, slide, {"Big Title": 200, "Enormous question": 300})
+        containers = run_make_slide_graphs(
+            gs, slide, {"Big Title": 200, "Enormous question": 300}
+        )
 
         title_c = containers["title_1"]
         question_c = containers["label_1"]
@@ -153,15 +162,21 @@ class TestDynamicLayoutBounds:
 
         parent = self._get_scale_container(gs)
         for name in ["title_1", "label_1", "slider_1"]:
-            assert within(containers[name], parent), f"{name} outside parent: {containers[name]} vs {parent}"
+            assert within(
+                containers[name], parent
+            ), f"{name} outside parent: {containers[name]} vs {parent}"
 
     def test_long_text_within_bounds(self, gs):
         slide = "Title;A long question;Low/High;0/100/50"
-        containers = run_make_slide_graphs(gs, slide, {"Title": 30, "A long question": 80})
+        containers = run_make_slide_graphs(
+            gs, slide, {"Title": 30, "A long question": 80}
+        )
 
         parent = self._get_scale_container(gs)
         for name in ["title_1", "label_1", "slider_1"]:
-            assert within(containers[name], parent), f"{name} outside parent: {containers[name]} vs {parent}"
+            assert within(
+                containers[name], parent
+            ), f"{name} outside parent: {containers[name]} vs {parent}"
 
 
 class TestSliderMinimumHeight:
@@ -242,9 +257,13 @@ class TestMultipleScales:
     """Multiple questions on the same slide should not overlap."""
 
     def test_two_scales_with_titles_no_overlap(self, gs):
-        slide = "Title A;Question A;Low/High;0/100/50\nTitle B;Question B;Bad/Good;1/10/5"
+        slide = (
+            "Title A;Question A;Low/High;0/100/50\nTitle B;Question B;Bad/Good;1/10/5"
+        )
         containers = run_make_slide_graphs(
-            gs, slide, {"Title A": 20, "Question A": 20, "Title B": 20, "Question B": 20}
+            gs,
+            slide,
+            {"Title A": 20, "Question A": 20, "Title B": 20, "Question B": 20},
         )
 
         # Within each scale: no overlap
@@ -303,7 +322,7 @@ class TestKeyboardNavigation:
 
     def test_down_increments_index(self, gs_with_keys):
         self._add_mock_sliders(gs_with_keys, 3)
-        with patch.object(type(gs_with_keys), '_mock_modal', None, create=True):
+        with patch.object(type(gs_with_keys), "_mock_modal", None, create=True):
             pass
         # Mock the Window for filter_key
         with patch("plugins.abstractplugin.Window") as mock_win:
