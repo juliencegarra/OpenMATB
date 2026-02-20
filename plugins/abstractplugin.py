@@ -386,7 +386,7 @@ class AbstractPlugin:
         # If a key is changed, renew the self.keys list
         if 'key' in keys_str:
             self.keys.add(value)
-            if old_value in self.keys:
+            if old_value in self.keys and old_value != value:
                 self.keys.remove(old_value)
         return dic
 

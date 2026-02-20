@@ -110,6 +110,14 @@ class TestSetParameter:
         assert 'NEW' in p.keys
         assert 'OLD' not in p.keys
 
+    def test_key_parameter_same_value_stays_in_keys(self):
+        """Setting a key parameter to its current value must not remove it."""
+        p = _make_plugin()
+        p.parameters['mykey'] = 'NUM_1'
+        p.keys.add('NUM_1')
+        p.set_parameter('mykey', 'NUM_1')
+        assert 'NUM_1' in p.keys
+
 
 class TestComputeNextPluginState:
     def test_returns_false_when_paused(self):
