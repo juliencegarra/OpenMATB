@@ -35,10 +35,15 @@ _ns = {
 
 _ns.update({"Any": Any, "Optional": Optional, "Union": Union})
 
+# Find the __future__ import to include with each function (needed for Python 3.9)
+_future_imports = [n for n in _tree.body
+                   if isinstance(n, ast.ImportFrom) and n.module == "__future__"]
+
 # Compile and exec each function definition in isolation
 for _node in _tree.body:
     if isinstance(_node, ast.FunctionDef):
-        _func_code = compile(ast.Module(body=[_node], type_ignores=[]), str(_source_path), "exec")
+        _func_code = compile(ast.Module(body=_future_imports + [_node], type_ignores=[]),
+                             str(_source_path), "exec")
         exec(_func_code, _ns)
 
 # Bind the extracted functions
