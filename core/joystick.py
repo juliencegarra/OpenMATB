@@ -5,8 +5,8 @@ from typing import Any
 import pyglet.input
 
 from core.constants import REPLAY_MODE
-from core.error import errors
-from core.logger import logger
+from core.error import get_errors
+from core.logger import get_logger
 
 hat_sides: list[str] = ["LEFT", "UP", "RIGHT", "DOWN"]
 
@@ -48,10 +48,10 @@ class Joystick:
         # Update x & y joystick values
         if self.device.x != self.x:
             self.x = self.device.x
-            logger.record_input("joystick", "x", self.x)
+            get_logger().record_input("joystick", "x", self.x)
         if self.device.y != self.y:
             self.y = self.device.y
-            logger.record_input("joystick", "y", self.y)
+            get_logger().record_input("joystick", "y", self.y)
 
         # Update button values
         # (Keep a copy of previous state to check for state changes)
@@ -81,10 +81,10 @@ class Joystick:
         for key in self.keys:
             if previous_state[key] is False and self.keys[key] is True:  # Press
                 self.key_change[key] = "press"
-                logger.record_input("Joystick", key, "press")
+                get_logger().record_input("Joystick", key, "press")
             elif previous_state[key] is True and self.keys[key] is False:  # Released
                 self.key_change[key] = "released"
-                logger.record_input("Joystick", key, "release")
+                get_logger().record_input("Joystick", key, "release")
 
 
 joykey: dict[str, bool] | None = None
@@ -98,4 +98,4 @@ if not REPLAY_MODE:
         joystick = Joystick(joystick_device)
         joykey = joystick.keys
     else:
-        errors.add_error(_("No joystick found"))
+        get_errors().add_error(_("No joystick found"))

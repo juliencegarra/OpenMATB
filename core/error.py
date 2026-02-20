@@ -2,6 +2,20 @@ from __future__ import annotations
 
 from core.window import Window
 
+_errors: Errors | None = None
+
+
+def get_errors() -> Errors:
+    global _errors
+    if _errors is None:
+        _errors = Errors()
+    return _errors
+
+
+def set_errors(e: Errors | None) -> None:
+    global _errors
+    _errors = e
+
 
 class Errors:
     def __init__(self) -> None:
@@ -24,5 +38,3 @@ class Errors:
                 continue_key: str | None = None if self.some_fatals else "SPACE"
                 Window.MainWindow.open_modal_window(pass_list, title=title, continue_key=continue_key, exit_key="Q")
 
-
-errors: Errors = Errors()

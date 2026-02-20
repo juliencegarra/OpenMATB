@@ -7,8 +7,8 @@ from __future__ import annotations
 from typing import Any, Callable
 
 from core import validation
-from core.error import errors
-from core.logger import logger
+from core.error import get_errors
+from core.logger import get_logger
 from plugins.abstractplugin import AbstractPlugin
 
 
@@ -24,13 +24,13 @@ class Parallelport(AbstractPlugin):
         try:
             import parallel
         except ImportError:
-            errors.add_error(_("Python Parallel module is missing. Skipping parallel plugin"))
+            get_errors().add_error(_("Python Parallel module is missing. Skipping parallel plugin"))
             return
 
         try:
             self._port: Any = parallel.Parallel()
         except OSError:  # Exception under Linux platforms : FileNotFoundError (/dev/parport0)
-            errors.add_error(_("The physical parallel port was not found."))
+            get_errors().add_error(_("The physical parallel port was not found."))
         else:
             self._downvalue: int = 0
             self.parameters.update({"trigger": self._downvalue, "delayms": 5})
@@ -46,7 +46,7 @@ class Parallelport(AbstractPlugin):
     def set_trigger_value(self, value: int) -> None:
         self._port.setData(value)
         self._triggertimerms = 0
-        logger.record_state(f"{self.alias}_trigger", "value", value)
+        get_logger().record_state(f"{self.alias}_trigger", "value", value)
         self._last_trigger = value
 
     def compute_next_plugin_state(self) -> None:

@@ -12,10 +12,10 @@ from pyglet.app import EventLoop
 
 from core.clock import Clock
 from core.constants import REPLAY_MODE, SYSTEM_PSEUDO_PLUGIN
-from core.error import errors
+from core.error import get_errors
 from core.event import Event
 from core.joystick import joystick
-from core.logger import logger
+from core.logger import get_logger
 from core.scenario import Scenario
 from core.window import Window
 
@@ -27,7 +27,7 @@ class Scheduler:
 
     def __init__(self, scenario_path: Path | None = None) -> None:
         with open("VERSION", "r") as f:
-            logger.log_manual_entry(f.read().strip(), key="version")
+            get_logger().log_manual_entry(f.read().strip(), key="version")
 
         self.clock: Clock = Clock("main")
         self.scenario_time: float = 0
@@ -72,8 +72,8 @@ class Scheduler:
     def update(self, dt: float) -> None:
         if Window.MainWindow.modal_dialog is not None:
             return
-        elif not errors.is_empty():
-            errors.show_errors()
+        elif not get_errors().is_empty():
+            get_errors().show_errors()
 
         self.update_timers(dt)
         self.update_joystick()
@@ -85,7 +85,7 @@ class Scheduler:
         # Update timers with dt
         if not self.is_scenario_time_paused():
             self.scenario_time += dt
-            logger.set_scenario_time(self.scenario_time)
+            get_logger().set_scenario_time(self.scenario_time)
 
     def update_active_plugins(self) -> None:
         for p in self.get_active_plugins():
@@ -202,14 +202,14 @@ class Scheduler:
 
         # The event can be logged whenever inside the method, since self.durations remain
         # constant all along it
-        logger.record_event(event)
+        get_logger().record_event(event)
 
     def _execute_system_command(self, event: Event) -> None:
         command: str = event.command[0]
         if command == "pause":
             Window.MainWindow.pause_prompt()
         event.done = 1
-        logger.record_event(event)
+        get_logger().record_event(event)
 
     def execute_plugins_methods(self, plugins: list[Any], methods: str | list[str]) -> None:
         if len(plugins) == 0:
@@ -255,7 +255,7 @@ class Scheduler:
         return None
 
     def exit(self) -> None:
-        logger.log_manual_entry("end")
+        get_logger().log_manual_entry("end")
         self.event_loop.exit()
         Window.MainWindow.close()  # needed for windows clean exit
         sys.exit(0)

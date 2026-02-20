@@ -107,7 +107,7 @@ class TestExecuteSystemCommand:
         from core.scheduler import Scheduler
 
         mock_log = MagicMock()
-        monkeypatch.setattr(core.scheduler, "logger", mock_log)
+        monkeypatch.setattr(core.scheduler, "get_logger", lambda: mock_log)
 
         sched = object.__new__(Scheduler)
         sched.plugins = {}
@@ -125,7 +125,7 @@ class TestExecuteSystemCommand:
         from core.scheduler import Scheduler
 
         mock_log = MagicMock()
-        monkeypatch.setattr(core.scheduler, "logger", mock_log)
+        monkeypatch.setattr(core.scheduler, "get_logger", lambda: mock_log)
 
         sched = object.__new__(Scheduler)
         mock_plugin = MagicMock()

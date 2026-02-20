@@ -9,14 +9,19 @@ from typing import TypeVar
 from rstr import xeger as rstrxeger
 
 from core.constants import REPLAY_MODE
-from core.logger import logger
+from core.logger import get_logger
 from core.utils import find_the_last_session_number
 
 T = TypeVar("T")
 
-SESSION_ID: int = logger.session_id if not REPLAY_MODE else find_the_last_session_number()
 plugins_using_seed: list[str] = ["communications", "sysmon"]  # Used to convert a plugin alias into
 # a unique integer
+
+
+def _get_session_id() -> int:
+    if not REPLAY_MODE:
+        return get_logger().session_id
+    return find_the_last_session_number()
 
 
 def plugin_alias_to_int(plugin_alias: str) -> int:
@@ -26,7 +31,7 @@ def plugin_alias_to_int(plugin_alias: str) -> int:
 def set_seed(plugin_alias: str, scenario_time_sec: float, add: int = 0) -> int:
     # `add` is used in case multiple seeds must be generated at the same time (second precision)
     unique_plugin_int: int = plugin_alias_to_int(plugin_alias)
-    seed: int = int(SESSION_ID) + unique_plugin_int + int(scenario_time_sec) + add
+    seed: int = int(_get_session_id()) + unique_plugin_int + int(scenario_time_sec) + add
     random.seed(seed)
     return seed
 
@@ -34,33 +39,33 @@ def set_seed(plugin_alias: str, scenario_time_sec: float, add: int = 0) -> int:
 def choice(arg: Sequence[T], plugin_name: str, scenario_time: float, add: int = 1) -> T:
     seed: int = set_seed(plugin_name, scenario_time, add)
     output: T = random.choice(arg)
-    logger.record_a_pseudorandom_value(plugin_name, seed, output)
+    get_logger().record_a_pseudorandom_value(plugin_name, seed, output)
     return output
 
 
 def sample(arg: Sequence[T], plugin_name: str, scenario_time: float, add: int) -> T:
     seed: int = set_seed(plugin_name, scenario_time, add)
     output: T = random.sample(arg, 1)[0]
-    logger.record_a_pseudorandom_value(plugin_name, seed, output)
+    get_logger().record_a_pseudorandom_value(plugin_name, seed, output)
     return output
 
 
 def randint(arg1: int, arg2: int, plugin_name: str, scenario_time: float) -> int:
     seed: int = set_seed(plugin_name, scenario_time)
     output: int = random.randint(arg1, arg2)
-    logger.record_a_pseudorandom_value(plugin_name, seed, output)
+    get_logger().record_a_pseudorandom_value(plugin_name, seed, output)
     return output
 
 
 def uniform(arg1: float, arg2: float, plugin_name: str, scenario_time: float, add: int) -> float:
     seed: int = set_seed(plugin_name, scenario_time, add)
     output: float = random.uniform(arg1, arg2)
-    logger.record_a_pseudorandom_value(plugin_name, seed, output)
+    get_logger().record_a_pseudorandom_value(plugin_name, seed, output)
     return output
 
 
 def xeger(call_rgx: str, plugin_name: str, scenario_time: float, add: int) -> str:
     seed: int = set_seed(plugin_name, scenario_time, add)
     output: str = rstrxeger(call_rgx)
-    logger.record_a_pseudorandom_value(plugin_name, seed, output)
+    get_logger().record_a_pseudorandom_value(plugin_name, seed, output)
     return output

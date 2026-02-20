@@ -202,8 +202,8 @@ class TestExit:
 
 class TestOnKeyPress:
     @patch("core.window.REPLAY_MODE", False)
-    @patch("core.window.logger")
-    def test_regular_key_updates_keyboard(self, mock_logger):
+    @patch("core.window.get_logger")
+    def test_regular_key_updates_keyboard(self, mock_get_logger):
         """Key press sets keyboard[key] to True."""
         w = _make_window()
         # Simulate pressing 'A' (code 0x41)
@@ -211,17 +211,17 @@ class TestOnKeyPress:
         assert w.keyboard["A"] is True
 
     @patch("core.window.REPLAY_MODE", False)
-    @patch("core.window.logger")
-    def test_logs_key_press(self, mock_logger):
+    @patch("core.window.get_logger")
+    def test_logs_key_press(self, mock_get_logger):
         """Key press is logged."""
         w = _make_window()
         w.on_key_press(0x41, 0)
-        mock_logger.record_input.assert_called_once_with("keyboard", "A", "press")
+        mock_get_logger.return_value.record_input.assert_called_once_with("keyboard", "A", "press")
 
     @patch("core.window.REPLAY_MODE", False)
-    @patch("core.window.logger")
+    @patch("core.window.get_logger")
     @patch("core.window.ModalDialog")
-    def test_escape_triggers_exit_prompt(self, mock_dialog, mock_logger):
+    def test_escape_triggers_exit_prompt(self, mock_dialog, mock_get_logger):
         """Escape creates exit dialog."""
         w = _make_window()
         w.on_key_press(0xFF1B, 0)  # ESCAPE
@@ -229,9 +229,9 @@ class TestOnKeyPress:
         mock_dialog.assert_called_once()
 
     @patch("core.window.REPLAY_MODE", False)
-    @patch("core.window.logger")
+    @patch("core.window.get_logger")
     @patch("core.window.ModalDialog")
-    def test_p_triggers_pause_prompt(self, mock_dialog, mock_logger):
+    def test_p_triggers_pause_prompt(self, mock_dialog, mock_get_logger):
         """P key creates pause dialog."""
         w = _make_window()
         w.on_key_press(0x50, 0)  # P
@@ -239,17 +239,17 @@ class TestOnKeyPress:
         mock_dialog.assert_called_once()
 
     @patch("core.window.REPLAY_MODE", True)
-    @patch("core.window.logger")
-    def test_replay_mode_ignores_keys(self, mock_logger):
+    @patch("core.window.get_logger")
+    def test_replay_mode_ignores_keys(self, mock_get_logger):
         """Replay mode ignores regular key presses."""
         w = _make_window()
         w.on_key_press(0x41, 0)
         assert "A" not in w.keyboard
-        mock_logger.record_input.assert_not_called()
+        mock_get_logger.return_value.record_input.assert_not_called()
 
     @patch("core.window.REPLAY_MODE", False)
-    @patch("core.window.logger")
-    def test_modal_dialog_blocks_key(self, mock_logger):
+    @patch("core.window.get_logger")
+    def test_modal_dialog_blocks_key(self, mock_get_logger):
         """Active modal dialog blocks key handling."""
         w = _make_window(modal_dialog=MagicMock())
         w.on_key_press(0x41, 0)
@@ -258,8 +258,8 @@ class TestOnKeyPress:
 
 class TestOnKeyRelease:
     @patch("core.window.REPLAY_MODE", False)
-    @patch("core.window.logger")
-    def test_updates_keyboard_state(self, mock_logger):
+    @patch("core.window.get_logger")
+    def test_updates_keyboard_state(self, mock_get_logger):
         """Key release sets keyboard[key] to False."""
         w = _make_window()
         w.keyboard["A"] = True
@@ -267,33 +267,33 @@ class TestOnKeyRelease:
         assert w.keyboard["A"] is False
 
     @patch("core.window.REPLAY_MODE", False)
-    @patch("core.window.logger")
-    def test_logs_release(self, mock_logger):
+    @patch("core.window.get_logger")
+    def test_logs_release(self, mock_get_logger):
         """Key release is logged."""
         w = _make_window()
         w.keyboard["A"] = True
         w.on_key_release(0x41, 0)
-        mock_logger.record_input.assert_called_once_with("keyboard", "A", "release")
+        mock_get_logger.return_value.record_input.assert_called_once_with("keyboard", "A", "release")
 
     @patch("core.window.REPLAY_MODE", False)
-    @patch("core.window.logger")
-    def test_modal_dialog_captures_release(self, mock_logger):
+    @patch("core.window.get_logger")
+    def test_modal_dialog_captures_release(self, mock_get_logger):
         """Modal dialog captures key release."""
         mock_dialog = MagicMock()
         w = _make_window(modal_dialog=mock_dialog)
         w.on_key_release(0x41, 0)
         mock_dialog.on_key_release.assert_called_once_with(0x41, 0)
-        mock_logger.record_input.assert_not_called()
+        mock_get_logger.return_value.record_input.assert_not_called()
 
     @patch("core.window.REPLAY_MODE", True)
-    @patch("core.window.logger")
-    def test_replay_mode_ignores_release(self, mock_logger):
+    @patch("core.window.get_logger")
+    def test_replay_mode_ignores_release(self, mock_get_logger):
         """Replay mode ignores key releases."""
         w = _make_window()
         w.keyboard["A"] = True
         w.on_key_release(0x41, 0)
         assert w.keyboard["A"] is True  # Unchanged
-        mock_logger.record_input.assert_not_called()
+        mock_get_logger.return_value.record_input.assert_not_called()
 
 
 class TestSetSizeAndLocation:

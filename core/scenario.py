@@ -11,9 +11,9 @@ import plugins  # noqa: F401 — needed by globals()["plugins"] for dynamic plug
 from core import validation
 from core.constants import DEPRECATED, REPLAY_MODE, SYSTEM_COMMANDS, SYSTEM_PSEUDO_PLUGIN
 from core.constants import PATHS as P
-from core.error import errors
+from core.error import get_errors
 from core.event import Event
-from core.logger import logger
+from core.logger import get_logger
 from core.utils import get_conf_value
 
 
@@ -36,9 +36,9 @@ class Scenario:
             if sp.exists():
                 with open(sp, "r") as f:
                     contents = f.readlines()
-                logger.log_manual_entry(sp, key="scenario_path")
+                get_logger().log_manual_entry(sp, key="scenario_path")
             else:
-                errors.add_error(_("%s was not found") % str(sp), fatal=True)
+                get_errors().add_error(_("%s was not found") % str(sp), fatal=True)
 
         # Convert the scenario content into a list of events #
         # (Squeeze empty and commented [#] lines)
@@ -54,7 +54,7 @@ class Scenario:
             if event.plugin == SYSTEM_PSEUDO_PLUGIN:
                 continue
             if not hasattr(globals()["plugins"], event.plugin.capitalize()):
-                errors.add_error(
+                get_errors().add_error(
                     _("Scenario error: %s is not a valid plugin name (l. %s)") % (event.plugin, event.line), fatal=True
                 )
 
@@ -73,7 +73,7 @@ class Scenario:
                 print(_("No error"), file=errorf)
 
         if len(event_errors) > 0:
-            errors.add_error(
+            get_errors().add_error(
                 _("There were some errors in the scenario. See the %s file.") % P["SCENARIO_ERRORS"].name, fatal=True
             )
 

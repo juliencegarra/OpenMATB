@@ -14,6 +14,20 @@ from typing import IO, Any
 from core.constants import PATHS, REPLAY_MODE
 from core.utils import find_the_first_available_session_number
 
+_logger: Logger | None = None
+
+
+def get_logger() -> Logger:
+    global _logger
+    if _logger is None:
+        _logger = Logger()
+    return _logger
+
+
+def set_logger(lg: Logger | None) -> None:
+    global _logger
+    _logger = lg
+
 
 class Logger:
     def __init__(self) -> None:
@@ -142,5 +156,3 @@ class Logger:
     def set_scenario_time(self, scenario_time: float) -> None:
         self.scenario_time = scenario_time
 
-
-logger: Logger = Logger()

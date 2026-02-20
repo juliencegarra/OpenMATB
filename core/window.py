@@ -18,7 +18,7 @@ from core.constants import PATHS as P
 from core.constants import PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE, REPLAY_STRIP_PROPORTION
 from core.constants import Group as G
 from core.container import Container
-from core.logger import logger
+from core.logger import get_logger
 from core.modaldialog import ModalDialog
 from core.utils import get_conf_value
 
@@ -61,7 +61,7 @@ class Window(Window):
     def display_session_id(self) -> None:
         # Display the session ID if needed at window instanciation
         if not REPLAY_MODE and get_conf_value("Openmatb", "display_session_number"):
-            msg: str = _("Session ID: %s") % logger.session_id
+            msg: str = _("Session ID: %s") % get_logger().session_id
             title: str = "OpenMATB"
 
             self.modal_dialog = ModalDialog(self, msg, title)
@@ -76,7 +76,9 @@ class Window(Window):
         screens: list[Any] = get_display().get_screens()
         if screen_index + 1 > len(screens):
             screen: Any = screens[-1]
-            errors.add_error(  # noqa: F821
+            from core.error import get_errors
+
+            get_errors().add_error(
                 _(
                     "In config.ini, the specified screen index exceeds the number of"
                     " available screens (%s). Last screen selected."
@@ -160,7 +162,7 @@ class Window(Window):
             elif keystr == "P":
                 self.pause_prompt()
 
-            logger.record_input("keyboard", keystr, "press")
+            get_logger().record_input("keyboard", keystr, "press")
 
     def on_key_release(self, symbol: int, modifiers: int) -> None:
         if self.modal_dialog is not None:
@@ -172,7 +174,7 @@ class Window(Window):
 
         keystr: str = winkey.symbol_string(symbol)
         self.keyboard[keystr] = False  # KeyStateHandler
-        logger.record_input("keyboard", keystr, "release")
+        get_logger().record_input("keyboard", keystr, "release")
 
     def exit_prompt(self) -> None:
         self.modal_dialog = ModalDialog(self, _("You hit the Escape key"), title=_("Exit OpenMATB?"), exit_key="q")

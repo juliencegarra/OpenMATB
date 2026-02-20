@@ -14,7 +14,7 @@ from core.constants import BFLIM, PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.container import Container
-from core.logger import logger
+from core.logger import get_logger
 from core.widgets import Frame, SimpleHTML, Simpletext
 from core.window import Window
 
@@ -27,7 +27,7 @@ class AbstractPlugin:
         self.alias: str = self.__class__.__name__.lower()  #   A lower version of the plugin class name
         self.widgets: dict[str, Any] = dict()  #   To store the widget objects of a plugin
         self.container: Container | None = None  #   The visual area of the plugin (object)
-        self.logger: Any = logger
+        self.logger: Any = get_logger()
 
         self.can_receive_keys: bool = False
         self.can_execute_keys: bool = False
@@ -387,7 +387,7 @@ class AbstractPlugin:
             if isinstance(value, dict):  # Recursion search
                 self.log_all_parameters(value, new_key_prefix)
             else:  # Value found
-                logger.record_parameter(self.alias, new_key_prefix, value)
+                get_logger().record_parameter(self.alias, new_key_prefix, value)
 
     def log_performance(self, name: str, value: Any) -> None:
         if not hasattr(self, "performance"):
