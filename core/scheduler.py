@@ -69,10 +69,21 @@ class Scheduler:
         # Store the plugins that could be paused by a *blocking* event
         self.paused_plugins: list[Any] = list()
 
+        # Track whether plugins have been paused due to a modal dialog (e.g. pause prompt)
+        self._dialog_paused: bool = False
+
     def update(self, dt: float) -> None:
         if Window.MainWindow.modal_dialog is not None:
+            if not self._dialog_paused:
+                self.execute_plugins_methods(self.get_active_plugins(), ["pause"])
+                self._dialog_paused = True
             return
-        elif not get_errors().is_empty():
+
+        if self._dialog_paused:
+            self.execute_plugins_methods(self.get_active_plugins(), ["resume"])
+            self._dialog_paused = False
+
+        if not get_errors().is_empty():
             get_errors().show_errors()
 
         self.update_timers(dt)
