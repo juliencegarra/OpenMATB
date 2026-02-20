@@ -226,9 +226,9 @@ class Communications(AbstractPlugin):
                 self.logger.log_manual_entry(f"Audio file missing or unreadable: {wav_path}")
 
         if not sources:
-            return SourceGroup(None, None)
+            return SourceGroup()
 
-        group: Any = SourceGroup(sources[0].audio_format, sources[0].video_format)
+        group: Any = SourceGroup()
         for source in sources:
             group.add(source)
         return group

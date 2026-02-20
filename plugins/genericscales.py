@@ -45,9 +45,10 @@ class Genericscales(BlockingPlugin):
 
     def _measure_text_height(self, text: str, font_size: int, wrap_width_px: float, bold: bool = False) -> int:
         font_name: str = get_conf_value("Openmatb", "font_name")
-        tmp: Any = PygletLabel(
-            text, font_size=font_size, multiline=True, width=wrap_width_px, bold=bold, font_name=font_name
-        )
+        kwargs: dict[str, Any] = dict(font_size=font_size, multiline=True, width=wrap_width_px, font_name=font_name)
+        if bold:
+            kwargs["weight"] = "bold"
+        tmp: Any = PygletLabel(text, **kwargs)
         return tmp.content_height
 
     def make_slide_graphs(self) -> None:

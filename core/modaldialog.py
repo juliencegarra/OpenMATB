@@ -14,7 +14,7 @@ from core.constants import COLORS as C
 from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
-from core.rendering import get_program, get_group, polygon_indices
+from core.rendering import get_group, get_program, polygon_indices
 from core.utils import get_conf_value
 
 
@@ -43,10 +43,14 @@ class ModalDialog:
             l, b, w, h = MATB_container.get_lbwh()
             program = get_program()
             self.back_vertice: Any | None = program.vertex_list_indexed(
-                4, GL_TRIANGLES, polygon_indices(4),
-                batch=self.win.batch, group=get_group(order=20),
-                position=('f', (l, b + h, l + w, b + h, l + w, b, l, b)),
-                colors=('Bn', C['BACKGROUND'] * 4))
+                4,
+                GL_TRIANGLES,
+                polygon_indices(4),
+                batch=self.win.batch,
+                group=get_group(order=20),
+                position=("f", (l, b + h, l + w, b + h, l + w, b, l, b)),
+                colors=("Bn", C["BACKGROUND"] * 4),
+            )
         else:
             self.back_vertice = None
 
@@ -102,20 +106,24 @@ class ModalDialog:
         # Container background
         program = get_program()
         self.back_dialog: Any = program.vertex_list_indexed(
-            4, GL_TRIANGLES, polygon_indices(4),
-            batch=self.win.batch, group=get_group(order=21),
-            position=('f', (l, b + h, l + w, b + h, l + w, b, l, b)),
-            colors=('Bn', C['WHITE_TRANSLUCENT'] * 4))
+            4,
+            GL_TRIANGLES,
+            polygon_indices(4),
+            batch=self.win.batch,
+            group=get_group(order=21),
+            position=("f", (l, b + h, l + w, b + h, l + w, b, l, b)),
+            colors=("Bn", C["WHITE_TRANSLUCENT"] * 4),
+        )
 
         # Container border
         self.border_dialog: Any = program.vertex_list(
-            8, GL_LINES,
-            batch=self.win.batch, group=get_group(order=21),
-            position=('f', (l, b + h, l + w, b + h,
-                            l + w, b + h, l + w, b,
-                            l + w, b, l, b,
-                            l, b, l, b + h)),
-            colors=('Bn', C['GREY'] * 8))
+            8,
+            GL_LINES,
+            batch=self.win.batch,
+            group=get_group(order=21),
+            position=("f", (l, b + h, l + w, b + h, l + w, b + h, l + w, b, l + w, b, l, b, l, b, l, b + h)),
+            colors=("Bn", C["GREY"] * 8),
+        )
 
         # HTMLLabel placement #
         self.html_label.x = self.container.cx

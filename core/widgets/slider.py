@@ -126,13 +126,11 @@ class Slider(AbstractWidget):
         self.containers["allgroove"] = self.containers["slide"].get_reduced(slider_thumb_w, slider_groove_h)
 
         v1: tuple[float, ...] = self.vertice_border(self.containers["thumb"])
-        self.add_quad('thumb', G(self.draw_order + self.rank), v1, C['GREY'] * 4)
+        self.add_quad("thumb", G(self.draw_order + self.rank), v1, C["GREY"] * 4)
 
         v2: list[float] = self.get_groove_vertices()
-        self.add_polygon('groove_b', G(self.draw_order + self.rank),
-                         v2, C['BLUE'] * (len(v2) // 2))
-        self.add_line_loop('groove', G(self.draw_order + self.rank),
-                           v2, C['BLACK'] * (len(v2) // 2))
+        self.add_polygon("groove_b", G(self.draw_order + self.rank), v2, C["BLUE"] * (len(v2) // 2))
+        self.add_line_loop("groove", G(self.draw_order + self.rank), v2, C["BLACK"] * (len(v2) // 2))
 
     def get_groove_vertices(self) -> list[float]:
         groove_radius: float = self.containers["allgroove"].h
@@ -143,11 +141,11 @@ class Slider(AbstractWidget):
 
     def set_groove_position(self) -> None:
         new_verts: list[float] = self.get_groove_vertices()
-        if new_verts == self.get_positions('groove_b'):
+        if new_verts == self.get_positions("groove_b"):
             return
-        self.on_batch['groove_b'].position[:] = new_verts
+        self.on_batch["groove_b"].position[:] = new_verts
         new_line_pos, _ = line_loop_to_lines(new_verts)
-        self.on_batch['groove'].position[:] = new_line_pos
+        self.on_batch["groove"].position[:] = new_line_pos
 
     def set_value_label(self) -> None:
         if not self.showvalue:

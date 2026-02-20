@@ -29,8 +29,7 @@ class Simpletext(AbstractWidget):
         y_pos: float = self.container.b + y * self.container.h
         wrap_width_px: float = self.container.w * wrap_width
 
-        self.vertex["text"] = Label(
-            text,
+        label_kwargs: dict = dict(
             font_size=font_size,
             x=x_pos,
             y=y_pos,
@@ -43,6 +42,9 @@ class Simpletext(AbstractWidget):
             width=wrap_width_px,
             font_name=self.font_name,
         )
+        if bold:
+            label_kwargs["weight"] = "bold"
+        self.vertex["text"] = Label(text, **label_kwargs)
 
         # TODO   Is this first log needed ?
         # self.logger.record_state(self.name, 'text', text)

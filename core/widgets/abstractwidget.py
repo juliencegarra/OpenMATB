@@ -26,11 +26,16 @@ from core.constants import FONT_SIZES as F  # noqa: F401
 from core.constants import Group as G
 from core.container import Container
 from core.logger import Logger, get_logger
-from core.rendering import (get_program, get_group, quad_indices, polygon_indices,
-                             line_loop_to_lines, expand_colors_for_line_loop)
+from core.rendering import (
+    expand_colors_for_line_loop,
+    get_group,
+    get_program,
+    line_loop_to_lines,
+    polygon_indices,
+    quad_indices,
+)
 from core.utils import get_conf_value
 from core.window import Window
-
 
 
 class AbstractWidget:
@@ -83,23 +88,23 @@ class AbstractWidget:
 
     def add_quad(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
         """Register a quad (4 vertices, 2 triangles via indexing)."""
-        self.vertex[name] = ('quad', group, positions, colors)
+        self.vertex[name] = ("quad", group, positions, colors)
 
     def add_polygon(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
         """Register a convex polygon (fan triangulation via indexing)."""
-        self.vertex[name] = ('polygon', group, positions, colors)
+        self.vertex[name] = ("polygon", group, positions, colors)
 
     def add_lines(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
         """Register GL_LINES segments."""
-        self.vertex[name] = ('lines', group, positions, colors)
+        self.vertex[name] = ("lines", group, positions, colors)
 
     def add_triangles(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
         """Register GL_TRIANGLES."""
-        self.vertex[name] = ('triangles', group, positions, colors)
+        self.vertex[name] = ("triangles", group, positions, colors)
 
     def add_line_loop(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
         """Register a line loop (converted to GL_LINES on batch assignment)."""
-        self.vertex[name] = ('line_loop', group, positions, colors)
+        self.vertex[name] = ("line_loop", group, positions, colors)
 
     def show_aoi_highlight(self) -> None:
         """Add some AOI vertices (frame and text)"""
@@ -108,8 +113,7 @@ class AbstractWidget:
 
         if self.highlight_aoi is True:
             self.border_vertice: tuple[float, ...] = self.vertice_border(self.container)
-            self.add_lines('highlight', G(self.m_draw + 8),
-                           self.vertice_strip(self.border_vertice), C['RED'] * 8)
+            self.add_lines("highlight", G(self.m_draw + 8), self.vertice_strip(self.border_vertice), C["RED"] * 8)
 
             self.vertex[self.name] = Label(
                 self.name, x=self.container.x1 + 5, y=self.container.y1 - 15, color=C["RED"], group=G(self.m_draw + 8)
@@ -126,27 +130,39 @@ class AbstractWidget:
                 sg = get_group(order=group.order, parent=group.parent)
                 count = len(positions) // 2
 
-                if kind == 'quad':
+                if kind == "quad":
                     indices = quad_indices(count)
                     self.on_batch[name] = program.vertex_list_indexed(
-                        count, GL_TRIANGLES, indices, batch=batch, group=sg,
-                        position=('f', positions), colors=('Bn', colors))
-                elif kind == 'polygon':
+                        count,
+                        GL_TRIANGLES,
+                        indices,
+                        batch=batch,
+                        group=sg,
+                        position=("f", positions),
+                        colors=("Bn", colors),
+                    )
+                elif kind == "polygon":
                     indices = polygon_indices(count)
                     self.on_batch[name] = program.vertex_list_indexed(
-                        count, GL_TRIANGLES, indices, batch=batch, group=sg,
-                        position=('f', positions), colors=('Bn', colors))
-                elif kind == 'line_loop':
+                        count,
+                        GL_TRIANGLES,
+                        indices,
+                        batch=batch,
+                        group=sg,
+                        position=("f", positions),
+                        colors=("Bn", colors),
+                    )
+                elif kind == "line_loop":
                     new_pos, new_count = line_loop_to_lines(positions)
                     new_colors = expand_colors_for_line_loop(colors, count)
                     self.on_batch[name] = program.vertex_list(
-                        new_count, GL_LINES, batch=batch, group=sg,
-                        position=('f', new_pos), colors=('Bn', new_colors))
-                elif kind in ('lines', 'triangles'):
-                    gl_mode = GL_TRIANGLES if kind == 'triangles' else GL_LINES
+                        new_count, GL_LINES, batch=batch, group=sg, position=("f", new_pos), colors=("Bn", new_colors)
+                    )
+                elif kind in ("lines", "triangles"):
+                    gl_mode = GL_TRIANGLES if kind == "triangles" else GL_LINES
                     self.on_batch[name] = program.vertex_list(
-                        count, gl_mode, batch=batch, group=sg,
-                        position=('f', positions), colors=('Bn', colors))
+                        count, gl_mode, batch=batch, group=sg, position=("f", positions), colors=("Bn", colors)
+                    )
 
     def empty_batch(self) -> None:
         for name in list(self.vertex.keys()):

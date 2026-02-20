@@ -30,7 +30,7 @@ class PumpFlow(AbstractWidget):
 
         # Pump arrow #
         v: list[float] = self.get_triangle_vertice(h_ratio=0.25, x_ratio=-0.05, angle=3 * math.pi / 2)
-        self.add_triangles(f'{self.label}_arrow', G(self.m_draw + 2), v, C['BLACK'] * 3)
+        self.add_triangles(f"{self.label}_arrow", G(self.m_draw + 2), v, C["BLACK"] * 3)
 
     def pump_string(self, value: int) -> str:
         return f"{self.label}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t{value}"

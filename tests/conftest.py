@@ -186,18 +186,22 @@ sys.modules["pyglet.window"].Window = _FakePygletWindow
 sys.modules["pyglet.window"].key = key_mod
 
 # pyglet.graphics
+
+
 class _MockGroup:
     """Mock Group with order/parent attributes for rendering layer compatibility."""
+
     def __init__(self, order=0, parent=None):
         self.order = order
         self.parent = parent
+
 
 sys.modules["pyglet.graphics"].Group = _MockGroup
 sys.modules["pyglet.graphics"].Batch = MagicMock
 
 # pyglet.graphics.shader - use lambdas to avoid MagicMock spec issues with Python 3.13
-sys.modules['pyglet.graphics.shader'].Shader = lambda *args, **kwargs: MagicMock()
-sys.modules['pyglet.graphics.shader'].ShaderProgram = lambda *args, **kwargs: MagicMock()
+sys.modules["pyglet.graphics.shader"].Shader = lambda *args, **kwargs: MagicMock()
+sys.modules["pyglet.graphics.shader"].ShaderProgram = lambda *args, **kwargs: MagicMock()
 
 # pyglet.text
 sys.modules["pyglet.text"].Label = MagicMock
@@ -219,7 +223,7 @@ sys.modules["pyglet.media"].load = MagicMock()
 sys.modules["pyglet.canvas"].get_display = MagicMock()
 
 # pyglet.display (new in pyglet 2.x)
-sys.modules['pyglet.display'].get_display = MagicMock()
+sys.modules["pyglet.display"].get_display = MagicMock()
 
 # pyglet.image
 sys.modules["pyglet.image"].load = MagicMock()

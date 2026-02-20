@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import pyglet
-from pyglet.gl import GL_POLYGON
+from pyglet.gl import GL_TRIANGLES
 from pyglet.text import Label
 from pyglet.window import key as winkey
 from pyglet.window import mouse
@@ -19,6 +19,7 @@ from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.constants import PATHS as P
 from core.constants import Group as G
+from core.rendering import get_group, get_program, polygon_indices
 
 
 class FileSelector:
@@ -102,9 +103,17 @@ class FileSelector:
         h: int = self.win.height
 
         # Full-screen background
+        program = get_program()
+        indices = polygon_indices(4)
         self._vertices.append(
-            self.win.batch.add(
-                4, GL_POLYGON, self._BG_GROUP, ("v2f/static", (0, h, w, h, w, 0, 0, 0)), ("c4B", C["BACKGROUND"] * 4)
+            program.vertex_list_indexed(
+                4,
+                GL_TRIANGLES,
+                indices,
+                batch=self.win.batch,
+                group=get_group(order=self._BG_GROUP.order),
+                position=("f", (0, h, w, h, w, 0, 0, 0)),
+                colors=("Bn", C["BACKGROUND"] * 4),
             )
         )
 
@@ -139,8 +148,14 @@ class FileSelector:
         self._vertices.append(self._footer_label)
 
         # Highlight bar (dynamic vertices)
-        self._highlight: Any = self.win.batch.add(
-            4, GL_POLYGON, self._HIGHLIGHT_GROUP, ("v2f/dynamic", (0, 0, 0, 0, 0, 0, 0, 0)), ("c4B", C["BLUE"] * 4)
+        self._highlight: Any = program.vertex_list_indexed(
+            4,
+            GL_TRIANGLES,
+            indices,
+            batch=self.win.batch,
+            group=get_group(order=self._HIGHLIGHT_GROUP.order),
+            position=("f", (0, 0, 0, 0, 0, 0, 0, 0)),
+            colors=("Bn", C["BLUE"] * 4),
         )
         self._vertices.append(self._highlight)
 
@@ -195,9 +210,9 @@ class FileSelector:
             y: float = self._list_top - (vis_idx + 1) * self._row_height
             x: int = self._margin
             w: int = self._list_width
-            self._highlight.vertices = [x, y + self._row_height, x + w, y + self._row_height, x + w, y, x, y]
+            self._highlight.position[:] = [x, y + self._row_height, x + w, y + self._row_height, x + w, y, x, y]
         else:
-            self._highlight.vertices = [0, 0, 0, 0, 0, 0, 0, 0]
+            self._highlight.position[:] = [0, 0, 0, 0, 0, 0, 0, 0]
 
     def _ensure_visible(self) -> None:
         if self._selected_index < self._scroll_offset:

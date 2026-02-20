@@ -9,9 +9,7 @@ Uses a custom vec2 shader for 2D colored rendering, with a ShaderGroup
 that binds the program during batch.draw().
 """
 
-from pyglet.gl import (GL_TRIANGLES, GL_LINES, GL_BLEND,
-                        GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
-                        glEnable, glDisable, glBlendFunc)
+from pyglet.gl import GL_BLEND, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, glBlendFunc, glDisable, glEnable
 from pyglet.graphics import Group
 from pyglet.graphics.shader import Shader, ShaderProgram
 
@@ -63,10 +61,12 @@ class ShaderGroup(Group):
         self.program.unbind()
 
     def __eq__(self, other):
-        return (isinstance(other, ShaderGroup) and
-                self.program == other.program and
-                self.order == other.order and
-                self.parent == other.parent)
+        return (
+            isinstance(other, ShaderGroup)
+            and self.program == other.program
+            and self.order == other.order
+            and self.parent == other.parent
+        )
 
     def __hash__(self):
         return hash((self.program, self.order, self.parent))
@@ -76,8 +76,8 @@ def get_program():
     """Return a cached ShaderProgram singleton for 2D colored vertices."""
     global _program
     if _program is None:
-        vert_shader = Shader(_VERTEX_SHADER_SRC, 'vertex')
-        frag_shader = Shader(_FRAGMENT_SHADER_SRC, 'fragment')
+        vert_shader = Shader(_VERTEX_SHADER_SRC, "vertex")
+        frag_shader = Shader(_FRAGMENT_SHADER_SRC, "fragment")
         _program = ShaderProgram(vert_shader, frag_shader)
     return _program
 
@@ -130,6 +130,6 @@ def expand_colors_for_line_loop(colors, orig_n):
     result = []
     for i in range(orig_n):
         j = (i + 1) % orig_n
-        result.extend(colors[i * bpv:(i + 1) * bpv])
-        result.extend(colors[j * bpv:(j + 1) * bpv])
+        result.extend(colors[i * bpv : (i + 1) * bpv])
+        result.extend(colors[j * bpv : (j + 1) * bpv])
     return tuple(result)

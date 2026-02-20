@@ -348,10 +348,11 @@ class ReplayScheduler(Scheduler):
 
             # 1. Cursor position
             if "cursor_proportional" in state["address"] and "track" in self.plugins:
-                cursor_relative: tuple[float, float] = self.plugins["track"].reticle.proportional_to_relative(
-                    state["value"]
-                )
-                self.plugins["track"].cursor_position = cursor_relative
+                track = self.plugins["track"]
+                if not hasattr(track, "reticle"):
+                    continue
+                cursor_relative: tuple[float, float] = track.reticle.proportional_to_relative(state["value"])
+                track.cursor_position = cursor_relative
 
             # 2. Radio frequencies
             elif "radio_frequency" in state["address"] and "communications" in self.plugins:

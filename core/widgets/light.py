@@ -16,10 +16,9 @@ class Light(AbstractWidget):
         self.border_vertice: tuple[float, ...] = self.vertice_border(self.container)
         self.border_color: tuple[int, int, int, int] = C["BLACK"]
 
-        self.add_quad('background', G(self.m_draw), self.border_vertice, color * 4)
+        self.add_quad("background", G(self.m_draw), self.border_vertice, color * 4)
 
-        self.add_lines('border', G(self.m_draw + 1),
-                       self.vertice_strip(self.border_vertice), self.border_color * 8)
+        self.add_lines("border", G(self.m_draw + 1), self.vertice_strip(self.border_vertice), self.border_color * 8)
 
         self.vertex["label"] = Label(
             label.upper(),
