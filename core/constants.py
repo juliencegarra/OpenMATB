@@ -35,6 +35,9 @@ BFLIM = 15
 # Ignore these plugins arguments
 DEPRECATED = ['pumpstatus', 'end', 'cutofffrequency', 'equalproportions']
 
+SYSTEM_PSEUDO_PLUGIN = 'system'
+SYSTEM_COMMANDS = ['pause']
+
 PATHS = {k.upper():Path('.', k) for k in ['plugins', 'sessions']}
 PATHS.update({k.upper():Path('.', 'includes', k)
               for k in ['img', 'instructions', 'scenarios', 'sounds', 'questionnaires']})
