@@ -3,14 +3,14 @@
 # For each item, you must indicate the question, the name of the minimal scale value (e.g., Very Low), the name of the maximal scale value (e.g., Very high), as well as the minimum, maximum and default values for each question.
 
 # There are several commands that you might use to adapt the questionnaire to your needs.
-#   The <title> command will display a title
+#   The <note> command will display a title
 #   The <newpage> command will split the questionnaire into multiple parts
 
 # Each item must be formatted like the following :
 # Question;minimumName/maximumName;minimumValue/maximumValue/defaultValue
 # Here are some examples, with a <break> command.
 
-<title>Questionnaire example
+<h1>Questionnaire example</h1>
 Short title 1;Question 1;Minimum 1/Maximum 1;0/50/25
 Short title 2;Question 2;Minimum 2/Maximum 2;0/40/20
 <newpage>

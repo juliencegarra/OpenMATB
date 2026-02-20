@@ -33,6 +33,8 @@ class Genericscales(BlockingPlugin):
             self.widgets.pop(fullname, None)
             label_fullname = self.get_widget_fullname(key.replace('slider_', 'label_'))
             self.widgets.pop(label_fullname, None)
+            title_fullname = self.get_widget_fullname(key.replace('slider_', 'title_'))
+            self.widgets.pop(title_fullname, None)
         self.sliders.clear()
 
         super().make_slide_graphs()
@@ -51,15 +53,29 @@ class Genericscales(BlockingPlugin):
             scale_container = all_scales_container.reduce_and_translate(
                 height=height_in_prop, y=1-(1/(len(scale_list)))*l)
 
-            text_container = scale_container.reduce_and_translate(1, 0.4, 0, 1)
-            slider_container = scale_container.reduce_and_translate(1, 0.6, 0, 0)
-
             if regex_match(self.regex_scale_pattern, scale):
                 title, label, limit_labels, values = scale.strip().split(';')
                 label_min, label_max = limit_labels.split('/')
                 value_min, value_max, value_default = [int(v) for v in values.split('/')]
 
-                self.add_widget(f'label_{l+1}', Simpletext, container=text_container,
+                show_title = (title != label)
+
+                if show_title:
+                    title_container = scale_container.reduce_and_translate(1, 0.2, 0, 1)
+                    question_container = scale_container.reduce_and_translate(1, 0.2, 0, 0.6)
+                    slider_container = scale_container.reduce_and_translate(1, 0.6, 0, 0)
+
+                    self.add_widget(f'title_{l+1}', Simpletext,
+                                    container=title_container,
+                                    text=title, wrap_width=0.8,
+                                    font_size=F['MEDIUM'], bold=True,
+                                    draw_order=self.m_draw)
+                else:
+                    question_container = scale_container.reduce_and_translate(1, 0.4, 0, 1)
+                    slider_container = scale_container.reduce_and_translate(1, 0.6, 0, 0)
+
+                self.add_widget(f'label_{l+1}', Simpletext,
+                                container=question_container,
                                 text=label, wrap_width=0.8, font_size=F['MEDIUM'],
                                 draw_order=self.m_draw)
 
