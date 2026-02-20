@@ -11,8 +11,8 @@ from plugins import Instructions
 
 try:
     import pylsl
-except ImportError:
-    print("unable to import pylsl")
+except (ImportError, RuntimeError):
+    pylsl = None
 
 
 class Labstreaminglayer(Instructions):
