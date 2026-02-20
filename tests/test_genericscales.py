@@ -99,9 +99,7 @@ class TestDynamicLayoutNoOverlap:
 
     def test_short_text_no_overlap(self, gs):
         slide = "My Title;My Question;Low/High;0/100/50"
-        containers = run_make_slide_graphs(
-            gs, slide, {"My Title": 20, "My Question": 20}
-        )
+        containers = run_make_slide_graphs(gs, slide, {"My Title": 20, "My Question": 20})
 
         title_c = containers["title_1"]
         question_c = containers["label_1"]
@@ -134,9 +132,7 @@ class TestDynamicLayoutNoOverlap:
         """Even when text measured heights exceed the container, no overlap."""
         slide = "Big Title;Enormous question;Low/High;0/100/50"
         # Heights exceed any reasonable container
-        containers = run_make_slide_graphs(
-            gs, slide, {"Big Title": 200, "Enormous question": 300}
-        )
+        containers = run_make_slide_graphs(gs, slide, {"Big Title": 200, "Enormous question": 300})
 
         title_c = containers["title_1"]
         question_c = containers["label_1"]
@@ -162,21 +158,15 @@ class TestDynamicLayoutBounds:
 
         parent = self._get_scale_container(gs)
         for name in ["title_1", "label_1", "slider_1"]:
-            assert within(
-                containers[name], parent
-            ), f"{name} outside parent: {containers[name]} vs {parent}"
+            assert within(containers[name], parent), f"{name} outside parent: {containers[name]} vs {parent}"
 
     def test_long_text_within_bounds(self, gs):
         slide = "Title;A long question;Low/High;0/100/50"
-        containers = run_make_slide_graphs(
-            gs, slide, {"Title": 30, "A long question": 80}
-        )
+        containers = run_make_slide_graphs(gs, slide, {"Title": 30, "A long question": 80})
 
         parent = self._get_scale_container(gs)
         for name in ["title_1", "label_1", "slider_1"]:
-            assert within(
-                containers[name], parent
-            ), f"{name} outside parent: {containers[name]} vs {parent}"
+            assert within(containers[name], parent), f"{name} outside parent: {containers[name]} vs {parent}"
 
 
 class TestSliderMinimumHeight:
@@ -257,9 +247,7 @@ class TestMultipleScales:
     """Multiple questions on the same slide should not overlap."""
 
     def test_two_scales_with_titles_no_overlap(self, gs):
-        slide = (
-            "Title A;Question A;Low/High;0/100/50\nTitle B;Question B;Bad/Good;1/10/5"
-        )
+        slide = "Title A;Question A;Low/High;0/100/50\nTitle B;Question B;Bad/Good;1/10/5"
         containers = run_make_slide_graphs(
             gs,
             slide,
