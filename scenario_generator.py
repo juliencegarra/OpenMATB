@@ -4,6 +4,8 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
 import configparser
 import gettext
 from datetime import datetime
@@ -11,17 +13,18 @@ from pathlib import Path
 from random import randint, shuffle
 from sys import exit
 from time import time
+from typing import Any, Optional, Union
 
 # Read the configuration file
-config = configparser.ConfigParser()
+config: configparser.ConfigParser = configparser.ConfigParser()
 config.read("config.ini")
 
 # Read and install the specified language iso
 # The LOCALE_PATH constant can't be set into constants.py because
 # the latter must be translated itself
-LOCALE_PATH = Path(".", "locales")
-language_iso = config["Openmatb"]["language"]
-language = gettext.translation("openmatb", LOCALE_PATH, [language_iso])
+LOCALE_PATH: Path = Path(".", "locales")
+language_iso: str = config["Openmatb"]["language"]
+language: gettext.GNUTranslations = gettext.translation("openmatb", LOCALE_PATH, [language_iso])
 language.install()
 
 
@@ -32,25 +35,25 @@ from core.window import Window
 from plugins import Communications, Resman, Sysmon, Track
 
 # Constants #
-EVENTS_REFRACTORY_DURATION = 1  # Delay before the next event is allowed (in seconds)
-DIFFICULTY_MIN = 0.25
-DIFFICULTY_MAX = 0.85
-DIFFICULTY_STEP_NUMBER = 3
-DIFFICULTY_STEP = (DIFFICULTY_MAX - DIFFICULTY_MIN) / (DIFFICULTY_STEP_NUMBER - 1)
-STEP_DURATION_SEC = 60
-COMMUNICATIONS_TARGET_RATIO = 0.50  # Proportion of target communications
-AVERAGE_AUDITORY_PROMPT_DURATION = 13
-SCENARIO_NAME = "three_load_levels"
+EVENTS_REFRACTORY_DURATION: int = 1  # Delay before the next event is allowed (in seconds)
+DIFFICULTY_MIN: float = 0.25
+DIFFICULTY_MAX: float = 0.85
+DIFFICULTY_STEP_NUMBER: int = 3
+DIFFICULTY_STEP: float = (DIFFICULTY_MAX - DIFFICULTY_MIN) / (DIFFICULTY_STEP_NUMBER - 1)
+STEP_DURATION_SEC: int = 60
+COMMUNICATIONS_TARGET_RATIO: float = 0.50  # Proportion of target communications
+AVERAGE_AUDITORY_PROMPT_DURATION: int = 13
+SCENARIO_NAME: str = "three_load_levels"
 
 # Specify a scenario that should be added at the beginning
-ADD_SCENARIO_PATH = PATHS["SCENARIOS"].joinpath("custom_generator.txt")
+ADD_SCENARIO_PATH: Path = PATHS["SCENARIOS"].joinpath("custom_generator.txt")
 
-win = Window()
+win: Window = Window()
 win.set_visible(False)
 
 # Plugin instances #
 # Useful to manipulate parameters #
-plugins = {
+plugins: dict[str, Any] = {
     "track": Track(win, silent=True),
     "sysmon": Sysmon(win),
     "communications": Communications(win),
@@ -58,52 +61,52 @@ plugins = {
 }
 
 
-def part_duration_sec(duration_sec, part_left, duration_list=None):
+def part_duration_sec(duration_sec: int, part_left: int, duration_list: Optional[list[int]] = None) -> list[int]:
     if duration_list is None:
         duration_list = list()
-    MIN_PART_DURATION_SEC = 0
+    MIN_PART_DURATION_SEC: int = 0
     if duration_sec == 0:
         return duration_list
 
     # part_left is used to prevent taking too huge time at once
     part_left = max(2, part_left)
-    allowed_max_duration = int(duration_sec / (part_left - 1))
+    allowed_max_duration: int = int(duration_sec / (part_left - 1))
 
     # ~ print(duration_sec, part_left, allowed_max_duration, duration_list)
     # ~ print(MIN_PART_DURATION_SEC, duration_sec, part_left)
-    n = randint(MIN_PART_DURATION_SEC, allowed_max_duration)
+    n: int = randint(MIN_PART_DURATION_SEC, allowed_max_duration)
     return part_duration_sec(duration_sec - n, part_left - 1, duration_list + [n])
 
 
-def get_part_durations(duration_sec, part_number):
+def get_part_durations(duration_sec: int, part_number: int) -> list[int]:
     while True:
-        parts = part_duration_sec(duration_sec, part_number)
+        parts: list[int] = part_duration_sec(duration_sec, part_number)
         if len(parts) == part_number:
             break
     shuffle(parts)
     return parts
 
 
-def reduce(p, q):
+def reduce(p: float, q: float) -> tuple[int, int]:
     if p == q:
         return 1, 1
-    x = max(p, q)
-    y = min(p, q)
+    x: float = max(p, q)
+    y: float = min(p, q)
     while True:
         x %= y
         if x == 0:
             break
         if x < y:
-            temp = x
+            temp: float = x
             x = y
             y = temp
     return int(p / y), int(q / y)
 
 
-def choices(l, k, randomize):
-    wl = list(l)
+def choices(l: list[str], k: int, randomize: bool) -> list[str]:
+    wl: list[str] = list(l)
     shuffle(wl)
-    nl = list()
+    nl: list[str] = list()
     while len(nl) < k:
         if len(wl) == 0:
             wl = list(l)
@@ -115,38 +118,39 @@ def choices(l, k, randomize):
     return nl
 
 
-def get_events_from_scenario(scenario_lines):
+def get_events_from_scenario(scenario_lines: list[Union[str, Event]]) -> list[Event]:
     return [l for l in scenario_lines if isinstance(l, Event)]
 
 
-def get_task_current_state(scenario_lines, plugin):
+def get_task_current_state(scenario_lines: list[Union[str, Event]], plugin: str) -> Optional[list[str]]:
     # Filter the event list to plugin events and check its emptyness
-    scenario_events = get_events_from_scenario(scenario_lines)
-    task_events = [e for e in scenario_events if e.plugin == plugin]
+    scenario_events: list[Event] = get_events_from_scenario(scenario_lines)
+    task_events: list[Event] = [e for e in scenario_events if e.plugin == plugin]
     if len(task_events) == 0:
         return None
 
     # If some events are present, keep only start, stop, pause, resume, hide and show events
-    cmd_keep_list = ["start", "pause", "resume"]
-    task_cmd_events = [e for e in task_events if e.command[0] in cmd_keep_list]
+    cmd_keep_list: list[str] = ["start", "pause", "resume"]
+    task_cmd_events: list[Event] = [e for e in task_events if e.command[0] in cmd_keep_list]
     if len(task_cmd_events) > 0:
         return task_cmd_events[-1].command
     else:
         return None
 
 
-def distribute_events(scenario_lines, start_sec, single_duration, cmd_list, plugin_name):
+def distribute_events(scenario_lines: list[Union[str, Event]], start_sec: int, single_duration: float,
+                      cmd_list: list[list[Any]], plugin_name: str) -> list[Union[str, Event]]:
     print(f"Distributing {len(cmd_list)} {plugin_name} events in time")
-    total_event_duration = len(cmd_list) * single_duration
-    rest_sec = STEP_DURATION_SEC - total_event_duration
+    total_event_duration: float = len(cmd_list) * single_duration
+    rest_sec: float = STEP_DURATION_SEC - total_event_duration
 
-    n = len(cmd_list) + 1  # Delay number
+    n: int = len(cmd_list) + 1  # Delay number
 
-    random_delays = get_part_durations(rest_sec, n) if n > 1 else [rest_sec]
+    random_delays: list[int] = get_part_durations(rest_sec, n) if n > 1 else [rest_sec]
     random_delays = random_delays[:-1]  # The last delay is useless
 
-    onset_sec = start_sec
-    lastline = int(scenario_lines[-1].line)
+    onset_sec: float = start_sec
+    lastline: int = int(scenario_lines[-1].line)
 
     for previous_delay, cmd in zip(random_delays, cmd_list):
         lastline += 1
@@ -156,22 +160,24 @@ def distribute_events(scenario_lines, start_sec, single_duration, cmd_list, plug
     return scenario_lines
 
 
-def add_scenario_phase(scenario_lines, task_difficulty_tuples, start_sec):
+def add_scenario_phase(scenario_lines: list[Union[str, Event]],
+                       task_difficulty_tuples: tuple[tuple[str, float], ...],
+                       start_sec: int) -> list[Union[str, Event]]:
     # Compute next time (in seconds) and line number
-    scenario_events = get_events_from_scenario(scenario_lines)
-    start_line = scenario_events[-1].line + 1 if len(scenario_events) != 0 else 1
+    scenario_events: list[Event] = get_events_from_scenario(scenario_lines)
+    start_line: int = scenario_events[-1].line + 1 if len(scenario_events) != 0 else 1
     start_sec + STEP_DURATION_SEC
 
     # If a plugin is active and not desired, pause and hide it
     for plugin_name in ["sysmon", "tracking", "communications", "resman"]:
-        task_state = get_task_current_state(scenario_lines, plugin_name)
+        task_state: Optional[list[str]] = get_task_current_state(scenario_lines, plugin_name)
         if task_state in ["start", "resume"] and plugin_name not in [p for (p, d) in task_difficulty_tuples]:
             scenario_lines.append(Event(start_line, start_sec, plugin_name, "pause"))
             scenario_lines.append(Event(start_line, start_sec, plugin_name, "hide"))
 
     # If the desired plugin is not started or inactive, add the relevant commands
     for plugin_name, difficulty in task_difficulty_tuples:
-        plugin = plugins[plugin_name]
+        plugin: Any = plugins[plugin_name]
         task_state = get_task_current_state(scenario_lines, plugin_name)
         if task_state is None:
             scenario_lines.append(Event(start_line, start_sec, plugin_name, "start"))
@@ -193,34 +199,34 @@ def add_scenario_phase(scenario_lines, task_difficulty_tuples, start_sec):
         if plugin_name == "sysmon":
             print("System monitoring | computing events")
             # Failure duration sec takes into account the event refractory duration
-            failure_duration_sec = plugin.parameters["alerttimeout"] / 1000 + EVENTS_REFRACTORY_DURATION
+            failure_duration_sec: float = plugin.parameters["alerttimeout"] / 1000 + EVENTS_REFRACTORY_DURATION
 
             # What is the failure ratio ? (i.e., one failure lasts for [failure_ratio %] of the
             # phase duration)
-            single_failure_ratio = (failure_duration_sec) / (STEP_DURATION_SEC)
+            single_failure_ratio: float = (failure_duration_sec) / (STEP_DURATION_SEC)
 
             # Compute the maximum number of events (to be spread between lights and scales)
-            max_events_N = int(1 / single_failure_ratio)
+            max_events_N: int = int(1 / single_failure_ratio)
 
             # Compute the desired number of events, based on current difficulty
             # WARNING: in sysmon, 100 % difficult means maximum number of failures
             # given a light and a scale can fail simultaneously
-            difficulty_events_N = int((difficulty) / single_failure_ratio)
+            difficulty_events_N: int = int((difficulty) / single_failure_ratio)
 
-            events_N = min(max_events_N, difficulty_events_N)
+            events_N: int = min(max_events_N, difficulty_events_N)
 
             # Locate light events
             # Retrieve light names
-            light_names = [k for k, v in plugin.parameters["lights"].items()]
-            light_list = choices(light_names, events_N, True)
-            cmd_list = [[f"lights-{l}-failure", True] for l in light_list]
+            light_names: list[str] = [k for k, v in plugin.parameters["lights"].items()]
+            light_list: list[str] = choices(light_names, events_N, True)
+            cmd_list: list[list[Any]] = [[f"lights-{l}-failure", True] for l in light_list]
 
             scenario_lines = distribute_events(scenario_lines, start_sec, failure_duration_sec, cmd_list, plugin_name)
 
             # Locate scale events
             # Retrieve scale names
-            scale_names = [k for k, v in plugin.parameters["scales"].items()]
-            scale_list = choices(scale_names, events_N, True)
+            scale_names: list[str] = [k for k, v in plugin.parameters["scales"].items()]
+            scale_list: list[str] = choices(scale_names, events_N, True)
             cmd_list = [[f"scales-{s}-failure", True] for s in scale_list]
             scenario_lines = distribute_events(scenario_lines, start_sec, failure_duration_sec, cmd_list, plugin_name)
 
@@ -240,25 +246,25 @@ def add_scenario_phase(scenario_lines, task_difficulty_tuples, start_sec):
             print("Communications | computing events")
             # print('Communications | average duration of instructions:', end=" ")
             # averaged_duration_sec = round(plugin.get_averaged_prompt_duration())
-            averaged_duration_sec = AVERAGE_AUDITORY_PROMPT_DURATION
+            averaged_duration_sec: int = AVERAGE_AUDITORY_PROMPT_DURATION
             # print(str(averaged_duration_sec) + ' seconds')
-            single_duration_sec = averaged_duration_sec + EVENTS_REFRACTORY_DURATION
-            communication_ratio = difficulty
-            single_event_ratio = single_duration_sec / STEP_DURATION_SEC
-            max_event_num = int(STEP_DURATION_SEC / single_duration_sec)
-            current_event_num = int(communication_ratio / single_event_ratio)
-            event_num = min(max_event_num, current_event_num)
+            single_duration_sec: float = averaged_duration_sec + EVENTS_REFRACTORY_DURATION
+            communication_ratio: float = difficulty
+            single_event_ratio: float = single_duration_sec / STEP_DURATION_SEC
+            max_event_num: int = int(STEP_DURATION_SEC / single_duration_sec)
+            current_event_num: int = int(communication_ratio / single_event_ratio)
+            event_num: int = min(max_event_num, current_event_num)
 
-            n, d = reduce(COMMUNICATIONS_TARGET_RATIO * 100, 100)
-            promptlist = ["own"] * n + ["other"] * (d - n)
+            n_ratio, d_ratio = reduce(COMMUNICATIONS_TARGET_RATIO * 100, 100)
+            promptlist: list[str] = ["own"] * n_ratio + ["other"] * (d_ratio - n_ratio)
 
             # If there are a sufficient number of event to garantuee a perfect
             # target ratio, control it
             # ~ print(event_num, d, event_num % d)
-            if (event_num % d) == 0 and event_num > 1:  # The number of events is a multiple of the
-                prompt_list = choices(promptlist, event_num, True)
-                p = prompt_list.count("own") / len(prompt_list)
-                while abs(p - n / d) > 1e-9:
+            if (event_num % d_ratio) == 0 and event_num > 1:  # The number of events is a multiple of the
+                prompt_list: list[str] = choices(promptlist, event_num, True)
+                p: float = prompt_list.count("own") / len(prompt_list)
+                while abs(p - n_ratio / d_ratio) > 1e-9:
                     prompt_list = choices(promptlist, event_num, True)
                     p = prompt_list.count("own") / len(prompt_list)
             else:
@@ -276,27 +282,27 @@ def add_scenario_phase(scenario_lines, task_difficulty_tuples, start_sec):
 
         elif plugin_name == "resman":
             print("Resources management | computing events")
-            pumps = plugin.parameters["pump"]
+            pumps: dict[str, dict[str, Any]] = plugin.parameters["pump"]
             # First, compute the maximum leak level tolerated
             # It depends on both infinite and finite capacities
             # Infinite : sum of flows from undepletable tanks
-            infinite_capacity = sum([p["flow"] for k, p in pumps.items() if k in ["2", "4"]])
+            infinite_capacity: int = sum([p["flow"] for k, p in pumps.items() if k in ["2", "4"]])
 
             # "Finite" = infinite refilling capacity of depletable tanks (6 & 5)
-            finite_capacity = sum([p["flow"] for k, p in pumps.items() if k in ["5", "6"]])
-            total_capacity = infinite_capacity + finite_capacity
+            finite_capacity: int = sum([p["flow"] for k, p in pumps.items() if k in ["5", "6"]])
+            total_capacity: int = infinite_capacity + finite_capacity
 
-            maximum_single_leakage = int(total_capacity / 2)
+            maximum_single_leakage: int = int(total_capacity / 2)
 
-            target_tank_letters = [k for k, t in plugin.parameters["tank"].items() if t["target"] is not None]
+            target_tank_letters: list[str] = [k for k, t in plugin.parameters["tank"].items() if t["target"] is not None]
             for letter in target_tank_letters:
-                cmd = [f"tank-{letter}-lossperminute", int(maximum_single_leakage * difficulty)]
+                cmd: list[Any] = [f"tank-{letter}-lossperminute", int(maximum_single_leakage * difficulty)]
                 scenario_lines.append(Event(start_line, start_sec, plugin_name, cmd))
 
     return scenario_lines
 
 
-def main():
+def main() -> None:
     print("OpenMATB - Scenario generator")
     print("_____________________________")
 
@@ -305,7 +311,7 @@ def main():
     if ADD_SCENARIO_PATH.exists():
         # Parse each line to an Event
         # and apply each event to its corresponding plugin (code snippets from Core/scenario.py)
-        events = [
+        events: list[Event] = [
             Event.parse_from_string(0, line_str)
             for line_n, line_str in enumerate(open(str(ADD_SCENARIO_PATH), "r").readlines())
             if len(line_str.strip()) > 0 and not line_str.startswith("#")
@@ -319,16 +325,16 @@ def main():
             elif len(event.command) == 2:
                 plugins[event.plugin].set_parameter(event.command[0], event.command[1])
 
-    scenario_lines = list()  # Preallocate a list for scenario lines
+    scenario_lines: list[Union[str, Event]] = list()  # Preallocate a list for scenario lines
 
     for i in range(DIFFICULTY_STEP_NUMBER):
-        current_difficulty = DIFFICULTY_MIN + DIFFICULTY_STEP * i
-        ch_str = f"Block n° {i + 1}. Technical load = {round(current_difficulty * 100, 1)} %"
+        current_difficulty: float = DIFFICULTY_MIN + DIFFICULTY_STEP * i
+        ch_str: str = f"Block n° {i + 1}. Technical load = {round(current_difficulty * 100, 1)} %"
         scenario_lines.append(ch_str)
         print("\nAdding " + ch_str)
 
-        start_time_sec = i * STEP_DURATION_SEC
-        phase_tuples = (
+        start_time_sec: int = i * STEP_DURATION_SEC
+        phase_tuples: tuple[tuple[str, float], ...] = (
             ("track", current_difficulty),
             ("sysmon", current_difficulty),
             ("communications", current_difficulty),
@@ -339,15 +345,15 @@ def main():
     # Stop all tasks at the very end
     start_time_sec += STEP_DURATION_SEC
     for task in set([e.plugin for e in get_events_from_scenario(scenario_lines)]):
-        start_line = scenario_lines[-1].line + 1 if len(scenario_lines) != 0 else 1
+        start_line: int = scenario_lines[-1].line + 1 if len(scenario_lines) != 0 else 1
         scenario_lines.append(Event(start_line, start_time_sec, task, "stop"))
 
-    timestamp = time()
-    date_time = datetime.fromtimestamp(timestamp)
-    date_str_1 = date_time.strftime("%d%m%Y_%H%M%S")
-    date_str_2 = date_time.strftime("%d/%m/%Y %H:%M:%S")
+    timestamp: float = time()
+    date_time: datetime = datetime.fromtimestamp(timestamp)
+    date_str_1: str = date_time.strftime("%d%m%Y_%H%M%S")
+    date_str_2: str = date_time.strftime("%d/%m/%Y %H:%M:%S")
 
-    scenario_path = PATHS["SCENARIOS"].joinpath("generated", f"{SCENARIO_NAME}_{date_str_1}.txt")
+    scenario_path: Path = PATHS["SCENARIOS"].joinpath("generated", f"{SCENARIO_NAME}_{date_str_1}.txt")
     scenario_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(str(scenario_path), "w") as scenario_f:

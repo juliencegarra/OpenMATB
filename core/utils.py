@@ -2,6 +2,7 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 import sys
+from typing import Any, Optional, Union
 
 from pyglet import font
 
@@ -9,7 +10,7 @@ from core.constants import CONFIG
 from core.constants import PATHS as P
 
 
-def clamp(x, val_min, val_max):
+def clamp(x: float, val_min: float, val_max: float) -> float:
     if x < val_min:
         return val_min
     elif x > val_max:
@@ -17,7 +18,7 @@ def clamp(x, val_min, val_max):
     return x
 
 
-def get_session_numbers():
+def get_session_numbers() -> list[int]:
     try:
         session_numbers = [int(s.name.split("_")[0]) for s in P["SESSIONS"].glob("**/*.csv")]
     except (ValueError, IndexError):
@@ -26,9 +27,9 @@ def get_session_numbers():
     return session_numbers
 
 
-def find_the_first_available_session_number():
-    session_numbers = get_session_numbers()
-    first_avail = None
+def find_the_first_available_session_number() -> int:
+    session_numbers: list[int] = get_session_numbers()
+    first_avail: Optional[int] = None
 
     # Take max session number + 1, and find the minimum available number into [1, max+1]
     # If no session has been manually removed, it will be max+1
@@ -45,17 +46,17 @@ def find_the_first_available_session_number():
     return first_avail
 
 
-def find_the_last_session_number():
-    session_numbers = get_session_numbers()
+def find_the_last_session_number() -> int:
+    session_numbers: list[int] = get_session_numbers()
     return max(session_numbers)
 
 
-def has_conf_value(section, key):
+def has_conf_value(section: str, key: str) -> bool:
     return key in CONFIG
 
 
-def get_conf_value(section, key, val_type=None):
-    value = CONFIG[section][key]
+def get_conf_value(section: str, key: str, val_type: Optional[type] = None) -> Any:
+    value: str = CONFIG[section][key]
 
     # Boolean boolean values
     if key in ["fullscreen", "highlight_aoi", "hide_on_pause", "display_session_number"]:

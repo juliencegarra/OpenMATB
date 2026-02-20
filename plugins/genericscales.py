@@ -2,7 +2,10 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
 from re import match as regex_match
+from typing import Any, Optional
 
 from pyglet.text import Label as PygletLabel
 
@@ -16,11 +19,11 @@ from plugins.abstractplugin import BlockingPlugin
 
 
 class Genericscales(BlockingPlugin):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-        self.folder = P["QUESTIONNAIRES"]
-        new_par = dict(
+        self.folder: str = P["QUESTIONNAIRES"]
+        new_par: dict[str, Any] = dict(
             filename=None,
             pointsize=0,
             maxdurationsec=0,
@@ -28,77 +31,89 @@ class Genericscales(BlockingPlugin):
             allowkeypress=True,
             showvalue=False,
         )
-        self.sliders = dict()
+        self.sliders: dict[str, Any] = dict()
         self.parameters.update(new_par)
 
-        self.ignore_empty_lines = True
+        self.ignore_empty_lines: bool = True
 
-        self.regex_scale_pattern = r"(.*);(.*)/(.*);(\d*)/(\d*)/(\d*)"
-        self.question_height_ratio = 0.1  # question + response slider
-        self.question_interspace = 0.05  # Space to leave between two questions
-        self.top_to_top = self.question_interspace + self.question_height_ratio
+        self.regex_scale_pattern: str = r"(.*);(.*)/(.*);(\d*)/(\d*)/(\d*)"
+        self.question_height_ratio: float = 0.1  # question + response slider
+        self.question_interspace: float = 0.05  # Space to leave between two questions
+        self.top_to_top: float = self.question_interspace + self.question_height_ratio
 
-    def _measure_text_height(self, text, font_size, wrap_width_px, bold=False):
-        font_name = get_conf_value("Openmatb", "font_name")
-        tmp = PygletLabel(
+    def _measure_text_height(self, text: str, font_size: int, wrap_width_px: float, bold: bool = False) -> int:
+        font_name: str = get_conf_value("Openmatb", "font_name")
+        tmp: Any = PygletLabel(
             text, font_size=font_size, multiline=True, width=wrap_width_px, bold=bold, font_name=font_name
         )
         return tmp.content_height
 
-    def make_slide_graphs(self):
+    def make_slide_graphs(self) -> None:
         # Remove old slider/label widgets from previous slide
         for key in list(self.sliders):
-            fullname = self.get_widget_fullname(key)
+            fullname: str = self.get_widget_fullname(key)
             self.widgets.pop(fullname, None)
-            label_fullname = self.get_widget_fullname(key.replace("slider_", "label_"))
+            label_fullname: str = self.get_widget_fullname(key.replace("slider_", "label_"))
             self.widgets.pop(label_fullname, None)
-            title_fullname = self.get_widget_fullname(key.replace("slider_", "title_"))
+            title_fullname: str = self.get_widget_fullname(key.replace("slider_", "title_"))
             self.widgets.pop(title_fullname, None)
         self.sliders.clear()
 
         super().make_slide_graphs()
 
-        scales = self.current_slide.split("\n")
-        scale_list = [s.strip() for s in scales if len(s.strip()) > 0]
+        scales: list[str] = self.current_slide.split("\n")
+        scale_list: list[str] = [s.strip() for s in scales if len(s.strip()) > 0]
         if len(scale_list) == 0:
             return
 
-        all_scales_container = self.container.get_reduced(1, self.top_to_top * (len(scale_list)))
+        all_scales_container: Container = self.container.get_reduced(1, self.top_to_top * (len(scale_list)))
 
-        height_in_prop = (self.question_height_ratio * self.container.h) / all_scales_container.h
+        height_in_prop: float = (self.question_height_ratio * self.container.h) / all_scales_container.h
         for l, scale in enumerate(scale_list):
             # Define the scale main container (question + response slider)
-            scale_container = all_scales_container.reduce_and_translate(
+            scale_container: Container = all_scales_container.reduce_and_translate(
                 height=height_in_prop, y=1 - (1 / (len(scale_list))) * l
             )
 
             if regex_match(self.regex_scale_pattern, scale):
+                title: str
+                label: str
+                limit_labels: str
+                values: str
                 title, label, limit_labels, values = scale.strip().split(";")
+                label_min: str
+                label_max: str
                 label_min, label_max = limit_labels.split("/")
+                value_min: int
+                value_max: int
+                value_default: int
                 value_min, value_max, value_default = [int(v) for v in values.split("/")]
 
-                show_title = title != label
+                show_title: bool = title != label
 
                 if show_title:
-                    wrap_px = scale_container.w * 0.8
-                    padding = 4
+                    wrap_px: float = scale_container.w * 0.8
+                    padding: int = 4
 
-                    title_h = self._measure_text_height(title, F["MEDIUM"], wrap_px, bold=True) + padding
-                    question_h = self._measure_text_height(label, F["MEDIUM"], wrap_px) + padding
+                    title_h: float = self._measure_text_height(title, F["MEDIUM"], wrap_px, bold=True) + padding
+                    question_h: float = self._measure_text_height(label, F["MEDIUM"], wrap_px) + padding
 
-                    min_slider_h = scale_container.h * 0.40
-                    slider_h = max(min_slider_h, scale_container.h - title_h - question_h)
+                    min_slider_h: float = scale_container.h * 0.40
+                    slider_h: float = max(min_slider_h, scale_container.h - title_h - question_h)
 
-                    text_budget = scale_container.h - slider_h
+                    text_budget: float = scale_container.h - slider_h
                     if title_h + question_h > text_budget and text_budget > 0:
-                        ratio = text_budget / (title_h + question_h)
+                        ratio: float = text_budget / (title_h + question_h)
                         title_h *= ratio
                         question_h *= ratio
 
-                    L, B, W, H = scale_container.l, scale_container.b, scale_container.w, scale_container.h
-                    title_container = Container("title", L, B + H - title_h, W, title_h)
-                    question_container = Container("question", L, B + H - title_h - question_h, W, question_h)
-                    slider_container = Container("slider", L, B, W, slider_h)
+                    L: float = scale_container.l
+                    B: float = scale_container.b
+                    W: float = scale_container.w
+                    H: float = scale_container.h
+                    title_container: Container = Container("title", L, B + H - title_h, W, title_h)
+                    question_container: Container = Container("question", L, B + H - title_h - question_h, W, question_h)
+                    slider_container: Container = Container("slider", L, B, W, slider_h)
 
                     self.add_widget(
                         f"title_{l + 1}",
@@ -140,7 +155,7 @@ class Genericscales(BlockingPlugin):
                     showvalue=self.parameters["showvalue"],
                 )
 
-    def refresh_widgets(self):
+    def refresh_widgets(self) -> None:
         # Useful for replay mode (refresh groove positions)
         if not super().refresh_widgets():
             return
@@ -148,7 +163,7 @@ class Genericscales(BlockingPlugin):
         for _slider_name, slider in self.sliders.items():
             slider.update()
 
-    def stop(self):
+    def stop(self) -> None:
         for _slider_name, slider_widget in self.sliders.items():
             self.log_performance(slider_widget.get_title(), slider_widget.get_value())
         super().stop()

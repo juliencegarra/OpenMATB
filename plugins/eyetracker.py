@@ -2,16 +2,20 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
+from typing import Any, Optional
+
 from core.pygaze_pyglet.pygaze import eyetracker
 from core.window import Window
 from plugins.abstractplugin import AbstractPlugin
 
 
 class Eyetracker(AbstractPlugin):
-    def __init__(self, label="", taskplacement="invisible", taskupdatetime=10):
+    def __init__(self, label: str = "", taskplacement: str = "invisible", taskupdatetime: int = 10) -> None:
         super().__init__(_("Eye tracker"), taskplacement, taskupdatetime)
 
-        new_par = {
+        new_par: dict[str, str] = {
             # ~ 'paintGaze': False,
             "trackertype": "dummy",
             # ~ 'smiip': "192.168.1.35",
@@ -27,9 +31,9 @@ class Eyetracker(AbstractPlugin):
             # ~ 'positionRZ', 'diamR']
         }
         self.parameters.update(new_par)
-        self.tracker = None
+        self.tracker: Optional[Any] = None
 
-    def start(self, dt):
+    def start(self, dt: float) -> None:
         super().start()
         self.tracker = eyetracker.EyeTracker(
             display=Window.MainWindow._display, trackertype=self.parameters["trackertype"]

@@ -2,8 +2,12 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
 from math import copysign
+from pathlib import Path
 from string import ascii_lowercase, ascii_uppercase, digits
+from typing import Any, Callable, Optional
 
 from pyglet.media import Player, SourceGroup, load
 
@@ -18,10 +22,10 @@ from plugins.abstractplugin import AbstractPlugin
 
 
 class Communications(AbstractPlugin):
-    def __init__(self, label="", taskplacement="bottomleft", taskupdatetime=80):
+    def __init__(self, label: str = "", taskplacement: str = "bottomleft", taskupdatetime: int = 80) -> None:
         super().__init__(_("Communications"), taskplacement, taskupdatetime)
 
-        self.validation_dict = {
+        self.validation_dict: dict[str, Callable[..., Any] | tuple[Callable[..., Any], list[str]]] = {
             "owncallsign": validation.is_callsign,
             "othercallsign": validation.is_callsign_or_list_of,  # othercallsign can be a list of callsigns
             "voiceidiom": (validation.is_in_list, [p.name.lower() for p in P["SOUNDS"].iterdir()]),
@@ -53,16 +57,17 @@ class Communications(AbstractPlugin):
             "keys-validateresponse": validation.is_key,
         }
 
-        self.keys = {"UP", "DOWN", "RIGHT", "LEFT", "ENTER"}
-        self.callsign_seed = 1  # Useful to pseudorandomly generate different callsign when
+        self.keys: set[str] = {"UP", "DOWN", "RIGHT", "LEFT", "ENTER"}
+        self.callsign_seed: int = 1  # Useful to pseudorandomly generate different callsign when
         # trying to generate multiple callsigns at once
 
-        self.letters, self.digits = ascii_uppercase, digits
+        self.letters: str = ascii_uppercase
+        self.digits: str = digits
 
         # Callsign regex must be defined first because it is needed by self.get_callsign()
         self.parameters["callsignregex"] = r"[A-Z][A-Z][A-Z]\d\d\d"
-        self.old_regex = str(self.parameters["callsignregex"])
-        new_par = dict(
+        self.old_regex: str = str(self.parameters["callsignregex"])
+        new_par: dict[str, Any] = dict(
             owncallsign="",
             othercallsign=list(),
             othercallsignnumber=5,
@@ -105,19 +110,19 @@ class Communications(AbstractPlugin):
                 "_feedbacktimer": None,
                 "_feedbacktype": None,
             }
-        self.lastradioselected = None
-        self.frequency_modulation = 0.1
-        self.sound_path = None
+        self.lastradioselected: Optional[int] = None
+        self.frequency_modulation: float = 0.1
+        self.sound_path: Optional[Path] = None
 
         self.set_sample_sounds()
 
-        self.automode_position = (0.5, 0.2)
+        self.automode_position: tuple[float, float] = (0.5, 0.2)
 
-    def get_sounds_path(self):
+    def get_sounds_path(self) -> Path:
         return P["SOUNDS"].joinpath(self.parameters["voiceidiom"], self.parameters["voicegender"])
 
-    def set_sample_sounds(self):
-        new_path = self.get_sounds_path()
+    def set_sample_sounds(self) -> None:
+        new_path: Path = self.get_sounds_path()
         if new_path == self.sound_path:
             return
 
@@ -126,7 +131,7 @@ class Communications(AbstractPlugin):
             return
 
         self.sound_path = new_path
-        self.samples_path = [
+        self.samples_path: list[Path] = [
             self.sound_path.joinpath(f"{i}.wav")
             for i in [s for s in digits + ascii_lowercase]
             + [this_radio.lower() for this_radio in self.parameters["promptlist"]]
@@ -137,15 +142,15 @@ class Communications(AbstractPlugin):
             if not sample_needed.exists():
                 print(sample_needed, _(" does not exist"))
 
-    def regenerate_callsigns(self):
+    def regenerate_callsigns(self) -> None:
         self.parameters["owncallsign"] = self.get_callsign()
         for _i in range(self.parameters["othercallsignnumber"]):
-            this_callsign = self.get_callsign()
+            this_callsign: str = self.get_callsign()
             while this_callsign in [self.parameters["owncallsign"]] + self.parameters["othercallsign"]:
                 this_callsign = self.get_callsign()
             self.parameters["othercallsign"].append(this_callsign)
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         super().create_widgets()
         self.add_widget(
             "callsign",
@@ -155,11 +160,11 @@ class Communications(AbstractPlugin):
             y=0.9,
         )
 
-        active_index = randint(0, len(self.parameters["radios"]) - 1, self.alias, self.scenario_time)
+        active_index: int = randint(0, len(self.parameters["radios"]) - 1, self.alias, self.scenario_time)
         for pos, radio in self.parameters["radios"].items():
             radio["is_active"] = pos == active_index
             # Compute radio container
-            radio_container = Container(
+            radio_container: Container = Container(
                 radio["name"],
                 self.task_container.l,
                 self.task_container.b + self.task_container.h * (0.7 - 0.13 * pos),
@@ -176,16 +181,17 @@ class Communications(AbstractPlugin):
                 on=radio["is_active"],
             )
 
-    def get_callsign(self):
+    def get_callsign(self) -> str:
         self.callsign_seed += 1
-        call_rgx = self.parameters["callsignregex"]
-        duplicateChar, notInList = True, True
+        call_rgx: str = self.parameters["callsignregex"]
+        duplicateChar: bool = True
+        notInList: bool = True
 
         self.letters = ascii_uppercase if len(self.letters) < 3 else self.letters
         self.digits = digits if len(self.digits) < 3 else self.digits
 
         while duplicateChar or notInList:
-            callsign = xeger(call_rgx, self.alias, self.scenario_time, self.callsign_seed)
+            callsign: str = xeger(call_rgx, self.alias, self.scenario_time, self.callsign_seed)
             duplicateChar = len(callsign) != len(set(callsign))
             notInList = any([s not in self.letters + self.digits for s in callsign])
             self.callsign_seed += 1
@@ -196,8 +202,8 @@ class Communications(AbstractPlugin):
                     li = li.replace(s, "")
         return callsign
 
-    def group_audio_files(self, callsign, radio_name, freq):
-        list_of_sounds = (
+    def group_audio_files(self, callsign: str, radio_name: str, freq: float) -> Any:
+        list_of_sounds: list[str] = (
             ["empty"] * 20
             + [c.lower() for c in callsign]
             + [c.lower() for c in callsign]
@@ -208,22 +214,22 @@ class Communications(AbstractPlugin):
             + ["empty"]
         )
 
-        group = SourceGroup()
+        group: Any = SourceGroup()
         for f in list_of_sounds:
-            source = load(str(self.sound_path.joinpath(f"{f}.wav")), streaming=False)
+            source: Any = load(str(self.sound_path.joinpath(f"{f}.wav")), streaming=False)
             # print(f)
             group.add(source)
         return group
 
-    def prompt_for_a_new_target(self, destination, radio_name):
+    def prompt_for_a_new_target(self, destination: str, radio_name: str) -> None:
         self.parameters["radioprompt"] = ""
-        radio = self.get_radios_by_key_value("name", radio_name)[0]
-        radio_n = self.get_radios_number_by_key_value("name", radio_name)[0]
+        radio: dict[str, Any] = self.get_radios_by_key_value("name", radio_name)[0]
+        radio_n: int = self.get_radios_number_by_key_value("name", radio_name)[0]
 
-        callsign = self.parameters[f"{destination}callsign"]
+        callsign: str | list[str] = self.parameters[f"{destination}callsign"]
         callsign = choice(callsign, self.alias, self.scenario_time, radio_n) if isinstance(callsign, list) else callsign
 
-        random_frequency = self.get_rand_frequency(radio_n)
+        random_frequency: float = self.get_rand_frequency(radio_n)
         while not (
             self.parameters["airbandminvariationMhz"]
             < abs(random_frequency - radio["currentfreq"])
@@ -236,13 +242,13 @@ class Communications(AbstractPlugin):
             radio["targetfreq"] = random_frequency
             radio["is_prompting"] = True
 
-        sound_group = self.group_audio_files(callsign, radio_name, random_frequency)
+        sound_group: Any = self.group_audio_files(callsign, radio_name, random_frequency)
 
-        self.player = Player()
+        self.player: Any = Player()
         self.player.queue(sound_group)
         self.player.play()
 
-    def get_rand_frequency(self, radio_n):
+    def get_rand_frequency(self, radio_n: int) -> float:
         return round(
             uniform(
                 float(self.parameters["airbandminMhz"]),
@@ -254,40 +260,40 @@ class Communications(AbstractPlugin):
             1,
         )
 
-    def get_target_radios_list(self):
+    def get_target_radios_list(self) -> list[dict[str, Any]]:
         # Multiple radios can have a target frequency at the same time
         # because of a potential delay in reactions
         return [r for _, r in self.parameters["radios"].items() if r["targetfreq"] is not None]
 
-    def get_non_target_radios_list(self):
+    def get_non_target_radios_list(self) -> list[dict[str, Any]]:
         # Multiple radios can have a target frequency at the same time
         # because of a potential delay in reactions
         return [r for _, r in self.parameters["radios"].items() if r["targetfreq"] is None]
 
-    def get_active_radio_dict(self):
-        radio = self.get_radios_by_key_value("is_active", True)
+    def get_active_radio_dict(self) -> Optional[dict[str, Any]]:
+        radio: Optional[list[dict[str, Any]]] = self.get_radios_by_key_value("is_active", True)
         if radio is not None:
             return radio[0]
 
-    def get_radio_dict_by_pos(self, pos):
-        radio = self.get_radios_by_key_value("pos", pos)
+    def get_radio_dict_by_pos(self, pos: int | float) -> Optional[dict[str, Any]]:
+        radio: Optional[list[dict[str, Any]]] = self.get_radios_by_key_value("pos", pos)
         if radio is not None:
             return radio[0]
 
-    def get_radios_by_key_value(self, k, v):
-        radio_list = [r for _, r in self.parameters["radios"].items() if r[k] == v]
+    def get_radios_by_key_value(self, k: str, v: Any) -> Optional[list[dict[str, Any]]]:
+        radio_list: list[dict[str, Any]] = [r for _, r in self.parameters["radios"].items() if r[k] == v]
         if len(radio_list) > 0:
             return radio_list
 
-    def get_radios_number_by_key_value(self, k, v):
-        num_list = [i for i, r in self.parameters["radios"].items() if r[k] == v]
+    def get_radios_number_by_key_value(self, k: str, v: Any) -> Optional[list[int]]:
+        num_list: list[int] = [i for i, r in self.parameters["radios"].items() if r[k] == v]
         if len(num_list) > 0:
             return num_list
 
-    def get_response_timers(self):
+    def get_response_timers(self) -> list[int]:
         return [r["response_time"] for _, r in self.parameters["radios"].items() if r["response_time"] > 0]
 
-    def get_waiting_response_radios(self):
+    def get_waiting_response_radios(self) -> list[dict[str, Any]]:
         """A radio is waiting a response when it specifies a target and its prompting message
         is over"""
 
@@ -297,19 +303,19 @@ class Communications(AbstractPlugin):
             if r in self.get_target_radios_list() and not r["is_prompting"]
         ]
 
-    def get_max_pos(self):
+    def get_max_pos(self) -> int:
         return max([r["pos"] for k, r in self.parameters["radios"].items()])
 
-    def get_min_pos(self):
+    def get_min_pos(self) -> int:
         return min([r["pos"] for k, r in self.parameters["radios"].items()])
 
-    def modulate_frequency(self):
+    def modulate_frequency(self) -> None:
         if self.is_key_state(self.parameters["keys"]["tunefrequencydown"], True):
             self.get_active_radio_dict()["currentfreq"] -= self.frequency_modulation
         elif self.is_key_state(self.parameters["keys"]["tunefrequencyup"], True):
             self.get_active_radio_dict()["currentfreq"] += self.frequency_modulation
 
-    def compute_next_plugin_state(self):
+    def compute_next_plugin_state(self) -> None:
         if not super().compute_next_plugin_state():
             return
 
@@ -320,11 +326,11 @@ class Communications(AbstractPlugin):
         self.set_sample_sounds()  # Check if sounds path has been renewed
 
         if self.parameters["radioprompt"].lower() in ["own", "other"]:
-            radio_name_to_prompt = None
+            radio_name_to_prompt: Optional[str] = None
 
             # If the prompt is relevant (own), select a radio among (available) non-target radios
             if self.parameters["radioprompt"].lower() == "own":
-                non_target_radios = self.get_non_target_radios_list()
+                non_target_radios: list[dict[str, Any]] = self.get_non_target_radios_list()
                 if len(non_target_radios) > 0:
                     radio_name_to_prompt = choice(non_target_radios, self.alias, self.scenario_time, 1)["name"]
             elif self.parameters["radioprompt"].lower() == "other":
@@ -333,11 +339,11 @@ class Communications(AbstractPlugin):
             if radio_name_to_prompt is not None:
                 # If a new prompt is incoming and a prompt is still playing
                 # Pause and stop this prompt
-                prompting_radio_list = self.get_radios_by_key_value("is_prompting", True)
+                prompting_radio_list: Optional[list[dict[str, Any]]] = self.get_radios_by_key_value("is_prompting", True)
                 if prompting_radio_list is not None and len(prompting_radio_list) > 0:
                     self.player.pause()
                     del self.player
-                    prompting_radio = prompting_radio_list[0]
+                    prompting_radio: dict[str, Any] = prompting_radio_list[0]
                     prompting_radio["is_prompting"] = False
                     self.logger.log_manual_entry(f"Target {prompting_radio['name']}:{prompting_radio['targetfreq']}")
 
@@ -350,8 +356,8 @@ class Communications(AbstractPlugin):
 
         # If a target is defined + auditory prompt has ended
         # response can occur, so increment response_time
-        target_radios = self.get_target_radios_list()
-        active = self.get_active_radio_dict()
+        target_radios: list[dict[str, Any]] = self.get_target_radios_list()
+        active: dict[str, Any] = self.get_active_radio_dict()
 
         # Browse targeted radios
         for radio in target_radios:
@@ -370,16 +376,17 @@ class Communications(AbstractPlugin):
         # If multiple radios must be modified
         # The automatic solver sticks to the first one (until it is tuned)
         if self.parameters["automaticsolver"] is True and not REPLAY_MODE:
-            waiting_radios = self.get_waiting_response_radios()
+            waiting_radios: list[dict[str, Any]] = self.get_waiting_response_radios()
 
             # Only if a radio is waiting autosolving, do it
             if len(waiting_radios) > 0:
-                autoradio = waiting_radios[0]
+                autoradio: dict[str, Any] = waiting_radios[0]
 
                 if active != autoradio:  # Automatic radio switch if needed
                     active["is_active"] = False
-                    current_index, target_index = (active["pos"], autoradio["pos"])
-                    new_index = current_index + copysign(1, target_index - current_index)
+                    current_index: int = active["pos"]
+                    target_index: int = autoradio["pos"]
+                    new_index: float = current_index + copysign(1, target_index - current_index)
                     self.get_radio_dict_by_pos(new_index)["is_active"] = True
 
                 # Automatic radio tune
@@ -402,7 +409,7 @@ class Communications(AbstractPlugin):
                     radio["_feedbacktimer"] = None
                     radio["_feedbacktype"] = None
 
-    def refresh_widgets(self):
+    def refresh_widgets(self) -> None:
         if not super().refresh_widgets():
             return
 
@@ -418,18 +425,18 @@ class Communications(AbstractPlugin):
             # Propagate current frequencies values to the widgets
             radio["widget"].set_frequency_text(radio["currentfreq"])
 
-            # … also check a need for feedback refreshing
+            # ... also check a need for feedback refreshing
             if radio["_feedbacktimer"] is not None:
-                color = self.parameters["feedbacks"][radio["_feedbacktype"]]["color"]
+                color: tuple[int, ...] = self.parameters["feedbacks"][radio["_feedbacktype"]]["color"]
             else:
                 color = C["BACKGROUND"]
             radio["widget"].set_feedback_color(color)
 
-    def disable_radio_target(self, radio):
+    def disable_radio_target(self, radio: dict[str, Any]) -> None:
         radio["response_time"] = 0
         radio["targetfreq"] = None
 
-    def record_target_missing(self, target_radio):
+    def record_target_missing(self, target_radio: dict[str, Any]) -> None:
         self.log_performance("target_radio", target_radio["name"])
         self.log_performance("target_frequency", target_radio["targetfreq"])
         self.log_performance("response_was_needed", True)
@@ -444,7 +451,7 @@ class Communications(AbstractPlugin):
 
         self.set_feedback(target_radio, ft="negative")
 
-    def get_sdt_value(self, response_needed, was_a_radio_responded, correct_radio, response_deviation):
+    def get_sdt_value(self, response_needed: bool, was_a_radio_responded: bool, correct_radio: bool | float, response_deviation: float) -> Optional[str]:
         if not response_needed:
             return "FA"
         elif was_a_radio_responded is False:
@@ -458,23 +465,24 @@ class Communications(AbstractPlugin):
         elif correct_radio is False and response_deviation != 0:
             return "BAD_RADIO_FREQ"
 
-    def confirm_response(self):
+    def confirm_response(self) -> None:
         """Evaluate response performance and log it"""
 
         # Retrieve the responded radio and the target radios
-        responded_radio = self.get_active_radio_dict()
-        waiting_radios = self.get_waiting_response_radios()
+        responded_radio: dict[str, Any] = self.get_active_radio_dict()
+        waiting_radios: list[dict[str, Any]] = self.get_waiting_response_radios()
 
         # Check if there was a target to be responded to
-        response_needed = len(waiting_radios) > 0
+        response_needed: bool = len(waiting_radios) > 0
 
         # Check if the responded radio was prompting (good radio)
-        good_radio = responded_radio in waiting_radios if len(waiting_radios) else float("nan")
+        good_radio: bool | float = responded_radio in waiting_radios if len(waiting_radios) else float("nan")
 
         # If a target radio is responded, get it to compute response deviation and time
         # If not, get the target radio only if it is single
         # (if there were two target radios simultaneously, we can't decide which to select
         #  to compute deviation and response time with the uncorrect responded radio)
+        measure_radio: Optional[dict[str, Any]]
         if responded_radio in waiting_radios:
             measure_radio = responded_radio
         elif len(waiting_radios) == 1:
@@ -483,6 +491,10 @@ class Communications(AbstractPlugin):
             measure_radio = None
 
         # Now compute
+        deviation: float
+        rt: int | float
+        target_frequency: float | None
+        target_radio_name: str | float
         if measure_radio is not None:
             target_frequency = measure_radio["targetfreq"]
             target_radio_name = measure_radio["name"]
@@ -491,7 +503,7 @@ class Communications(AbstractPlugin):
         else:
             deviation = rt = target_frequency = target_radio_name = float("nan")
 
-        sdt = self.get_sdt_value(response_needed, True, good_radio, deviation)
+        sdt: Optional[str] = self.get_sdt_value(response_needed, True, good_radio, deviation)
 
         self.log_performance("response_was_needed", response_needed)
         self.log_performance("target_radio", target_radio_name)
@@ -513,28 +525,28 @@ class Communications(AbstractPlugin):
             else:
                 self.set_feedback(responded_radio, ft="negative")
 
-    def set_feedback(self, radio, ft):
+    def set_feedback(self, radio: dict[str, Any], ft: str) -> None:
         # Set the feedback type and duration, if the gauge has got one
         # (the feedback widget is refreshed by the refresh_widget method)
         if self.parameters["feedbacks"][ft]["active"]:
             radio["_feedbacktype"] = ft
             radio["_feedbacktimer"] = self.parameters["feedbackduration"]
 
-    def do_on_key(self, key, state, emulate):
+    def do_on_key(self, key: str, state: str, emulate: bool) -> None:
         """Check for radio change and frequency validation"""
         key = super().do_on_key(key, state, emulate)
         if key is None:
             return
 
         if state == "press":
-            change_radio = 0
+            change_radio: int = 0
             if key == self.parameters["keys"]["selectradioup"]:
                 change_radio = -1
             elif key == self.parameters["keys"]["selectradiodown"]:
                 change_radio = 1
 
             if change_radio != 0:
-                next_active_n = self.keep_value_between(
+                next_active_n: int | float = self.keep_value_between(
                     self.get_active_radio_dict()["pos"] + change_radio, down=self.get_min_pos(), up=self.get_max_pos()
                 )
 

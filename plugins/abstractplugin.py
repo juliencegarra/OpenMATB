@@ -2,13 +2,17 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
 from pathlib import Path
+from typing import Any, Iterator, Optional
 
 from pyglet.window import key as winkey
 
 from core.constants import BFLIM, PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
+from core.container import Container
 from core.logger import logger
 from core.widgets import Frame, SimpleHTML, Simpletext
 from core.window import Window
@@ -17,30 +21,30 @@ from core.window import Window
 class AbstractPlugin:
     """Any plugin (or task) depends on this meta-class"""
 
-    def __init__(self, label="", taskplacement="fullscreen", taskupdatetime=-1):
-        self.label = label  #   The name as displayed on the interface
-        self.alias = self.__class__.__name__.lower()  #   A lower version of the plugin class name
-        self.widgets = dict()  #   To store the widget objects of a plugin
-        self.container = None  #   The visual area of the plugin (object)
-        self.logger = logger
+    def __init__(self, label: Optional[str] = "", taskplacement: str = "fullscreen", taskupdatetime: int = -1) -> None:
+        self.label: Optional[str] = label  #   The name as displayed on the interface
+        self.alias: str = self.__class__.__name__.lower()  #   A lower version of the plugin class name
+        self.widgets: dict[str, Any] = dict()  #   To store the widget objects of a plugin
+        self.container: Optional[Container] = None  #   The visual area of the plugin (object)
+        self.logger: Any = logger
 
-        self.can_receive_keys = False
-        self.can_execute_keys = False
-        self.keys = set()  #   Handle the keys that are allowed
-        self.display_title = taskplacement != "invisible"
-        self.automode_string = ""
+        self.can_receive_keys: bool = False
+        self.can_execute_keys: bool = False
+        self.keys: set[str] = set()  #   Handle the keys that are allowed
+        self.display_title: bool = taskplacement != "invisible"
+        self.automode_string: str = ""
 
-        self.next_refresh_time = 0
-        self.scenario_time = 0
+        self.next_refresh_time: float = 0
+        self.scenario_time: float = 0
 
         #  If True
-        self.blocking = False  # :blocks all other plugins when alive
-        self.alive = False  # :is started and not yet stopped
-        self.paused = True  # :is not updated and cannot receive inputs
-        self.visible = False  # :all the plugins widgets are shown
-        self.verbose = False
+        self.blocking: bool = False  # :blocks all other plugins when alive
+        self.alive: bool = False  # :is started and not yet stopped
+        self.paused: bool = True  # :is not updated and cannot receive inputs
+        self.visible: bool = False  # :all the plugins widgets are shown
+        self.verbose: bool = False
 
-        self.parameters = dict(
+        self.parameters: dict[str, Any] = dict(
             title=self.label,
             taskplacement=taskplacement,
             taskupdatetime=taskupdatetime,
@@ -51,19 +55,19 @@ class AbstractPlugin:
         self.parameters["taskfeedback"]["overdue"].update({"_nexttoggletime": 0, "_is_visible": False})
 
         # Define minimal draw order depending on task placement
-        self.m_draw = BFLIM if self.parameters["taskplacement"] == "fullscreen" else 0
+        self.m_draw: int = BFLIM if self.parameters["taskplacement"] == "fullscreen" else 0
 
-    def on_scenario_loaded(self, scenario):
+    def on_scenario_loaded(self, scenario: Any) -> None:
         pass
 
-    def update(self, scenario_time):
+    def update(self, scenario_time: float) -> None:
         self.scenario_time = scenario_time
         self.compute_next_plugin_state()
         self.refresh_widgets()
         self.update_can_receive_key()
 
     # State handling
-    def show(self):
+    def show(self) -> None:
         """
         Showing means display widgets, but also removing a potential masking foreground.
         """
@@ -94,7 +98,7 @@ class AbstractPlugin:
     ##            if self.get_widget('border') is not None:
     ##                self.get_widget('borer').hide()
 
-    def hide(self):
+    def hide(self) -> None:
         """
         Hiding means showing a neutral foreground before the plugin for non-blocking plugins
         and destroying the title.
@@ -123,19 +127,19 @@ class AbstractPlugin:
             if self.get_widget("foreground") is not None:
                 self.get_widget("foreground").show()
 
-    def pause(self):
+    def pause(self) -> None:
         if self.verbose:
             print("Pause ", self.alias)
         self.paused = True
         self.update_can_receive_key()
 
-    def resume(self):
+    def resume(self) -> None:
         if self.verbose:
             print("Resume ", self.alias)
         self.paused = False
         self.update_can_receive_key()
 
-    def start(self):
+    def start(self) -> None:
         if self.verbose:
             print("Start ", self.alias)
             print("with keys ", self.keys)
@@ -145,35 +149,35 @@ class AbstractPlugin:
         self.show()
         self.resume()
 
-    def stop(self):
+    def stop(self) -> None:
         if self.verbose:
             print("Stop ", self.alias)
         self.alive = False
         self.pause()
         self.hide()
 
-    def is_a_widget_name(self, name):
+    def is_a_widget_name(self, name: str) -> bool:
         return self.get_widget_fullname(name) in self.widgets
 
-    def is_visible(self):
+    def is_visible(self) -> bool:
         return self.visible is True
 
-    def is_paused(self):
+    def is_paused(self) -> bool:
         return self.paused is True
 
-    def get_widget_fullname(self, name):
+    def get_widget_fullname(self, name: str) -> str:
         return f"{self.alias}_{name}"
 
-    def get_widget(self, name):
+    def get_widget(self, name: str) -> Optional[Any]:
         if not self.is_a_widget_name(name):
             return
         return self.widgets[self.get_widget_fullname(name)]
 
-    def get_response_timers(self):
+    def get_response_timers(self) -> Optional[list[float]]:
         """Return the time since which responses are expected (list of int)"""
         pass
 
-    def update_can_receive_key(self):
+    def update_can_receive_key(self) -> None:
         """Update the ability of the plugin to receive either material or emulated inputs"""
 
         if self.paused or not self.is_visible():
@@ -230,7 +234,7 @@ class AbstractPlugin:
         # Overdue state computing is here to unmerge its temporal
         # logic from the taskupdatetime parameter (so the alarm
         # does not have to wait for plugin update to blink)
-        overdue = self.parameters["taskfeedback"]["overdue"]
+        overdue: dict[str, Any] = self.parameters["taskfeedback"]["overdue"]
         if overdue["active"] and self.get_response_timers() is not None:
             # Should an alarm be displayed ?
             if any([rt > overdue["delayms"] for rt in self.get_response_timers()]):
@@ -255,7 +259,7 @@ class AbstractPlugin:
             overdue["widget"].set_border_color(overdue["color"])
         return True
 
-    def filter_key(self, keystr):
+    def filter_key(self, keystr: str) -> Optional[str]:
         if not self.can_execute_keys:
             return
 
@@ -265,37 +269,37 @@ class AbstractPlugin:
 
         return
 
-    def on_joy_key_press(self, keystr):
+    def on_joy_key_press(self, keystr: str) -> None:
         if not self.can_receive_keys:
             return
         self.do_on_key(keystr, "press", False)
 
-    def on_joy_key_release(self, keystr):
+    def on_joy_key_release(self, keystr: str) -> None:
         if not self.can_receive_keys:
             return
         self.do_on_key(keystr, "release", False)
 
-    def on_key_press(self, symbol, modifiers):
+    def on_key_press(self, symbol: int, modifiers: int) -> None:
         if not self.can_receive_keys:
             return
-        keystr = winkey.symbol_string(symbol)
+        keystr: str = winkey.symbol_string(symbol)
         self.do_on_key(keystr, "press", False)
 
-    def on_key_release(self, symbol, modifiers):
+    def on_key_release(self, symbol: int, modifiers: int) -> None:
         if not self.can_receive_keys:
             return
-        keystr = winkey.symbol_string(symbol)
+        keystr: str = winkey.symbol_string(symbol)
         self.do_on_key(keystr, "release", False)
 
     def do_on_key(
-        self, keystr, state, emulate=False
-    ):  # JC: pour le solver, devrait prendre un parametre is_solver_action
+        self, keystr: str, state: str, emulate: bool = False
+    ) -> Optional[str]:  # JC: pour le solver, devrait prendre un parametre is_solver_action
         # pour separer de vraies actions du participant
         if REPLAY_MODE and not emulate:
             return  # During replay, ignore keys that are not emulated
         return self.filter_key(keystr)
 
-    def is_key_state(self, keystr, is_pressed):
+    def is_key_state(self, keystr: str, is_pressed: bool) -> Optional[bool]:
         if keystr in Window.MainWindow.keyboard:
             return Window.MainWindow.keyboard[keystr] == is_pressed
         elif self.joystick is not None and keystr in self.joystick.keys:
@@ -303,14 +307,14 @@ class AbstractPlugin:
         else:
             return
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         if self.verbose:
             print(self.alias, "Creating widgets")
-        pthp = PLUGIN_TITLE_HEIGHT_PROPORTION
+        pthp: float = PLUGIN_TITLE_HEIGHT_PROPORTION
 
         self.container = Window.MainWindow.get_container(self.parameters["taskplacement"])
-        self.title_container = self.container.reduce_and_translate(height=pthp, y=1)
-        self.task_container = self.container.reduce_and_translate(height=1 - pthp, y=0)
+        self.title_container: Container = self.container.reduce_and_translate(height=pthp, y=1)
+        self.task_container: Container = self.container.reduce_and_translate(height=1 - pthp, y=0)
 
         # A fullscreen plugin must have its proper background to override the MATB black middle band
         if self.parameters["taskplacement"] == "fullscreen":
@@ -343,12 +347,12 @@ class AbstractPlugin:
 
         if "displayautomationstate" in self.parameters:
             if self.parameters["displayautomationstate"] is True:
-                position = self.automode_position if hasattr(self, "automode_position") else (0.5, 0.5)
-                autocont = self.container.reduce_and_translate(width=0.15, height=0.05, x=position[0], y=position[1])
+                position: tuple[float, float] = self.automode_position if hasattr(self, "automode_position") else (0.5, 0.5)
+                autocont: Container = self.container.reduce_and_translate(width=0.15, height=0.05, x=position[0], y=position[1])
                 self.add_widget("automode", Simpletext, container=autocont, text=self.automode_string, x=0.5, y=0.5)
 
-    def add_widget(self, name, cls, container, **kwargs):
-        fullname = self.get_widget_fullname(name)
+    def add_widget(self, name: str, cls: type, container: Optional[Container], **kwargs: Any) -> Any:
+        fullname: str = self.get_widget_fullname(name)
         self.widgets[fullname] = cls(fullname, container, **kwargs)
 
         # Record the area coordinates of the widget if it has a container
@@ -357,12 +361,12 @@ class AbstractPlugin:
 
         return self.widgets[fullname]
 
-    def set_parameter(self, keys_str, value):
-        keys_list = keys_str.split("-")
-        dic = self.parameters
+    def set_parameter(self, keys_str: str, value: Any) -> dict[str, Any]:
+        keys_list: list[str] = keys_str.split("-")
+        dic: dict[str, Any] = self.parameters
         for key in keys_list[:-1]:
             dic = dic.setdefault(key, {})
-        old_value = dic[keys_list[-1]]
+        old_value: Any = dic[keys_list[-1]]
         dic[keys_list[-1]] = value
 
         # If a key is changed, renew the self.keys list
@@ -372,54 +376,54 @@ class AbstractPlugin:
                 self.keys.remove(old_value)
         return dic
 
-    def log_all_parameters(self, search_dict, key_prefix=""):
+    def log_all_parameters(self, search_dict: dict[str, Any], key_prefix: str = "") -> None:
         for key, value in search_dict.items():
-            new_key_prefix = str(key) if len(key_prefix) == 0 else key_prefix + "-" + str(key)
+            new_key_prefix: str = str(key) if len(key_prefix) == 0 else key_prefix + "-" + str(key)
             if isinstance(value, dict):  # Recursion search
                 self.log_all_parameters(value, new_key_prefix)
             else:  # Value found
                 logger.record_parameter(self.alias, new_key_prefix, value)
 
-    def log_performance(self, name, value):
+    def log_performance(self, name: str, value: Any) -> None:
         if not hasattr(self, "performance"):
-            self.performance = dict()
+            self.performance: dict[str, list[Any]] = dict()
         if name not in self.performance:
             self.performance[name] = list()
         self.performance[name].append(value)
         self.logger.log_performance(self.alias, name, value)
 
-    def keep_value_between(self, value, down, up):
+    def keep_value_between(self, value: float, down: float, up: float) -> float:
         return max(min(value, up), down)
 
-    def grouped(self, iterable, n):
+    def grouped(self, iterable: Any, n: int) -> Iterator[tuple[Any, ...]]:
         return zip(*[iter(iterable)] * n)
 
 
 class BlockingPlugin(AbstractPlugin):
-    def __init__(self, taskplacement="fullscreen", taskupdatetime=15):
+    def __init__(self, taskplacement: str = "fullscreen", taskupdatetime: int = 15) -> None:
         super().__init__(None, taskplacement, taskupdatetime)
 
         self.keys.update({"SPACE"})
-        new_par = dict(boldtitle=False)
+        new_par: dict[str, bool] = dict(boldtitle=False)
         self.parameters.update(new_par)
 
-        self.blocking = True
-        self.display_title = False
+        self.blocking: bool = True
+        self.display_title: bool = False
 
-        self.slides = list()
-        self.current_slide = None
-        self.go_to_next_slide = None
-        self.ignore_empty_lines = False
+        self.slides: list[str] = list()
+        self.current_slide: Optional[str] = None
+        self.go_to_next_slide: Optional[bool] = None
+        self.ignore_empty_lines: bool = False
 
-        self.input_path = None
-        self.folder = None  # Depends on the nature of blocking plugin (questionnaire, instruction...)
+        self.input_path: Optional[Path] = None
+        self.folder: Optional[str] = None  # Depends on the nature of blocking plugin (questionnaire, instruction...)
 
         # Should we stop the plugin when the are no more slide available
         # (Useful for the LSL plugin, which has a starting instruction, but
         #  should not be stopped)
-        self.stop_on_end = True
+        self.stop_on_end: bool = True
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         super().create_widgets()
         self.go_to_next_slide = True  # So the first slide appears as soon as possible
 
@@ -431,7 +435,7 @@ class BlockingPlugin(AbstractPlugin):
         # Only if this input path exists, retrieve its content into slides (split with <newpage>)
         if self.input_path is not None and self.input_path.exists():
             self.slides.append("")  # Create the first slide
-            lines = self.input_path.open(encoding="utf8").readlines()
+            lines: list[str] = self.input_path.open(encoding="utf8").readlines()
 
             if self.ignore_empty_lines:
                 lines = [l for l in lines if len(l.strip()) > 0]
@@ -445,7 +449,7 @@ class BlockingPlugin(AbstractPlugin):
         else:
             pass  # This should not happen (input_path is checked before the scenario is played)
 
-    def update(self, dt):
+    def update(self, dt: float) -> None:
         super().update(dt)
         if self.go_to_next_slide:
             self.go_to_next_slide = False
@@ -462,13 +466,13 @@ class BlockingPlugin(AbstractPlugin):
                     self.hide()
                     self.blocking = False
 
-    def make_slide_graphs(self):
+    def make_slide_graphs(self) -> None:
         # Extract the title from the slide string if relevant
-        slide_content = self.current_slide.split("\n")
-        title_idx = [i for i, t in enumerate(slide_content) if "<h1>" in t]
+        slide_content: list[str] = self.current_slide.split("\n")
+        title_idx: list[int] = [i for i, t in enumerate(slide_content) if "<h1>" in t]
         if len(title_idx) > 0:
             # In case multiple title tags, take the last one
-            title = slide_content[title_idx[-1]]
+            title: str = slide_content[title_idx[-1]]
 
             self.add_widget(
                 "title",
@@ -489,8 +493,8 @@ class BlockingPlugin(AbstractPlugin):
         self.current_slide = "\n".join(slide_content)
 
         if self.parameters["allowkeypress"]:
-            key_name = self.parameters["response"]["key"].lower()
-            response_text = "<center><p>" + self.parameters["response"]["text"] + "</p></center>"
+            key_name: str = self.parameters["response"]["key"].lower()
+            response_text: str = "<center><p>" + self.parameters["response"]["text"] + "</p></center>"
             self.add_widget(
                 f"press_{key_name}",
                 SimpleHTML,
@@ -502,11 +506,11 @@ class BlockingPlugin(AbstractPlugin):
                 y=0.1,
             )
 
-    def on_key_press(self, symbol, modifiers):
+    def on_key_press(self, symbol: int, modifiers: int) -> None:
         if self.parameters["allowkeypress"]:
             super().on_key_press(symbol, modifiers)
 
-    def do_on_key(self, keystr, state, emulate=False):
+    def do_on_key(self, keystr: str, state: str, emulate: bool = False) -> Optional[str]:
         keystr = super().do_on_key(keystr, state, emulate)
         if keystr is None:
             return

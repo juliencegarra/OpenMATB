@@ -1,6 +1,11 @@
 # Copyright 2023-2026, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
+
+from __future__ import annotations
+
+from typing import Any, Optional, Union
+
 from pyglet.gl import GL_BLEND, GL_LINES, GL_ONE_MINUS_SRC_ALPHA, GL_POLYGON, GL_SRC_ALPHA, glBlendFunc, glEnable
 from pyglet.text import HTMLLabel
 from pyglet.window import key as winkey
@@ -13,22 +18,23 @@ from core.utils import get_conf_value
 
 
 class ModalDialog:
-    def __init__(self, win, msg, title="OpenMATB", continue_key="SPACE", exit_key=None):
+    def __init__(self, win: Any, msg: Union[str, list[str]], title: str = "OpenMATB",
+                 continue_key: Optional[str] = "SPACE", exit_key: Optional[str] = None) -> None:
         # Allow for drawing of transparent vertices
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-        self.win = win
-        self.name = title
-        self.continue_key = continue_key
-        self.exit_key = exit_key
-        self.hide_on_pause = get_conf_value("Openmatb", "hide_on_pause")
+        self.win: Any = win
+        self.name: str = title
+        self.continue_key: Optional[str] = continue_key
+        self.exit_key: Optional[str] = exit_key
+        self.hide_on_pause: bool = get_conf_value("Openmatb", "hide_on_pause")
 
         # Hide background ?
         if self.hide_on_pause:
-            MATB_container = Window.MainWindow.get_container("fullscreen")  # noqa: F821
+            MATB_container: Container = Window.MainWindow.get_container("fullscreen")  # noqa: F821
             l, b, w, h = MATB_container.get_lbwh()
-            self.back_vertice = Window.MainWindow.batch.add(  # noqa: F821
+            self.back_vertice: Optional[Any] = Window.MainWindow.batch.add(  # noqa: F821
                 4,
                 GL_POLYGON,
                 G(20),
@@ -42,7 +48,7 @@ class ModalDialog:
         if isinstance(msg, str):
             msg = [msg]
 
-        html = "<center><p><strong><font face=%s>" % "sans"
+        html: str = "<center><p><strong><font face=%s>" % "sans"
         html += "%s</font></strong></p></center>" % title
         for m in msg:
             html += "<center><p><font face=%s>" % "sans"
@@ -60,7 +66,7 @@ class ModalDialog:
             html += " %s" % _("Continue")
         html += "</font></em></p></center>"
 
-        self.html_label = HTMLLabel(
+        self.html_label: HTMLLabel = HTMLLabel(
             html,
             x=0,
             y=0,
@@ -74,21 +80,21 @@ class ModalDialog:
         # # # # # # # # # # # #
 
         # Container definition #
-        left_right_margin_px = 20
-        top_bottom_margin_px = 10
+        left_right_margin_px: int = 20
+        top_bottom_margin_px: int = 10
         # The first, compute the desired container height and width #
         # - Width is the max html width + 2 * left_right_margin
-        w = self.html_label.content_width + 2 * left_right_margin_px
+        w: float = self.html_label.content_width + 2 * left_right_margin_px
         # - Line to line computation
         # - Height is number of line * line to line height + 2 margins
-        h = self.html_label.content_height + 2 * top_bottom_margin_px
-        l = self.win.width / 2 - w / 2
-        b = self.win.height / 2 - h / 2
-        self.container = Container("ModalDialog", l, b, w, h)
+        h: float = self.html_label.content_height + 2 * top_bottom_margin_px
+        l: float = self.win.width / 2 - w / 2
+        b: float = self.win.height / 2 - h / 2
+        self.container: Container = Container("ModalDialog", l, b, w, h)
         l, b, w, h = self.container.get_lbwh()
 
         # Container background
-        self.back_dialog = self.win.batch.add(
+        self.back_dialog: Any = self.win.batch.add(
             4,
             GL_POLYGON,
             G(21),
@@ -97,7 +103,7 @@ class ModalDialog:
         )
 
         # Container border
-        self.border_dialog = self.win.batch.add(
+        self.border_dialog: Any = self.win.batch.add(
             8,
             GL_LINES,
             G(21),
@@ -109,9 +115,9 @@ class ModalDialog:
         self.html_label.x = self.container.cx
         self.html_label.y = self.container.cy
 
-        self.vertices = [self.html_label, self.back_dialog, self.border_dialog, self.back_vertice]
+        self.vertices: list[Optional[Any]] = [self.html_label, self.back_dialog, self.border_dialog, self.back_vertice]
 
-    def on_delete(self):
+    def on_delete(self) -> None:
         """The user wants to continue. So only delete the modal dialog"""
         for v in self.vertices:
             if v is not None:
@@ -119,13 +125,13 @@ class ModalDialog:
         logger.log_manual_entry(f"{self.name} end", key="dialog")
         self.win.modal_dialog = None
 
-    def on_exit(self):
+    def on_exit(self) -> None:
         """The user requested to exit OpenMATB"""
         self.on_delete()
         self.win.alive = False
 
-    def on_key_release(self, symbol, modifiers):
-        keystr = winkey.symbol_string(symbol)
+    def on_key_release(self, symbol: int, modifiers: int) -> None:
+        keystr: str = winkey.symbol_string(symbol)
 
         if keystr == self.continue_key:
             self.on_delete()

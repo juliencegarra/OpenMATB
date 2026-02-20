@@ -1,8 +1,11 @@
-# Copyright 2023-2026, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2026, by Julien Cegarra & Benoit Valery. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
 import math
+from typing import Any
 
 from pyglet.gl import *
 from pyglet.text import Label
@@ -18,33 +21,33 @@ from core.window import Window
 class Slider(AbstractWidget):
     def __init__(
         self,
-        name,
-        container,
-        title,
-        label_min,
-        label_max,
-        value_min,
-        value_max,
-        value_default,
-        rank,
-        draw_order=1,
-        interactive=True,
-        showvalue=True,
-    ):
+        name: str,
+        container: Any,
+        title: str,
+        label_min: str,
+        label_max: str,
+        value_min: float,
+        value_max: float,
+        value_default: float,
+        rank: int,
+        draw_order: int = 1,
+        interactive: bool = True,
+        showvalue: bool = True,
+    ) -> None:
         super().__init__(name, container)
 
-        self.title = title
-        self.label_min = label_min
-        self.label_max = label_max
-        self.showvalue = showvalue
-        self.value_min = value_min
-        self.value_max = value_max
-        self.value_default = value_default
-        self.draw_order = draw_order
+        self.title: str = title
+        self.label_min: str = label_min
+        self.label_max: str = label_max
+        self.showvalue: bool = showvalue
+        self.value_min: float = value_min
+        self.value_max: float = value_max
+        self.value_default: float = value_default
+        self.draw_order: int = draw_order
 
-        self.rank = rank
-        self.groove_value = self.value_default
-        self.hover = False
+        self.rank: int = rank
+        self.groove_value: float = self.value_default
+        self.hover: bool = False
 
         # Enhance smoothing mode
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -53,6 +56,7 @@ class Slider(AbstractWidget):
         glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
         glLineWidth(3)
 
+        self.containers: dict[str, Container] = dict()
         self.set_sub_containers()
         self.set_slider_thumb_and_groove()
         self.show()
@@ -60,17 +64,18 @@ class Slider(AbstractWidget):
         if interactive:
             Window.MainWindow.push_handlers(self.on_mouse_press, self.on_mouse_drag, self.on_mouse_release)
 
-    def set_sub_containers(self, slider_width=0.6):
-        l = self.container.l
-        n_labels = 3 if self.showvalue else 2
-        label_w = self.container.w * (1 - slider_width) / n_labels
-        slider_w = self.container.w * slider_width
+    def set_sub_containers(self, slider_width: float = 0.6) -> None:
+        l: float = self.container.l
+        n_labels: int = 3 if self.showvalue else 2
+        label_w: float = self.container.w * (1 - slider_width) / n_labels
+        slider_w: float = self.container.w * slider_width
 
         self.containers = dict()
-        names = ["min", "slide", "max"]
-        bounds = [l, l + label_w, l + label_w + slider_w, l + label_w + slider_w + label_w]
+        names: list[str] = ["min", "slide", "max"]
+        bounds: list[float] = [l, l + label_w, l + label_w + slider_w, l + label_w + slider_w + label_w]
         for c, name in enumerate(names):
-            left, right = bounds[c], bounds[c + 1]
+            left: float = bounds[c]
+            right: float = bounds[c + 1]
             self.containers[name] = Container(
                 f"container_{name}", left, self.container.b, right - left, self.container.h
             )
@@ -79,7 +84,8 @@ class Slider(AbstractWidget):
                 "container_value", bounds[3], self.container.b, label_w, self.container.h
             )
         for name in ["min", "max"]:
-            x, y = self.containers[name].cx, self.containers[name].cy
+            x: float = self.containers[name].cx
+            y: float = self.containers[name].cy
             self.vertex[name] = Label(
                 getattr(self, f"label_{name}"),
                 font_name=self.font_name,
@@ -93,7 +99,8 @@ class Slider(AbstractWidget):
                 font_size=F["MEDIUM"],
             )
         if self.showvalue:
-            x, y = self.containers["value"].cx, self.containers["value"].cy
+            x = self.containers["value"].cx
+            y = self.containers["value"].cy
             self.vertex["value"] = Label(
                 str(self.groove_value),
                 align="center",
@@ -107,22 +114,22 @@ class Slider(AbstractWidget):
                 font_name=self.font_name,
             )
 
-    def set_slider_thumb_and_groove(self):
-        slider_groove_h = 0.2
-        slider_thumb_h = 0.05
-        slider_thumb_w = 0.9
+    def set_slider_thumb_and_groove(self) -> None:
+        slider_groove_h: float = 0.2
+        slider_thumb_h: float = 0.05
+        slider_thumb_w: float = 0.9
 
         self.containers["thumb"] = self.containers["slide"].get_reduced(slider_thumb_w, slider_thumb_h)
 
         # The groove container comprises the whole groove movements area
         self.containers["allgroove"] = self.containers["slide"].get_reduced(slider_thumb_w, slider_groove_h)
 
-        v1 = self.vertice_border(self.containers["thumb"])
+        v1: tuple[float, ...] = self.vertice_border(self.containers["thumb"])
         self.add_vertex(
             "thumb", 4, GL_QUADS, G(self.draw_order + self.rank), ("v2f/static", v1), ("c4B/static", (C["GREY"] * 4))
         )
 
-        v2 = self.get_groove_vertices()
+        v2: list[float] = self.get_groove_vertices()
         self.add_vertex(
             "groove_b",
             len(v2) // 2,
@@ -140,86 +147,86 @@ class Slider(AbstractWidget):
             ("c4B/stream", (C["BLACK"] * (len(v2) // 2))),
         )
 
-    def get_groove_vertices(self):
-        groove_radius = self.containers["allgroove"].h
-        center_ratio = (self.groove_value - self.value_min) / (self.value_max - self.value_min)
-        x = self.containers["allgroove"].l + center_ratio * self.containers["allgroove"].w
-        y = self.containers["allgroove"].cy
+    def get_groove_vertices(self) -> list[float]:
+        groove_radius: float = self.containers["allgroove"].h
+        center_ratio: float = (self.groove_value - self.value_min) / (self.value_max - self.value_min)
+        x: float = self.containers["allgroove"].l + center_ratio * self.containers["allgroove"].w
+        y: float = self.containers["allgroove"].cy
         return self.vertice_circle([x, y], groove_radius)
 
-    def set_groove_position(self):
+    def set_groove_position(self) -> None:
         if self.get_groove_vertices() == self.on_batch["groove"].vertices:
             return
 
         self.on_batch["groove"].vertices = self.get_groove_vertices()
         self.on_batch["groove_b"].vertices = self.get_groove_vertices()
 
-    def set_value_label(self):
+    def set_value_label(self) -> None:
         if not self.showvalue:
             return
-        display_value = str(round(self.groove_value))
+        display_value: str = str(round(self.groove_value))
         if display_value == self.vertex["value"].text:
             return
         self.vertex["value"].text = display_value
 
     # TODO: hide cursor when finished
-    def coordinates_in_groove_container(self, x, y):
+    def coordinates_in_groove_container(self, x: float, y: float) -> bool:
         return self.containers["allgroove"].contains_xy(x, y)
 
-    def on_mouse_press(self, x, y, button, modifiers):
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
         if self.containers["slide"].contains_xy(x, y) and self.hover is False:
             self.hover = True
             self.update_cursor_appearance()
             # Jump groove to click position
-            x_min = self.containers["allgroove"].l
-            x_max = self.containers["allgroove"].l + self.containers["allgroove"].w
-            clamped_x = min(x_max, max(x_min, x))
-            ratio = (clamped_x - x_min) / (x_max - x_min)
+            x_min: float = self.containers["allgroove"].l
+            x_max: float = self.containers["allgroove"].l + self.containers["allgroove"].w
+            clamped_x: float = min(x_max, max(x_min, x))
+            ratio: float = (clamped_x - x_min) / (x_max - x_min)
             self.update_groove_value(ratio)
 
-    def on_mouse_release(self, x, y, button, modifiers):
+    def on_mouse_release(self, x: int, y: int, button: int, modifiers: int) -> None:
         if self.hover is True:
             self.hover = False
             self.update_cursor_appearance()
 
-    def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
+    def on_mouse_drag(self, x: int, y: int, dx: int, dy: int, button: int, modifiers: int) -> None:
         if self.hover is True:
-            x_min = self.containers["allgroove"].l
-            x_max = self.containers["allgroove"].l + self.containers["allgroove"].w
+            x_min: float = self.containers["allgroove"].l
+            x_max: float = self.containers["allgroove"].l + self.containers["allgroove"].w
             x = min(x_max, max(x_min, x))
-            ratio = (x - x_min) / (x_max - x_min)
+            ratio: float = (x - x_min) / (x_max - x_min)
             self.update_groove_value(ratio)
 
-    def update_groove_value(self, ratio):
-        val = float(ratio * (self.value_max - self.value_min) + self.value_min)
+    def update_groove_value(self, ratio: float) -> None:
+        val: float = float(ratio * (self.value_max - self.value_min) + self.value_min)
         if math.isclose(val, self.groove_value):
             return
         self.groove_value = val
         self.logger.record_state(self.name, "value", str(val))
         self.update()
 
-    def get_title(self):
+    def get_title(self) -> str:
         return self.title
 
-    def get_value(self):
+    def get_value(self) -> float:
         return self.groove_value
 
-    def update_cursor_appearance(self):
+    def update_cursor_appearance(self) -> None:
         if self.hover is True:
-            cursor = Window.MainWindow.get_system_mouse_cursor(Window.MainWindow.CURSOR_SIZE_LEFT_RIGHT)
+            cursor: Any = Window.MainWindow.get_system_mouse_cursor(Window.MainWindow.CURSOR_SIZE_LEFT_RIGHT)
         else:
             cursor = Window.MainWindow.get_system_mouse_cursor(Window.MainWindow.CURSOR_DEFAULT)
         Window.MainWindow.set_mouse_cursor(cursor)
 
-    def update(self):
+    def update(self) -> None:
         if self.visible:
             self.set_groove_position()
             self.set_value_label()
 
-    def hide(self):
+    def hide(self) -> None:
         super().hide()
         Window.MainWindow.slider_visible = False
 
-    def show(self):
+    def show(self) -> None:
         super().show()
         Window.MainWindow.slider_visible = True

@@ -2,15 +2,18 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
+from core.container import Container
 from core.widgets.abstractwidget import *
 
 
 class PumpFlow(AbstractWidget):
-    def __init__(self, name, container, label, flow):
+    def __init__(self, name: str, container: Container, label: str, flow: int) -> None:
         super().__init__(name, container)
 
-        self.label = label
-        self.flow = flow
+        self.label: str = label
+        self.flow: int = flow
 
         # Pump label #
         self.vertex[self.label] = Label(
@@ -26,7 +29,7 @@ class PumpFlow(AbstractWidget):
         )
 
         # Pump arrow #
-        v = self.get_triangle_vertice(h_ratio=0.25, x_ratio=-0.05, angle=3 * math.pi / 2)
+        v: list[float] = self.get_triangle_vertice(h_ratio=0.25, x_ratio=-0.05, angle=3 * math.pi / 2)
         self.add_vertex(
             f"{self.label}_arrow",
             3,
@@ -36,14 +39,14 @@ class PumpFlow(AbstractWidget):
             ("c4B/static", (C["BLACK"] * 3)),
         )
 
-    def pump_string(self, value):
+    def pump_string(self, value: int) -> str:
         return f"{self.label}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t{value}"
 
-    def set_flow(self, flow):
+    def set_flow(self, flow: int) -> None:
         if self.pump_string(flow) == self.get_flow():
             return
         self.vertex[self.label].text = self.pump_string(flow)
         self.logger.record_state(self.name, self.label, flow)
 
-    def get_flow(self):
+    def get_flow(self) -> str:
         return self.vertex[self.label].text

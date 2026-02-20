@@ -2,6 +2,13 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any, Callable, Optional, Union
+
+import plugins  # noqa: E402 — needed by globals()["plugins"] for dynamic plugin loading
+
 from core import validation
 from core.constants import DEPRECATED, REPLAY_MODE, SYSTEM_COMMANDS, SYSTEM_PSEUDO_PLUGIN
 from core.constants import PATHS as P
@@ -17,13 +24,13 @@ class Scenario:
     and checks that some criteria are met (e.g., acceptable values)
     """
 
-    def __init__(self, contents=None, scenario_path=None):
-        self.events = list()
-        self.plugins = dict()
+    def __init__(self, contents: Optional[list[str]] = None, scenario_path: Optional[Path] = None) -> None:
+        self.events: list[Event] = list()
+        self.plugins: dict[str, Any] = dict()
 
         if contents is None:
             if scenario_path is not None:
-                sp = scenario_path
+                sp: Path = scenario_path
             else:
                 sp = P["SCENARIOS"].joinpath(get_conf_value("Openmatb", "scenario_path"))
 
@@ -57,7 +64,7 @@ class Scenario:
         }
 
         self.events = self.events_retrocompatibility()  # Apply retrocompatiblity to events
-        event_errors = self.check_events()  # Check that events are properly expressed
+        event_errors: list[str] = self.check_events()  # Check that events are properly expressed
 
         with open(P["SCENARIO_ERRORS"], "w") as errorf:
             if len(event_errors) > 0:
@@ -71,7 +78,7 @@ class Scenario:
                 _("There were some errors in the scenario. See the %s file.") % P["SCENARIO_ERRORS"].name, fatal=True
             )
 
-    def reload_plugins(self):
+    def reload_plugins(self) -> None:
         for name, plugin in self.plugins.items():
             for _w, widget in plugin.widgets.items():
                 widget.empty_batch()
@@ -86,8 +93,8 @@ class Scenario:
             # Instantiate plugins
             self.plugins[name] = getattr(globals()["plugins"], name.capitalize())()
 
-    def events_retrocompatibility(self):
-        new_list = list()
+    def events_retrocompatibility(self) -> list[Event]:
+        new_list: list[Event] = list()
         for _n, e in enumerate(self.events):
             # If plugin or command is DEPRECATED, ignore the event
             if e.is_deprecated():
@@ -101,9 +108,9 @@ class Scenario:
                 and "failure" in e.command[0]
                 and e.command[1] in ["up", "down"]
             ):
-                sysmon_dict = dict(up="1", down="-1")
-                command_1 = [e.command[0], "True"]
-                command_2 = [e.command[0].replace("failure", "side"), sysmon_dict[e.command[1]]]
+                sysmon_dict: dict[str, str] = dict(up="1", down="-1")
+                command_1: list[str] = [e.command[0], "True"]
+                command_2: list[str] = [e.command[0].replace("failure", "side"), sysmon_dict[e.command[1]]]
                 new_list.append(Event(e.line, e.time_sec, e.plugin, command_1))
                 new_list.append(Event(e.line, e.time_sec, e.plugin, command_2))
 
@@ -112,9 +119,9 @@ class Scenario:
                 new_list.append(e)
         return new_list
 
-    def get_parameters_value(self, plugin, command):
-        current_level = self.plugins[plugin].parameters
-        parameter_address = command[0].split("-")
+    def get_parameters_value(self, plugin: str, command: list[str]) -> tuple[Any, bool]:
+        current_level: Any = self.plugins[plugin].parameters
+        parameter_address: list[str] = command[0].split("-")
 
         for entry in parameter_address:  # Is this parameter existing ?
             if current_level is not None and entry in current_level:
@@ -128,7 +135,7 @@ class Scenario:
         else:
             return current_level[parameter_address[-1]], True
 
-    def try_retrocompatibility(self, plugin, command):
+    def try_retrocompatibility(self, plugin: str, command: list[str]) -> tuple[Any, Optional[bool]]:
         try:
             command[0] = retro[command[0]]  # noqa: F821
         except KeyError:
@@ -136,14 +143,14 @@ class Scenario:
         else:
             return self.get_parameters_value(plugin, command)
 
-    def get_plugin_methods(self, plugin):
+    def get_plugin_methods(self, plugin: str) -> list[str]:
         return [f for f in dir(self.plugins[plugin]) if callable(getattr(self.plugins[plugin], f))]
 
-    def get_plugin_events(self, plugin_name):
+    def get_plugin_events(self, plugin_name: str) -> list[Event]:
         return [e for e in self.events if e.plugin == plugin_name]
 
-    def check_events(self):
-        errors = list()
+    def check_events(self) -> list[str]:
+        errors: list[str] = list()
 
         # Rule 1 - all the mentioned plugins should have a start and a stop commands
         # Only non-blocking plugins must have a stop command
@@ -157,7 +164,7 @@ class Scenario:
                         errors.append(_("The (%s) plugin does not have a stop command.") % plug_name)
                 else:
                     pass  # Not a problem during a replay (because a scenario can have been exited
-                    # manually before the end, it’s not mandatory to have it)
+                    # manually before the end, it's not mandatory to have it)
 
         # Rule 1 bis - As for the blocking plugins, they should have their input file
         # defined before they start (check that each start command is preceeded by filename information)
@@ -192,15 +199,15 @@ class Scenario:
 
                 # If the current parameter exists in the plugin
                 if exists:
-                    method_args = None
+                    method_args: Optional[list[Any]] = None
 
                     # Check that the parameter has a verification method
                     # either globally or in the plugins itself
                     # Else trigger a warning (should not happen)
-                    validation_dict = self.get_validation_dict(e.plugin)
+                    validation_dict: dict[str, Any] = self.get_validation_dict(e.plugin)
 
                     if e.command[0] in validation_dict:
-                        eval_method = validation_dict[e.command[0]]
+                        eval_method: Any = validation_dict[e.command[0]]
                     else:
                         eval_method = None
                         errors.append(
@@ -222,8 +229,8 @@ class Scenario:
                         eval_value, error = eval_method(*method_args)
 
                         if error is not None:
-                            preamble = _("Error on line %s. %s ") % (e.line, e.command[0])
-                            error_msg = preamble + error
+                            preamble: str = _("Error on line %s. %s ") % (e.line, e.command[0])
+                            error_msg: str = preamble + error
                             errors.append(error_msg)
                         else:
                             # If no error, replace the event value by its evaluated version
@@ -235,23 +242,23 @@ class Scenario:
                     )
         return errors
 
-    def get_validation_dict(self, pluginname):
-        validation_dict = global_validation_dict.copy()
+    def get_validation_dict(self, pluginname: str) -> dict[str, Any]:
+        validation_dict: dict[str, Any] = global_validation_dict.copy()
 
-        plugin_validation_dict = getattr(self.plugins[pluginname], "validation_dict", None)
+        plugin_validation_dict: Optional[dict[str, Any]] = getattr(self.plugins[pluginname], "validation_dict", None)
 
         if plugin_validation_dict is not None:
             validation_dict.update(plugin_validation_dict)
 
         return validation_dict
 
-    def get_plugins_name_list(self):
+    def get_plugins_name_list(self) -> set[str]:
         return set([e.plugin for e in self.events if e.plugin not in DEPRECATED and e.plugin != SYSTEM_PSEUDO_PLUGIN])
 
 
 # This dictionary associates to each parameter name a checking method
 # TODO: probably move each of them to plugins to remove any global parameter
-global_validation_dict = {
+global_validation_dict: dict[str, Any] = {
     # If the key points to a tuple, the first argument is the method
     # the other arguments are extra-method arguments
     # General values #

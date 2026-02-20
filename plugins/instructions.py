@@ -2,17 +2,21 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
+from typing import Any, Optional
+
 from core.constants import PATHS as P
 from core.widgets import SimpleHTML
 from plugins.abstractplugin import BlockingPlugin
 
 
 class Instructions(BlockingPlugin):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-        self.folder = P["INSTRUCTIONS"]
-        new_par = dict(
+        self.folder: str = P["INSTRUCTIONS"]
+        new_par: dict[str, Any] = dict(
             filename=None,
             pointsize=0,
             maxdurationsec=0,
@@ -21,7 +25,7 @@ class Instructions(BlockingPlugin):
         )
         self.parameters.update(new_par)
 
-    def make_slide_graphs(self):
+    def make_slide_graphs(self) -> None:
         super().make_slide_graphs()
         self.add_widget(
             "instructions",

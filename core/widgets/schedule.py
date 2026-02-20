@@ -1,17 +1,19 @@
-# Copyright 2023-2026, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2026, by Julien Cegarra & Benoit Valery. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
+
+from __future__ import annotations
 
 from core.widgets.abstractwidget import *
 
 
 class Schedule(AbstractWidget):
-    def __init__(self, name, container, label):
+    def __init__(self, name: str, container: Any, label: str) -> None:
         super().__init__(name, container)
 
-        self.line_radius = int(self.container.h / 200)
-        self.bound_radius = int(self.container.h / 70)
-        self.box_radius = self.bound_radius * 1.5
+        self.line_radius: int = int(self.container.h / 200)
+        self.bound_radius: int = int(self.container.h / 70)
+        self.box_radius: float = self.bound_radius * 1.5
 
         self.vertex["letter"] = Label(
             label[0].upper(),
@@ -25,7 +27,7 @@ class Schedule(AbstractWidget):
             group=G(1),
         )
 
-        v = [self.container.cx, self.container.y1, self.container.cx, self.container.y2]
+        v: list[float] = [self.container.cx, self.container.y1, self.container.cx, self.container.y2]
         self.add_vertex("line", 2, GL_LINES, G(self.m_draw + 1), ("v2f/static", v), ("c4B/static", (C["GREY"] * 2)))
 
         self.add_vertex(
@@ -75,21 +77,22 @@ class Schedule(AbstractWidget):
                 t, 4, GL_QUADS, G(self.m_draw + g + 2), ("v2f/dynamic", (0, 0) * 4), ("c4B/dynamic", (C["GREY"] * 4))
             )
 
-    def set_top_bound_color(self, bound_color):
+    def set_top_bound_color(self, bound_color: tuple[int, ...]) -> None:
         if bound_color == self.get_vertex_color("top_bound"):
             return
         self.on_batch["top_bound"].colors[:] = bound_color * 4
         self.logger.record_state(self.name, "top_bound_color", bound_color)
 
-    def sec_to_y(self, sec, max_sec):
+    def sec_to_y(self, sec: float, max_sec: float) -> float:
         return self.container.y1 - (sec / max_sec * (self.container.y1 - self.container.y2))
 
-    def map_segment(self, time_mode, rel_plan, max_sec, color):
-        v = list()
+    def map_segment(self, time_mode: str, rel_plan: list[tuple[float, float]], max_sec: float, color: tuple[int, ...]) -> None:
+        v: list[float] = list()
         for segment_sec in rel_plan:
-            x_radius = self.line_radius if time_mode == "running" else self.box_radius
+            x_radius: float | int = self.line_radius if time_mode == "running" else self.box_radius
             start, end = segment_sec
-            y1, y2 = self.sec_to_y(start, max_sec), self.sec_to_y(end, max_sec)
+            y1: float = self.sec_to_y(start, max_sec)
+            y2: float = self.sec_to_y(end, max_sec)
             v.extend(
                 [
                     self.container.cx - x_radius,
@@ -106,6 +109,6 @@ class Schedule(AbstractWidget):
             self.on_batch[time_mode].vertices = v  # Inform new vertices
             self.on_batch[time_mode].colors[:] = list(color) * (len(v) // 2)
 
-    def update(self):
+    def update(self) -> None:
         if self.visible:
             self.change_top_bound_color()

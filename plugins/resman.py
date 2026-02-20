@@ -2,6 +2,10 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
+from typing import Any, Callable, Optional
+
 from core import validation
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
@@ -13,10 +17,10 @@ from plugins.abstractplugin import AbstractPlugin
 
 
 class Resman(AbstractPlugin):
-    def __init__(self, label="", taskplacement="bottommid", taskupdatetime=2000):
+    def __init__(self, label: str = "", taskplacement: str = "bottommid", taskupdatetime: int = 2000) -> None:
         super().__init__(_("Resources management"), taskplacement, taskupdatetime)
 
-        self.validation_dict = {
+        self.validation_dict: dict[str, Callable[..., Any] | tuple[Callable[..., Any], list[str]]] = {
             "pumpcoloroff": validation.is_color,
             "pumpcoloron": validation.is_color,
             "pumpcolorfailure": validation.is_color,
@@ -81,9 +85,9 @@ class Resman(AbstractPlugin):
             "tank-f-lossperminute": validation.is_natural_integer,
         }
 
-        self.keys = {"NUM_1", "NUM_2", "NUM_3", "NUM_4", "NUM_5", "NUM_6", "NUM_7", "NUM_8"}
+        self.keys: set[str] = {"NUM_1", "NUM_2", "NUM_3", "NUM_4", "NUM_5", "NUM_6", "NUM_7", "NUM_8"}
 
-        new_par = dict(
+        new_par: dict[str, Any] = dict(
             automaticsolver=False,
             displayautomationstate=True,
             pumpcoloroff=C["WHITE"],
@@ -117,46 +121,49 @@ class Resman(AbstractPlugin):
         )
 
         self.parameters.update(new_par)
-        self.automode_position = (0.48, 0.55)
-        self.wait_before_leak = 1  # How many updates to wait before the leak begins
+        self.automode_position: tuple[float, float] = (0.48, 0.55)
+        self.wait_before_leak: int = 1  # How many updates to wait before the leak begins
 
         # Add response timers to target tanks, and an is_in_tolerance information
         for tank_letter, this_tank in self.parameters["tank"].items():
             if this_tank["target"] is not None:
-                tank = self.parameters["tank"][tank_letter]
+                tank: dict[str, Any] = self.parameters["tank"][tank_letter]
                 tank["_response_time"] = 0
                 tank["_is_in_tolerance"] = None
                 tank["_tolerance_color"] = self.parameters["tolerancecolor"]
 
-    def show(self):
+    def show(self) -> None:
         super().show()
         if self.parameters["displaystatus"]:
             if self.get_widget("status_foreground") is not None:
                 self.get_widget("status_foreground").set_visibility(False)
 
-    def hide(self):
+    def hide(self) -> None:
         super().hide()
         if self.parameters["displaystatus"]:
             if self.get_widget("status_foreground") is not None:
                 self.get_widget("status_foreground").set_visibility(True)
 
-    def get_response_timers(self):
+    def get_response_timers(self) -> list[int]:
         return [t["_response_time"] for l, t in self.parameters["tank"].items() if t["target"] is not None]
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         super().create_widgets()
 
         # Compute tank widgets container
-        h = 0.35 * self.task_container.h  # Tank height
+        h: float = 0.35 * self.task_container.h  # Tank height
+        small: float
+        medium: float
+        large: float
         small, medium, large = (x * self.task_container.w for x in [0.1, 0.12, 0.15])  # Tank widths
-        lower_y = self.task_container.b + 0.15 * self.task_container.h  # Bottom tank anchors
-        upper_y = self.task_container.b + 0.55 * self.task_container.h
+        lower_y: float = self.task_container.b + 0.15 * self.task_container.h  # Bottom tank anchors
+        upper_y: float = self.task_container.b + 0.55 * self.task_container.h
 
         # Tank left coordinates proportion
-        l_prop_dict = dict(a=0.14, b=0.64, c=0.05, d=0.55, e=0.3, f=0.8)
-        l_coord_dict = {k: self.task_container.l + self.task_container.w * v for k, v in l_prop_dict.items()}
+        l_prop_dict: dict[str, float] = dict(a=0.14, b=0.64, c=0.05, d=0.55, e=0.3, f=0.8)
+        l_coord_dict: dict[str, float] = {k: self.task_container.l + self.task_container.w * v for k, v in l_prop_dict.items()}
 
-        tank_container_dict = dict(
+        tank_container_dict: dict[str, Container] = dict(
             a=Container(name="tank_a", l=l_coord_dict["a"], b=upper_y, w=large, h=h),
             b=Container(name="tank_b", l=l_coord_dict["b"], b=upper_y, w=large, h=h),
             c=Container(name="tank_c", l=l_coord_dict["c"], b=lower_y, w=small, h=h),
@@ -168,10 +175,10 @@ class Resman(AbstractPlugin):
         # The pump status are managed from Resman
         if self.parameters["displaystatus"] is True:
             # Get the pump status container
-            pthp = PLUGIN_TITLE_HEIGHT_PROPORTION
-            status_container = Window.MainWindow.get_container(self.parameters["statuslocation"])
-            status_title_container = status_container.reduce_and_translate(height=pthp, y=1)
-            status_task_container = status_container.reduce_and_translate(height=1 - pthp, y=0)
+            pthp: float = PLUGIN_TITLE_HEIGHT_PROPORTION
+            status_container: Container = Window.MainWindow.get_container(self.parameters["statuslocation"])
+            status_title_container: Container = status_container.reduce_and_translate(height=pthp, y=1)
+            status_task_container: Container = status_container.reduce_and_translate(height=1 - pthp, y=0)
 
             # Add statuslocation foreground in case it is displayed
             self.add_widget(
@@ -190,8 +197,8 @@ class Resman(AbstractPlugin):
 
             # Add pump flows
             for pump_number, this_pump in self.parameters["pump"].items():
-                pos = int(pump_number) - 1
-                flow_container = Container(
+                pos: int = int(pump_number) - 1
+                flow_container: Container = Container(
                     f"pump_{pump_number}",
                     status_container.l,
                     status_container.b + status_container.h * (0.8 - 0.1 * pos),
@@ -207,9 +214,9 @@ class Resman(AbstractPlugin):
                     flow=this_pump["flow"],
                 )
 
-        tanks = self.parameters["tank"]
+        tanks: dict[str, dict[str, Any]] = self.parameters["tank"]
         for tank_letter, this_tank in tanks.items():
-            fluid_label = str(this_tank["level"]) if this_tank["depletable"] else ""
+            fluid_label: str = str(this_tank["level"]) if this_tank["depletable"] else ""
             this_tank["widget"] = self.add_widget(
                 f"tank_{tank_letter}",
                 Tank,
@@ -224,10 +231,10 @@ class Resman(AbstractPlugin):
             )
 
         for pump_number, this_pump in self.parameters["pump"].items():
-            from_cont = tanks[this_pump["_fromtank"]]["widget"].container
-            to_cont = tanks[this_pump["_totank"]]["widget"].container
-            y_offset = 0.055 * self.task_container.h if pump_number == "7" else 0  # Raise the 7th pump
-            pump_width = 0.028 * self.task_container.w
+            from_cont: Container = tanks[this_pump["_fromtank"]]["widget"].container
+            to_cont: Container = tanks[this_pump["_totank"]]["widget"].container
+            y_offset: float = 0.055 * self.task_container.h if pump_number == "7" else 0  # Raise the 7th pump
+            pump_width: float = 0.028 * self.task_container.w
 
             # Pump is not specified by a container (None), but by two containers (from-to)
             this_pump["widget"] = self.add_widget(
@@ -242,13 +249,13 @@ class Resman(AbstractPlugin):
                 y_offset=y_offset,
             )
 
-    def compute_next_plugin_state(self):
+    def compute_next_plugin_state(self) -> None:
         if not super().compute_next_plugin_state():
             return
 
-        tanks = self.parameters["tank"]
-        pumps = self.parameters["pump"]
-        time_resolution = (self.parameters["taskupdatetime"] / 1000) / 60.0
+        tanks: dict[str, dict[str, Any]] = self.parameters["tank"]
+        pumps: dict[str, dict[str, Any]] = self.parameters["pump"]
+        time_resolution: float = (self.parameters["taskupdatetime"] / 1000) / 60.0
 
         # 0. Compute automatic actions if heuristicsolver activated, three heuristics
         # Browse only woorking pumps (state != -1)
@@ -258,7 +265,8 @@ class Resman(AbstractPlugin):
         else:
             if self.parameters["automaticsolver"] is True:
                 for _pump_n, this_pump in {p: v for p, v in pumps.items() if v["state"] != "failure"}.items():
-                    from_tank, to_tank = tanks[this_pump["_fromtank"]], tanks[this_pump["_totank"]]
+                    from_tank: dict[str, Any] = tanks[this_pump["_fromtank"]]
+                    to_tank: dict[str, Any] = tanks[this_pump["_totank"]]
 
                     # 0.1. Systematically activate pumps draining non-depletable tanks
                     if not from_tank["depletable"] and this_pump["state"] == "off":
@@ -285,10 +293,11 @@ class Resman(AbstractPlugin):
 
             for _pump_n, this_pump in pumps.items():  # 2. For each pump
                 if this_pump["state"] == "on":  # 2.a Transfer flow if pump is ON
-                    fromtank, totank = tanks[this_pump["_fromtank"]], tanks[this_pump["_totank"]]
+                    fromtank: dict[str, Any] = tanks[this_pump["_fromtank"]]
+                    totank: dict[str, Any] = tanks[this_pump["_totank"]]
 
                     # Compute (available) volume
-                    volume = min(int(this_pump["flow"]) * time_resolution, fromtank["level"])
+                    volume: float = min(int(this_pump["flow"]) * time_resolution, fromtank["level"])
 
                     if fromtank["depletable"]:  # Drain it from tank (if its capacity is limited)...
                         fromtank["level"] -= int(volume)
@@ -298,7 +307,7 @@ class Resman(AbstractPlugin):
 
         # The following is always executed (independent on wait_before_leak)
         for tank_l, this_tank in tanks.items():  # 3. For each tank
-            pumps_to_deactivate = []
+            pumps_to_deactivate: list[dict[str, Any]] = []
 
             if this_tank["level"] >= this_tank["max"]:  # If it is full, select incoming pumps for deactivation
                 pumps_to_deactivate.extend([v for p, v in pumps.items() if v["_totank"] == tank_l])
@@ -312,11 +321,12 @@ class Resman(AbstractPlugin):
                     this_pump["state"] = "off"
 
             if this_tank["target"] is not None:  # Record performance for target tanks
-                t, r = this_tank["target"], self.parameters["toleranceradius"]
+                t: int = this_tank["target"]
+                r: int = self.parameters["toleranceradius"]
                 this_tank["_is_in_tolerance"] = float("nan")
                 if r > 0:  # If a tolerance level is defined
                     this_tank["_is_in_tolerance"] = t - r <= this_tank["level"] <= t + r
-                    tolerance_color = self.parameters["tolerancecolor"]
+                    tolerance_color: tuple[int, ...] = self.parameters["tolerancecolor"]
                     if not this_tank["_is_in_tolerance"]:  # If a response is needed
                         tolerance_color = self.parameters["tolerancecoloroutside"]
                         this_tank["_response_time"] += self.parameters["taskupdatetime"]
@@ -325,15 +335,15 @@ class Resman(AbstractPlugin):
                         this_tank["_response_time"] = 0
                     this_tank["_tolerance_color"] = tolerance_color
 
-                deviation = this_tank["level"] - this_tank["target"]
+                deviation: int = this_tank["level"] - this_tank["target"]
                 self.log_performance(f"{tank_l}_in_tolerance", this_tank["_is_in_tolerance"])
                 self.log_performance(f"{tank_l}_deviation", deviation)
 
-    def refresh_widgets(self):
+    def refresh_widgets(self) -> None:
         if not super().refresh_widgets():
             return
-        tanks = self.parameters["tank"]
-        pumps = self.parameters["pump"]
+        tanks: dict[str, dict[str, Any]] = self.parameters["tank"]
+        pumps: dict[str, dict[str, Any]] = self.parameters["pump"]
 
         for _, this_pump in pumps.items():  # 4. Refresh visual information
             this_pump["widget"].set_color(self.parameters[f"pumpcolor{this_pump['state']}"])
@@ -345,7 +355,7 @@ class Resman(AbstractPlugin):
 
         for _tank_letter, this_tank in tanks.items():
             this_tank["widget"].set_fluid_level(this_tank["level"], this_tank["max"])
-            fluid_label = str(this_tank["level"]) if this_tank["depletable"] else ""
+            fluid_label: str = str(this_tank["level"]) if this_tank["depletable"] else ""
             this_tank["widget"].set_fluid_label(fluid_label)
 
             # Apply modification that are specific to target tanks
@@ -358,18 +368,18 @@ class Resman(AbstractPlugin):
                 # b.    Is there a need to change the tolerance color ?
                 this_tank["widget"].set_tolerance_color(this_tank["_tolerance_color"])
 
-    def get_pump_by_key(self, key):
-        pump = [p for _, p in self.parameters["pump"].items() if p["key"] == key]
+    def get_pump_by_key(self, key: str) -> Optional[dict[str, Any]]:
+        pump: list[dict[str, Any]] = [p for _, p in self.parameters["pump"].items() if p["key"] == key]
         if len(pump) > 0:
             return pump[0]
 
-    def do_on_key(self, key, state, emulate):
+    def do_on_key(self, key: str, state: str, emulate: bool) -> None:
         key = super().do_on_key(key, state, emulate)
         if key is None:
             return
 
         if state == "press":
-            pump_key = self.get_pump_by_key(key)
+            pump_key: Optional[dict[str, Any]] = self.get_pump_by_key(key)
             if pump_key is None:
                 return
             if pump_key["state"] != "failure":

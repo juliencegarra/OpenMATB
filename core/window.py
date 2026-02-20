@@ -2,6 +2,10 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
+from typing import Any, Optional
+
 from pyglet import image
 from pyglet.canvas import get_display
 from pyglet.gl import GL_POLYGON
@@ -21,57 +25,57 @@ from core.utils import get_conf_value
 
 class Window(Window):
     # Static variable
-    MainWindow = None
+    MainWindow: Optional[Window] = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         Window.MainWindow = self  # correct way to set it as a static
 
-        screen = self.get_screen()
+        screen: Any = self.get_screen()
 
-        self._width = int(screen.width)
-        self._height = int(screen.height)
-        self._fullscreen = get_conf_value("Openmatb", "fullscreen")
+        self._width: int = int(screen.width)
+        self._height: int = int(screen.height)
+        self._fullscreen: bool = get_conf_value("Openmatb", "fullscreen")
 
         super().__init__(
             fullscreen=self._fullscreen, width=self._width, height=self._height, vsync=True, *args, **kwargs
         )
 
-        img_path = P["IMG"]
-        logo16 = image.load(img_path.joinpath("logo16.png"))
-        logo32 = image.load(img_path.joinpath("logo32.png"))
+        img_path: Any = P["IMG"]
+        logo16: Any = image.load(img_path.joinpath("logo16.png"))
+        logo32: Any = image.load(img_path.joinpath("logo32.png"))
         self.set_icon(logo16, logo32)
 
         self.set_size_and_location(screen)  # Postpone multiple monitor support
         self.set_mouse_visible(REPLAY_MODE)
 
-        self.batch = Batch()
-        self.keyboard = dict()  # Reproduce a simple KeyStateHandler
+        self.batch: Batch = Batch()
+        self.keyboard: dict[str, bool] = dict()  # Reproduce a simple KeyStateHandler
 
         self.create_MATB_background()
-        self.alive = True
-        self.modal_dialog = None
-        self.slider_visible = False
+        self.alive: bool = True
+        self.modal_dialog: Optional[ModalDialog] = None
+        self.slider_visible: bool = False
 
-        self.on_key_press_replay = None  # used by the replay
+        self.on_key_press_replay: Optional[Any] = None  # used by the replay
 
-    def display_session_id(self):
+    def display_session_id(self) -> None:
         # Display the session ID if needed at window instanciation
         if not REPLAY_MODE and get_conf_value("Openmatb", "display_session_number"):
-            msg = _("Session ID: %s") % logger.session_id
-            title = "OpenMATB"
+            msg: str = _("Session ID: %s") % logger.session_id
+            title: str = "OpenMATB"
 
             self.modal_dialog = ModalDialog(self, msg, title)
 
-    def get_screen(self):
+    def get_screen(self) -> Any:
         # Screen definition
         try:
-            screen_index = get_conf_value("Openmatb", "screen_index")
+            screen_index: int = get_conf_value("Openmatb", "screen_index")
         except (KeyError, TypeError):
             screen_index = 0
 
-        screens = get_display().get_screens()
+        screens: list[Any] = get_display().get_screens()
         if screen_index + 1 > len(screens):
-            screen = screens[-1]
+            screen: Any = screens[-1]
             errors.add_error(  # noqa: F821
                 _(
                     "In config.ini, the specified screen index exceeds the number of"
@@ -84,16 +88,16 @@ class Window(Window):
 
         return screen
 
-    def set_size_and_location(self, screen):
+    def set_size_and_location(self, screen: Any) -> None:
         self.switch_to()  # The Window must be active before setting the location
-        target_x = (screen.x + screen.width / 2) - screen.width / 2
-        target_y = (screen.y + screen.height / 2) - screen.height / 2
+        target_x: float = (screen.x + screen.width / 2) - screen.width / 2
+        target_y: float = (screen.y + screen.height / 2) - screen.height / 2
         self.set_location(int(target_x), int(target_y))
 
-    def create_MATB_background(self):
-        MATB_container = self.get_container("fullscreen")
+    def create_MATB_background(self) -> None:
+        MATB_container: Container = self.get_container("fullscreen")
         l, b, w, h = MATB_container.get_lbwh()
-        container_title_h = PLUGIN_TITLE_HEIGHT_PROPORTION / 2
+        container_title_h: float = PLUGIN_TITLE_HEIGHT_PROPORTION / 2
 
         # Main background
         self.batch.add(
@@ -133,22 +137,22 @@ class Window(Window):
             ("c4B/static", C["BLACK"] * 4),
         )
 
-    def on_draw(self):
+    def on_draw(self) -> None:
         self.set_mouse_visible(self.is_mouse_necessary())
         self.clear()
         self.batch.draw()
 
-    def is_mouse_necessary(self):
+    def is_mouse_necessary(self) -> bool:
         return self.slider_visible or REPLAY_MODE
 
     # Log any keyboard input, either plugins accept it or not
     # is subclassed in replay mode
-    def on_key_press(self, symbol, modifiers):
+    def on_key_press(self, symbol: int, modifiers: int) -> None:
         if REPLAY_MODE:
             return
 
         if self.modal_dialog is None:
-            keystr = winkey.symbol_string(symbol)
+            keystr: str = winkey.symbol_string(symbol)
             self.keyboard[keystr] = True  # KeyStateHandler
 
             if keystr == "ESCAPE":
@@ -158,7 +162,7 @@ class Window(Window):
 
             logger.record_input("keyboard", keystr, "press")
 
-    def on_key_release(self, symbol, modifiers):
+    def on_key_release(self, symbol: int, modifiers: int) -> None:
         if self.modal_dialog is not None:
             self.modal_dialog.on_key_release(symbol, modifiers)
             return
@@ -166,30 +170,31 @@ class Window(Window):
         if REPLAY_MODE:
             return
 
-        keystr = winkey.symbol_string(symbol)
+        keystr: str = winkey.symbol_string(symbol)
         self.keyboard[keystr] = False  # KeyStateHandler
         logger.record_input("keyboard", keystr, "release")
 
-    def exit_prompt(self):
+    def exit_prompt(self) -> None:
         self.modal_dialog = ModalDialog(self, _("You hit the Escape key"), title=_("Exit OpenMATB?"), exit_key="q")
 
-    def pause_prompt(self):
+    def pause_prompt(self) -> None:
         self.modal_dialog = ModalDialog(self, _("Pause"))
 
-    def exit(self):
+    def exit(self) -> None:
         self.alive = False
 
-    def get_container_list(self):
-        mar = REPLAY_STRIP_PROPORTION if REPLAY_MODE else 0
-        w, h = (1 - mar) * self.width, (1 - mar) * self.height
-        b = self.height * mar
+    def get_container_list(self) -> list[Container]:
+        mar: float = REPLAY_STRIP_PROPORTION if REPLAY_MODE else 0
+        w: float = (1 - mar) * self.width
+        h: float = (1 - mar) * self.height
+        b: float = self.height * mar
 
         # Vertical bounds
         x1, x2 = (int(w * bound) for bound in get_conf_value("Openmatb", "top_bounds"))  # Top row
         x3, x4 = (int(w * bound) for bound in get_conf_value("Openmatb", "bottom_bounds"))  # Bottom row
 
         # Horizontal bound
-        y1 = b + h / 2
+        y1: float = b + h / 2
 
         return [
             Container("invisible", 0, 0, 0, 0),
@@ -204,14 +209,15 @@ class Window(Window):
             Container("inputstrip", w, b, self._width * mar, h),
         ]
 
-    def get_container(self, placement_name):
-        container = [c for c in self.get_container_list() if c.name == placement_name]
+    def get_container(self, placement_name: str) -> Optional[Container]:
+        container: list[Container] = [c for c in self.get_container_list() if c.name == placement_name]
         if len(container) > 0:
             return container[0]
         else:
             print(_("Error. No placement found for the [%s] alias") % placement_name)
 
-    def open_modal_window(self, pass_list, title, continue_key, exit_key):
+    def open_modal_window(self, pass_list: list[str], title: str, continue_key: Optional[str],
+                          exit_key: str) -> None:
         # TODO: would be better to use callbacks than to detect the alive variable
         # for example to close
         self.modal_dialog = ModalDialog(self, pass_list, title=title, continue_key=continue_key, exit_key="Q")
