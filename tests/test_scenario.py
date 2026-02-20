@@ -98,6 +98,19 @@ class TestEventsRetrocompatibility:
         assert len(result) == 1
         assert result[0].command == ["start"]
 
+    def test_deprecated_event_warns(self, mock_errors):
+        """Deprecated events trigger a non-fatal warning via get_errors()."""
+        events = [
+            Event(1, 0, "sysmon", ["pumpstatus"]),  # deprecated command
+            Event(2, 0, "pumpstatus", ["start"]),    # deprecated plugin
+        ]
+        s = _make_scenario(events=events)
+        s.events_retrocompatibility()
+        assert mock_errors.add_error.call_count == 2
+        for call in mock_errors.add_error.call_args_list:
+            assert "deprecated" in call.args[0]
+            assert call.kwargs["fatal"] is False
+
     def test_sysmon_scale_failure_up_splits(self):
         """Scale failure 'up' splits into failure+side events."""
         events = [Event(1, 10, "sysmon", ["scales-scale1-failure", "up"])]

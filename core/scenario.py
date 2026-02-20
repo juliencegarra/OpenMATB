@@ -97,7 +97,10 @@ class Scenario:
         for _n, e in enumerate(self.events):
             # If plugin or command is DEPRECATED, ignore the event
             if e.is_deprecated():
-                pass  # TODO: Raise a deprecation warning
+                get_errors().add_error(
+                    f"Line {e.line}: '{e}' is deprecated and will be ignored",
+                    fatal=False
+                )
 
             # For parameters
             # SYSMON now manages failures with two separated variables
