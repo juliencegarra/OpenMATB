@@ -183,6 +183,16 @@ class Communications(AbstractPlugin):
                 on=radio["is_active"],
             )
 
+    def pause(self) -> None:
+        super().pause()
+        if hasattr(self, "player"):
+            self.player.pause()
+
+    def resume(self) -> None:
+        super().resume()
+        if hasattr(self, "player") and self.player.source is not None:
+            self.player.play()
+
     def get_callsign(self) -> str:
         self.callsign_seed += 1
         call_rgx: str = self.parameters["callsignregex"]
