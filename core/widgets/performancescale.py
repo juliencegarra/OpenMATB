@@ -11,11 +11,16 @@ class Performancescale(AbstractWidget):
 
         self.performance_level = level_max
         self.performance_color = color
+        self.level_min = level_min
         self.level_max = level_max
         self.tick_number = tick_number
 
-        tick_inter = int((level_max - level_min)/(self.tick_number-1))
-        tick_values = list(reversed(range(level_min, level_max + 1, tick_inter)))
+        self._draw_scale()
+
+
+    def _draw_scale(self):
+        tick_inter = int((self.level_max - self.level_min)/(self.tick_number-1))
+        tick_values = list(reversed(range(self.level_min, self.level_max + 1, tick_inter)))
 
         # Background vertex #
         x1, y1, x2, y2 = self.container.get_x1y1x2y2()
@@ -40,9 +45,9 @@ class Performancescale(AbstractWidget):
 
         self.positions = []
 
-        for i in range(tick_number):
+        for i in range(self.tick_number):
             y = self.container.b + self.container.h - (self.container.h/(self.tick_number-1)) * i
-            w = self.tick_width # if i != 5 else self.tick_width + 8
+            w = self.tick_width
             v.extend([self.container.x2 - w, y, self.container.x2, y])
 
             self.vertex[f'tick_{tick_values[i]}_label'] = Label(str(tick_values[i]),
@@ -52,6 +57,34 @@ class Performancescale(AbstractWidget):
 
         self.add_vertex('ticks' , len(v)//2, GL_LINES, G(self.m_draw+2), ('v2f/static', v),
                         ('c4B/static', (C['BLACK']*(len(v)//2))))
+
+
+    def _rebuild(self):
+        self.hide()
+        self.remove_all_vertices()
+        self._draw_scale()
+        self.show()
+
+
+    def set_tick_number(self, n):
+        if n == self.tick_number:
+            return
+        self.tick_number = n
+        self._rebuild()
+
+
+    def set_level_min(self, n):
+        if n == self.level_min:
+            return
+        self.level_min = n
+        self._rebuild()
+
+
+    def set_level_max(self, n):
+        if n == self.level_max:
+            return
+        self.level_max = n
+        self._rebuild()
 
 
     def get_performance_vertices(self, level):

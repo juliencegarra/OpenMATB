@@ -122,5 +122,8 @@ class Performance(AbstractPlugin):
     def refresh_widgets(self):
         if not super().refresh_widgets():
             return
+        self.widgets['performance_bar'].set_tick_number(self.parameters['ticknumber'])
+        self.widgets['performance_bar'].set_level_min(self.parameters['levelmin'])
+        self.widgets['performance_bar'].set_level_max(self.parameters['levelmax'])
         self.widgets['performance_bar'].set_performance_level(self.displayed_level)
         self.widgets['performance_bar'].set_performance_color(self.displayed_color)
