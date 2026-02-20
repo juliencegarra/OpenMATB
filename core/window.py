@@ -16,11 +16,10 @@ from pyglet.window import key as winkey
 from core.constants import COLORS as C
 from core.constants import PATHS as P
 from core.constants import PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE, REPLAY_STRIP_PROPORTION
-from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
 from core.modaldialog import ModalDialog
-from core.rendering import get_program, get_group, polygon_indices
+from core.rendering import get_group, get_program, polygon_indices
 from core.utils import get_conf_value
 
 
@@ -106,24 +105,51 @@ class Window(Window):
 
         # Main background
         program.vertex_list_indexed(
-            4, GL_TRIANGLES, indices, batch=self.batch, group=get_group(order=-1),
-            position=('f', (l, b + h, l + w, b + h, l + w, b, l, b)),
-            colors=('Bn', C['BACKGROUND'] * 4))
+            4,
+            GL_TRIANGLES,
+            indices,
+            batch=self.batch,
+            group=get_group(order=-1),
+            position=("f", (l, b + h, l + w, b + h, l + w, b, l, b)),
+            colors=("Bn", C["BACKGROUND"] * 4),
+        )
 
         # Upper band
         program.vertex_list_indexed(
-            4, GL_TRIANGLES, indices, batch=self.batch, group=get_group(order=-1),
-            position=('f', (l, b + h, l + w, b + h,
-                            l + w, b + h * (1 - container_title_h), l, b + h * (1 - container_title_h))),
-            colors=('Bn', C['BLACK'] * 4))
+            4,
+            GL_TRIANGLES,
+            indices,
+            batch=self.batch,
+            group=get_group(order=-1),
+            position=(
+                "f",
+                (l, b + h, l + w, b + h, l + w, b + h * (1 - container_title_h), l, b + h * (1 - container_title_h)),
+            ),
+            colors=("Bn", C["BLACK"] * 4),
+        )
 
         # Middle band
         program.vertex_list_indexed(
-            4, GL_TRIANGLES, indices, batch=self.batch, group=get_group(order=0),
-            position=('f', (l, b + h / 2, l + w, b + h / 2,
-                            l + w, b + h * (0.5 - container_title_h),
-                            0, b + h * (0.5 - container_title_h))),
-            colors=('Bn', C['BLACK'] * 4))
+            4,
+            GL_TRIANGLES,
+            indices,
+            batch=self.batch,
+            group=get_group(order=0),
+            position=(
+                "f",
+                (
+                    l,
+                    b + h / 2,
+                    l + w,
+                    b + h / 2,
+                    l + w,
+                    b + h * (0.5 - container_title_h),
+                    0,
+                    b + h * (0.5 - container_title_h),
+                ),
+            ),
+            colors=("Bn", C["BLACK"] * 4),
+        )
 
     def on_draw(self) -> None:
         self.set_mouse_visible(self.is_mouse_necessary())

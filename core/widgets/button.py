@@ -25,10 +25,8 @@ class Button(AbstractWidget):
         self.active_area: Container = self.container.get_reduced(1 - self.padding, 1 - self.padding)
         button_vertice: tuple[float, ...] = self.vertice_border(self.active_area)
 
-        self.add_quad('background', G(self.m_draw + self.m_draw + 1),
-                      button_vertice, C['DARKGREY'] * 4)
-        self.add_lines('border', G(self.m_draw + self.m_draw + 3),
-                       self.vertice_strip(button_vertice), C['BLACK'] * 8)
+        self.add_quad("background", G(self.m_draw + self.m_draw + 1), button_vertice, C["DARKGREY"] * 4)
+        self.add_lines("border", G(self.m_draw + self.m_draw + 3), self.vertice_strip(button_vertice), C["BLACK"] * 8)
 
         Window.MainWindow.push_handlers(self.on_mouse_press, self.on_mouse_release)
 
@@ -65,7 +63,8 @@ class PlayPause(Button):
 
         # --- Play triangle (pointing right, 3 vertices) ---
         self.add_triangles(
-            "play_tri", g,
+            "play_tri",
+            g,
             (cx - 0.3 * s, cy + 0.5 * s, cx - 0.3 * s, cy - 0.5 * s, cx + 0.5 * s, cy),
             list(W * 3),
         )
@@ -81,7 +80,8 @@ class PlayPause(Button):
         yt: float = cy + bh
         yb: float = cy - bh
         self.add_quad(
-            "pause_bars", g,
+            "pause_bars",
+            g,
             (lx1, yt, lx2, yt, lx2, yb, lx1, yb, rx1, yt, rx2, yt, rx2, yb, rx1, yb),
             list(HIDDEN * 8),
         )
@@ -121,7 +121,8 @@ class MuteButton(Button):
         # --- Speaker cone (quad / trapezoid) ---
         tip_x: float = cx + 0.2 * s
         self.add_quad(
-            "spk_cone", g,
+            "spk_cone",
+            g,
             (bx2, byt, tip_x, cy + 0.55 * s, tip_x, cy - 0.55 * s, bx2, byb),
             W * 4,
         )

@@ -32,17 +32,16 @@ class Tank(AbstractWidget):
         # Background vertex #
         x1, y1, x2, y2 = self.container.get_x1y1x2y2()
         self.border_vertices: tuple[float, ...] = self.vertice_border(self.container)
-        self.add_quad('background', G(self.m_draw + 1), self.border_vertices, C['WHITE'] * 4)
+        self.add_quad("background", G(self.m_draw + 1), self.border_vertices, C["WHITE"] * 4)
 
         if target is not None:
             vt: list[float] = self.get_tolerance_vertices(self.tolerance_radius, target, level_max)
-            self.add_quad('tolerance', G(self.m_draw + 1), vt, C['BLACK'] * 4)
+            self.add_quad("tolerance", G(self.m_draw + 1), vt, C["BLACK"] * 4)
 
         fluid_vertices: list[float] = self.get_fluid_vertices(self.level, level_max)
-        self.add_quad('fluid', G(self.m_draw + 2), fluid_vertices, C['GREEN'] * 4)
+        self.add_quad("fluid", G(self.m_draw + 2), fluid_vertices, C["GREEN"] * 4)
 
-        self.add_lines('borders', G(self.m_draw + 3),
-                       self.vertice_strip(self.border_vertices), C['BLACK'] * 8)
+        self.add_lines("borders", G(self.m_draw + 3), self.vertice_strip(self.border_vertices), C["BLACK"] * 8)
 
         x, _y = self.container.get_center()
         self.vertex["fluid_label"] = Label(
@@ -92,7 +91,7 @@ class Tank(AbstractWidget):
         if radius == self.get_tolerance_radius():
             return
         self.tolerance_radius = radius
-        self.on_batch['tolerance'].position[:] = self.get_tolerance_vertices(radius, target, level_max)
+        self.on_batch["tolerance"].position[:] = self.get_tolerance_vertices(radius, target, level_max)
         self.logger.record_state(self.name, "tolerance_radius", radius)
         self.logger.record_state(self.name, "target", target)
         self.logger.record_state(self.name, "level_max", level_max)
@@ -115,7 +114,7 @@ class Tank(AbstractWidget):
         self.level = level
         v1: list[float] = list(self.vertice_border(self.container))
         v1[1] = v1[3] = self.get_y_of(level, level_max)
-        self.on_batch['fluid'].position[:] = v1
+        self.on_batch["fluid"].position[:] = v1
         self.logger.record_state(self.name, "fluid_level", level)
 
     def get_fluid_level(self) -> float:

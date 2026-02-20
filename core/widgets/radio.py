@@ -42,12 +42,12 @@ class Radio(AbstractWidget):
         # Arrows vertices #
         # Only a change in vertices is needed to show/hide arrows --> (0, 0, 0...) = hide
         for name, _info in self.arrows.items():
-            self.add_triangles(name, G(self.m_draw + 2), (0, 0, 0, 0, 0, 0), C['BLACK'] * 3)
+            self.add_triangles(name, G(self.m_draw + 2), (0, 0, 0, 0, 0, 0), C["BLACK"] * 3)
 
         # Feedback vertices #
         # A frame slightly smaller than the radio container
         vertices: tuple[float, ...] = self.vertice_line_border(container.get_reduced(0.6, 0.9))
-        self.add_lines('feedback_lines', G(self.m_draw + 3), vertices, C['BACKGROUND'] * 8)
+        self.add_lines("feedback_lines", G(self.m_draw + 3), vertices, C["BACKGROUND"] * 8)
         self.show()
 
     def show(self) -> None:

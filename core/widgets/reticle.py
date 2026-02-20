@@ -54,21 +54,20 @@ class Reticle(AbstractWidget):
         v4: list[float] = self.rotate_vertice_list([cx, cy], v1, math.pi + math.pi / 2)
         v: list[float] = v1 + v2 + v3 + v4
 
-        self.add_lines('axis', G(self.m_draw + 1), v, C['BLACK'] * (len(v) // 2))
+        self.add_lines("axis", G(self.m_draw + 1), v, C["BLACK"] * (len(v) // 2))
 
         # Target area
         self.target_proportion: float = target_proportion
         self.target_radius: float = self.container.w / 2 * self.target_proportion
         v = self.vertice_circle([self.container.cx, self.container.cy], self.target_radius, 50)
 
-        self.add_polygon('target_area', G(self.m_draw), v,
-                         (255, 255, 255, 255) * (len(v) // 2))
+        self.add_polygon("target_area", G(self.m_draw), v, (255, 255, 255, 255) * (len(v) // 2))
 
-        self.add_lines('target_border', G(self.m_draw + 1), v, C['BLACK'] * (len(v) // 2))
+        self.add_lines("target_border", G(self.m_draw + 1), v, C["BLACK"] * (len(v) // 2))
 
         # Cursor definition
         v = self.get_cursor_vertice()
-        self.add_lines('cursor', G(self.m_draw + 2), v, cursorcolor * (len(v) // 2))
+        self.add_lines("cursor", G(self.m_draw + 2), v, cursorcolor * (len(v) // 2))
 
     def set_target_proportion(self, proportion: float) -> None:
         if proportion == self.get_target_proportion():
@@ -76,8 +75,8 @@ class Reticle(AbstractWidget):
         self.target_proportion = proportion
         self.target_radius = self.container.w / 2 * proportion
         v: list[float] = self.vertice_circle([self.container.cx, self.container.cy], self.target_radius, 50)
-        self.on_batch['target_area'].position[:] = v
-        self.on_batch['target_border'].position[:] = v
+        self.on_batch["target_area"].position[:] = v
+        self.on_batch["target_border"].position[:] = v
         self.logger.record_state(self.name, "target_proportion", proportion)
 
     def get_target_proportion(self) -> float:
@@ -123,7 +122,7 @@ class Reticle(AbstractWidget):
             return
         self.cursor_absolute = self.relative_to_absolute()
         v: list[float] = self.get_cursor_vertice()
-        self.on_batch['cursor'].position[:] = v
+        self.on_batch["cursor"].position[:] = v
         self.logger.record_state(self.name, "cursor_relative", (x, y))
         self.logger.record_state(self.name, "cursor_proportional", self.relative_to_proportional())
 
