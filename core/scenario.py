@@ -7,6 +7,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+import plugins  # noqa: F401 — needed by globals()["plugins"] for dynamic plugin loading
 from core import validation
 from core.constants import DEPRECATED, REPLAY_MODE, SYSTEM_COMMANDS, SYSTEM_PSEUDO_PLUGIN
 from core.constants import PATHS as P
