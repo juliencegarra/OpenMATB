@@ -9,7 +9,7 @@ from core.clock import Clock
 from core.modaldialog import ModalDialog
 from core.logger import logger
 from core.utils import get_conf_value
-from core.constants import REPLAY_MODE
+from core.constants import REPLAY_MODE, SYSTEM_PSEUDO_PLUGIN
 from core.error import errors
 from core.window import Window
 from core.scenario import Scenario
@@ -194,6 +194,10 @@ class Scheduler:
 
 
     def execute_one_event(self, event):
+        if event.plugin == SYSTEM_PSEUDO_PLUGIN:
+            self._execute_system_command(event)
+            return
+
         # Set the plugin corresponding to the event
         plugin = self.plugins[event.plugin]
 
@@ -211,6 +215,13 @@ class Scheduler:
         # constant all along it
         logger.record_event(event)
 
+
+    def _execute_system_command(self, event):
+        command = event.command[0]
+        if command == 'pause':
+            Window.MainWindow.pause_prompt()
+        event.done = 1
+        logger.record_event(event)
 
     def execute_plugins_methods(self, plugins, methods):
         if len(plugins) == 0:

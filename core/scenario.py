@@ -4,7 +4,7 @@
 
 import re
 from pyglet.window import key as winkey
-from core.constants import PATHS as P, REPLAY_MODE, DEPRECATED
+from core.constants import PATHS as P, REPLAY_MODE, DEPRECATED, SYSTEM_PSEUDO_PLUGIN, SYSTEM_COMMANDS
 from core.logger import logger
 from core.error import errors
 from core.utils import get_conf_value
@@ -45,6 +45,8 @@ class Scenario:
         # Next load the scheduled plugins into the class, so we can check potential errors
         # But first, check that only available plugins are mentioned
         for event in self.events:
+            if event.plugin == SYSTEM_PSEUDO_PLUGIN:
+                continue
             if not hasattr(globals()['plugins'], event.plugin.capitalize()):
                 errors.add_error(_('Scenario error: %s is not a valid plugin name (l. %s)') % (event.plugin, event.line), fatal = True)
 
@@ -163,6 +165,13 @@ class Scenario:
         ## TODO
 
         for e in self.events:
+            # System pseudo-plugin: validate command and skip plugin checks
+            if e.plugin == SYSTEM_PSEUDO_PLUGIN:
+                if len(e.command) != 1 or e.command[0] not in SYSTEM_COMMANDS:
+                    errors.append(_('Error on line %s. Invalid system command: %s')
+                                  % (e.line, e.get_command_str()))
+                continue
+
             # Rule 2 - all events should trigger a command to a plugin
             if len(e) == 0:
                 errors.append(_('Error on line %s. This event does not trigger any command.') % e.line)
@@ -236,7 +245,8 @@ class Scenario:
         return validation_dict
 
     def get_plugins_name_list(self):
-        return set([e.plugin for e in self.events if e.plugin not in DEPRECATED])
+        return set([e.plugin for e in self.events
+                    if e.plugin not in DEPRECATED and e.plugin != SYSTEM_PSEUDO_PLUGIN])
 
 
 
