@@ -203,6 +203,13 @@ class LogReader:
         # Normal segment: slope = 1
         return st_base + (replay_time - rt_base)
 
+    def is_in_blocking_segment(self, replay_time: float) -> bool:
+        """Check if replay_time falls inside a blocking segment."""
+        for lt_start, lt_end, _frozen_st in self.blocking_segments:
+            if lt_start <= replay_time <= lt_end:
+                return True
+        return False
+
     def session_event_to_str(self, event_row: dict[str, Any]) -> str:
         time_sec: int = int(float(event_row["scenario_time"]))
         plugin: str = event_row["module"]
