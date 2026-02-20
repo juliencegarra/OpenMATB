@@ -174,7 +174,9 @@ def add_scenario_phase(
     # If a plugin is active and not desired, pause and hide it
     for plugin_name in ["sysmon", "tracking", "communications", "resman"]:
         task_state: list[str] | None = get_task_current_state(scenario_lines, plugin_name)
-        if task_state is not None and task_state[0] in ["start", "resume"] and plugin_name not in [p for (p, d) in task_difficulty_tuples]:
+        active = task_state is not None and task_state[0] in ["start", "resume"]
+        desired = plugin_name in [p for (p, d) in task_difficulty_tuples]
+        if active and not desired:
             scenario_lines.append(Event(start_line, start_sec, plugin_name, "pause"))
             start_line += 1
             scenario_lines.append(Event(start_line, start_sec, plugin_name, "hide"))
