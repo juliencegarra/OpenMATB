@@ -14,7 +14,7 @@ class Genericscales(BlockingPlugin):
         self.folder = P['QUESTIONNAIRES']
         new_par = dict(filename=None, pointsize=0, maxdurationsec=0,
                        response=dict(text=_('Press SPACE to validate'), key='SPACE'),
-                       allowkeypress=True)
+                       allowkeypress=True, showvalue=False)
         self.sliders = dict()
         self.parameters.update(new_par)
 
@@ -84,7 +84,8 @@ class Genericscales(BlockingPlugin):
                                 title=title, label_min=label_min, label_max=label_max,
                                 value_min=value_min, value_max=value_max,
                                 value_default=value_default, rank=l, draw_order=self.m_draw+3,
-                                interactive=not REPLAY_MODE)
+                                interactive=not REPLAY_MODE,
+                                showvalue=self.parameters['showvalue'])
 
 
     def refresh_widgets(self):
