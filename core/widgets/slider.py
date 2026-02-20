@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any
+from typing import Any, Callable
 
 from pyglet.gl import *
 from pyglet.text import Label
@@ -33,6 +33,7 @@ class Slider(AbstractWidget):
         draw_order: int = 1,
         interactive: bool = True,
         showvalue: bool = True,
+        on_mouse_focus: Callable[[int], Any] | None = None,
     ) -> None:
         super().__init__(name, container)
 
@@ -48,6 +49,8 @@ class Slider(AbstractWidget):
         self.rank: int = rank
         self.groove_value: float = self.value_default
         self.hover: bool = False
+        self.selected: bool = False
+        self.on_mouse_focus: Callable[[int], Any] | None = on_mouse_focus
 
         # Enhance smoothing mode
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -126,7 +129,7 @@ class Slider(AbstractWidget):
 
         v1: tuple[float, ...] = self.vertice_border(self.containers["thumb"])
         self.add_vertex(
-            "thumb", 4, GL_QUADS, G(self.draw_order + self.rank), ("v2f/static", v1), ("c4B/static", (C["GREY"] * 4))
+            "thumb", 4, GL_QUADS, G(self.draw_order + self.rank), ("v2f/static", v1), ("c4B/stream", (C["GREY"] * 4))
         )
 
         v2: list[float] = self.get_groove_vertices()
@@ -177,6 +180,8 @@ class Slider(AbstractWidget):
         if self.containers["slide"].contains_xy(x, y) and self.hover is False:
             self.hover = True
             self.update_cursor_appearance()
+            if self.on_mouse_focus is not None:
+                self.on_mouse_focus(self.rank)
             # Jump groove to click position
             x_min: float = self.containers["allgroove"].l
             x_max: float = self.containers["allgroove"].l + self.containers["allgroove"].w
@@ -217,6 +222,24 @@ class Slider(AbstractWidget):
         else:
             cursor = Window.MainWindow.get_system_mouse_cursor(Window.MainWindow.CURSOR_DEFAULT)
         Window.MainWindow.set_mouse_cursor(cursor)
+
+    def set_selected(self, is_selected: bool) -> None:
+        self.selected = is_selected
+        if self.visible and "thumb" in self.on_batch:
+            color = C["BLUE"] if is_selected else C["GREY"]
+            self.on_batch["thumb"].colors = color * 4
+        if self.visible and "groove" in self.on_batch:
+            outline = C["BLUE"] if is_selected else C["BLACK"]
+            n_verts = len(self.on_batch["groove"].colors) // 4
+            self.on_batch["groove"].colors = outline * n_verts
+
+    def adjust_value(self, steps: int) -> None:
+        step_size: float = (self.value_max - self.value_min) / 20
+        current_step: int = round((self.groove_value - self.value_min) / step_size)
+        new_value: float = self.value_min + (current_step + steps) * step_size
+        new_value = max(self.value_min, min(self.value_max, new_value))
+        ratio: float = (new_value - self.value_min) / (self.value_max - self.value_min)
+        self.update_groove_value(ratio)
 
     def update(self) -> None:
         if self.visible:

@@ -524,6 +524,8 @@ class BlockingPlugin(AbstractPlugin):
         if keystr.lower() == "space" and state == "release":
             self.go_to_next_slide = True
 
+        return keystr
+
 
 # TODO : Include a Solver class like
 # ~ """

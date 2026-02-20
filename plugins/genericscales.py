@@ -32,6 +32,8 @@ class Genericscales(BlockingPlugin):
             showvalue=False,
         )
         self.sliders: dict[str, Any] = dict()
+        self.selected_slider_index: int = 0
+        self.keys.update({"UP", "DOWN", "LEFT", "RIGHT"})
         self.parameters.update(new_par)
 
         self.ignore_empty_lines: bool = True
@@ -155,7 +157,46 @@ class Genericscales(BlockingPlugin):
                     draw_order=self.m_draw + 3,
                     interactive=not REPLAY_MODE,
                     showvalue=self.parameters["showvalue"],
+                    on_mouse_focus=self._on_slider_mouse_focus,
                 )
+
+        if self.sliders:
+            self.selected_slider_index = 0
+            self._update_slider_selection()
+
+    def _on_slider_mouse_focus(self, rank: int) -> None:
+        self.selected_slider_index = rank
+        self._update_slider_selection()
+
+    def _update_slider_selection(self) -> None:
+        slider_list = list(self.sliders.values())
+        for i, slider in enumerate(slider_list):
+            slider.set_selected(i == self.selected_slider_index)
+
+    def do_on_key(self, keystr: str, state: str, emulate: bool = False) -> str | None:
+        keystr = super().do_on_key(keystr, state, emulate)
+        if keystr is None:
+            return
+
+        if state != "press":
+            return keystr
+
+        slider_list = list(self.sliders.values())
+        if not slider_list:
+            return keystr
+
+        if keystr.lower() == "up":
+            self.selected_slider_index = (self.selected_slider_index - 1) % len(slider_list)
+            self._update_slider_selection()
+        elif keystr.lower() == "down":
+            self.selected_slider_index = (self.selected_slider_index + 1) % len(slider_list)
+            self._update_slider_selection()
+        elif keystr.lower() == "left":
+            slider_list[self.selected_slider_index].adjust_value(-1)
+        elif keystr.lower() == "right":
+            slider_list[self.selected_slider_index].adjust_value(1)
+
+        return keystr
 
     def refresh_widgets(self) -> None:
         # Useful for replay mode (refresh groove positions)
