@@ -228,3 +228,89 @@ class TestUpdateTimers:
         with patch("core.replayscheduler.get_logger") as mock_get_logger:
             rs.update_timers(0.1)
             mock_get_logger.return_value.set_scenario_time.assert_called_once_with(3.0)
+
+
+class TestCleanupAfterSeek:
+    """Tests for _cleanup_after_seek() — stale blocking plugin / modal cleanup."""
+
+    @patch("core.replayscheduler.Window")
+    def test_noop_when_nothing_blocking(self, mock_win):
+        """No blocking plugin and no modal dialog → nothing happens."""
+        rs = _make_replay(replay_time=50.0, pause_scenario_time=False, paused_plugins=[])
+        rs.plugins = {}
+        mock_win.MainWindow.modal_dialog = None
+        rs._cleanup_after_seek()
+        # No errors, no calls
+
+    @patch("core.replayscheduler.Window")
+    def test_blocking_plugin_inside_segment_untouched(self, mock_win):
+        """Blocking plugin still in its segment → not stopped."""
+        blocker = MagicMock(blocking=True, paused=False, alive=True)
+        rs = _make_replay(
+            replay_time=10.0,
+            pause_scenario_time=True,
+            paused_plugins=[],
+            plugins={"instructions": blocker},
+        )
+        rs.logreader.is_in_blocking_segment.return_value = True
+        mock_win.MainWindow.modal_dialog = None
+
+        rs._cleanup_after_seek()
+
+        blocker.stop.assert_not_called()
+        assert rs.pause_scenario_time is True
+
+    @patch("core.replayscheduler.Window")
+    def test_blocking_plugin_past_segment_force_stopped(self, mock_win):
+        """Blocking plugin past its segment → force-stop + resume scenario + resume paused."""
+        blocker = MagicMock(blocking=True, paused=False, alive=True)
+        paused_p = MagicMock()
+        rs = _make_replay(
+            replay_time=20.0,
+            pause_scenario_time=True,
+            paused_plugins=[paused_p],
+            plugins={"instructions": blocker},
+        )
+        rs.logreader.is_in_blocking_segment.return_value = False
+        mock_win.MainWindow.modal_dialog = None
+
+        rs._cleanup_after_seek()
+
+        blocker.stop.assert_called_once()
+        # Paused plugins should have been shown and resumed
+        paused_p.show.assert_called_once()
+        paused_p.resume.assert_called_once()
+        assert rs.paused_plugins == []
+        assert rs.pause_scenario_time is False
+
+    @patch("core.replayscheduler.Window")
+    def test_modal_dialog_deleted(self, mock_win):
+        """Modal dialog present → on_delete() called."""
+        rs = _make_replay(replay_time=50.0, pause_scenario_time=False, paused_plugins=[])
+        rs.plugins = {}
+        mock_dialog = MagicMock()
+        mock_win.MainWindow.modal_dialog = mock_dialog
+
+        rs._cleanup_after_seek()
+
+        mock_dialog.on_delete.assert_called_once()
+
+    @patch("core.replayscheduler.Window")
+    def test_both_blocking_and_modal_cleaned(self, mock_win):
+        """Both a stale blocking plugin and a modal dialog → both cleaned."""
+        blocker = MagicMock(blocking=True, paused=False, alive=True)
+        rs = _make_replay(
+            replay_time=20.0,
+            pause_scenario_time=True,
+            paused_plugins=[],
+            plugins={"instructions": blocker},
+        )
+        rs.logreader.is_in_blocking_segment.return_value = False
+        mock_dialog = MagicMock()
+        mock_win.MainWindow.modal_dialog = mock_dialog
+
+        rs._cleanup_after_seek()
+
+        blocker.stop.assert_called_once()
+        assert rs.pause_scenario_time is False
+        mock_dialog.on_delete.assert_called_once()

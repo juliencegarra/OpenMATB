@@ -1,69 +1,21 @@
-"""Tests for scenario_generator - Pure helper functions.
+"""Tests for scenario_generator — validates pure helper functions.
 
-The scenario_generator.py module performs heavy initialization at import time
-(creates a Window, instantiates plugins). To test its pure functions without
-triggering that initialization, we extract function definitions via AST parsing.
+Now imports directly from scenario_generation (no AST extraction needed).
 """
 
-import ast
 import random
-from pathlib import Path
-from typing import Any, Optional, Union
 
 from core.event import Event
-
-# ──────────────────────────────────────────────
-# Extract pure functions from scenario_generator.py
-# without executing module-level initialization code
-# ──────────────────────────────────────────────
-
-_source_path = Path(__file__).parent.parent / "scenario_generator.py"
-_source = _source_path.read_text()
-_tree = ast.parse(_source)
-
-# Namespace with dependencies needed by the functions
-_ns = {
-    "__builtins__": __builtins__,
-    "__annotations__": {},
-    "Event": Event,
-    "randint": random.randint,
-    "shuffle": random.shuffle,
-    "random": random.random,
-    "EVENTS_REFRACTORY_DURATION": 1,
-    "STEP_DURATION_SEC": 60,
-}
-
-_ns.update({"Any": Any, "Optional": Optional, "Union": Union})
-
-# Find the __future__ import to include with each function (needed for Python 3.9)
-_future_imports = [n for n in _tree.body if isinstance(n, ast.ImportFrom) and n.module == "__future__"]
-
-# Compile and exec each function definition in isolation
-for _node in _tree.body:
-    if isinstance(_node, ast.FunctionDef):
-        _func_code = compile(ast.Module(body=_future_imports + [_node], type_ignores=[]), str(_source_path), "exec")
-        exec(_func_code, _ns)
-
-# Bind the extracted functions
-reduce = _ns["reduce"]
-choices = _ns["choices"]
-part_duration_sec = _ns["part_duration_sec"]
-get_part_durations = _ns["get_part_durations"]
-get_events_from_scenario = _ns["get_events_from_scenario"]
-get_task_current_state = _ns["get_task_current_state"]
-
-
-distribute_events = _ns["distribute_events"]
-
-# Provide a mock plugins dict for add_scenario_phase.
-# Only "track" tests are practical without real plugin parameters.
-_ns["plugins"] = {
-    "track": None,
-    "sysmon": None,
-    "communications": None,
-    "resman": None,
-}
-add_scenario_phase = _ns["add_scenario_phase"]
+from scenario_generation import (
+    ScenarioConfig,
+    add_scenario_phase,
+    choices,
+    distribute_events,
+    get_events_from_scenario,
+    get_part_durations,
+    get_task_current_state,
+    reduce,
+)
 
 
 class TestReduce:
@@ -91,7 +43,6 @@ class TestReduce:
 
     def test_typical_comm_ratio(self):
         """Typical communication ratio reduces correctly."""
-        # Used for COMMUNICATIONS_TARGET_RATIO * 100 = 50
         assert reduce(50, 100) == (1, 2)
 
 
@@ -113,7 +64,6 @@ class TestChoices:
     def test_wraps_around(self):
         """Wraps when k exceeds list length."""
         random.seed(42)
-        # k > len(l) requires wrapping
         result = choices(["x", "y"], 6, False)
         assert len(result) == 6
         assert all(item in ["x", "y"] for item in result)
@@ -248,7 +198,7 @@ class TestDistributeEvents:
         random.seed(42)
         lines = [Event(1, 0, "sysmon", ["start"])]
         cmd_list = [["scales-s1-failure", True], ["scales-s2-failure", True]]
-        result = distribute_events(lines, 0, 5.0, cmd_list, "sysmon")
+        result = distribute_events(lines, 0, 5.0, cmd_list, "sysmon", 60)
         events = get_events_from_scenario(result)
         line_numbers = [e.line for e in events]
         assert len(line_numbers) == len(set(line_numbers))
@@ -262,7 +212,7 @@ class TestDistributeEvents:
             "# A trailing comment",
         ]
         cmd_list = [["scales-s1-failure", True]]
-        result = distribute_events(lines, 0, 5.0, cmd_list, "sysmon")
+        result = distribute_events(lines, 0, 5.0, cmd_list, "sysmon", 60)
         events = get_events_from_scenario(result)
         assert len(events) == 2
         assert events[-1].line == 2
@@ -276,7 +226,7 @@ class TestDistributeEvents:
             "# Block description",
         ]
         cmd_list = [["scales-s1-failure", True]]
-        result = distribute_events(lines, 0, 5.0, cmd_list, "sysmon")
+        result = distribute_events(lines, 0, 5.0, cmd_list, "sysmon", 60)
         events = get_events_from_scenario(result)
         assert events[-1].line == 6  # Continues from line 5
 
@@ -284,11 +234,17 @@ class TestDistributeEvents:
 class TestAddScenarioPhase:
     """Test add_scenario_phase bug fixes (task_state comparisons and line numbering)."""
 
+    def _make_config(self):
+        return ScenarioConfig()
+
+    def _make_plugins(self):
+        return {"track": None, "sysmon": None, "communications": None, "resman": None}
+
     def test_start_line_increments_for_track(self):
         """start + targetproportion events get different line numbers (fix for static start_line)."""
         lines = []
         phase_tuples = (("track", 0.5),)
-        result = add_scenario_phase(lines, phase_tuples, 0)
+        result = add_scenario_phase(lines, phase_tuples, 0, self._make_plugins(), self._make_config(), 60)
         events = get_events_from_scenario(result)
         # Should have "start" event + "targetproportion" event
         assert len(events) == 2
@@ -300,7 +256,7 @@ class TestAddScenarioPhase:
         lines = [Event(1, 0, "sysmon", ["start"])]
         # Only track desired — sysmon should be paused and hidden
         phase_tuples = (("track", 0.5),)
-        result = add_scenario_phase(lines, phase_tuples, 60)
+        result = add_scenario_phase(lines, phase_tuples, 60, self._make_plugins(), self._make_config(), 60)
         sysmon_events = [e for e in get_events_from_scenario(result) if e.plugin == "sysmon"]
         # Original start + pause + hide
         assert len(sysmon_events) == 3
@@ -314,7 +270,7 @@ class TestAddScenarioPhase:
             Event(2, 30, "track", ["pause"]),
         ]
         phase_tuples = (("track", 0.5),)
-        result = add_scenario_phase(lines, phase_tuples, 60)
+        result = add_scenario_phase(lines, phase_tuples, 60, self._make_plugins(), self._make_config(), 60)
         track_events = [e for e in get_events_from_scenario(result) if e.plugin == "track"]
         # Original start, pause, then show, resume, targetproportion
         assert len(track_events) == 5
@@ -326,7 +282,7 @@ class TestAddScenarioPhase:
         lines = []
         phase_tuples = (("track", 0.5),)
         # Should not crash — get_task_current_state returns None for sysmon
-        result = add_scenario_phase(lines, phase_tuples, 0)
+        result = add_scenario_phase(lines, phase_tuples, 0, self._make_plugins(), self._make_config(), 60)
         sysmon_events = [e for e in get_events_from_scenario(result) if e.plugin == "sysmon"]
         assert len(sysmon_events) == 0
 
@@ -334,7 +290,7 @@ class TestAddScenarioPhase:
         """All events in a phase have unique line numbers."""
         lines = [Event(1, 0, "sysmon", ["start"])]
         phase_tuples = (("track", 0.5),)
-        result = add_scenario_phase(lines, phase_tuples, 60)
+        result = add_scenario_phase(lines, phase_tuples, 60, self._make_plugins(), self._make_config(), 60)
         events = get_events_from_scenario(result)
         line_numbers = [e.line for e in events]
         assert len(line_numbers) == len(set(line_numbers))

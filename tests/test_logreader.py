@@ -254,6 +254,50 @@ class TestIgnorePlugins:
         assert "instructions" not in IGNORE_PLUGINS
 
 
+# ── is_in_blocking_segment ───────────────────────
+
+
+class TestIsInBlockingSegment:
+    def test_before_segment(self):
+        """Time before any segment returns False."""
+        lr = _make_logreader(blocking_segments=[(5.0, 15.0, 5.0)])
+        assert lr.is_in_blocking_segment(3.0) is False
+
+    def test_at_segment_start(self):
+        """Time exactly at segment start returns True."""
+        lr = _make_logreader(blocking_segments=[(5.0, 15.0, 5.0)])
+        assert lr.is_in_blocking_segment(5.0) is True
+
+    def test_inside_segment(self):
+        """Time inside a segment returns True."""
+        lr = _make_logreader(blocking_segments=[(5.0, 15.0, 5.0)])
+        assert lr.is_in_blocking_segment(10.0) is True
+
+    def test_at_segment_end(self):
+        """Time exactly at segment end returns True."""
+        lr = _make_logreader(blocking_segments=[(5.0, 15.0, 5.0)])
+        assert lr.is_in_blocking_segment(15.0) is True
+
+    def test_after_segment(self):
+        """Time after segment returns False."""
+        lr = _make_logreader(blocking_segments=[(5.0, 15.0, 5.0)])
+        assert lr.is_in_blocking_segment(16.0) is False
+
+    def test_no_segments(self):
+        """No blocking segments always returns False."""
+        lr = _make_logreader(blocking_segments=[])
+        assert lr.is_in_blocking_segment(5.0) is False
+
+    def test_multiple_segments(self):
+        """Correctly identifies time inside second segment."""
+        lr = _make_logreader(blocking_segments=[(5.0, 15.0, 5.0), (25.0, 35.0, 15.0)])
+        assert lr.is_in_blocking_segment(3.0) is False
+        assert lr.is_in_blocking_segment(10.0) is True
+        assert lr.is_in_blocking_segment(20.0) is False
+        assert lr.is_in_blocking_segment(30.0) is True
+        assert lr.is_in_blocking_segment(40.0) is False
+
+
 # ── Blocking segment detection ───────────────────
 
 
