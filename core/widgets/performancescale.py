@@ -33,41 +33,18 @@ class Performancescale(AbstractWidget):
         tick_values: list[int] = list(reversed(range(self.level_min, self.level_max + 1, tick_inter)))
 
         # Background vertex #
-        _x1: float
-        _y1: float
-        _x2: float
-        _y2: float
         _x1, _y1, _x2, _y2 = self.container.get_x1y1x2y2()
         self.border_vertices: tuple[float, ...] = self.vertice_border(self.container)
-        self.add_vertex(
-            "background",
-            4,
-            GL_QUADS,
-            G(self.m_draw),
-            ("v2f/static", self.border_vertices),
-            ("c4B/static", (C["WHITE"] * 4)),
-        )
+        self.add_quad('background', G(self.m_draw), self.border_vertices, C['WHITE'] * 4)
 
         # Performance vertex #
         performance_vertices: list[float] = self.get_performance_vertices(self.performance_level)
-        self.add_vertex(
-            "performance",
-            4,
-            GL_QUADS,
-            G(self.m_draw + 1),
-            ("v2f/stream", performance_vertices),
-            ("c4B/static", (self.performance_color * 4)),
-        )
+        self.add_quad('performance', G(self.m_draw + 1), performance_vertices,
+                      self.performance_color * 4)
 
         # Borders vertex #
-        self.add_vertex(
-            "borders",
-            8,
-            GL_LINES,
-            G(self.m_draw + 2),
-            ("v2f/static", self.vertice_strip(self.border_vertices)),
-            ("c4B/static", (C["BLACK"] * 8)),
-        )
+        self.add_lines('borders', G(self.m_draw + 2),
+                       self.vertice_strip(self.border_vertices), C['BLACK'] * 8)
 
         # Ticks vertex #
         self.tick_width: float = self.container.w * 0.25
@@ -93,14 +70,7 @@ class Performancescale(AbstractWidget):
                 font_name=self.font_name,
             )
 
-        self.add_vertex(
-            "ticks",
-            len(v) // 2,
-            GL_LINES,
-            G(self.m_draw + 2),
-            ("v2f/static", v),
-            ("c4B/static", (C["BLACK"] * (len(v) // 2))),
-        )
+        self.add_lines('ticks', G(self.m_draw + 2), v, C['BLACK'] * (len(v) // 2))
 
     def _rebuild(self) -> None:
         self.hide()
@@ -144,7 +114,7 @@ class Performancescale(AbstractWidget):
         self.performance_level = level
         v1: list[float] = list(self.vertice_border(self.container))
         v1[1] = v1[3] = self.get_y_of(self.performance_level)
-        self.on_batch["performance"].vertices = v1
+        self.on_batch['performance'].position[:] = v1
         self.logger.record_state(self.name, "level", self.performance_level)
 
     def get_performance_level(self) -> int:

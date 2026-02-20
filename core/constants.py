@@ -6,7 +6,7 @@ import configparser
 import sys
 from pathlib import Path
 
-from pyglet.graphics import OrderedGroup as Group  # noqa: F401
+from pyglet.graphics import Group  # noqa: F401
 
 REPLAY_MODE: bool = len(sys.argv) > 1 and sys.argv[1] == "-r"
 REPLAY_STRIP_PROPORTION: float = 0.08

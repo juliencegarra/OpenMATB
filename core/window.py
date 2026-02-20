@@ -7,8 +7,8 @@ from __future__ import annotations
 from typing import Any
 
 from pyglet import image
-from pyglet.canvas import get_display
-from pyglet.gl import GL_POLYGON
+from pyglet.display import get_display
+from pyglet.gl import GL_TRIANGLES, glClearColor
 from pyglet.graphics import Batch
 from pyglet.window import Window
 from pyglet.window import key as winkey
@@ -20,6 +20,7 @@ from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
 from core.modaldialog import ModalDialog
+from core.rendering import get_program, get_group, polygon_indices
 from core.utils import get_conf_value
 
 
@@ -100,47 +101,33 @@ class Window(Window):
         MATB_container: Container = self.get_container("fullscreen")
         l, b, w, h = MATB_container.get_lbwh()
         container_title_h: float = PLUGIN_TITLE_HEIGHT_PROPORTION / 2
+        program = get_program()
+        indices = polygon_indices(4)
 
         # Main background
-        self.batch.add(
-            4, GL_POLYGON, G(-1), ("v2f/static", (l, b + h, l + w, b + h, l + w, b, l, b)), ("c4B", C["BACKGROUND"] * 4)
-        )
+        program.vertex_list_indexed(
+            4, GL_TRIANGLES, indices, batch=self.batch, group=get_group(order=-1),
+            position=('f', (l, b + h, l + w, b + h, l + w, b, l, b)),
+            colors=('Bn', C['BACKGROUND'] * 4))
 
         # Upper band
-        self.batch.add(
-            4,
-            GL_POLYGON,
-            G(-1),
-            (
-                "v2f/static",
-                (l, b + h, l + w, b + h, l + w, b + h * (1 - container_title_h), l, b + h * (1 - container_title_h)),
-            ),
-            ("c4B/static", C["BLACK"] * 4),
-        )
+        program.vertex_list_indexed(
+            4, GL_TRIANGLES, indices, batch=self.batch, group=get_group(order=-1),
+            position=('f', (l, b + h, l + w, b + h,
+                            l + w, b + h * (1 - container_title_h), l, b + h * (1 - container_title_h))),
+            colors=('Bn', C['BLACK'] * 4))
 
         # Middle band
-        self.batch.add(
-            4,
-            GL_POLYGON,
-            G(0),
-            (
-                "v2f/static",
-                (
-                    l,
-                    b + h / 2,
-                    l + w,
-                    b + h / 2,
-                    l + w,
-                    b + h * (0.5 - container_title_h),
-                    0,
-                    b + h * (0.5 - container_title_h),
-                ),
-            ),
-            ("c4B/static", C["BLACK"] * 4),
-        )
+        program.vertex_list_indexed(
+            4, GL_TRIANGLES, indices, batch=self.batch, group=get_group(order=0),
+            position=('f', (l, b + h / 2, l + w, b + h / 2,
+                            l + w, b + h * (0.5 - container_title_h),
+                            0, b + h * (0.5 - container_title_h))),
+            colors=('Bn', C['BLACK'] * 4))
 
     def on_draw(self) -> None:
         self.set_mouse_visible(self.is_mouse_necessary())
+        glClearColor(0, 0, 0, 1)
         self.clear()
         self.batch.draw()
 

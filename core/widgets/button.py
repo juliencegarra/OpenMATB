@@ -6,8 +6,6 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from pyglet.gl import *
-
 from core.constants import COLORS as C
 from core.constants import Group as G
 from core.container import Container
@@ -27,22 +25,10 @@ class Button(AbstractWidget):
         self.active_area: Container = self.container.get_reduced(1 - self.padding, 1 - self.padding)
         button_vertice: tuple[float, ...] = self.vertice_border(self.active_area)
 
-        self.add_vertex(
-            "background",
-            4,
-            GL_QUADS,
-            G(self.m_draw + self.m_draw + 1),
-            ("v2f/static", button_vertice),
-            ("c4B/static", (C["DARKGREY"] * 4)),
-        )
-        self.add_vertex(
-            "border",
-            8,
-            GL_LINES,
-            G(self.m_draw + self.m_draw + 3),
-            ("v2f/static", self.vertice_strip(button_vertice)),
-            ("c4B/static", (C["BLACK"] * 8)),
-        )
+        self.add_quad('background', G(self.m_draw + self.m_draw + 1),
+                      button_vertice, C['DARKGREY'] * 4)
+        self.add_lines('border', G(self.m_draw + self.m_draw + 3),
+                       self.vertice_strip(button_vertice), C['BLACK'] * 8)
 
         Window.MainWindow.push_handlers(self.on_mouse_press, self.on_mouse_release)
 
@@ -78,13 +64,10 @@ class PlayPause(Button):
         HIDDEN: tuple[int, int, int, int] = (255, 255, 255, 0)
 
         # --- Play triangle (pointing right, 3 vertices) ---
-        self.add_vertex(
-            "play_tri",
-            3,
-            GL_TRIANGLES,
-            g,
-            ("v2f/static", (cx - 0.3 * s, cy + 0.5 * s, cx - 0.3 * s, cy - 0.5 * s, cx + 0.5 * s, cy)),
-            ("c4B/dynamic", list(W * 3)),
+        self.add_triangles(
+            "play_tri", g,
+            (cx - 0.3 * s, cy + 0.5 * s, cx - 0.3 * s, cy - 0.5 * s, cx + 0.5 * s, cy),
+            list(W * 3),
         )
 
         # --- Pause bars (2 quads = 8 vertices) ---
@@ -97,13 +80,10 @@ class PlayPause(Button):
         rx2: float = cx + gap + bw
         yt: float = cy + bh
         yb: float = cy - bh
-        self.add_vertex(
-            "pause_bars",
-            8,
-            GL_QUADS,
-            g,
-            ("v2f/static", (lx1, yt, lx2, yt, lx2, yb, lx1, yb, rx1, yt, rx2, yt, rx2, yb, rx1, yb)),
-            ("c4B/dynamic", list(HIDDEN * 8)),
+        self.add_quad(
+            "pause_bars", g,
+            (lx1, yt, lx2, yt, lx2, yb, lx1, yb, rx1, yt, rx2, yt, rx2, yb, rx1, yb),
+            list(HIDDEN * 8),
         )
 
         self.show()
@@ -136,19 +116,14 @@ class MuteButton(Button):
         bx2: float = cx - 0.3 * s
         byt: float = cy + 0.25 * s
         byb: float = cy - 0.25 * s
-        self.add_vertex(
-            "spk_body", 4, GL_QUADS, g, ("v2f/static", (bx1, byt, bx2, byt, bx2, byb, bx1, byb)), ("c4B/static", W * 4)
-        )
+        self.add_quad("spk_body", g, (bx1, byt, bx2, byt, bx2, byb, bx1, byb), W * 4)
 
         # --- Speaker cone (quad / trapezoid) ---
         tip_x: float = cx + 0.2 * s
-        self.add_vertex(
-            "spk_cone",
-            4,
-            GL_QUADS,
-            g,
-            ("v2f/static", (bx2, byt, tip_x, cy + 0.55 * s, tip_x, cy - 0.55 * s, bx2, byb)),
-            ("c4B/static", W * 4),
+        self.add_quad(
+            "spk_cone", g,
+            (bx2, byt, tip_x, cy + 0.55 * s, tip_x, cy - 0.55 * s, bx2, byb),
+            W * 4,
         )
 
         # --- X mark (2 lines = 4 vertices) — visible when muted ---
@@ -156,14 +131,7 @@ class MuteButton(Button):
         xx2: float = cx + 0.85 * s
         xy1: float = cy + 0.45 * s
         xy2: float = cy - 0.45 * s
-        self.add_vertex(
-            "mute_x",
-            4,
-            GL_LINES,
-            g,
-            ("v2f/static", (xx1, xy1, xx2, xy2, xx1, xy2, xx2, xy1)),
-            ("c4B/dynamic", list(W * 4)),
-        )
+        self.add_lines("mute_x", g, (xx1, xy1, xx2, xy2, xx1, xy2, xx2, xy1), list(W * 4))
 
         # --- Sound waves (2 arcs) — hidden when muted ---
         arc_cx: float = tip_x
@@ -183,14 +151,7 @@ class MuteButton(Button):
         wave2: list[float] = arc_line_verts(arc_cx, cy, 0.70 * s, -45, 45)
         wave_verts: list[float] = wave1 + wave2
         n_wave_pts: int = len(wave_verts) // 2
-        self.add_vertex(
-            "unmute_waves",
-            n_wave_pts,
-            GL_LINES,
-            g,
-            ("v2f/static", wave_verts),
-            ("c4B/dynamic", list(HIDDEN * n_wave_pts)),
-        )
+        self.add_lines("unmute_waves", g, wave_verts, list(HIDDEN * n_wave_pts))
 
         self._n_wave_pts: int = n_wave_pts
         self.show()
