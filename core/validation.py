@@ -7,7 +7,7 @@
 # each scenario parameter value is accepted.
 
 import re
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from pyglet.window import key as winkey
 

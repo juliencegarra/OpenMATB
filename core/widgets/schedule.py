@@ -86,7 +86,9 @@ class Schedule(AbstractWidget):
     def sec_to_y(self, sec: float, max_sec: float) -> float:
         return self.container.y1 - (sec / max_sec * (self.container.y1 - self.container.y2))
 
-    def map_segment(self, time_mode: str, rel_plan: list[tuple[float, float]], max_sec: float, color: tuple[int, ...]) -> None:
+    def map_segment(
+        self, time_mode: str, rel_plan: list[tuple[float, float]], max_sec: float, color: tuple[int, ...]
+    ) -> None:
         v: list[float] = list()
         for segment_sec in rel_plan:
             x_radius: float | int = self.line_radius if time_mode == "running" else self.box_radius

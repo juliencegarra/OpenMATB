@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from core.pygaze_pyglet.pygaze import eyetracker
 from core.window import Window
@@ -31,7 +31,7 @@ class Eyetracker(AbstractPlugin):
             # ~ 'positionRZ', 'diamR']
         }
         self.parameters.update(new_par)
-        self.tracker: Optional[Any] = None
+        self.tracker: Any | None = None
 
     def start(self, dt: float) -> None:
         super().start()

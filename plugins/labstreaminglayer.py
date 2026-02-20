@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from core import validation
 from plugins import Instructions
@@ -28,8 +28,8 @@ class Labstreaminglayer(Instructions):
 
         self.parameters.update({"marker": "", "streamsession": False, "pauseatstart": False})
 
-        self.stream_info: Optional[Any] = None
-        self.stream_outlet: Optional[Any] = None
+        self.stream_info: Any | None = None
+        self.stream_outlet: Any | None = None
         self.stop_on_end: bool = False
 
         self.lsl_wait_msg: str = _("Please enable the OpenMATB stream into your LabRecorder.")

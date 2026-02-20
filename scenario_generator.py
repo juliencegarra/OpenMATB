@@ -13,7 +13,7 @@ from pathlib import Path
 from random import randint, shuffle
 from sys import exit
 from time import time
-from typing import Any, Optional, Union
+from typing import Any
 
 # Read the configuration file
 config: configparser.ConfigParser = configparser.ConfigParser()
@@ -61,7 +61,7 @@ plugins: dict[str, Any] = {
 }
 
 
-def part_duration_sec(duration_sec: int, part_left: int, duration_list: Optional[list[int]] = None) -> list[int]:
+def part_duration_sec(duration_sec: int, part_left: int, duration_list: list[int] | None = None) -> list[int]:
     if duration_list is None:
         duration_list = list()
     MIN_PART_DURATION_SEC: int = 0
@@ -118,11 +118,11 @@ def choices(l: list[str], k: int, randomize: bool) -> list[str]:
     return nl
 
 
-def get_events_from_scenario(scenario_lines: list[Union[str, Event]]) -> list[Event]:
+def get_events_from_scenario(scenario_lines: list[str | Event]) -> list[Event]:
     return [l for l in scenario_lines if isinstance(l, Event)]
 
 
-def get_task_current_state(scenario_lines: list[Union[str, Event]], plugin: str) -> Optional[list[str]]:
+def get_task_current_state(scenario_lines: list[str | Event], plugin: str) -> list[str] | None:
     # Filter the event list to plugin events and check its emptyness
     scenario_events: list[Event] = get_events_from_scenario(scenario_lines)
     task_events: list[Event] = [e for e in scenario_events if e.plugin == plugin]
@@ -138,8 +138,13 @@ def get_task_current_state(scenario_lines: list[Union[str, Event]], plugin: str)
         return None
 
 
-def distribute_events(scenario_lines: list[Union[str, Event]], start_sec: int, single_duration: float,
-                      cmd_list: list[list[Any]], plugin_name: str) -> list[Union[str, Event]]:
+def distribute_events(
+    scenario_lines: list[str | Event],
+    start_sec: int,
+    single_duration: float,
+    cmd_list: list[list[Any]],
+    plugin_name: str,
+) -> list[str | Event]:
     print(f"Distributing {len(cmd_list)} {plugin_name} events in time")
     total_event_duration: float = len(cmd_list) * single_duration
     rest_sec: float = STEP_DURATION_SEC - total_event_duration
@@ -160,9 +165,9 @@ def distribute_events(scenario_lines: list[Union[str, Event]], start_sec: int, s
     return scenario_lines
 
 
-def add_scenario_phase(scenario_lines: list[Union[str, Event]],
-                       task_difficulty_tuples: tuple[tuple[str, float], ...],
-                       start_sec: int) -> list[Union[str, Event]]:
+def add_scenario_phase(
+    scenario_lines: list[str | Event], task_difficulty_tuples: tuple[tuple[str, float], ...], start_sec: int
+) -> list[str | Event]:
     # Compute next time (in seconds) and line number
     scenario_events: list[Event] = get_events_from_scenario(scenario_lines)
     start_line: int = scenario_events[-1].line + 1 if len(scenario_events) != 0 else 1
@@ -170,7 +175,7 @@ def add_scenario_phase(scenario_lines: list[Union[str, Event]],
 
     # If a plugin is active and not desired, pause and hide it
     for plugin_name in ["sysmon", "tracking", "communications", "resman"]:
-        task_state: Optional[list[str]] = get_task_current_state(scenario_lines, plugin_name)
+        task_state: list[str] | None = get_task_current_state(scenario_lines, plugin_name)
         if task_state in ["start", "resume"] and plugin_name not in [p for (p, d) in task_difficulty_tuples]:
             scenario_lines.append(Event(start_line, start_sec, plugin_name, "pause"))
             scenario_lines.append(Event(start_line, start_sec, plugin_name, "hide"))
@@ -294,7 +299,9 @@ def add_scenario_phase(scenario_lines: list[Union[str, Event]],
 
             maximum_single_leakage: int = int(total_capacity / 2)
 
-            target_tank_letters: list[str] = [k for k, t in plugin.parameters["tank"].items() if t["target"] is not None]
+            target_tank_letters: list[str] = [
+                k for k, t in plugin.parameters["tank"].items() if t["target"] is not None
+            ]
             for letter in target_tank_letters:
                 cmd: list[Any] = [f"tank-{letter}-lossperminute", int(maximum_single_leakage * difficulty)]
                 scenario_lines.append(Event(start_line, start_sec, plugin_name, cmd))
@@ -325,7 +332,7 @@ def main() -> None:
             elif len(event.command) == 2:
                 plugins[event.plugin].set_parameter(event.command[0], event.command[1])
 
-    scenario_lines: list[Union[str, Event]] = list()  # Preallocate a list for scenario lines
+    scenario_lines: list[str | Event] = list()  # Preallocate a list for scenario lines
 
     for i in range(DIFFICULTY_STEP_NUMBER):
         current_difficulty: float = DIFFICULTY_MIN + DIFFICULTY_STEP * i

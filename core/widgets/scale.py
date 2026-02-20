@@ -21,7 +21,9 @@ class Scale(AbstractWidget):
         self.feedback_visible: bool = False
 
         # Compute arrow positions list
-        self.positions: list[float] = [self.container.b + (self.container.h / 11) * i + self.container.h / 22 for i in range(11)]
+        self.positions: list[float] = [
+            self.container.b + (self.container.h / 11) * i + self.container.h / 22 for i in range(11)
+        ]
         self.position: int = 5
 
         # Compute vertices

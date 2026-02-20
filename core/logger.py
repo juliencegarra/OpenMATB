@@ -9,7 +9,7 @@ from csv import DictWriter
 from datetime import datetime
 from pathlib import Path
 from time import perf_counter
-from typing import IO, Any, Optional
+from typing import IO, Any
 
 from core.constants import PATHS, REPLAY_MODE
 from core.utils import find_the_first_available_session_number
@@ -21,7 +21,7 @@ class Logger:
         self.fields_list: list[str] = ["logtime", "scenario_time", "type", "module", "address", "value"]
         self.slot: type = namedtuple("Row", self.fields_list)
         self.maxfloats: int = 6  # Time logged at microsecond precision
-        self.session_id: Optional[int] = None
+        self.session_id: int | None = None
         self.lsl: Any = None
 
         self.session_id = find_the_first_available_session_number()
@@ -29,8 +29,8 @@ class Logger:
 
         self.scenario_time: float = 0  # Updated by the scheduler class
 
-        self.file: Optional[IO[str]] = None
-        self.writer: Optional[DictWriter] = None
+        self.file: IO[str] | None = None
+        self.writer: DictWriter | None = None
         self.queue: list[Any] = list()
 
         if not REPLAY_MODE:
@@ -116,7 +116,7 @@ class Logger:
             new_list.append(new_value)
         return self.slot(*new_list)
 
-    def write_row_queue(self, change_dict: Optional[dict[str, Any]] = None) -> None:
+    def write_row_queue(self, change_dict: dict[str, Any] | None = None) -> None:
         if not REPLAY_MODE:
             if len(self.queue) == 0:
                 print(_("Warning, queue is empty"))

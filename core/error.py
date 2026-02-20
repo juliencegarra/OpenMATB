@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from core.window import Window
 
 
@@ -23,7 +21,7 @@ class Errors:
                 pass_list = list(self.errors_list)
                 self.errors_list = list()
                 title: str = _("Warning") if not self.some_fatals else _("Error(s)")
-                continue_key: Optional[str] = None if self.some_fatals else "SPACE"
+                continue_key: str | None = None if self.some_fatals else "SPACE"
                 Window.MainWindow.open_modal_window(pass_list, title=title, continue_key=continue_key, exit_key="Q")
 
 

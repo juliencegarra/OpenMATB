@@ -9,7 +9,18 @@ from core.widgets.abstractwidget import *
 
 
 class Tank(AbstractWidget):
-    def __init__(self, name: str, container: Any, letter: str, level: float, fluid_label: str, level_max: float, target: float | None, toleranceradius: float, infoside: str) -> None:
+    def __init__(
+        self,
+        name: str,
+        container: Any,
+        letter: str,
+        level: float,
+        fluid_label: str,
+        level_max: float,
+        target: float | None,
+        toleranceradius: float,
+        infoside: str,
+    ) -> None:
         super().__init__(name, container)
 
         self.tolerance_cont: Container | None = None

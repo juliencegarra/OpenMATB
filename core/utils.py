@@ -2,7 +2,7 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 import sys
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from pyglet import font
 

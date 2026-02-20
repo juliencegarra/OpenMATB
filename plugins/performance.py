@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from core import validation
 from core.constants import COLORS as C
@@ -40,9 +40,9 @@ class Performance(AbstractPlugin):
         self.current_level: int | float = int(self.parameters["levelmax"])
         self.displayed_level: int | float = int(self.parameters["levelmax"])
         self.displayed_color: tuple[int, ...] = self.parameters["defaultcolor"]
-        self.plugins: Optional[dict[str, Any]] = None
+        self.plugins: dict[str, Any] | None = None
         self.performance_levels: dict[str, float] = dict()
-        self.under_critical: Optional[bool] = None
+        self.under_critical: bool | None = None
 
     def on_scenario_loaded(self, scenario: Any) -> None:
         self.plugins = scenario.plugins
@@ -78,7 +78,9 @@ class Performance(AbstractPlugin):
                     # Only considering hits and missed for system monitoring
                     # HIT = 1   |   MISS = 0
                     # Compute average of 4 last signal detection events
-                    perf_list: list[str] = [p for p in plugin.performance["signal_detection"] if p in ["HIT", "FA", "MISS"]]
+                    perf_list: list[str] = [
+                        p for p in plugin.performance["signal_detection"] if p in ["HIT", "FA", "MISS"]
+                    ]
                     if len(perf_list) >= 4:
                         self.performance_levels[p] = sum([int(p == "HIT") for p in perf_list]) / 4
 

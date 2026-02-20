@@ -9,7 +9,15 @@ from core.widgets.abstractwidget import *
 
 
 class Performancescale(AbstractWidget):
-    def __init__(self, name: str, container: Container, level_min: int, level_max: int, tick_number: int, color: tuple[int, int, int, int]) -> None:
+    def __init__(
+        self,
+        name: str,
+        container: Container,
+        level_min: int,
+        level_max: int,
+        tick_number: int,
+        color: tuple[int, int, int, int],
+    ) -> None:
         super().__init__(name, container)
 
         self.performance_level: int = level_max

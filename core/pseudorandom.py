@@ -3,7 +3,8 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 import random
-from typing import Any, Sequence, TypeVar
+from collections.abc import Sequence
+from typing import TypeVar
 
 from rstr import xeger as rstrxeger
 

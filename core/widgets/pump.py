@@ -9,7 +9,17 @@ from core.widgets.abstractwidget import *
 
 
 class Pump(AbstractWidget):
-    def __init__(self, name: str, container: Container, from_cont: Container, to_cont: Container, pump_n: int, color: tuple[int, int, int, int], pump_width: float, y_offset: float = 0) -> None:
+    def __init__(
+        self,
+        name: str,
+        container: Container,
+        from_cont: Container,
+        to_cont: Container,
+        pump_n: int,
+        color: tuple[int, int, int, int],
+        pump_width: float,
+        y_offset: float = 0,
+    ) -> None:
         super().__init__(name, container)
         width: float = pump_width
 

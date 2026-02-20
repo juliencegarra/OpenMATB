@@ -7,7 +7,7 @@ from __future__ import annotations
 import csv
 from bisect import bisect_right
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from core.constants import PATHS as P
 from core.error import errors
@@ -28,9 +28,9 @@ class LogReader:
     simulate what happened during the session.
     """
 
-    def __init__(self, replay_session_id: Optional[int] = None, session_path: Optional[str] = None) -> None:
-        self.session_file_path: Optional[Path] = None
-        self.replay_session_id: Optional[int] = replay_session_id
+    def __init__(self, replay_session_id: int | None = None, session_path: str | None = None) -> None:
+        self.session_file_path: Path | None = None
+        self.replay_session_id: int | None = replay_session_id
 
         if session_path is not None:
             # Direct path provided (from file selector)

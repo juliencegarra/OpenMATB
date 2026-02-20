@@ -9,7 +9,6 @@ from __future__ import annotations
 import gettext
 import sys
 from pathlib import Path
-from typing import Optional
 
 # Read and install the specified language iso
 # The LOCALE_PATH constant can't be set into constants.py because
@@ -40,7 +39,7 @@ class OpenMATB:
         if REPLAY_MODE:
             # Skip the selector when a replay session ID is given via command line
             if len(sys.argv) > 2:
-                selected: Optional[Path] = None
+                selected: Path | None = None
             else:
                 selected = FileSelector(Window.MainWindow, "replay").run()
                 if selected is None:

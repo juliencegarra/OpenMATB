@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional, Union
+from typing import Any
 
 from pyglet.gl import GL_BLEND, GL_LINES, GL_ONE_MINUS_SRC_ALPHA, GL_POLYGON, GL_SRC_ALPHA, glBlendFunc, glEnable
 from pyglet.text import HTMLLabel
@@ -18,23 +18,29 @@ from core.utils import get_conf_value
 
 
 class ModalDialog:
-    def __init__(self, win: Any, msg: Union[str, list[str]], title: str = "OpenMATB",
-                 continue_key: Optional[str] = "SPACE", exit_key: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        win: Any,
+        msg: str | list[str],
+        title: str = "OpenMATB",
+        continue_key: str | None = "SPACE",
+        exit_key: str | None = None,
+    ) -> None:
         # Allow for drawing of transparent vertices
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         self.win: Any = win
         self.name: str = title
-        self.continue_key: Optional[str] = continue_key
-        self.exit_key: Optional[str] = exit_key
+        self.continue_key: str | None = continue_key
+        self.exit_key: str | None = exit_key
         self.hide_on_pause: bool = get_conf_value("Openmatb", "hide_on_pause")
 
         # Hide background ?
         if self.hide_on_pause:
             MATB_container: Container = Window.MainWindow.get_container("fullscreen")  # noqa: F821
             l, b, w, h = MATB_container.get_lbwh()
-            self.back_vertice: Optional[Any] = Window.MainWindow.batch.add(  # noqa: F821
+            self.back_vertice: Any | None = Window.MainWindow.batch.add(  # noqa: F821
                 4,
                 GL_POLYGON,
                 G(20),
@@ -115,7 +121,7 @@ class ModalDialog:
         self.html_label.x = self.container.cx
         self.html_label.y = self.container.cy
 
-        self.vertices: list[Optional[Any]] = [self.html_label, self.back_dialog, self.border_dialog, self.back_vertice]
+        self.vertices: list[Any | None] = [self.html_label, self.back_dialog, self.border_dialog, self.back_vertice]
 
     def on_delete(self) -> None:
         """The user wants to continue. So only delete the modal dialog"""

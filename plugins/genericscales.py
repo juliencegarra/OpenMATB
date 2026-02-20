@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from re import match as regex_match
-from typing import Any, Optional
+from typing import Any
 
 from pyglet.text import Label as PygletLabel
 
@@ -112,7 +112,9 @@ class Genericscales(BlockingPlugin):
                     W: float = scale_container.w
                     H: float = scale_container.h
                     title_container: Container = Container("title", L, B + H - title_h, W, title_h)
-                    question_container: Container = Container("question", L, B + H - title_h - question_h, W, question_h)
+                    question_container: Container = Container(
+                        "question", L, B + H - title_h - question_h, W, question_h
+                    )
                     slider_container: Container = Container("slider", L, B, W, slider_h)
 
                     self.add_widget(

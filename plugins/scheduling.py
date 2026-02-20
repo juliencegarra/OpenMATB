@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from time import gmtime, strftime
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from core import validation
 from core.constants import COLORS as C
@@ -45,7 +45,7 @@ class Scheduling(AbstractPlugin):
             p: {"running": list(), "manual": list()} for p in self.parameters["displayedplugins"]
         }
         self.colors: dict[str, tuple[int, ...]] = dict(line=C["GREY"], running=C["RED"], manual=C["GREEN"])
-        self.maximum_time_sec: Optional[int] = None
+        self.maximum_time_sec: int | None = None
 
     def create_widgets(self) -> None:
         super().create_widgets()

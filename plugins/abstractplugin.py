@@ -4,8 +4,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Iterator, Optional
+from typing import Any
 
 from pyglet.window import key as winkey
 
@@ -21,11 +22,11 @@ from core.window import Window
 class AbstractPlugin:
     """Any plugin (or task) depends on this meta-class"""
 
-    def __init__(self, label: Optional[str] = "", taskplacement: str = "fullscreen", taskupdatetime: int = -1) -> None:
-        self.label: Optional[str] = label  #   The name as displayed on the interface
+    def __init__(self, label: str | None = "", taskplacement: str = "fullscreen", taskupdatetime: int = -1) -> None:
+        self.label: str | None = label  #   The name as displayed on the interface
         self.alias: str = self.__class__.__name__.lower()  #   A lower version of the plugin class name
         self.widgets: dict[str, Any] = dict()  #   To store the widget objects of a plugin
-        self.container: Optional[Container] = None  #   The visual area of the plugin (object)
+        self.container: Container | None = None  #   The visual area of the plugin (object)
         self.logger: Any = logger
 
         self.can_receive_keys: bool = False
@@ -168,12 +169,12 @@ class AbstractPlugin:
     def get_widget_fullname(self, name: str) -> str:
         return f"{self.alias}_{name}"
 
-    def get_widget(self, name: str) -> Optional[Any]:
+    def get_widget(self, name: str) -> Any | None:
         if not self.is_a_widget_name(name):
             return
         return self.widgets[self.get_widget_fullname(name)]
 
-    def get_response_timers(self) -> Optional[list[float]]:
+    def get_response_timers(self) -> list[float] | None:
         """Return the time since which responses are expected (list of int)"""
         pass
 
@@ -259,7 +260,7 @@ class AbstractPlugin:
             overdue["widget"].set_border_color(overdue["color"])
         return True
 
-    def filter_key(self, keystr: str) -> Optional[str]:
+    def filter_key(self, keystr: str) -> str | None:
         if not self.can_execute_keys:
             return
 
@@ -293,13 +294,13 @@ class AbstractPlugin:
 
     def do_on_key(
         self, keystr: str, state: str, emulate: bool = False
-    ) -> Optional[str]:  # JC: pour le solver, devrait prendre un parametre is_solver_action
+    ) -> str | None:  # JC: pour le solver, devrait prendre un parametre is_solver_action
         # pour separer de vraies actions du participant
         if REPLAY_MODE and not emulate:
             return  # During replay, ignore keys that are not emulated
         return self.filter_key(keystr)
 
-    def is_key_state(self, keystr: str, is_pressed: bool) -> Optional[bool]:
+    def is_key_state(self, keystr: str, is_pressed: bool) -> bool | None:
         if keystr in Window.MainWindow.keyboard:
             return Window.MainWindow.keyboard[keystr] == is_pressed
         elif self.joystick is not None and keystr in self.joystick.keys:
@@ -347,11 +348,15 @@ class AbstractPlugin:
 
         if "displayautomationstate" in self.parameters:
             if self.parameters["displayautomationstate"] is True:
-                position: tuple[float, float] = self.automode_position if hasattr(self, "automode_position") else (0.5, 0.5)
-                autocont: Container = self.container.reduce_and_translate(width=0.15, height=0.05, x=position[0], y=position[1])
+                position: tuple[float, float] = (
+                    self.automode_position if hasattr(self, "automode_position") else (0.5, 0.5)
+                )
+                autocont: Container = self.container.reduce_and_translate(
+                    width=0.15, height=0.05, x=position[0], y=position[1]
+                )
                 self.add_widget("automode", Simpletext, container=autocont, text=self.automode_string, x=0.5, y=0.5)
 
-    def add_widget(self, name: str, cls: type, container: Optional[Container], **kwargs: Any) -> Any:
+    def add_widget(self, name: str, cls: type, container: Container | None, **kwargs: Any) -> Any:
         fullname: str = self.get_widget_fullname(name)
         self.widgets[fullname] = cls(fullname, container, **kwargs)
 
@@ -411,12 +416,12 @@ class BlockingPlugin(AbstractPlugin):
         self.display_title: bool = False
 
         self.slides: list[str] = list()
-        self.current_slide: Optional[str] = None
-        self.go_to_next_slide: Optional[bool] = None
+        self.current_slide: str | None = None
+        self.go_to_next_slide: bool | None = None
         self.ignore_empty_lines: bool = False
 
-        self.input_path: Optional[Path] = None
-        self.folder: Optional[str] = None  # Depends on the nature of blocking plugin (questionnaire, instruction...)
+        self.input_path: Path | None = None
+        self.folder: str | None = None  # Depends on the nature of blocking plugin (questionnaire, instruction...)
 
         # Should we stop the plugin when the are no more slide available
         # (Useful for the LSL plugin, which has a starting instruction, but
@@ -510,7 +515,7 @@ class BlockingPlugin(AbstractPlugin):
         if self.parameters["allowkeypress"]:
             super().on_key_press(symbol, modifiers)
 
-    def do_on_key(self, keystr: str, state: str, emulate: bool = False) -> Optional[str]:
+    def do_on_key(self, keystr: str, state: str, emulate: bool = False) -> str | None:
         keystr = super().do_on_key(keystr, state, emulate)
         if keystr is None:
             return

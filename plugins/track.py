@@ -4,8 +4,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from math import pi, sin
-from typing import Any, Callable, Generator
+from typing import Any, Callable
 
 from core import validation
 from core.constants import COLORS as C
@@ -16,7 +17,9 @@ from plugins.abstractplugin import AbstractPlugin
 
 
 class Track(AbstractPlugin):
-    def __init__(self, label: str = "", taskplacement: str = "topmid", taskupdatetime: int = 20, silent: bool = False) -> None:
+    def __init__(
+        self, label: str = "", taskplacement: str = "topmid", taskupdatetime: int = 20, silent: bool = False
+    ) -> None:
         super().__init__(_("Tracking"), taskplacement, taskupdatetime)
 
         self.validation_dict: dict[str, Callable[..., Any]] = {
