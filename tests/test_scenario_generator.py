@@ -53,6 +53,19 @@ get_events_from_scenario = _ns["get_events_from_scenario"]
 get_task_current_state = _ns["get_task_current_state"]
 
 
+distribute_events = _ns["distribute_events"]
+
+# Provide a mock plugins dict for add_scenario_phase.
+# Only "track" tests are practical without real plugin parameters.
+_ns["plugins"] = {
+    "track": None,
+    "sysmon": None,
+    "communications": None,
+    "resman": None,
+}
+add_scenario_phase = _ns["add_scenario_phase"]
+
+
 class TestReduce:
     """Test GCD-based fraction simplification."""
 
@@ -225,3 +238,139 @@ class TestGetTaskCurrentState:
         # No start/pause/resume => None
         result = get_task_current_state(lines, "sysmon")
         assert result is None
+
+
+class TestDistributeEvents:
+    """Test distribute_events line numbering and robustness."""
+
+    def test_line_numbers_are_unique_and_incrementing(self):
+        """Each distributed event gets a unique, incrementing line number."""
+        random.seed(42)
+        lines = [Event(1, 0, "sysmon", ["start"])]
+        cmd_list = [["scales-s1-failure", True], ["scales-s2-failure", True]]
+        result = distribute_events(lines, 0, 5.0, cmd_list, "sysmon")
+        events = get_events_from_scenario(result)
+        line_numbers = [e.line for e in events]
+        assert len(line_numbers) == len(set(line_numbers))
+        assert line_numbers == sorted(line_numbers)
+
+    def test_works_with_trailing_string(self):
+        """Does not crash when last element is a string (fix for .line on str)."""
+        random.seed(42)
+        lines = [
+            Event(1, 0, "sysmon", ["start"]),
+            "# A trailing comment",
+        ]
+        cmd_list = [["scales-s1-failure", True]]
+        result = distribute_events(lines, 0, 5.0, cmd_list, "sysmon")
+        events = get_events_from_scenario(result)
+        assert len(events) == 2
+        assert events[-1].line == 2
+
+    def test_continues_from_last_event_line(self):
+        """Line numbering continues from last Event, not last list element."""
+        random.seed(42)
+        lines = [
+            "# Header comment",
+            Event(5, 0, "sysmon", ["start"]),
+            "# Block description",
+        ]
+        cmd_list = [["scales-s1-failure", True]]
+        result = distribute_events(lines, 0, 5.0, cmd_list, "sysmon")
+        events = get_events_from_scenario(result)
+        assert events[-1].line == 6  # Continues from line 5
+
+
+class TestAddScenarioPhase:
+    """Test add_scenario_phase bug fixes (task_state comparisons and line numbering)."""
+
+    def test_start_line_increments_for_track(self):
+        """start + targetproportion events get different line numbers (fix for static start_line)."""
+        lines = []
+        phase_tuples = (("track", 0.5),)
+        result = add_scenario_phase(lines, phase_tuples, 0)
+        events = get_events_from_scenario(result)
+        # Should have "start" event + "targetproportion" event
+        assert len(events) == 2
+        assert events[0].line != events[1].line
+        assert events[1].line > events[0].line
+
+    def test_active_plugin_gets_paused_when_not_desired(self):
+        """A plugin with state ["start"] is correctly paused (fix for list vs str comparison)."""
+        lines = [Event(1, 0, "sysmon", ["start"])]
+        # Only track desired — sysmon should be paused and hidden
+        phase_tuples = (("track", 0.5),)
+        result = add_scenario_phase(lines, phase_tuples, 60)
+        sysmon_events = [e for e in get_events_from_scenario(result) if e.plugin == "sysmon"]
+        # Original start + pause + hide
+        assert len(sysmon_events) == 3
+        assert sysmon_events[1].command == ["pause"]
+        assert sysmon_events[2].command == ["hide"]
+
+    def test_paused_plugin_gets_resumed(self):
+        """A paused plugin in the desired list is resumed (fix for list vs str comparison)."""
+        lines = [
+            Event(1, 0, "track", ["start"]),
+            Event(2, 30, "track", ["pause"]),
+        ]
+        phase_tuples = (("track", 0.5),)
+        result = add_scenario_phase(lines, phase_tuples, 60)
+        track_events = [e for e in get_events_from_scenario(result) if e.plugin == "track"]
+        # Original start, pause, then show, resume, targetproportion
+        assert len(track_events) == 5
+        assert track_events[2].command == ["show"]
+        assert track_events[3].command == ["resume"]
+
+    def test_inactive_plugin_not_paused(self):
+        """A plugin that was never started does not crash the comparison."""
+        lines = []
+        phase_tuples = (("track", 0.5),)
+        # Should not crash — get_task_current_state returns None for sysmon
+        result = add_scenario_phase(lines, phase_tuples, 0)
+        sysmon_events = [e for e in get_events_from_scenario(result) if e.plugin == "sysmon"]
+        assert len(sysmon_events) == 0
+
+    def test_all_line_numbers_unique(self):
+        """All events in a phase have unique line numbers."""
+        lines = [Event(1, 0, "sysmon", ["start"])]
+        phase_tuples = (("track", 0.5),)
+        result = add_scenario_phase(lines, phase_tuples, 60)
+        events = get_events_from_scenario(result)
+        line_numbers = [e.line for e in events]
+        assert len(line_numbers) == len(set(line_numbers))
+
+
+class TestStopTasksPattern:
+    """Test the pattern used in main() for stopping tasks (fix for .line on str)."""
+
+    def test_get_events_ignores_trailing_strings(self):
+        """get_events_from_scenario finds last Event even with trailing strings."""
+        lines = [
+            Event(1, 0, "sysmon", ["start"]),
+            Event(2, 60, "sysmon", ["stop"]),
+            "# End of scenario",
+        ]
+        events = get_events_from_scenario(lines)
+        # Using events[-1].line instead of lines[-1].line avoids AttributeError
+        assert events[-1].line == 2
+
+    def test_stop_pattern_line_numbering(self):
+        """Simulates the main() stop-all-tasks pattern with unique line numbers."""
+        lines = [
+            "# Block 1",
+            Event(1, 0, "sysmon", ["start"]),
+            Event(2, 0, "track", ["start"]),
+            "# Block 2",
+            Event(3, 60, "sysmon", ["scales-s1-failure", True]),
+        ]
+        # Pattern from main(): use get_events_from_scenario to get last line
+        scenario_events = get_events_from_scenario(lines)
+        start_line = scenario_events[-1].line + 1 if len(scenario_events) != 0 else 1
+        task_names = set(e.plugin for e in scenario_events)
+        for task in sorted(task_names):
+            lines.append(Event(start_line, 120, task, "stop"))
+            start_line += 1
+        stop_events = [e for e in get_events_from_scenario(lines) if e.command == ["stop"]]
+        stop_lines = [e.line for e in stop_events]
+        assert len(stop_lines) == len(set(stop_lines))
+        assert stop_lines[0] == 4  # Continues from line 3
