@@ -1,0 +1,24 @@
+# Scenario de test : affichage des titres dans les genericscales
+#
+# Ce scenario teste 3 questionnaires successifs :
+# 1. nasatlx_en.txt      → titre != question → les titres doivent apparaitre en gras
+# 2. nasatlxshort_en.txt  → titre == question → aucun titre ne doit apparaitre
+# 3. questionnaire_example_en.txt → titre != question + multi-page (<newpage>)
+#
+# Verifications :
+# - Cas 1 : "Mental demand", "Physical demand", etc. affiches en gras au-dessus des questions
+# - Cas 2 : aucun titre affiche (le texte de la question sert aussi de titre)
+# - Cas 3 : "Short title 1/2" affiches en gras, puis apres validation, page 2
+#           avec "Short title 3/4" — les titres de la page 1 doivent avoir disparu
+
+# 1. NASA-TLX complet (titre != question)
+0:00:00;genericscales;filename;nasatlx_en.txt
+0:00:00;genericscales;start
+
+# 2. NASA-TLX court (titre == question)
+0:00:00;genericscales;filename;nasatlxshort_en.txt
+0:00:00;genericscales;start
+
+# 3. Questionnaire exemple avec multi-page
+0:00:00;genericscales;filename;questionnaire_example_en.txt
+0:00:00;genericscales;start
