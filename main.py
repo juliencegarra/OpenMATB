@@ -4,29 +4,29 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-import gettext, sys
+import gettext
+import sys
 from pathlib import Path
 
 # Read and install the specified language iso
 # The LOCALE_PATH constant can't be set into constants.py because
 # the latter must be translated itself
-LOCALE_PATH = Path('.', 'locales')
+LOCALE_PATH = Path(".", "locales")
 
 # Only language is accessed manually from the config.ini to avoid circular imports
 # (i.e., utils needing translation needing utils and so on)
-with open('config.ini', 'r') as f:
-    language_iso = [l for l in f.readlines()
-                    if 'language=' in l][0].split('=')[-1].strip()
-language = gettext.translation('openmatb', LOCALE_PATH, [language_iso])
+with open("config.ini", "r") as f:
+    language_iso = [l for l in f.readlines() if "language=" in l][0].split("=")[-1].strip()
+language = gettext.translation("openmatb", LOCALE_PATH, [language_iso])
 language.install()
 
 
 # Only after language installation, import core modules (they must be translated)
-from core import Scheduler, ReplayScheduler
-from core.constants import REPLAY_MODE, PATHS
+from core import ReplayScheduler, Scheduler
+from core.constants import PATHS, REPLAY_MODE
+from core.selector import FileSelector
 from core.utils import get_conf_value
 from core.window import Window
-from core.selector import FileSelector
 
 
 class OpenMATB:
@@ -39,20 +39,21 @@ class OpenMATB:
             if len(sys.argv) > 2:
                 selected = None
             else:
-                selected = FileSelector(Window.MainWindow, 'replay').run()
+                selected = FileSelector(Window.MainWindow, "replay").run()
                 if selected is None:
                     sys.exit(0)
             ReplayScheduler(session_path=selected)
         else:
             # Show the scenario selector only if no scenario is set in config.ini
-            ini_scenario = get_conf_value('Openmatb', 'scenario_path').strip()
+            ini_scenario = get_conf_value("Openmatb", "scenario_path").strip()
             if ini_scenario:
-                selected = PATHS['SCENARIOS'].joinpath(ini_scenario)
+                selected = PATHS["SCENARIOS"].joinpath(ini_scenario)
             else:
-                selected = FileSelector(Window.MainWindow, 'scenario').run()
+                selected = FileSelector(Window.MainWindow, "scenario").run()
                 if selected is None:
                     sys.exit(0)
             Scheduler(scenario_path=selected)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app = OpenMATB()

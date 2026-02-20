@@ -7,9 +7,13 @@
 # each scenario parameter value is accepted.
 
 import re
-from core.constants import COLORS as C, PATHS as P
-from core.joystick import joykey
+
 from pyglet.window import key as winkey
+
+from core.constants import COLORS as C
+from core.constants import PATHS as P
+from core.joystick import joykey
+
 
 def is_string(x):
     # Should always be True as we are reading parameters from a text file
@@ -17,11 +21,11 @@ def is_string(x):
     if isinstance(x, str):
         return x, None
     else:
-        return None, _('should be a string (not %s).') % x
+        return None, _("should be a string (not %s).") % x
 
 
 def is_natural_integer(x):
-    msg = _('should be a natural (0 included) integer (not %s).') % x
+    msg = _("should be a natural (0 included) integer (not %s).") % x
     try:
         x = eval(x)
         x = int(x)
@@ -38,23 +42,23 @@ def is_positive_integer(x):
     if is_natural_integer(x)[0] is not None and int(eval(x)) > 0:
         return eval(x), None
     else:
-        return None, _('should be a positive (0 excluded) integer (not %s).') % x
+        return None, _("should be a positive (0 excluded) integer (not %s).") % x
 
 
 def is_boolean(x):
-    if x.capitalize() in ['True', 'False']:
+    if x.capitalize() in ["True", "False"]:
         return eval(x.capitalize()), None
-    elif x in ['1', '0']:
+    elif x in ["1", "0"]:
         return bool(int(x)), None
     else:
-        return None, _('should be a boolean (not %s).') % x
+        return None, _("should be a boolean (not %s).") % x
 
 
 def is_color(x):  # Can be an hexadecimal value, a constant name, or an RGBa value
-    m = re.search(r'^#(?:[0-9a-fA-F]{3}){1,2}$', x)
+    m = re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", x)
     if m is not None:
-        x = x.lstrip('#')
-        rgba = tuple(list(int(x[i:i + 2], 16) for i in (0, 2, 4)) + [255])
+        x = x.lstrip("#")
+        rgba = tuple(list(int(x[i : i + 2], 16) for i in (0, 2, 4)) + [255])
         return rgba, None
     elif x in list(C.keys()):
         return C[x], None
@@ -62,20 +66,19 @@ def is_color(x):  # Can be an hexadecimal value, a constant name, or an RGBa val
         try:
             x = eval(x)
         except (ValueError, TypeError, SyntaxError, NameError):
-            return None, _('must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)') % x
+            return None, _("must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)") % x
         else:
-            if ((isinstance(x, tuple) or isinstance(x, list))
-                    and len(x) == 4 and all([0 <= v <= 255 for v in x])):
+            if (isinstance(x, (tuple, list))) and len(x) == 4 and all([0 <= v <= 255 for v in x]):
                 return tuple(x), None
             else:
                 x = str(x)
-                return None, _('should be (R,G,B,a) values each comprised between 0 and 255 (not %s)') % x
+                return None, _("should be (R,G,B,a) values each comprised between 0 and 255 (not %s)") % x
 
 
 def is_positive_float(x):
     # Remove a potential floating point and test the other char
-    msg = _('should be a positive float (not %s)') % x
-    is_float = x.replace('.','',1).isdigit() and '.' in x
+    msg = _("should be a positive float (not %s)") % x
+    is_float = x.replace(".", "", 1).isdigit() and "." in x
     if is_float:
         x = eval(x)
         if x > 0:
@@ -88,16 +91,16 @@ def is_positive_float(x):
 
 def is_in_list(x, li):
     # Turn x into a list
-    x = [str(el) for el in x.split(',')] if ',' in x else [x]
+    x = [str(el) for el in x.split(",")] if "," in x else [x]
 
     # Check that all elements of x is in the target (li) list
-    result = True if all([el in li for el in x]) else False
+    result = bool(all([el in li for el in x]))
 
     # Retrieve erroneous elements
     errors = [el for el in x if el not in li] if not result else list()
 
     if result:  # If all elements of x are in target (li) list
-    # Try to get an evaluated version of the (x) input
+        # Try to get an evaluated version of the (x) input
         try:
             x = [eval(el) for el in x]
         except NameError:
@@ -109,14 +112,17 @@ def is_in_list(x, li):
                 x = x[0]
             return x, None
     else:
-        return None, _('should be comprised in %s (not %s)') % (li, *errors,)
+        return None, _("should be comprised in %s (not %s)") % (
+            li,
+            *errors,
+        )
 
 
 def is_a_regex(x):
     try:
         re.compile(x)
     except re.error:
-        return None, _('should be a valid regex expression (not %s)') % (x)
+        return None, _("should be a valid regex expression (not %s)") % (x)
     else:
         return x, None
 
@@ -126,49 +132,51 @@ def is_keyboard_key(x):
     if x in keys_list:
         return x, None
     else:
-        return None, _('should be an acceptable keyboard key value (not %s). See documentation.') % x
+        return None, _("should be an acceptable keyboard key value (not %s). See documentation.") % x
 
 
 def is_joystick_key(x):
-    if joykey is not None: # Means that the joystick is plugged
-        if x in joykey.keys():
+    if joykey is not None:  # Means that the joystick is plugged
+        if x in joykey:
             return x, None
         else:
-            return None, _('should be an acceptable joystick key value (not %s). See documentation.') % x
+            return None, _("should be an acceptable joystick key value (not %s). See documentation.") % x
     return None, None
 
 
 def is_key(x):
-    kk, kmsg = is_keyboard_key(x)
+    _kk, kmsg = is_keyboard_key(x)
     if kmsg is None:
         return is_keyboard_key(x)
 
-    jk, jmsg = is_joystick_key(x)
+    _jk, jmsg = is_joystick_key(x)
     if jmsg is None:
         return is_joystick_key(x)
 
-    return None, _('should be an acceptable (keyboard or joystick) key value (not %s). See documentation.') % x
+    return None, _("should be an acceptable (keyboard or joystick) key value (not %s). See documentation.") % x
 
 
 def is_task_location(x):
-    location_list = ['fullscreen', 'topmid', 'topright', 'topleft', 'bottomleft', 'bottommid', 'bottomright']
+    location_list = ["fullscreen", "topmid", "topright", "topleft", "bottomleft", "bottommid", "bottomright"]
     return is_in_list(x, location_list)
 
 
 # In callsign, only letters and digits are allowed
-allowed_char_list = list('abcdefghijklmnopqrstuvwxyz0123456789')
+allowed_char_list = list("abcdefghijklmnopqrstuvwxyz0123456789")
+
+
 def is_callsign(x):
     if all([el.lower() in allowed_char_list for el in x]):
         return x, None
     else:
         # Get unallowed char
         errors = [el for el in x if el.lower() not in allowed_char_list]
-        return None, _('should be composed of letters [a-z] or digits [0-9] (not %s in %s)') % (*errors, x)
+        return None, _("should be composed of letters [a-z] or digits [0-9] (not %s in %s)") % (*errors, x)
 
 
 def is_callsign_or_list_of(x):
     # Turn x into a list
-    x = [str(el) for el in x.split(',')] if ',' in x else [x]
+    x = [str(el) for el in x.split(",")] if "," in x else [x]
 
     # Check that all elements are valid callsigns
     result = all([is_callsign(el)[0] is not None for el in x])
@@ -177,12 +185,12 @@ def is_callsign_or_list_of(x):
         return x, None
     else:
         # Retrieve unallowed callsigns
-        err_cs = ','.join([cs for cs in x if is_callsign(cs)[0] is None])
-        return None, _('should be composed of valid callsigns (not %s)') % err_cs
+        err_cs = ",".join([cs for cs in x if is_callsign(cs)[0] is None])
+        return None, _("should be composed of valid callsigns (not %s)") % err_cs
 
 
 def is_in_unit_interval(x):
-    msg = _('should be a float between 0 and 1 (included) (not %s)') % x
+    msg = _("should be a float between 0 and 1 (included) (not %s)") % x
     try:
         x = eval(x)
         x = float(x)
@@ -198,7 +206,7 @@ def is_in_unit_interval(x):
 def is_available_text_file(x):
     # The filename of a blocking plugin is to be found either
     # in the scenario or the questionnaire folder
-    if any([p.joinpath(x).exists() for p in [P['QUESTIONNAIRES'], P['INSTRUCTIONS']]]):
+    if any([p.joinpath(x).exists() for p in [P["QUESTIONNAIRES"], P["INSTRUCTIONS"]]]):
         return x, None
     else:
-        return None, _('should be available either in the Instruction or Questionnaire folder (not %s)') % x
+        return None, _("should be available either in the Instruction or Questionnaire folder (not %s)") % x

@@ -1,18 +1,19 @@
 """Tests for plugins.parallelport - Trigger state machine logic."""
 
 from unittest.mock import MagicMock, patch
+
 from plugins.parallelport import Parallelport
 
 
 def _make_pp(**overrides):
     """Create a Parallelport instance bypassing __init__ to avoid hardware access."""
     pp = object.__new__(Parallelport)
-    pp.alias = 'parallelport'
+    pp.alias = "parallelport"
     pp.scenario_time = 1.0
     pp.next_refresh_time = 0
     pp.paused = False
     pp.verbose = False
-    pp.automode_string = ''
+    pp.automode_string = ""
     pp._port = MagicMock()
     pp._downvalue = 0
     pp._last_trigger = 0
@@ -68,7 +69,7 @@ class TestSetTriggerValue:
         pp.set_trigger_value(42)
         assert pp._last_trigger == 42
 
-    @patch('plugins.parallelport.logger')
+    @patch("plugins.parallelport.logger")
     def test_logs_state(self, mock_logger):
         """Trigger value is logged via module-level logger."""
         pp = _make_pp()
@@ -83,15 +84,15 @@ class TestTriggerSend:
     def test_sends_new_trigger(self):
         """Non-zero trigger is sent to port and reset to 0."""
         pp = _make_pp()
-        pp.parameters['trigger'] = 42
+        pp.parameters["trigger"] = 42
         pp.compute_next_plugin_state()
         pp._port.setData.assert_called_with(42)
-        assert pp.parameters['trigger'] == 0
+        assert pp.parameters["trigger"] == 0
 
     def test_no_trigger_no_send(self):
         """Zero trigger causes no port activity."""
         pp = _make_pp()
-        pp.parameters['trigger'] = 0
+        pp.parameters["trigger"] = 0
         pp.compute_next_plugin_state()
         pp._port.setData.assert_not_called()
 
@@ -101,17 +102,17 @@ class TestTriggerQueue:
         """New trigger while one is active gets queued."""
         pp = _make_pp()
         pp._last_trigger = 10  # trigger already being sent
-        pp.parameters['trigger'] = 20
+        pp.parameters["trigger"] = 20
         pp.compute_next_plugin_state()
         assert 20 in pp._awaiting_triggers
-        assert pp.parameters['trigger'] == 0
+        assert pp.parameters["trigger"] == 0
 
     def test_dequeues_after_previous_ends(self):
         """Queued trigger is sent once previous trigger finishes."""
         pp = _make_pp()
         pp._awaiting_triggers = [55]
         pp._last_trigger = 0  # no active trigger
-        pp.parameters['trigger'] = 0
+        pp.parameters["trigger"] = 0
         pp.compute_next_plugin_state()
         pp._port.setData.assert_called_with(55)
         assert pp._awaiting_triggers == []
@@ -121,7 +122,7 @@ class TestTriggerQueue:
         pp = _make_pp()
         pp._awaiting_triggers = [10, 20, 30]
         pp._last_trigger = 0
-        pp.parameters['trigger'] = 0
+        pp.parameters["trigger"] = 0
         pp.compute_next_plugin_state()
         # Only first is sent
         pp._port.setData.assert_called_with(10)
@@ -134,7 +135,7 @@ class TestTriggerTimeout:
         pp = _make_pp()
         pp._last_trigger = 42
         pp._triggertimerms = 5  # equals delayms
-        pp.parameters['trigger'] = 0
+        pp.parameters["trigger"] = 0
         pp.compute_next_plugin_state()
         # Should have sent down value
         pp._port.setData.assert_called_with(0)
@@ -144,7 +145,7 @@ class TestTriggerTimeout:
         pp = _make_pp()
         pp._last_trigger = 42
         pp._triggertimerms = 0
-        pp.parameters['trigger'] = 0
+        pp.parameters["trigger"] = 0
         pp.compute_next_plugin_state()
         assert pp._triggertimerms == 5  # taskupdatetime
 
@@ -153,7 +154,7 @@ class TestTriggerTimeout:
         pp = _make_pp()
         pp._last_trigger = 42
         pp._triggertimerms = 2  # < delayms (5)
-        pp.parameters['trigger'] = 0
+        pp.parameters["trigger"] = 0
         pp.compute_next_plugin_state()
         # setData called only for timer increment, not for reset
         # _last_trigger should still be 42 (timer was 2, now 7, but reset happens first)
@@ -167,11 +168,11 @@ class TestFullLifecycle:
     def test_send_wait_reset(self):
         """Full cycle: send trigger → wait → auto-reset to 0."""
         pp = _make_pp()
-        pp.parameters['delayms'] = 5
-        pp.parameters['taskupdatetime'] = 5
+        pp.parameters["delayms"] = 5
+        pp.parameters["taskupdatetime"] = 5
 
         # Step 1: set a trigger
-        pp.parameters['trigger'] = 99
+        pp.parameters["trigger"] = 99
         pp.compute_next_plugin_state()
         assert pp._last_trigger == 99
         assert pp._triggertimerms == 5  # grew during this cycle

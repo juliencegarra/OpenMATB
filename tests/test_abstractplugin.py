@@ -1,7 +1,6 @@
 """Tests for plugins.abstractplugin - Base plugin class logic."""
 
-from unittest.mock import patch, MagicMock
-import pytest
+from unittest.mock import MagicMock, patch
 
 from plugins.abstractplugin import AbstractPlugin
 
@@ -9,8 +8,8 @@ from plugins.abstractplugin import AbstractPlugin
 def _make_plugin(**kwargs):
     """Create an AbstractPlugin with minimal state for testing pure logic."""
     p = object.__new__(AbstractPlugin)
-    p.label = 'Test'
-    p.alias = 'testplugin'
+    p.label = "Test"
+    p.alias = "testplugin"
     p.widgets = {}
     p.container = None
     p.logger = MagicMock()
@@ -18,7 +17,7 @@ def _make_plugin(**kwargs):
     p.can_execute_keys = False
     p.keys = set()
     p.display_title = True
-    p.automode_string = ''
+    p.automode_string = ""
     p.next_refresh_time = 0
     p.scenario_time = 0
     p.blocking = False
@@ -28,10 +27,19 @@ def _make_plugin(**kwargs):
     p.verbose = False
     p.joystick = None
     p.parameters = dict(
-        title='Test', taskplacement='topleft', taskupdatetime=100,
-        taskfeedback=dict(overdue=dict(active=False, color=(241, 100, 100, 255),
-                                       delayms=2000, blinkdurationms=1000,
-                                       _nexttoggletime=0, _is_visible=False))
+        title="Test",
+        taskplacement="topleft",
+        taskupdatetime=100,
+        taskfeedback=dict(
+            overdue=dict(
+                active=False,
+                color=(241, 100, 100, 255),
+                delayms=2000,
+                blinkdurationms=1000,
+                _nexttoggletime=0,
+                _is_visible=False,
+            )
+        ),
     )
     p.m_draw = 0
     p.__dict__.update(kwargs)
@@ -79,44 +87,44 @@ class TestGetWidgetFullname:
     def test_format(self):
         """Fullname is 'alias_widgetname'."""
         p = _make_plugin()
-        assert p.get_widget_fullname('cursor') == 'testplugin_cursor'
+        assert p.get_widget_fullname("cursor") == "testplugin_cursor"
 
     def test_with_known_alias(self):
         """Alias prefix is prepended correctly."""
         p = _make_plugin()
-        name = p.get_widget_fullname('test')
-        assert name == 'testplugin_test'
+        name = p.get_widget_fullname("test")
+        assert name == "testplugin_test"
 
 
 class TestSetParameter:
     def test_simple_parameter(self):
         """Sets a top-level parameter."""
         p = _make_plugin()
-        p.set_parameter('title', 'New Title')
-        assert p.parameters['title'] == 'New Title'
+        p.set_parameter("title", "New Title")
+        assert p.parameters["title"] == "New Title"
 
     def test_nested_parameter(self):
         """Sets a dash-separated nested parameter."""
         p = _make_plugin()
-        p.set_parameter('taskfeedback-overdue-active', True)
-        assert p.parameters['taskfeedback']['overdue']['active'] is True
+        p.set_parameter("taskfeedback-overdue-active", True)
+        assert p.parameters["taskfeedback"]["overdue"]["active"] is True
 
     def test_key_parameter_updates_keys_set(self):
         """Changing a key parameter updates the keys set."""
         p = _make_plugin()
-        p.parameters['mykey'] = 'OLD'
-        p.keys.add('OLD')
-        p.set_parameter('mykey', 'NEW')
-        assert 'NEW' in p.keys
-        assert 'OLD' not in p.keys
+        p.parameters["mykey"] = "OLD"
+        p.keys.add("OLD")
+        p.set_parameter("mykey", "NEW")
+        assert "NEW" in p.keys
+        assert "OLD" not in p.keys
 
     def test_key_parameter_same_value_stays_in_keys(self):
         """Setting a key parameter to its current value must not remove it."""
         p = _make_plugin()
-        p.parameters['mykey'] = 'NUM_1'
-        p.keys.add('NUM_1')
-        p.set_parameter('mykey', 'NUM_1')
-        assert 'NUM_1' in p.keys
+        p.parameters["mykey"] = "NUM_1"
+        p.keys.add("NUM_1")
+        p.set_parameter("mykey", "NUM_1")
+        assert "NUM_1" in p.keys
 
 
 class TestComputeNextPluginState:
@@ -157,22 +165,22 @@ class TestUpdateCanReceiveKey:
         p.update_can_receive_key()
         assert p.can_receive_keys is False
 
-    @patch('plugins.abstractplugin.REPLAY_MODE', False)
+    @patch("plugins.abstractplugin.REPLAY_MODE", False)
     def test_active_can_receive(self):
         """Active visible plugin can receive keys."""
         p = _make_plugin(paused=False, visible=True)
         p.update_can_receive_key()
         assert p.can_receive_keys is True
 
-    @patch('plugins.abstractplugin.REPLAY_MODE', False)
+    @patch("plugins.abstractplugin.REPLAY_MODE", False)
     def test_automaticsolver_blocks_receive(self):
         """Auto-solver blocks key reception."""
         p = _make_plugin(paused=False, visible=True)
-        p.parameters['automaticsolver'] = True
+        p.parameters["automaticsolver"] = True
         p.update_can_receive_key()
         assert p.can_receive_keys is False
 
-    @patch('plugins.abstractplugin.REPLAY_MODE', True)
+    @patch("plugins.abstractplugin.REPLAY_MODE", True)
     def test_replay_mode_blocks_receive(self):
         """Replay mode blocks receive, allows execute."""
         p = _make_plugin(paused=False, visible=True)
@@ -202,7 +210,7 @@ class TestPluginStates:
         """show/hide toggle the visible flag."""
         # Use fullscreen placement so hide() iterates widgets dict (empty = no-op)
         p = _make_plugin(visible=False)
-        p.parameters['taskplacement'] = 'fullscreen'
+        p.parameters["taskplacement"] = "fullscreen"
         p.show()
         assert p.visible is True
         p.hide()
@@ -211,7 +219,7 @@ class TestPluginStates:
     def test_stop_sets_states(self):
         """stop() sets alive=False, paused=True, visible=False."""
         p = _make_plugin(alive=True, paused=False, visible=True)
-        p.parameters['taskplacement'] = 'fullscreen'
+        p.parameters["taskplacement"] = "fullscreen"
         p.stop()
         assert p.alive is False
         assert p.paused is True

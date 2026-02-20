@@ -1,0 +1,43 @@
+target-version = "py39"
+line-length = 120
+builtins = ["_"]
+
+[lint]
+select = [
+    "F",    # Pyflakes
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "RUF",  # Ruff-specific rules
+]
+ignore = [
+    "E741",   # ambiguous variable names (l, b, w, h used for geometry)
+    "F403",   # wildcard imports (established pattern in widgets)
+    "F405",   # undefined names from wildcard imports
+    "UP015",  # explicit open('r') mode (readability preference)
+    "UP031",  # percent format (established pattern in codebase)
+    "SIM102", # nested if combining (readability preference)
+    "SIM105", # contextlib.suppress (readability preference)
+    "SIM108", # ternary operator (readability preference)
+    "SIM110", # any/all rewrite (readability preference)
+    "SIM115", # context manager for open files (logger keeps file handle)
+    "B905",   # zip(strict=) requires Python 3.10+
+    "B026",   # star-arg unpacking after keyword (intentional in Window.__init__)
+    "RUF001", # ambiguous unicode characters (intentional in French text)
+    "RUF002", # ambiguous unicode in docstrings (intentional)
+    "RUF003", # ambiguous unicode in comments (intentional)
+    "RUF005", # iterable unpacking instead of concatenation (style preference)
+    "RUF015", # next() instead of [0] slice (style preference)
+]
+
+[lint.per-file-ignores]
+"tests/*.py" = ["F811", "E501"]
+"tests/conftest.py" = ["F811", "E501", "F401", "E402"]
+"main.py" = ["E402"]
+"scenario_generator.py" = ["E402", "E702"]
+
+[lint.isort]
+known-first-party = ["core", "plugins"]

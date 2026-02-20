@@ -3,7 +3,7 @@
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
 from core.widgets.abstractwidget import *
-from core.container import Container
+
 
 class Performancescale(AbstractWidget):
     def __init__(self, name, container, level_min, level_max, tick_number, color):
@@ -17,26 +17,42 @@ class Performancescale(AbstractWidget):
 
         self._draw_scale()
 
-
     def _draw_scale(self):
-        tick_inter = int((self.level_max - self.level_min)/(self.tick_number-1))
+        tick_inter = int((self.level_max - self.level_min) / (self.tick_number - 1))
         tick_values = list(reversed(range(self.level_min, self.level_max + 1, tick_inter)))
 
         # Background vertex #
-        x1, y1, x2, y2 = self.container.get_x1y1x2y2()
+        _x1, _y1, _x2, _y2 = self.container.get_x1y1x2y2()
         self.border_vertices = self.vertice_border(self.container)
-        self.add_vertex('background', 4, GL_QUADS, G(self.m_draw), ('v2f/static', self.border_vertices),
-                        ('c4B/static', (C['WHITE']*4)))
+        self.add_vertex(
+            "background",
+            4,
+            GL_QUADS,
+            G(self.m_draw),
+            ("v2f/static", self.border_vertices),
+            ("c4B/static", (C["WHITE"] * 4)),
+        )
 
         # Performance vertex #
         performance_vertices = self.get_performance_vertices(self.performance_level)
-        self.add_vertex('performance', 4, GL_QUADS, G(self.m_draw+1), ('v2f/stream', performance_vertices),
-                        ('c4B/static', (self.performance_color*4)))
+        self.add_vertex(
+            "performance",
+            4,
+            GL_QUADS,
+            G(self.m_draw + 1),
+            ("v2f/stream", performance_vertices),
+            ("c4B/static", (self.performance_color * 4)),
+        )
 
         # Borders vertex #
-        self.add_vertex('borders', 8, GL_LINES, G(self.m_draw+2), ("v2f/static", self.vertice_strip(self.border_vertices)),
-                        ('c4B/static', (C['BLACK']*8)))
-
+        self.add_vertex(
+            "borders",
+            8,
+            GL_LINES,
+            G(self.m_draw + 2),
+            ("v2f/static", self.vertice_strip(self.border_vertices)),
+            ("c4B/static", (C["BLACK"] * 8)),
+        )
 
         # Ticks vertex #
         self.tick_width = self.container.w * 0.25
@@ -46,18 +62,30 @@ class Performancescale(AbstractWidget):
         self.positions = []
 
         for i in range(self.tick_number):
-            y = self.container.b + self.container.h - (self.container.h/(self.tick_number-1)) * i
+            y = self.container.b + self.container.h - (self.container.h / (self.tick_number - 1)) * i
             w = self.tick_width
             v.extend([self.container.x2 - w, y, self.container.x2, y])
 
-            self.vertex[f'tick_{tick_values[i]}_label'] = Label(str(tick_values[i]),
-                        font_size=F['SMALL'], x=x, y=y, anchor_x='left',
-                        anchor_y='center', color=C['BLACK'], group=G(self.m_draw+2), font_name=self.font_name)
+            self.vertex[f"tick_{tick_values[i]}_label"] = Label(
+                str(tick_values[i]),
+                font_size=F["SMALL"],
+                x=x,
+                y=y,
+                anchor_x="left",
+                anchor_y="center",
+                color=C["BLACK"],
+                group=G(self.m_draw + 2),
+                font_name=self.font_name,
+            )
 
-
-        self.add_vertex('ticks' , len(v)//2, GL_LINES, G(self.m_draw+2), ('v2f/static', v),
-                        ('c4B/static', (C['BLACK']*(len(v)//2))))
-
+        self.add_vertex(
+            "ticks",
+            len(v) // 2,
+            GL_LINES,
+            G(self.m_draw + 2),
+            ("v2f/static", v),
+            ("c4B/static", (C["BLACK"] * (len(v) // 2))),
+        )
 
     def _rebuild(self):
         self.hide()
@@ -65,13 +93,11 @@ class Performancescale(AbstractWidget):
         self._draw_scale()
         self.show()
 
-
     def set_tick_number(self, n):
         if n == self.tick_number:
             return
         self.tick_number = n
         self._rebuild()
-
 
     def set_level_min(self, n):
         if n == self.level_min:
@@ -79,24 +105,20 @@ class Performancescale(AbstractWidget):
         self.level_min = n
         self._rebuild()
 
-
     def set_level_max(self, n):
         if n == self.level_max:
             return
         self.level_max = n
         self._rebuild()
 
-
     def get_performance_vertices(self, level):
         v2 = list(self.border_vertices)
         v2[1] = v2[3] = self.get_y_of(level)
         return v2
 
-
     def get_y_of(self, level):
         _, y1, _, y2 = self.container.get_x1y1x2y2()
         return y2 + (y1 - y2) * (level / self.level_max)
-
 
     def set_performance_level(self, level):
         if level == self.get_performance_level():
@@ -104,21 +126,18 @@ class Performancescale(AbstractWidget):
         self.performance_level = level
         v1 = list(self.vertice_border(self.container))
         v1[1] = v1[3] = self.get_y_of(self.performance_level)
-        self.on_batch['performance'].vertices = v1
-        self.logger.record_state(self.name, 'level', self.performance_level)
-
+        self.on_batch["performance"].vertices = v1
+        self.logger.record_state(self.name, "level", self.performance_level)
 
     def get_performance_level(self):
         return self.performance_level
-
 
     def set_performance_color(self, color):
         if color == self.get_performance_color():
             return
         self.performance_color = color
-        self.on_batch['performance'].colors[:] = color * 4
-        self.logger.record_state(self.name, 'color', self.performance_color)
-
+        self.on_batch["performance"].colors[:] = color * 4
+        self.logger.record_state(self.name, "color", self.performance_color)
 
     def get_performance_color(self):
-        return self.get_vertex_color('performance')
+        return self.get_vertex_color("performance")
