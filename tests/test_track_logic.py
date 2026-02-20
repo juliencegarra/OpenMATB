@@ -5,19 +5,17 @@ get_joystick_inputs, cursor color switching) using object.__new__() to bypass
 __init__.
 """
 
-import math
-from unittest.mock import patch, MagicMock
-import pytest
+from unittest.mock import MagicMock
 
-from plugins.track import Track
 from core.constants import COLORS as C
 from core.container import Container
+from plugins.track import Track
 
 
 def _make_track(**overrides):
     """Create a Track instance bypassing __init__, with realistic state."""
     t = object.__new__(Track)
-    t.alias = 'track'
+    t.alias = "track"
     t.scenario_time = 0
     t.alive = True
     t.paused = False
@@ -30,28 +28,30 @@ def _make_track(**overrides):
     t.response_time = 0
     t.x_input = 0
     t.y_input = 0
-    t.cursor_color_key = 'cursorcolor'
+    t.cursor_color_key = "cursorcolor"
     t.gain_ratio = 0.8
 
     t.parameters = dict(
         taskupdatetime=20,
-        cursorcolor=C['BLACK'],
-        cursorcoloroutside=C['RED'],
+        cursorcolor=C["BLACK"],
+        cursorcoloroutside=C["RED"],
         automaticsolver=False,
         displayautomationstate=True,
         targetproportion=0.25,
         joystickforce=1,
         inverseaxis=False,
-        title='Tracking',
-        taskplacement='topmid',
-        taskfeedback=dict(overdue=dict(active=False, color=C['RED'],
-                                        delayms=2000, blinkdurationms=1000,
-                                        _nexttoggletime=0, _is_visible=False)),
+        title="Tracking",
+        taskplacement="topmid",
+        taskfeedback=dict(
+            overdue=dict(
+                active=False, color=C["RED"], delayms=2000, blinkdurationms=1000, _nexttoggletime=0, _is_visible=False
+            )
+        ),
     )
 
     # Set up a mock reticle widget
     t.reticle = MagicMock()
-    t.reticle.container = Container('reticle', 0, 0, 200, 200)
+    t.reticle.container = Container("reticle", 0, 0, 200, 200)
     t.reticle.cursor_relative = (0, 0)
     t.reticle.is_cursor_in_target.return_value = True
     t.reticle.return_deviation.return_value = 0.0
@@ -59,7 +59,7 @@ def _make_track(**overrides):
     t.reticle_container = t.reticle.container
     t.xgain = (t.reticle_container.w * t.gain_ratio) / 2  # 80
     t.ygain = (t.reticle_container.h * t.gain_ratio) / 2  # 80
-    t.widgets = {'track_reticle': t.reticle}
+    t.widgets = {"track_reticle": t.reticle}
     t.cursor_position = (0, 0)
 
     t.next_refresh_time = 0
@@ -201,7 +201,7 @@ class TestJoystickCompensation:
         normal_positions = [next(t_normal.cursor_path_gen) for _ in range(50)]
 
         t_inverse = _make_track()
-        t_inverse.parameters['inverseaxis'] = True
+        t_inverse.parameters["inverseaxis"] = True
         t_inverse.get_joystick_inputs(1.0, 0)
         t_inverse.cursor_path_gen = iter(t_inverse.compute_next_cursor_position())
         inverse_positions = [next(t_inverse.cursor_path_gen) for _ in range(50)]
@@ -219,7 +219,7 @@ class TestJoystickCompensation:
         pos1 = [next(t1.cursor_path_gen) for _ in range(50)]
 
         t3 = _make_track()
-        t3.parameters['joystickforce'] = 3
+        t3.parameters["joystickforce"] = 3
         t3.get_joystick_inputs(0.5, 0)
         t3.cursor_path_gen = iter(t3.compute_next_cursor_position())
         pos3 = [next(t3.cursor_path_gen) for _ in range(50)]
@@ -240,7 +240,7 @@ class TestAutoCompensation:
         manual_pos = [next(t_manual.cursor_path_gen) for _ in range(500)]
 
         t_auto = _make_track()
-        t_auto.parameters['automaticsolver'] = True
+        t_auto.parameters["automaticsolver"] = True
         t_auto.reticle.cursor_relative = (-5, -5)  # Cursor is left-down
         t_auto.cursor_path_gen = iter(t_auto.compute_next_cursor_position())
         auto_pos = [next(t_auto.cursor_path_gen) for _ in range(500)]
@@ -261,8 +261,8 @@ class TestCursorColorSwitching:
     def test_initial_color_is_cursorcolor(self):
         """Default color key is 'cursorcolor'."""
         t = _make_track()
-        assert t.cursor_color_key == 'cursorcolor'
-        assert t.parameters['cursorcolor'] == C['BLACK']
+        assert t.cursor_color_key == "cursorcolor"
+        assert t.parameters["cursorcolor"] == C["BLACK"]
 
     def test_color_changes_when_outside_target(self):
         """When cursor is outside target, color key switches to cursorcoloroutside."""
@@ -270,11 +270,10 @@ class TestCursorColorSwitching:
         t.reticle.is_cursor_in_target.return_value = False
 
         # Simulate what compute_next_plugin_state does for color
-        t.cursor_color_key = 'cursorcolor' if t.reticle.is_cursor_in_target() \
-            else 'cursorcoloroutside'
+        t.cursor_color_key = "cursorcolor" if t.reticle.is_cursor_in_target() else "cursorcoloroutside"
 
-        assert t.cursor_color_key == 'cursorcoloroutside'
-        assert t.parameters[t.cursor_color_key] == C['RED']
+        assert t.cursor_color_key == "cursorcoloroutside"
+        assert t.parameters[t.cursor_color_key] == C["RED"]
 
     def test_color_returns_to_normal_inside_target(self):
         """When cursor returns to target, color key goes back to cursorcolor."""
@@ -282,35 +281,31 @@ class TestCursorColorSwitching:
 
         # First: outside
         t.reticle.is_cursor_in_target.return_value = False
-        t.cursor_color_key = 'cursorcolor' if t.reticle.is_cursor_in_target() \
-            else 'cursorcoloroutside'
-        assert t.cursor_color_key == 'cursorcoloroutside'
+        t.cursor_color_key = "cursorcolor" if t.reticle.is_cursor_in_target() else "cursorcoloroutside"
+        assert t.cursor_color_key == "cursorcoloroutside"
 
         # Then: back inside
         t.reticle.is_cursor_in_target.return_value = True
-        t.cursor_color_key = 'cursorcolor' if t.reticle.is_cursor_in_target() \
-            else 'cursorcoloroutside'
-        assert t.cursor_color_key == 'cursorcolor'
-        assert t.parameters[t.cursor_color_key] == C['BLACK']
+        t.cursor_color_key = "cursorcolor" if t.reticle.is_cursor_in_target() else "cursorcoloroutside"
+        assert t.cursor_color_key == "cursorcolor"
+        assert t.parameters[t.cursor_color_key] == C["BLACK"]
 
     def test_full_color_cycle(self):
         """BLACK (in target) → RED (outside) → BLACK (back in target)."""
         t = _make_track()
 
         # In target → BLACK
-        assert t.parameters[t.cursor_color_key] == C['BLACK']
+        assert t.parameters[t.cursor_color_key] == C["BLACK"]
 
         # Leaves target → RED
         t.reticle.is_cursor_in_target.return_value = False
-        t.cursor_color_key = 'cursorcolor' if t.reticle.is_cursor_in_target() \
-            else 'cursorcoloroutside'
-        assert t.parameters[t.cursor_color_key] == C['RED']
+        t.cursor_color_key = "cursorcolor" if t.reticle.is_cursor_in_target() else "cursorcoloroutside"
+        assert t.parameters[t.cursor_color_key] == C["RED"]
 
         # Returns to target → BLACK
         t.reticle.is_cursor_in_target.return_value = True
-        t.cursor_color_key = 'cursorcolor' if t.reticle.is_cursor_in_target() \
-            else 'cursorcoloroutside'
-        assert t.parameters[t.cursor_color_key] == C['BLACK']
+        t.cursor_color_key = "cursorcolor" if t.reticle.is_cursor_in_target() else "cursorcoloroutside"
+        assert t.parameters[t.cursor_color_key] == C["BLACK"]
 
 
 # ──────────────────────────────────────────────
@@ -326,7 +321,7 @@ class TestResponseTimeTracking:
 
         # Simulate multiple update cycles
         for _ in range(5):
-            t.response_time += t.parameters['taskupdatetime']
+            t.response_time += t.parameters["taskupdatetime"]
 
         assert t.response_time == 100  # 5 * 20ms
 
@@ -352,5 +347,5 @@ class TestResponseTimeTracking:
         # Don't increment when in target
         initial_rt = t.response_time
         if not t.reticle.is_cursor_in_target():
-            t.response_time += t.parameters['taskupdatetime']
+            t.response_time += t.parameters["taskupdatetime"]
         assert t.response_time == initial_rt

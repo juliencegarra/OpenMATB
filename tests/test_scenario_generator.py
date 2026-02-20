@@ -8,8 +8,6 @@ triggering that initialization, we extract function definitions via AST parsing.
 import ast
 import random
 from pathlib import Path
-from unittest.mock import MagicMock
-import pytest
 
 from core.event import Event
 
@@ -18,37 +16,34 @@ from core.event import Event
 # without executing module-level initialization code
 # ──────────────────────────────────────────────
 
-_source_path = Path(__file__).parent.parent / 'scenario_generator.py'
+_source_path = Path(__file__).parent.parent / "scenario_generator.py"
 _source = _source_path.read_text()
 _tree = ast.parse(_source)
 
 # Namespace with dependencies needed by the functions
 _ns = {
-    '__builtins__': __builtins__,
-    'Event': Event,
-    'randint': random.randint,
-    'shuffle': random.shuffle,
-    'random': random.random,
-    'EVENTS_REFRACTORY_DURATION': 1,
-    'STEP_DURATION_SEC': 60,
+    "__builtins__": __builtins__,
+    "Event": Event,
+    "randint": random.randint,
+    "shuffle": random.shuffle,
+    "random": random.random,
+    "EVENTS_REFRACTORY_DURATION": 1,
+    "STEP_DURATION_SEC": 60,
 }
 
 # Compile and exec each function definition in isolation
 for _node in _tree.body:
     if isinstance(_node, ast.FunctionDef):
-        _func_code = compile(
-            ast.Module(body=[_node], type_ignores=[]),
-            str(_source_path), 'exec'
-        )
+        _func_code = compile(ast.Module(body=[_node], type_ignores=[]), str(_source_path), "exec")
         exec(_func_code, _ns)
 
 # Bind the extracted functions
-reduce = _ns['reduce']
-choices = _ns['choices']
-part_duration_sec = _ns['part_duration_sec']
-get_part_durations = _ns['get_part_durations']
-get_events_from_scenario = _ns['get_events_from_scenario']
-get_task_current_state = _ns['get_task_current_state']
+reduce = _ns["reduce"]
+choices = _ns["choices"]
+part_duration_sec = _ns["part_duration_sec"]
+get_part_durations = _ns["get_part_durations"]
+get_events_from_scenario = _ns["get_events_from_scenario"]
+get_task_current_state = _ns["get_task_current_state"]
 
 
 class TestReduce:
@@ -86,27 +81,27 @@ class TestChoices:
     def test_returns_k_items(self):
         """Returns exactly k items."""
         random.seed(42)
-        result = choices(['a', 'b', 'c'], 5, False)
+        result = choices(["a", "b", "c"], 5, False)
         assert len(result) == 5
 
     def test_all_from_source(self):
         """All items come from the source list."""
         random.seed(42)
-        result = choices(['a', 'b', 'c'], 10, False)
-        assert all(item in ['a', 'b', 'c'] for item in result)
+        result = choices(["a", "b", "c"], 10, False)
+        assert all(item in ["a", "b", "c"] for item in result)
 
     def test_wraps_around(self):
         """Wraps when k exceeds list length."""
         random.seed(42)
         # k > len(l) requires wrapping
-        result = choices(['x', 'y'], 6, False)
+        result = choices(["x", "y"], 6, False)
         assert len(result) == 6
-        assert all(item in ['x', 'y'] for item in result)
+        assert all(item in ["x", "y"] for item in result)
 
     def test_single_element(self):
         """Single-element list repeats k times."""
-        result = choices(['only'], 3, False)
-        assert result == ['only', 'only', 'only']
+        result = choices(["only"], 3, False)
+        assert result == ["only", "only", "only"]
 
 
 class TestGetPartDurations:
@@ -143,10 +138,10 @@ class TestGetEventsFromScenario:
     def test_filters_events(self):
         """Extracts only Event objects from mixed list."""
         lines = [
-            '# Comment',
-            Event(1, 0, 'sysmon', ['start']),
-            'Block n° 1',
-            Event(2, 10, 'track', ['start']),
+            "# Comment",
+            Event(1, 0, "sysmon", ["start"]),
+            "Block n° 1",
+            Event(2, 10, "track", ["start"]),
         ]
         result = get_events_from_scenario(lines)
         assert len(result) == 2
@@ -158,14 +153,14 @@ class TestGetEventsFromScenario:
 
     def test_no_events(self):
         """List with no Events returns empty."""
-        lines = ['# Comment', 'Block n° 1']
+        lines = ["# Comment", "Block n° 1"]
         assert get_events_from_scenario(lines) == []
 
     def test_all_events(self):
         """All-Event list returned as-is."""
         lines = [
-            Event(1, 0, 'sysmon', ['start']),
-            Event(2, 10, 'sysmon', ['stop']),
+            Event(1, 0, "sysmon", ["start"]),
+            Event(2, 10, "sysmon", ["stop"]),
         ]
         result = get_events_from_scenario(lines)
         assert len(result) == 2
@@ -177,49 +172,49 @@ class TestGetTaskCurrentState:
     def test_returns_last_start(self):
         """Returns the last state command for a plugin."""
         lines = [
-            Event(1, 0, 'sysmon', ['start']),
-            Event(2, 10, 'sysmon', ['pause']),
+            Event(1, 0, "sysmon", ["start"]),
+            Event(2, 10, "sysmon", ["pause"]),
         ]
-        result = get_task_current_state(lines, 'sysmon')
-        assert result == ['pause']
+        result = get_task_current_state(lines, "sysmon")
+        assert result == ["pause"]
 
     def test_returns_none_for_empty(self):
         """Empty list returns None."""
-        result = get_task_current_state([], 'sysmon')
+        result = get_task_current_state([], "sysmon")
         assert result is None
 
     def test_filters_by_plugin(self):
         """Only considers events for the given plugin."""
         lines = [
-            Event(1, 0, 'sysmon', ['start']),
-            Event(2, 10, 'track', ['start']),
-            Event(3, 20, 'track', ['pause']),
+            Event(1, 0, "sysmon", ["start"]),
+            Event(2, 10, "track", ["start"]),
+            Event(3, 20, "track", ["pause"]),
         ]
-        result = get_task_current_state(lines, 'track')
-        assert result == ['pause']
+        result = get_task_current_state(lines, "track")
+        assert result == ["pause"]
 
     def test_ignores_non_state_commands(self):
         """Ignores parameter-setting commands."""
         lines = [
-            Event(1, 0, 'sysmon', ['start']),
-            Event(2, 10, 'sysmon', ['scales-s1-failure', 'True']),
+            Event(1, 0, "sysmon", ["start"]),
+            Event(2, 10, "sysmon", ["scales-s1-failure", "True"]),
         ]
         # Only start/pause/resume are kept as state commands
-        result = get_task_current_state(lines, 'sysmon')
-        assert result == ['start']
+        result = get_task_current_state(lines, "sysmon")
+        assert result == ["start"]
 
     def test_no_matching_plugin(self):
         """Returns None when plugin is absent."""
-        lines = [Event(1, 0, 'sysmon', ['start'])]
-        result = get_task_current_state(lines, 'track')
+        lines = [Event(1, 0, "sysmon", ["start"])]
+        result = get_task_current_state(lines, "track")
         assert result is None
 
     def test_only_parameter_events(self):
         """Returns None when only parameter events exist."""
         lines = [
-            Event(1, 0, 'sysmon', ['title', 'New']),
-            Event(2, 10, 'sysmon', ['taskupdatetime', '200']),
+            Event(1, 0, "sysmon", ["title", "New"]),
+            Event(2, 10, "sysmon", ["taskupdatetime", "200"]),
         ]
         # No start/pause/resume => None
-        result = get_task_current_state(lines, 'sysmon')
+        result = get_task_current_state(lines, "sysmon")
         assert result is None

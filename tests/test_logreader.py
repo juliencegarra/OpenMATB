@@ -1,8 +1,6 @@
 """Tests for core.logreader - CSV session parsing logic."""
 
-from unittest.mock import patch, MagicMock
-from core.event import Event
-from core.logreader import LogReader, IGNORE_PLUGINS, BLOCKING_THRESHOLD
+from core.logreader import IGNORE_PLUGINS, LogReader
 
 
 def _make_logreader(**overrides):
@@ -34,35 +32,25 @@ class TestSessionEventToStr:
     def test_self_address(self):
         """'self' address formats as simple plugin;command."""
         lr = _make_logreader()
-        row = {
-            'scenario_time': '60.5',
-            'module': 'sysmon',
-            'address': 'self',
-            'value': 'start'
-        }
+        row = {"scenario_time": "60.5", "module": "sysmon", "address": "self", "value": "start"}
         result = lr.session_event_to_str(row)
-        assert 'sysmon' in result
-        assert 'start' in result
+        assert "sysmon" in result
+        assert "start" in result
         assert lr.line_n == 1
 
     def test_param_address(self):
         """Non-self address formats as plugin;address;value."""
         lr = _make_logreader()
-        row = {
-            'scenario_time': '120.0',
-            'module': 'resman',
-            'address': 'pump-1-state',
-            'value': 'on'
-        }
+        row = {"scenario_time": "120.0", "module": "resman", "address": "pump-1-state", "value": "on"}
         result = lr.session_event_to_str(row)
-        assert 'resman' in result
-        assert 'pump-1-state' in result
-        assert 'on' in result
+        assert "resman" in result
+        assert "pump-1-state" in result
+        assert "on" in result
 
     def test_line_counter_increments(self):
         """Line counter advances on each call."""
         lr = _make_logreader()
-        row = {'scenario_time': '0.0', 'module': 'test', 'address': 'self', 'value': 'start'}
+        row = {"scenario_time": "0.0", "module": "test", "address": "self", "value": "start"}
         lr.session_event_to_str(row)
         lr.session_event_to_str(row)
         assert lr.line_n == 2
@@ -70,37 +58,32 @@ class TestSessionEventToStr:
     def test_time_conversion(self):
         """Seconds are formatted as H:MM:SS."""
         lr = _make_logreader()
-        row = {
-            'scenario_time': '3723.0',
-            'module': 'test',
-            'address': 'self',
-            'value': 'stop'
-        }
+        row = {"scenario_time": "3723.0", "module": "test", "address": "self", "value": "stop"}
         result = lr.session_event_to_str(row)
         # 3723 seconds = 1:02:03
-        assert '1:02:03' in result
+        assert "1:02:03" in result
 
     def test_fractional_time_truncated(self):
         """Fractional seconds are truncated to int."""
         lr = _make_logreader()
-        row = {'scenario_time': '65.9', 'module': 'test', 'address': 'self', 'value': 'stop'}
+        row = {"scenario_time": "65.9", "module": "test", "address": "self", "value": "stop"}
         result = lr.session_event_to_str(row)
         # 65 seconds = 0:01:05
-        assert '0:01:05' in result
+        assert "0:01:05" in result
 
     def test_returns_event_line_string(self):
         """Result is a valid Event line string (H:MM:SS;plugin;command)."""
         lr = _make_logreader()
-        row = {'scenario_time': '0.0', 'module': 'sysmon', 'address': 'self', 'value': 'start'}
+        row = {"scenario_time": "0.0", "module": "sysmon", "address": "self", "value": "start"}
         result = lr.session_event_to_str(row)
-        assert result == '0:00:00;sysmon;start'
+        assert result == "0:00:00;sysmon;start"
 
     def test_param_event_line_string(self):
         """Parameterized event produces correct line string."""
         lr = _make_logreader()
-        row = {'scenario_time': '150.0', 'module': 'resman', 'address': 'pump-1-state', 'value': 'on'}
+        row = {"scenario_time": "150.0", "module": "resman", "address": "pump-1-state", "value": "on"}
         result = lr.session_event_to_str(row)
-        assert result == '0:02:30;resman;pump-1-state;on'
+        assert result == "0:02:30;resman;pump-1-state;on"
 
 
 # ── reload_session ───────────────────────────────
@@ -116,40 +99,40 @@ class TestReloadSession:
 
     def test_parses_event_rows(self, tmp_path):
         """Event rows are converted and added to contents."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         # First data row is consumed by next(reader), so we need 3 event rows
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '0.000,0.0,event,sysmon,self,start\n'
-            '0.001,30.0,event,sysmon,self,pause\n'
-            '0.002,60.0,event,resman,pump-1-state,on\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "0.000,0.0,event,sysmon,self,start\n"
+            "0.001,30.0,event,sysmon,self,pause\n"
+            "0.002,60.0,event,resman,pump-1-state,on\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()
         assert len(lr.contents) == 2
-        assert 'sysmon' in lr.contents[0]
-        assert 'pump-1-state' in lr.contents[1]
+        assert "sysmon" in lr.contents[0]
+        assert "pump-1-state" in lr.contents[1]
 
     def test_parses_keyboard_inputs(self, tmp_path):
         """Keyboard input rows go into inputs and keyboard_inputs."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '0.001,0.0,event,sysmon,self,start\n'
-            '0.002,5.0,input,keyboard,F1,press\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "0.001,0.0,event,sysmon,self,start\n"
+            "0.002,5.0,input,keyboard,F1,press\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()
         assert len(lr.keyboard_inputs) == 1
-        assert lr.keyboard_inputs[0]['address'] == 'F1'
+        assert lr.keyboard_inputs[0]["address"] == "F1"
 
     def test_parses_joystick_inputs(self, tmp_path):
         """Joystick input rows go into joystick_inputs."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '0.001,0.0,event,track,self,start\n'
-            '0.002,5.0,input,device,joystick_x,0.5\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "0.001,0.0,event,track,self,start\n"
+            "0.002,5.0,input,device,joystick_x,0.5\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()
@@ -157,14 +140,14 @@ class TestReloadSession:
 
     def test_ignores_blacklisted_plugins(self, tmp_path):
         """Events from IGNORE_PLUGINS are skipped."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         # First data row consumed by next(reader), so add dummy first row
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '0.000,0.0,event,sysmon,self,start\n'
-            '0.001,5.0,event,sysmon,self,pause\n'
-            '0.002,8.0,event,parallelport,self,start\n'
-            '0.003,10.0,event,sysmon,self,stop\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "0.000,0.0,event,sysmon,self,start\n"
+            "0.001,5.0,event,sysmon,self,pause\n"
+            "0.002,8.0,event,parallelport,self,start\n"
+            "0.003,10.0,event,sysmon,self,stop\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()
@@ -172,11 +155,11 @@ class TestReloadSession:
 
     def test_end_sec_from_last_row(self, tmp_path):
         """end_sec is set from the last row's scenario_time."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '0.001,0.0,event,sysmon,self,start\n'
-            '0.002,300.0,event,sysmon,self,stop\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "0.001,0.0,event,sysmon,self,start\n"
+            "0.002,300.0,event,sysmon,self,stop\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()
@@ -185,26 +168,26 @@ class TestReloadSession:
 
     def test_parses_state_rows(self, tmp_path):
         """State rows with matching address patterns are parsed."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         # Use proper CSV quoting for values containing commas
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '0.000,0.0,event,sysmon,self,start\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "0.000,0.0,event,sysmon,self,start\n"
             '0.002,5.0,state,communications,radio_frequency,"(110.0,)"\n'
-            '0.003,10.0,event,sysmon,self,stop\n'
+            "0.003,10.0,event,sysmon,self,stop\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()
         assert len(lr.states) == 1
-        assert lr.states[0]['value'] == (110.0,)
+        assert lr.states[0]["value"] == (110.0,)
 
     def test_session_duration_from_logtime(self, tmp_path):
         """session_duration is based on normalized logtime, not scenario_time."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '100.0,0.0,event,sysmon,self,start\n'
-            '110.0,10.0,event,sysmon,self,stop\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "100.0,0.0,event,sysmon,self,start\n"
+            "110.0,10.0,event,sysmon,self,stop\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()
@@ -212,41 +195,41 @@ class TestReloadSession:
 
     def test_normalized_logtime_in_inputs(self, tmp_path):
         """Inputs have normalized_logtime field."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '100.0,0.0,event,sysmon,self,start\n'
-            '105.0,5.0,input,keyboard,F1,press\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "100.0,0.0,event,sysmon,self,start\n"
+            "105.0,5.0,input,keyboard,F1,press\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()
-        assert lr.keyboard_inputs[0]['normalized_logtime'] == 5.0
+        assert lr.keyboard_inputs[0]["normalized_logtime"] == 5.0
 
     def test_instructions_events_not_ignored(self, tmp_path):
         """Instructions events are now included (not in IGNORE_PLUGINS)."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '0.0,0.0,event,sysmon,self,start\n'
-            '5.0,5.0,event,instructions,self,start\n'
-            '10.0,10.0,event,sysmon,self,stop\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "0.0,0.0,event,sysmon,self,start\n"
+            "5.0,5.0,event,instructions,self,start\n"
+            "10.0,10.0,event,sysmon,self,stop\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()
-        assert any('instructions' in c for c in lr.contents)
+        assert any("instructions" in c for c in lr.contents)
 
     def test_genericscales_events_not_ignored(self, tmp_path):
         """Genericscales events are now included (not in IGNORE_PLUGINS)."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '0.0,0.0,event,sysmon,self,start\n'
-            '5.0,5.0,event,genericscales,self,start\n'
-            '10.0,10.0,event,sysmon,self,stop\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "0.0,0.0,event,sysmon,self,start\n"
+            "5.0,5.0,event,genericscales,self,start\n"
+            "10.0,10.0,event,sysmon,self,stop\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()
-        assert any('genericscales' in c for c in lr.contents)
+        assert any("genericscales" in c for c in lr.contents)
 
 
 # ── IGNORE_PLUGINS constant ─────────────────────
@@ -255,20 +238,20 @@ class TestReloadSession:
 class TestIgnorePlugins:
     def test_contains_expected_plugins(self):
         """Blacklist includes hardware-only plugins."""
-        assert 'labstreaminglayer' in IGNORE_PLUGINS
-        assert 'parallelport' in IGNORE_PLUGINS
+        assert "labstreaminglayer" in IGNORE_PLUGINS
+        assert "parallelport" in IGNORE_PLUGINS
 
     def test_does_not_contain_logic_plugins(self):
         """Core logic plugins are not blacklisted."""
-        assert 'sysmon' not in IGNORE_PLUGINS
-        assert 'track' not in IGNORE_PLUGINS
-        assert 'resman' not in IGNORE_PLUGINS
-        assert 'communications' not in IGNORE_PLUGINS
+        assert "sysmon" not in IGNORE_PLUGINS
+        assert "track" not in IGNORE_PLUGINS
+        assert "resman" not in IGNORE_PLUGINS
+        assert "communications" not in IGNORE_PLUGINS
 
     def test_blocking_plugins_not_ignored(self):
         """Blocking plugins (instructions, genericscales) are no longer ignored."""
-        assert 'genericscales' not in IGNORE_PLUGINS
-        assert 'instructions' not in IGNORE_PLUGINS
+        assert "genericscales" not in IGNORE_PLUGINS
+        assert "instructions" not in IGNORE_PLUGINS
 
 
 # ── Blocking segment detection ───────────────────
@@ -277,12 +260,12 @@ class TestIgnorePlugins:
 class TestBlockingSegmentDetection:
     def test_no_segments_normal_session(self, tmp_path):
         """No blocking segments in a session without frozen scenario_time."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '0.0,0.0,event,sysmon,self,start\n'
-            '5.0,5.0,event,sysmon,self,pause\n'
-            '10.0,10.0,event,sysmon,self,stop\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "0.0,0.0,event,sysmon,self,start\n"
+            "5.0,5.0,event,sysmon,self,pause\n"
+            "10.0,10.0,event,sysmon,self,stop\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()
@@ -290,16 +273,16 @@ class TestBlockingSegmentDetection:
 
     def test_detects_blocking_segment(self, tmp_path):
         """Detects a period where scenario_time is frozen."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '0.0,0.0,event,sysmon,self,start\n'
-            '5.0,5.0,event,instructions,self,start\n'
-            '5.1,5.0,input,keyboard,SPACE,press\n'
-            '8.0,5.0,input,keyboard,SPACE,press\n'
-            '12.0,5.0,input,keyboard,SPACE,press\n'
-            '12.1,5.1,event,sysmon,self,resume\n'
-            '20.0,13.0,event,sysmon,self,stop\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "0.0,0.0,event,sysmon,self,start\n"
+            "5.0,5.0,event,instructions,self,start\n"
+            "5.1,5.0,input,keyboard,SPACE,press\n"
+            "8.0,5.0,input,keyboard,SPACE,press\n"
+            "12.0,5.0,input,keyboard,SPACE,press\n"
+            "12.1,5.1,event,sysmon,self,resume\n"
+            "20.0,13.0,event,sysmon,self,stop\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()
@@ -307,17 +290,17 @@ class TestBlockingSegmentDetection:
         lt_start, lt_end, frozen_st = lr.blocking_segments[0]
         assert frozen_st == 5.0
         assert lt_start == 5.0  # normalized logtime of first frozen row
-        assert lt_end == 12.0   # normalized logtime of last frozen row
+        assert lt_end == 12.0  # normalized logtime of last frozen row
 
     def test_ignores_short_same_time_groups(self, tmp_path):
         """Groups of same scenario_time shorter than threshold are not blocking."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '0.0,0.0,event,sysmon,self,start\n'
-            '5.0,5.0,event,sysmon,light-1-color,green\n'
-            '5.1,5.0,event,sysmon,light-2-color,red\n'
-            '10.0,10.0,event,sysmon,self,stop\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "0.0,0.0,event,sysmon,self,start\n"
+            "5.0,5.0,event,sysmon,light-1-color,green\n"
+            "5.1,5.0,event,sysmon,light-2-color,red\n"
+            "10.0,10.0,event,sysmon,self,stop\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()
@@ -325,23 +308,23 @@ class TestBlockingSegmentDetection:
 
     def test_multiple_blocking_segments(self, tmp_path):
         """Detects multiple blocking segments in one session."""
-        csv_file = tmp_path / 'session.csv'
+        csv_file = tmp_path / "session.csv"
         csv_file.write_text(
-            'logtime,scenario_time,type,module,address,value\n'
-            '0.0,0.0,event,sysmon,self,start\n'
+            "logtime,scenario_time,type,module,address,value\n"
+            "0.0,0.0,event,sysmon,self,start\n"
             # First block: scenario_time frozen at 5.0, logtime 5.0-15.0
-            '5.0,5.0,event,instructions,self,start\n'
-            '10.0,5.0,input,keyboard,SPACE,press\n'
-            '15.0,5.0,input,keyboard,SPACE,press\n'
+            "5.0,5.0,event,instructions,self,start\n"
+            "10.0,5.0,input,keyboard,SPACE,press\n"
+            "15.0,5.0,input,keyboard,SPACE,press\n"
             # Normal
-            '15.1,5.1,event,sysmon,self,resume\n'
-            '25.0,15.0,event,sysmon,self,pause\n'
+            "15.1,5.1,event,sysmon,self,resume\n"
+            "25.0,15.0,event,sysmon,self,pause\n"
             # Second block: scenario_time frozen at 15.0, logtime 25.0-35.0
-            '25.0,15.0,event,genericscales,self,start\n'
-            '30.0,15.0,input,keyboard,SPACE,press\n'
-            '35.0,15.0,input,keyboard,SPACE,press\n'
-            '35.1,15.1,event,sysmon,self,resume\n'
-            '45.0,25.0,event,sysmon,self,stop\n'
+            "25.0,15.0,event,genericscales,self,start\n"
+            "30.0,15.0,input,keyboard,SPACE,press\n"
+            "35.0,15.0,input,keyboard,SPACE,press\n"
+            "35.1,15.1,event,sysmon,self,resume\n"
+            "45.0,25.0,event,sysmon,self,stop\n"
         )
         lr = _make_logreader(session_file_path=csv_file)
         lr.reload_session()

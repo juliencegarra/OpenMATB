@@ -1,6 +1,7 @@
 """Tests for core.replayscheduler - Replay scheduler logic."""
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 import pytest
 
 from core.replayscheduler import ReplayScheduler
@@ -31,27 +32,27 @@ class TestGetTimeHmsStr:
     def test_zero(self):
         """0 seconds formats as 00:00:00.000."""
         rs = _make_replay(replay_time=0)
-        assert rs.get_time_hms_str() == '00:00:00.000'
+        assert rs.get_time_hms_str() == "00:00:00.000"
 
     def test_one_minute(self):
         """60 seconds formats as 00:01:00.000."""
         rs = _make_replay(replay_time=60)
-        assert rs.get_time_hms_str() == '00:01:00.000'
+        assert rs.get_time_hms_str() == "00:01:00.000"
 
     def test_one_hour(self):
         """3600 seconds formats as 01:00:00.000."""
         rs = _make_replay(replay_time=3600)
-        assert rs.get_time_hms_str() == '01:00:00.000'
+        assert rs.get_time_hms_str() == "01:00:00.000"
 
     def test_fractional_seconds(self):
         """Fractional seconds appear in millisecond part."""
         rs = _make_replay(replay_time=65.5)
-        assert rs.get_time_hms_str() == '00:01:05.500'
+        assert rs.get_time_hms_str() == "00:01:05.500"
 
     def test_complex_time(self):
         """Mixed hours/minutes/seconds/ms format correctly."""
         rs = _make_replay(replay_time=3723.5)
-        assert rs.get_time_hms_str() == '01:02:03.500'
+        assert rs.get_time_hms_str() == "01:02:03.500"
 
 
 class TestPausePlayback:
@@ -92,14 +93,14 @@ class TestCheckPluginsAlive:
         """All alive plugins returns True."""
         p1 = MagicMock(alive=True)
         p2 = MagicMock(alive=True)
-        rs = _make_replay(plugins={'a': p1, 'b': p2})
+        rs = _make_replay(plugins={"a": p1, "b": p2})
         assert rs.check_plugins_alive() is True
 
     def test_one_dead(self):
         """One dead plugin returns False."""
         p1 = MagicMock(alive=True)
         p2 = MagicMock(alive=False)
-        rs = _make_replay(plugins={'a': p1, 'b': p2})
+        rs = _make_replay(plugins={"a": p1, "b": p2})
         assert rs.check_plugins_alive() is False
 
     def test_empty_plugins(self):
@@ -135,25 +136,25 @@ class TestPauseIfEndReached:
 
 
 class TestOnKeyPressReplay:
-    @patch('core.replayscheduler.Window')
+    @patch("core.replayscheduler.Window")
     def test_escape_calls_exit(self, mock_win):
         """Escape triggers exit prompt."""
         rs = _make_replay()
-        rs.on_key_press_replay(0xff1b, 0)  # ESCAPE
+        rs.on_key_press_replay(0xFF1B, 0)  # ESCAPE
         mock_win.MainWindow.exit_prompt.assert_called_once()
 
     def test_space_toggles_playpause(self):
         """Space toggles play/pause."""
         rs = _make_replay(is_paused=True, replay_time=0)
         rs.logreader.session_duration = 300
-        rs.on_key_press_replay(0xff20, 0)  # SPACE
+        rs.on_key_press_replay(0xFF20, 0)  # SPACE
         assert rs.is_paused is False
 
     def test_home_resets_to_start(self):
         """Home key seeks to time 0."""
         rs = _make_replay()
         rs.set_target_time = MagicMock()
-        rs.on_key_press_replay(0xff50, 0)  # HOME
+        rs.on_key_press_replay(0xFF50, 0)  # HOME
         rs.set_target_time.assert_called_once_with(0)
 
     def test_end_jumps_to_end(self):
@@ -161,38 +162,38 @@ class TestOnKeyPressReplay:
         rs = _make_replay()
         rs.logreader.session_duration = 300
         rs.set_target_time = MagicMock()
-        rs.on_key_press_replay(0xff57, 0)  # END
+        rs.on_key_press_replay(0xFF57, 0)  # END
         rs.set_target_time.assert_called_once_with(300)
 
     def test_left_steps_back(self):
         """Left arrow steps back 0.1s based on replay_time."""
         rs = _make_replay(replay_time=10.0)
         rs.set_target_time = MagicMock()
-        rs.on_key_press_replay(0xff51, 0)  # LEFT
+        rs.on_key_press_replay(0xFF51, 0)  # LEFT
         rs.set_target_time.assert_called_once_with(pytest.approx(9.9))
 
     def test_right_steps_forward(self):
         """Right arrow steps forward 0.1s based on replay_time."""
         rs = _make_replay(replay_time=10.0)
         rs.set_target_time = MagicMock()
-        rs.on_key_press_replay(0xff53, 0)  # RIGHT
+        rs.on_key_press_replay(0xFF53, 0)  # RIGHT
         rs.set_target_time.assert_called_once_with(pytest.approx(10.1))
 
     def test_up_increases_speed(self):
         """Up arrow increases playback speed."""
         rs = _make_replay()
-        rs.on_key_press_replay(0xff52, 0)  # UP
+        rs.on_key_press_replay(0xFF52, 0)  # UP
         rs.clock.increase_speed.assert_called_once()
 
     def test_down_decreases_speed(self):
         """Down arrow decreases playback speed."""
         rs = _make_replay()
-        rs.on_key_press_replay(0xff54, 0)  # DOWN
+        rs.on_key_press_replay(0xFF54, 0)  # DOWN
         rs.clock.decrease_speed.assert_called_once()
 
 
 class TestCheckIfMustExit:
-    @patch('core.replayscheduler.Window')
+    @patch("core.replayscheduler.Window")
     def test_exits_when_window_dead(self, mock_win):
         """Calls exit when window is no longer alive."""
         rs = _make_replay()
@@ -201,7 +202,7 @@ class TestCheckIfMustExit:
         rs.check_if_must_exit()
         rs.exit.assert_called_once()
 
-    @patch('core.replayscheduler.Window')
+    @patch("core.replayscheduler.Window")
     def test_no_exit_when_alive(self, mock_win):
         """Does not exit while window is alive."""
         rs = _make_replay()
@@ -224,6 +225,6 @@ class TestUpdateTimers:
         """update_timers updates logger with derived scenario_time."""
         rs = _make_replay(replay_time=7.0)
         rs.logreader.replay_to_scenario_time.return_value = 3.0
-        with patch('core.replayscheduler.logger') as mock_logger:
+        with patch("core.replayscheduler.logger") as mock_logger:
             rs.update_timers(0.1)
             mock_logger.set_scenario_time.assert_called_once_with(3.0)

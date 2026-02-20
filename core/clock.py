@@ -4,10 +4,12 @@
 
 import pyglet.clock
 
+
 class Clock(pyglet.clock.Clock):
     """
     A special implementation of the pyglet Clock allowing speed changes.
     """
+
     _time: float = 0.0
     _speed: int = 1
 
@@ -20,41 +22,34 @@ class Clock(pyglet.clock.Clock):
         # necessary variable as an unschedule then schedule seems to produce unexpected crashes
         self.isFastForward = False
 
-
     def advance(self, dt: float):
         if self.isFastForward:
             return
 
-        for i in range(0, self._speed):
+        for _i in range(0, self._speed):
             self.set_time(self._time + dt)
 
             self.tick()
 
-
     def get_time(self) -> float:
         return self._time
-
 
     def increase_speed(self):
         self._speed += 1
         if self._speed > 10:
             self._speed = 10
 
-
     def decrease_speed(self):
         self._speed -= 1
         if self._speed < 1:
             self._speed = 1
 
-
     def reset_speed(self):
         self._speed = 1
-
 
     # set time in scenario_time for replay
     def set_time(self, time: float):
         self._time = time
-
 
     def fastforward_time(self, target_time: float):
         # loop on advance() like method to tick the replayscheduler/scheduler update()

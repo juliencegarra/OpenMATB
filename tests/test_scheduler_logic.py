@@ -1,7 +1,6 @@
 """Tests for core.scheduler - Logic only (no event loop)."""
 
-from unittest.mock import patch, MagicMock
-import pytest
+from unittest.mock import MagicMock
 
 
 class TestGetPluginsByStates:
@@ -19,9 +18,9 @@ class TestGetPluginsByStates:
 
         p1 = MagicMock(alive=True, paused=False)
         p2 = MagicMock(alive=False, paused=False)
-        sched.plugins = {'p1': p1, 'p2': p2}
+        sched.plugins = {"p1": p1, "p2": p2}
 
-        result = sched.get_plugins_by_states([('alive', True)])
+        result = sched.get_plugins_by_states([("alive", True)])
         assert p1 in result
         assert p2 not in result
 
@@ -31,9 +30,9 @@ class TestGetPluginsByStates:
 
         p1 = MagicMock(alive=True, blocking=True, paused=False)
         p2 = MagicMock(alive=True, blocking=False, paused=False)
-        sched.plugins = {'p1': p1, 'p2': p2}
+        sched.plugins = {"p1": p1, "p2": p2}
 
-        result = sched.get_plugins_by_states([('blocking', True), ('paused', False)])
+        result = sched.get_plugins_by_states([("blocking", True), ("paused", False)])
         assert p1 in result
         assert p2 not in result
 
@@ -41,13 +40,13 @@ class TestGetPluginsByStates:
         """Empty plugin dict returns empty list."""
         sched = self._make_scheduler_methods()
         sched.plugins = {}
-        result = sched.get_plugins_by_states([('alive', True)])
+        result = sched.get_plugins_by_states([("alive", True)])
         assert result == []
 
 
 class TestScenarioTimePause:
     def _make_scheduler(self):
-        sched = object.__new__(__import__('core.scheduler', fromlist=['Scheduler']).Scheduler)
+        sched = object.__new__(__import__("core.scheduler", fromlist=["Scheduler"]).Scheduler)
         sched.pause_scenario_time = False
         return sched
 
@@ -80,7 +79,7 @@ class TestScenarioTimePause:
 
 class TestUnqueueEvent:
     def _make_scheduler(self):
-        sched = object.__new__(__import__('core.scheduler', fromlist=['Scheduler']).Scheduler)
+        sched = object.__new__(__import__("core.scheduler", fromlist=["Scheduler"]).Scheduler)
         return sched
 
     def test_empty_queue(self):
@@ -92,8 +91,8 @@ class TestUnqueueEvent:
     def test_dequeue_order(self):
         """Events are dequeued in FIFO order."""
         sched = self._make_scheduler()
-        e1 = MagicMock(name='e1')
-        e2 = MagicMock(name='e2')
+        e1 = MagicMock(name="e1")
+        e2 = MagicMock(name="e2")
         sched.events_queue = [e1, e2]
 
         result = sched.unqueue_event()
@@ -104,7 +103,7 @@ class TestUnqueueEvent:
 
 class TestActivePluginHelpers:
     def _make_scheduler(self):
-        sched = object.__new__(__import__('core.scheduler', fromlist=['Scheduler']).Scheduler)
+        sched = object.__new__(__import__("core.scheduler", fromlist=["Scheduler"]).Scheduler)
         return sched
 
     def test_get_active_plugins(self):
@@ -112,7 +111,7 @@ class TestActivePluginHelpers:
         sched = self._make_scheduler()
         p1 = MagicMock(alive=True)
         p2 = MagicMock(alive=False)
-        sched.plugins = {'p1': p1, 'p2': p2}
+        sched.plugins = {"p1": p1, "p2": p2}
         result = sched.get_active_plugins()
         assert len(result) == 1
         assert p1 in result
@@ -122,7 +121,7 @@ class TestActivePluginHelpers:
         sched = self._make_scheduler()
         p1 = MagicMock(blocking=True, paused=False)
         p2 = MagicMock(blocking=False, paused=False)
-        sched.plugins = {'p1': p1, 'p2': p2}
+        sched.plugins = {"p1": p1, "p2": p2}
         result = sched.get_active_blocking_plugin()
         assert result == p1
 
@@ -130,7 +129,7 @@ class TestActivePluginHelpers:
         """Returns None when no blocking plugin."""
         sched = self._make_scheduler()
         p1 = MagicMock(blocking=False, paused=False)
-        sched.plugins = {'p1': p1}
+        sched.plugins = {"p1": p1}
         result = sched.get_active_blocking_plugin()
         assert result is None
 
@@ -139,7 +138,7 @@ class TestActivePluginHelpers:
         sched = self._make_scheduler()
         p1 = MagicMock(blocking=True, paused=False)
         p2 = MagicMock(blocking=False, paused=False)
-        sched.plugins = {'p1': p1, 'p2': p2}
+        sched.plugins = {"p1": p1, "p2": p2}
         result = sched.get_active_non_blocking_plugins()
         assert p2 in result
         assert p1 not in result

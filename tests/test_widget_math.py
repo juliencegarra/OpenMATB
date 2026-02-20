@@ -1,6 +1,7 @@
 """Tests for widget math functions - geometry without rendering."""
 
 import math
+
 from core.widgets.abstractwidget import AbstractWidget
 
 
@@ -58,7 +59,7 @@ class TestGetTriangleCentroid:
         vertice = (0, 0, 10, 0, 5, 10)
         cx, cy = w.get_triangle_centroid(vertice)
         assert cx == 5.0
-        assert cy == round(10/3, 2)
+        assert cy == round(10 / 3, 2)
 
     def test_right_triangle(self):
         """Centroid of right triangle at (2, 2)."""
@@ -152,7 +153,8 @@ class TestVerticeBorder:
         """Returns 4 corners as (x1,y1, x2,y1, x2,y2, x1,y2)."""
         w = _make_bare_widget()
         from core.container import Container
-        c = Container('test', 10, 20, 100, 50)
+
+        c = Container("test", 10, 20, 100, 50)
         result = w.vertice_border(c)
         # Should return x1, y1, x2, y1, x2, y2, x1, y2
         assert result == (10, 70, 110, 70, 110, 20, 10, 20)

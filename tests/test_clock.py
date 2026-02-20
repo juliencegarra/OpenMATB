@@ -1,21 +1,21 @@
 """Tests for core.clock - Time management logic."""
 
-from unittest.mock import patch, MagicMock
-
 
 class TestClockSpeed:
     def _make_clock(self):
         """Create a Clock-like object for testing speed logic."""
+
         # Clock inherits from pyglet.clock.Clock (a MagicMock),
         # so we test the methods directly on a simple namespace
         class FakeClock:
             _time = 0.0
             _speed = 1
             isFastForward = False
-            name = 'test'
+            name = "test"
 
         # Bind Clock methods to our fake
         from core.clock import Clock
+
         fc = FakeClock()
         fc.increase_speed = Clock.increase_speed.__get__(fc)
         fc.decrease_speed = Clock.decrease_speed.__get__(fc)
@@ -69,9 +69,10 @@ class TestClockTime:
             _time = 0.0
             _speed = 1
             isFastForward = False
-            name = 'test'
+            name = "test"
 
         from core.clock import Clock
+
         fc = FakeClock()
         fc.set_time = Clock.set_time.__get__(fc)
         fc.get_time = Clock.get_time.__get__(fc)

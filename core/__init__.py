@@ -2,14 +2,13 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
-from .constants import FONT_SIZES, COLORS, Group
-
-from .logreader import LogReader
-from .logger import logger
-from .error import errors
-from .window import Window
-from .scenario import Scenario
-from .scheduler import Scheduler
-from .replayscheduler import ReplayScheduler
-from .clock import Clock
-from .modaldialog import ModalDialog
+from .clock import Clock  # noqa: F401
+from .constants import COLORS, FONT_SIZES, Group  # noqa: F401
+from .error import errors  # noqa: F401
+from .logger import logger  # noqa: F401
+from .logreader import LogReader  # noqa: F401
+from .modaldialog import ModalDialog  # noqa: F401
+from .replayscheduler import ReplayScheduler  # noqa: F401
+from .scenario import Scenario  # noqa: F401
+from .scheduler import Scheduler  # noqa: F401
+from .window import Window  # noqa: F401
