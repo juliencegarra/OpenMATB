@@ -216,14 +216,21 @@ class Communications(AbstractPlugin):
             + ["empty"]
         )
 
-        group: Any = SourceGroup()
+        sources: list[Any] = []
         for f in list_of_sounds:
             wav_path = self.sound_path.joinpath(f"{f}.wav")
             try:
                 source: Any = load(str(wav_path), streaming=False)
-                group.add(source)
+                sources.append(source)
             except Exception:
                 self.logger.log_manual_entry(f"Audio file missing or unreadable: {wav_path}")
+
+        if not sources:
+            return SourceGroup(None, None)
+
+        group: Any = SourceGroup(sources[0].audio_format, sources[0].video_format)
+        for source in sources:
+            group.add(source)
         return group
 
     def prompt_for_a_new_target(self, destination: str, radio_name: str) -> None:

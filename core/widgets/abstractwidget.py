@@ -10,19 +10,12 @@ from typing import Any
 from pyglet import sprite
 from pyglet.gl import (  # noqa: F401
     GL_BLEND,
-    GL_DONT_CARE,
-    GL_LINE_LOOP,
-    GL_LINE_SMOOTH,
-    GL_LINE_SMOOTH_HINT,
     GL_LINES,
     GL_ONE_MINUS_SRC_ALPHA,
-    GL_POLYGON,
-    GL_QUADS,
     GL_SRC_ALPHA,
     GL_TRIANGLES,
     glBlendFunc,
     glEnable,
-    glHint,
     glLineWidth,
 )
 from pyglet.text import HTMLLabel, Label
@@ -33,8 +26,11 @@ from core.constants import FONT_SIZES as F  # noqa: F401
 from core.constants import Group as G
 from core.container import Container
 from core.logger import Logger, get_logger
+from core.rendering import (get_program, get_group, quad_indices, polygon_indices,
+                             line_loop_to_lines, expand_colors_for_line_loop)
 from core.utils import get_conf_value
 from core.window import Window
+
 
 
 class AbstractWidget:
@@ -85,6 +81,26 @@ class AbstractWidget:
         else:
             self.visible = False
 
+    def add_quad(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
+        """Register a quad (4 vertices, 2 triangles via indexing)."""
+        self.vertex[name] = ('quad', group, positions, colors)
+
+    def add_polygon(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
+        """Register a convex polygon (fan triangulation via indexing)."""
+        self.vertex[name] = ('polygon', group, positions, colors)
+
+    def add_lines(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
+        """Register GL_LINES segments."""
+        self.vertex[name] = ('lines', group, positions, colors)
+
+    def add_triangles(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
+        """Register GL_TRIANGLES."""
+        self.vertex[name] = ('triangles', group, positions, colors)
+
+    def add_line_loop(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
+        """Register a line loop (converted to GL_LINES on batch assignment)."""
+        self.vertex[name] = ('line_loop', group, positions, colors)
+
     def show_aoi_highlight(self) -> None:
         """Add some AOI vertices (frame and text)"""
         if self.container is None:
@@ -92,39 +108,66 @@ class AbstractWidget:
 
         if self.highlight_aoi is True:
             self.border_vertice: tuple[float, ...] = self.vertice_border(self.container)
-            self.add_vertex(
-                "highlight",
-                8,
-                GL_LINES,
-                G(self.m_draw + 8),
-                ("v2f/static", self.vertice_strip(self.border_vertice)),
-                ("c4B/dynamic", (C["RED"] * 8)),
-            )
+            self.add_lines('highlight', G(self.m_draw + 8),
+                           self.vertice_strip(self.border_vertice), C['RED'] * 8)
 
             self.vertex[self.name] = Label(
                 self.name, x=self.container.x1 + 5, y=self.container.y1 - 15, color=C["RED"], group=G(self.m_draw + 8)
             )
 
     def assign_vertices_to_batch(self) -> None:
-        for name, v_tuple in self.vertex.items():
-            if isinstance(v_tuple, (Label, HTMLLabel, sprite.Sprite)):
-                v_tuple.batch = Window.MainWindow.batch
+        program = get_program()
+        batch = Window.MainWindow.batch
+        for name, v_def in self.vertex.items():
+            if isinstance(v_def, (Label, HTMLLabel, sprite.Sprite)):
+                v_def.batch = batch
             else:
-                self.on_batch[name] = Window.MainWindow.batch.add(*v_tuple)
+                kind, group, positions, colors = v_def
+                sg = get_group(order=group.order, parent=group.parent)
+                count = len(positions) // 2
+
+                if kind == 'quad':
+                    indices = quad_indices(count)
+                    self.on_batch[name] = program.vertex_list_indexed(
+                        count, GL_TRIANGLES, indices, batch=batch, group=sg,
+                        position=('f', positions), colors=('Bn', colors))
+                elif kind == 'polygon':
+                    indices = polygon_indices(count)
+                    self.on_batch[name] = program.vertex_list_indexed(
+                        count, GL_TRIANGLES, indices, batch=batch, group=sg,
+                        position=('f', positions), colors=('Bn', colors))
+                elif kind == 'line_loop':
+                    new_pos, new_count = line_loop_to_lines(positions)
+                    new_colors = expand_colors_for_line_loop(colors, count)
+                    self.on_batch[name] = program.vertex_list(
+                        new_count, GL_LINES, batch=batch, group=sg,
+                        position=('f', new_pos), colors=('Bn', new_colors))
+                elif kind in ('lines', 'triangles'):
+                    gl_mode = GL_TRIANGLES if kind == 'triangles' else GL_LINES
+                    self.on_batch[name] = program.vertex_list(
+                        count, gl_mode, batch=batch, group=sg,
+                        position=('f', positions), colors=('Bn', colors))
 
     def empty_batch(self) -> None:
-        for name in list(self.vertex.keys()):  # TODO: Complete and use show_vertex
+        for name in list(self.vertex.keys()):
             if isinstance(self.vertex[name], (Label, HTMLLabel)):
                 self.vertex[name].batch = None
             elif name in self.on_batch:
                 self.on_batch[name].delete()
                 del self.on_batch[name]
 
-        # self.vertex = dict()
         self.on_batch = dict()
 
-    def add_vertex(self, name: str, *args: Any) -> None:
-        self.vertex[name] = args
+    def resize_quad(self, name: str, new_count: int) -> None:
+        """Resize an indexed quad vertex list, recalculating indices."""
+        vlist = self.on_batch[name]
+        new_indices = quad_indices(new_count)
+        vlist.resize(new_count, len(new_indices))
+        vlist.indices[:] = new_indices
+
+    def get_positions(self, name: str) -> list[float]:
+        """Read vertex positions back as a list."""
+        return list(self.on_batch[name].position[:])
 
     def get_vertex_color(self, vertex_name: str) -> tuple[int, int, int, int]:
         return tuple(self.on_batch[vertex_name].colors[:][0:4])

@@ -41,7 +41,6 @@ class Simpletext(AbstractWidget):
             group=G(draw_order),
             multiline=True,
             width=wrap_width_px,
-            bold=bold,
             font_name=self.font_name,
         )
 

@@ -7,13 +7,14 @@ from __future__ import annotations
 import math
 from typing import Any, Callable
 
-from pyglet.gl import *
+from pyglet.gl import GL_BLEND, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, glBlendFunc, glEnable, glLineWidth
 from pyglet.text import Label
 
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.constants import Group as G
 from core.container import Container
+from core.rendering import line_loop_to_lines
 from core.widgets import AbstractWidget
 from core.window import Window
 
@@ -52,11 +53,8 @@ class Slider(AbstractWidget):
         self.selected: bool = False
         self.on_mouse_focus: Callable[[int], Any] | None = on_mouse_focus
 
-        # Enhance smoothing mode
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glEnable(GL_BLEND)
-        glEnable(GL_LINE_SMOOTH)
-        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
         glLineWidth(3)
 
         self.containers: dict[str, Container] = dict()
@@ -128,27 +126,13 @@ class Slider(AbstractWidget):
         self.containers["allgroove"] = self.containers["slide"].get_reduced(slider_thumb_w, slider_groove_h)
 
         v1: tuple[float, ...] = self.vertice_border(self.containers["thumb"])
-        self.add_vertex(
-            "thumb", 4, GL_QUADS, G(self.draw_order + self.rank), ("v2f/static", v1), ("c4B/stream", (C["GREY"] * 4))
-        )
+        self.add_quad('thumb', G(self.draw_order + self.rank), v1, C['GREY'] * 4)
 
         v2: list[float] = self.get_groove_vertices()
-        self.add_vertex(
-            "groove_b",
-            len(v2) // 2,
-            GL_POLYGON,
-            G(self.draw_order + self.rank),
-            ("v2f/stream", v2),
-            ("c4B/stream", (C["BLUE"] * (len(v2) // 2))),
-        )
-        self.add_vertex(
-            "groove",
-            len(v2) // 2,
-            GL_LINE_LOOP,
-            G(self.draw_order + self.rank),
-            ("v2f/stream", v2),
-            ("c4B/stream", (C["BLACK"] * (len(v2) // 2))),
-        )
+        self.add_polygon('groove_b', G(self.draw_order + self.rank),
+                         v2, C['BLUE'] * (len(v2) // 2))
+        self.add_line_loop('groove', G(self.draw_order + self.rank),
+                           v2, C['BLACK'] * (len(v2) // 2))
 
     def get_groove_vertices(self) -> list[float]:
         groove_radius: float = self.containers["allgroove"].h
@@ -158,11 +142,12 @@ class Slider(AbstractWidget):
         return self.vertice_circle([x, y], groove_radius)
 
     def set_groove_position(self) -> None:
-        if self.get_groove_vertices() == self.on_batch["groove"].vertices:
+        new_verts: list[float] = self.get_groove_vertices()
+        if new_verts == self.get_positions('groove_b'):
             return
-
-        self.on_batch["groove"].vertices = self.get_groove_vertices()
-        self.on_batch["groove_b"].vertices = self.get_groove_vertices()
+        self.on_batch['groove_b'].position[:] = new_verts
+        new_line_pos, _ = line_loop_to_lines(new_verts)
+        self.on_batch['groove'].position[:] = new_line_pos
 
     def set_value_label(self) -> None:
         if not self.showvalue:
