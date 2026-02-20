@@ -263,7 +263,7 @@ class TestSetSelected:
         mock_vl = MagicMock()
         s.on_batch["thumb"] = mock_vl
         s.set_selected(True)
-        mock_vl.colors.__setattr__  # just check it was assigned
+        assert mock_vl.colors == C["BLUE"] * 4
         assert s.selected is True
 
     def test_set_selected_no_error_when_not_on_batch(self, interactive_slider):
