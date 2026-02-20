@@ -1,0 +1,75 @@
+name: Build Windows Installer
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install nuitka ordered-set
+          pip install pyglet==1.5.26 rstr==3.1.0
+          pip install pyparallel==0.2.2 || echo "::warning::pyparallel not available, skipping"
+          pip install pylsl==1.16.1 || echo "::warning::pylsl not available, skipping"
+
+      - name: Read version
+        id: version
+        shell: bash
+        run: echo "VERSION=$(tr -d '[:space:]' < VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Build with Nuitka
+        shell: bash
+        run: |
+          python -m nuitka \
+            --standalone \
+            --assume-yes-for-downloads \
+            --windows-console-mode=disable \
+            --output-filename=OpenMATB.exe \
+            --include-data-dir=./includes=includes \
+            --include-data-dir=./locales=locales \
+            --include-data-file=config.ini=config.ini \
+            --include-data-file=LICENSE=LICENSE \
+            --include-data-file=README.md=README.md \
+            --remove-output \
+            main.py
+
+      - name: Build installer with Inno Setup
+        shell: cmd
+        run: >
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          /DMyAppVersion="${{ steps.version.outputs.VERSION }}"
+          installer\openmatb.iss
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenMATB-Installer-${{ steps.version.outputs.VERSION }}
+          path: installer/Output/OpenMATB-Setup-*.exe
+
+      - name: Upload portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenMATB-Portable-${{ steps.version.outputs.VERSION }}
+          path: main.dist/
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installer/Output/OpenMATB-Setup-*.exe
+          generate_release_notes: true
