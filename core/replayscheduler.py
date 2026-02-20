@@ -292,8 +292,36 @@ class ReplayScheduler(Scheduler):
             self.resume_playback()
             self.clock.fastforward_time(forward_time)
 
+        # After seeking: clean up blocking plugins/dialogs past their segment
+        self._cleanup_after_seek()
+
         self.slider.set_groove_position()
         self.pause_playback()
+
+    def _cleanup_after_seek(self) -> None:
+        """Clean up stale blocking state after a seek (fastforward).
+
+        Handles two cases:
+        1. A BlockingPlugin (instructions, genericscales) still active after
+           replay_time has moved past its blocking segment.
+        2. A ModalDialog (system;pause) still showing after a seek.
+        """
+        # Case 1: stale blocking plugin
+        active_blocking: Any = self.get_active_blocking_plugin()
+        if active_blocking is not None:
+            if not self.logreader.is_in_blocking_segment(self.replay_time):
+                active_blocking.stop()
+                if self.is_scenario_time_paused():
+                    if len(self.paused_plugins) > 0:
+                        self.execute_plugins_methods(
+                            self.paused_plugins, methods=["show", "resume"]
+                        )
+                        self.paused_plugins = list()
+                    self.resume_scenario()
+
+        # Case 2: stale modal dialog (system;pause)
+        if Window.MainWindow.modal_dialog is not None:
+            Window.MainWindow.modal_dialog.on_delete()
 
     def restart_scenario(self) -> None:
         # we need to suspend the clock as it schedules old events
