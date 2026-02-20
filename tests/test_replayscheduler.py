@@ -225,6 +225,6 @@ class TestUpdateTimers:
         """update_timers updates logger with derived scenario_time."""
         rs = _make_replay(replay_time=7.0)
         rs.logreader.replay_to_scenario_time.return_value = 3.0
-        with patch("core.replayscheduler.logger") as mock_logger:
+        with patch("core.replayscheduler.get_logger") as mock_get_logger:
             rs.update_timers(0.1)
-            mock_logger.set_scenario_time.assert_called_once_with(3.0)
+            mock_get_logger.return_value.set_scenario_time.assert_called_once_with(3.0)

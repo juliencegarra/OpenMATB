@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from core.constants import PATHS as P
-from core.error import errors
+from core.error import get_errors
 from core.event import Event
 
 # Some plugins must not be replayed for now
@@ -44,9 +44,9 @@ class LogReader:
             session_file_list: list[Path] = [f for f in P["SESSIONS"].glob(f"**/{replay_session_id}_*.csv")]
 
             if len(session_file_list) == 0:
-                errors.add_error(_("The desired session file (ID=%s) does not exist") % replay_session_id, fatal=True)
+                get_errors().add_error(_("The desired session file (ID=%s) does not exist") % replay_session_id, fatal=True)
             elif len(session_file_list) > 1:
-                errors.add_error(
+                get_errors().add_error(
                     _("Multiple session files match the desired session ID (%s)") % replay_session_id, fatal=True
                 )
             elif len(session_file_list) == 1:

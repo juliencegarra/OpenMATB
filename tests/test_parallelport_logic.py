@@ -69,12 +69,12 @@ class TestSetTriggerValue:
         pp.set_trigger_value(42)
         assert pp._last_trigger == 42
 
-    @patch("plugins.parallelport.logger")
-    def test_logs_state(self, mock_logger):
-        """Trigger value is logged via module-level logger."""
+    @patch("plugins.parallelport.get_logger")
+    def test_logs_state(self, mock_get_logger):
+        """Trigger value is logged via get_logger()."""
         pp = _make_pp()
         pp.set_trigger_value(10)
-        mock_logger.record_state.assert_called_once()
+        mock_get_logger.return_value.record_state.assert_called_once()
 
 
 # ── compute_next_plugin_state — trigger lifecycle ─

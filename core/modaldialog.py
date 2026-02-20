@@ -13,7 +13,7 @@ from pyglet.window import key as winkey
 from core.constants import COLORS as C
 from core.constants import Group as G
 from core.container import Container
-from core.logger import logger
+from core.logger import get_logger
 from core.utils import get_conf_value
 
 
@@ -128,7 +128,7 @@ class ModalDialog:
         for v in self.vertices:
             if v is not None:
                 v.delete()
-        logger.log_manual_entry(f"{self.name} end", key="dialog")
+        get_logger().log_manual_entry(f"{self.name} end", key="dialog")
         self.win.modal_dialog = None
 
     def on_exit(self) -> None:

@@ -74,7 +74,7 @@ class TestSetSeed:
 
 
 class TestRandomFunctions:
-    @patch("core.pseudorandom.logger")
+    @patch("core.pseudorandom.get_logger")
     def test_choice_returns_from_list(self, mock_logger):
         """Returned item belongs to the source list."""
         from core.pseudorandom import choice
@@ -83,7 +83,7 @@ class TestRandomFunctions:
         result = choice(items, "communications", 100)
         assert result in items
 
-    @patch("core.pseudorandom.logger")
+    @patch("core.pseudorandom.get_logger")
     def test_choice_deterministic(self, mock_logger):
         """Same inputs yield same choice."""
         from core.pseudorandom import choice
@@ -93,7 +93,7 @@ class TestRandomFunctions:
         r2 = choice(items, "communications", 100)
         assert r1 == r2
 
-    @patch("core.pseudorandom.logger")
+    @patch("core.pseudorandom.get_logger")
     def test_randint_in_range(self, mock_logger):
         """Random int falls within [low, high]."""
         from core.pseudorandom import randint

@@ -13,7 +13,7 @@ from pyglet.window import key
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.container import Container
-from core.logger import logger
+from core.logger import get_logger
 from core.logreader import LogReader
 from core.scheduler import Scheduler
 from core.utils import clamp, get_replay_session_id
@@ -156,7 +156,7 @@ class ReplayScheduler(Scheduler):
         # Derive scenario_time from the replay_time -> scenario_time mapping.
         # The mapping handles blocking segments (slope=0) automatically.
         self.scenario_time = self.logreader.replay_to_scenario_time(self.replay_time)
-        logger.set_scenario_time(self.scenario_time)
+        get_logger().set_scenario_time(self.scenario_time)
 
     def update(self, dt: float) -> None:
         self.pause_if_end_reached()

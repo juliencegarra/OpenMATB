@@ -32,7 +32,7 @@ from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F  # noqa: F401
 from core.constants import Group as G
 from core.container import Container
-from core.logger import Logger, logger
+from core.logger import Logger, get_logger
 from core.utils import get_conf_value
 from core.window import Window
 
@@ -45,7 +45,7 @@ class AbstractWidget:
         self.vertex: dict[str, Any] = dict()
         self.on_batch: dict[str, Any] = dict()
         self.visible: bool = False
-        self.logger: Logger = logger
+        self.logger: Logger = get_logger()
         self.highlight_aoi: str = get_conf_value("Openmatb", "highlight_aoi")
         glLineWidth(2)
 

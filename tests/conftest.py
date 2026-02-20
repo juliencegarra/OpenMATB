@@ -254,16 +254,30 @@ import pytest
 
 
 @pytest.fixture
-def mock_logger(monkeypatch):
+def mock_logger():
     """Provide a mock logger that prevents file I/O."""
-    import importlib
+    from core.logger import set_logger
 
-    logger_module = importlib.import_module("core.logger")
     mock = MagicMock()
     mock.session_id = 1
     mock.scenario_time = 0
-    monkeypatch.setattr(logger_module, "logger", mock)
-    return mock
+    set_logger(mock)
+    yield mock
+    set_logger(None)
+
+
+@pytest.fixture
+def mock_errors():
+    """Provide a mock Errors instance."""
+    from core.error import set_errors
+
+    mock = MagicMock()
+    mock.errors_list = []
+    mock.some_fatals = False
+    mock.is_empty = MagicMock(return_value=True)
+    set_errors(mock)
+    yield mock
+    set_errors(None)
 
 
 @pytest.fixture
