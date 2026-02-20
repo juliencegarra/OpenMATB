@@ -6,6 +6,9 @@ from plugins.abstractplugin import BlockingPlugin
 from core.widgets import Simpletext, Slider, Frame
 from core.constants import FONT_SIZES as F, PATHS as P, COLORS as C, REPLAY_MODE
 from re import match as regex_match
+from pyglet.text import Label as PygletLabel
+from core.container import Container
+from core.utils import get_conf_value
 
 class Genericscales(BlockingPlugin):
     def __init__(self):
@@ -25,6 +28,12 @@ class Genericscales(BlockingPlugin):
         self.question_interspace = 0.05  # Space to leave between two questions
         self.top_to_top = self.question_interspace + self.question_height_ratio
 
+
+    def _measure_text_height(self, text, font_size, wrap_width_px, bold=False):
+        font_name = get_conf_value('Openmatb', 'font_name')
+        tmp = PygletLabel(text, font_size=font_size, multiline=True,
+                          width=wrap_width_px, bold=bold, font_name=font_name)
+        return tmp.content_height
 
     def make_slide_graphs(self):
         # Remove old slider/label widgets from previous slide
@@ -61,9 +70,25 @@ class Genericscales(BlockingPlugin):
                 show_title = (title != label)
 
                 if show_title:
-                    title_container = scale_container.reduce_and_translate(1, 0.2, 0, 1)
-                    question_container = scale_container.reduce_and_translate(1, 0.2, 0, 0.6)
-                    slider_container = scale_container.reduce_and_translate(1, 0.6, 0, 0)
+                    wrap_px = scale_container.w * 0.8
+                    padding = 4
+
+                    title_h = self._measure_text_height(title, F['MEDIUM'], wrap_px, bold=True) + padding
+                    question_h = self._measure_text_height(label, F['MEDIUM'], wrap_px) + padding
+
+                    min_slider_h = scale_container.h * 0.40
+                    slider_h = max(min_slider_h, scale_container.h - title_h - question_h)
+
+                    text_budget = scale_container.h - slider_h
+                    if title_h + question_h > text_budget and text_budget > 0:
+                        ratio = text_budget / (title_h + question_h)
+                        title_h *= ratio
+                        question_h *= ratio
+
+                    L, B, W, H = scale_container.l, scale_container.b, scale_container.w, scale_container.h
+                    title_container = Container('title', L, B + H - title_h, W, title_h)
+                    question_container = Container('question', L, B + H - title_h - question_h, W, question_h)
+                    slider_container = Container('slider', L, B, W, slider_h)
 
                     self.add_widget(f'title_{l+1}', Simpletext,
                                     container=title_container,

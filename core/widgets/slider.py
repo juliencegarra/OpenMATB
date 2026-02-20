@@ -48,16 +48,20 @@ class Slider(AbstractWidget):
 
     def set_sub_containers(self, slider_width=0.6):
         l = self.container.l
-        label_w = self.container.w * (1 - slider_width) / 3
+        n_labels = 3 if self.showvalue else 2
+        label_w = self.container.w * (1 - slider_width) / n_labels
         slider_w = self.container.w * slider_width
-        bounds = [l, l+label_w, l+label_w+slider_w, l+label_w+slider_w+label_w,
-                  l+label_w+slider_w+label_w*2]
 
         self.containers = dict()
-        for c, name in enumerate(['min', 'slide', 'max', 'value']):
-            left, right = bounds[c], bounds[c+1]
+        names = ['min', 'slide', 'max']
+        bounds = [l, l + label_w, l + label_w + slider_w, l + label_w + slider_w + label_w]
+        for c, name in enumerate(names):
+            left, right = bounds[c], bounds[c + 1]
             self.containers[name] = Container(f'container_{name}', left,
-                        self.container.b, right-left, self.container.h)
+                        self.container.b, right - left, self.container.h)
+        if self.showvalue:
+            self.containers['value'] = Container('container_value', bounds[3],
+                        self.container.b, label_w, self.container.h)
         for name in ['min', 'max']:
             x, y = self.containers[name].cx, self.containers[name].cy
             self.vertex[name] = Label(getattr(self, f'label_{name}'), font_name=self.font_name,
