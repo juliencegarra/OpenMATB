@@ -226,7 +226,7 @@ class Scenario:
         return errors
 
     def get_validation_dict(self, pluginname):
-        validation_dict = global_validation_dict
+        validation_dict = global_validation_dict.copy()
 
         plugin_validation_dict = getattr(self.plugins[pluginname], 'validation_dict', None)
 

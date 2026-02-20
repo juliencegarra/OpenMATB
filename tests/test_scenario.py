@@ -181,6 +181,45 @@ class TestGetParametersValue:
         assert val is None
 
 
+class TestGetValidationDict:
+    def test_does_not_pollute_global_dict(self):
+        """Calling get_validation_dict() for a plugin must not mutate the global dict."""
+        from core.scenario import global_validation_dict
+        original_keys = set(global_validation_dict.keys())
+
+        mock_plugin = MagicMock()
+        mock_plugin.validation_dict = {'custom_param': lambda x: (x, None)}
+        s = _make_scenario(plugins={'comms': mock_plugin})
+
+        result = s.get_validation_dict('comms')
+
+        # The returned dict should contain the plugin key
+        assert 'custom_param' in result
+        # The global dict must NOT have been mutated
+        assert set(global_validation_dict.keys()) == original_keys
+        assert 'custom_param' not in global_validation_dict
+
+    def test_includes_global_and_plugin_keys(self):
+        """Returned dict merges global validators with plugin-specific ones."""
+        mock_plugin = MagicMock()
+        mock_plugin.validation_dict = {'plugin_key': lambda x: (x, None)}
+        s = _make_scenario(plugins={'comms': mock_plugin})
+
+        result = s.get_validation_dict('comms')
+        # Should have both global keys (e.g. 'title') and the plugin key
+        assert 'title' in result
+        assert 'plugin_key' in result
+
+    def test_no_plugin_validation_dict(self):
+        """Plugin with no validation_dict returns only global validators."""
+        from core.scenario import global_validation_dict
+        mock_plugin = MagicMock(spec=[])  # no attributes at all
+        s = _make_scenario(plugins={'track': mock_plugin})
+
+        result = s.get_validation_dict('track')
+        assert set(result.keys()) == set(global_validation_dict.keys())
+
+
 class TestGetPluginMethods:
     def test_returns_callable_names(self):
         """Lists callable method names of a plugin."""
