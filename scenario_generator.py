@@ -1,4 +1,5 @@
 #! .venv/bin/python3.9
+from __future__ import annotations
 
 # Copyright 2023-2026, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
