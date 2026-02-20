@@ -44,7 +44,8 @@ class LogReader:
             session_file_list: list[Path] = [f for f in P["SESSIONS"].glob(f"**/{replay_session_id}_*.csv")]
 
             if len(session_file_list) == 0:
-                get_errors().add_error(_("The desired session file (ID=%s) does not exist") % replay_session_id, fatal=True)
+                msg = _("The desired session file (ID=%s) does not exist") % replay_session_id
+                get_errors().add_error(msg, fatal=True)
             elif len(session_file_list) > 1:
                 get_errors().add_error(
                     _("Multiple session files match the desired session ID (%s)") % replay_session_id, fatal=True
