@@ -1,26 +1,30 @@
+from __future__ import annotations
+
+from typing import Optional
+
 from core.window import Window
 
 
 class Errors:
-    def __init__(self):
-        self.errors_list = list()
-        self.some_fatals = False
+    def __init__(self) -> None:
+        self.errors_list: list[str] = list()
+        self.some_fatals: bool = False
 
-    def add_error(self, error_msg, fatal=False):
+    def add_error(self, error_msg: str, fatal: bool = False) -> None:
         self.some_fatals = max(self.some_fatals, fatal)
         self.errors_list.append("– " + error_msg)
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return len(self.errors_list) == 0
 
-    def show_errors(self):
+    def show_errors(self) -> None:
         if Window.MainWindow is not None:
             if not self.is_empty():
                 pass_list = list(self.errors_list)
                 self.errors_list = list()
-                title = _("Warning") if not self.some_fatals else _("Error(s)")
-                continue_key = None if self.some_fatals else "SPACE"
+                title: str = _("Warning") if not self.some_fatals else _("Error(s)")
+                continue_key: Optional[str] = None if self.some_fatals else "SPACE"
                 Window.MainWindow.open_modal_window(pass_list, title=title, continue_key=continue_key, exit_key="Q")
 
 
-errors = Errors()
+errors: Errors = Errors()

@@ -23,6 +23,7 @@ _tree = ast.parse(_source)
 # Namespace with dependencies needed by the functions
 _ns = {
     "__builtins__": __builtins__,
+    "__annotations__": {},
     "Event": Event,
     "randint": random.randint,
     "shuffle": random.shuffle,
@@ -30,6 +31,10 @@ _ns = {
     "EVENTS_REFRACTORY_DURATION": 1,
     "STEP_DURATION_SEC": 60,
 }
+
+# Add typing imports needed by type annotations in scenario_generator.py
+from typing import Any, Optional, Union
+_ns.update({"Any": Any, "Optional": Optional, "Union": Union})
 
 # Compile and exec each function definition in isolation
 for _node in _tree.body:

@@ -2,20 +2,23 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
 import csv
 from bisect import bisect_right
 from pathlib import Path
+from typing import Any, Optional
 
 from core.constants import PATHS as P
 from core.error import errors
 from core.event import Event
 
 # Some plugins must not be replayed for now
-IGNORE_PLUGINS = ["labstreaminglayer", "parallelport"]
+IGNORE_PLUGINS: list[str] = ["labstreaminglayer", "parallelport"]
 
 # Minimum logtime span (seconds) for a frozen scenario_time group to be
 # considered a blocking segment (filters out simultaneous events).
-BLOCKING_THRESHOLD = 0.5
+BLOCKING_THRESHOLD: float = 0.5
 
 
 class LogReader:
@@ -25,9 +28,9 @@ class LogReader:
     simulate what happened during the session.
     """
 
-    def __init__(self, replay_session_id=None, session_path=None):
-        self.session_file_path = None
-        self.replay_session_id = replay_session_id
+    def __init__(self, replay_session_id: Optional[int] = None, session_path: Optional[str] = None) -> None:
+        self.session_file_path: Optional[Path] = None
+        self.replay_session_id: Optional[int] = replay_session_id
 
         if session_path is not None:
             # Direct path provided (from file selector)
@@ -38,7 +41,7 @@ class LogReader:
                 pass
         else:
             # Look up by session ID
-            session_file_list = [f for f in P["SESSIONS"].glob(f"**/{replay_session_id}_*.csv")]
+            session_file_list: list[Path] = [f for f in P["SESSIONS"].glob(f"**/{replay_session_id}_*.csv")]
 
             if len(session_file_list) == 0:
                 errors.add_error(_("The desired session file (ID=%s) does not exist") % replay_session_id, fatal=True)
@@ -49,9 +52,23 @@ class LogReader:
             elif len(session_file_list) == 1:
                 self.session_file_path = session_file_list[0]
 
+        self.contents: list[str] = []
+        self.inputs: list[dict[str, Any]] = []
+        self.states: list[dict[str, Any]] = []
+        self.start_sec: float = 0
+        self.end_sec: float = 0
+        self.duration_sec: float = 0
+        self.session_duration: float = 0
+        self.line_n: int = 0
+        self.keyboard_inputs: list[dict[str, Any]] = []
+        self.joystick_inputs: list[dict[str, Any]] = []
+        self.blocking_segments: list[tuple[float, float, float]] = []
+        self._bp_replay_times: list[float] = [0.0]
+        self._bp_scenario_times: list[float] = [0.0]
+
         self.reload_session()
 
-    def reload_session(self):
+    def reload_session(self) -> None:
         if self.session_file_path is None:
             return
 
@@ -66,9 +83,9 @@ class LogReader:
         self._bp_scenario_times = [0.0]
 
         # First pass: read all rows
-        all_rows = []
+        all_rows: list[dict[str, Any]] = []
         with open(self.session_file_path, newline="") as csvfile:
-            reader = csv.DictReader(csvfile)
+            reader: csv.DictReader = csv.DictReader(csvfile)
             for row in reader:
                 row["logtime"] = float(row["logtime"])
                 row["scenario_time"] = float(row["scenario_time"])
@@ -78,7 +95,7 @@ class LogReader:
             return
 
         # Capture first logtime for normalization
-        first_logtime = all_rows[0]["logtime"]
+        first_logtime: float = all_rows[0]["logtime"]
         for row in all_rows:
             row["normalized_logtime"] = row["logtime"] - first_logtime
 
@@ -122,7 +139,7 @@ class LogReader:
         self.end_sec = all_rows[-1]["scenario_time"]
         self.duration_sec = self.end_sec - self.start_sec
 
-    def _detect_blocking_segments(self, all_rows):
+    def _detect_blocking_segments(self, all_rows: list[dict[str, Any]]) -> None:
         """Identify periods where scenario_time is frozen while logtime advances."""
         self.blocking_segments = []
 
@@ -130,9 +147,9 @@ class LogReader:
             return
 
         # Group consecutive rows with the same scenario_time
-        current_st = all_rows[0]["scenario_time"]
-        current_start_lt = all_rows[0]["normalized_logtime"]
-        current_end_lt = all_rows[0]["normalized_logtime"]
+        current_st: float = all_rows[0]["scenario_time"]
+        current_start_lt: float = all_rows[0]["normalized_logtime"]
+        current_end_lt: float = all_rows[0]["normalized_logtime"]
 
         for row in all_rows[1:]:
             if abs(row["scenario_time"] - current_st) < 0.01:
@@ -148,7 +165,7 @@ class LogReader:
         if current_end_lt - current_start_lt > BLOCKING_THRESHOLD:
             self.blocking_segments.append((current_start_lt, current_end_lt, current_st))
 
-    def _build_replay_mapping(self):
+    def _build_replay_mapping(self) -> None:
         """Build breakpoints for replay_time -> scenario_time mapping.
 
         Between consecutive breakpoints the slope is either 1 (normal) or
@@ -163,36 +180,36 @@ class LogReader:
             self._bp_replay_times.append(lt_end)
             self._bp_scenario_times.append(frozen_st)
 
-    def replay_to_scenario_time(self, replay_time):
+    def replay_to_scenario_time(self, replay_time: float) -> float:
         """Convert replay_time (normalized logtime) to scenario_time.
 
         Uses O(log k) bisect lookup where k = number of blocking segments.
         """
-        idx = bisect_right(self._bp_replay_times, replay_time) - 1
+        idx: int = bisect_right(self._bp_replay_times, replay_time) - 1
         if idx < 0:
             return 0.0
 
-        rt_base = self._bp_replay_times[idx]
-        st_base = self._bp_scenario_times[idx]
+        rt_base: float = self._bp_replay_times[idx]
+        st_base: float = self._bp_scenario_times[idx]
 
         # Check if we are inside a blocking segment (next breakpoint has
         # the same scenario_time, meaning slope = 0).
         if idx + 1 < len(self._bp_replay_times):
-            st_next = self._bp_scenario_times[idx + 1]
+            st_next: float = self._bp_scenario_times[idx + 1]
             if abs(st_base - st_next) < 0.001:
                 return st_base
 
         # Normal segment: slope = 1
         return st_base + (replay_time - rt_base)
 
-    def session_event_to_str(self, event_row):
-        time_sec = int(float(event_row["scenario_time"]))
-        plugin = event_row["module"]
+    def session_event_to_str(self, event_row: dict[str, Any]) -> str:
+        time_sec: int = int(float(event_row["scenario_time"]))
+        plugin: str = event_row["module"]
         if event_row["address"] == "self":
-            command = event_row["value"]
+            command: str = event_row["value"]
         else:
             command = ";".join([event_row["address"], event_row["value"]])
 
-        event = Event(self.line_n, time_sec, plugin, command)
+        event: Event = Event(self.line_n, time_sec, plugin, command)
         self.line_n += 1
         return event.get_line_str()

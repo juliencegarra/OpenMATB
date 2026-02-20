@@ -1,6 +1,8 @@
-# Copyright 2023-2026, by Julien Cegarra & Benoît Valéry. All rights reserved.
+# Copyright 2023-2026, by Julien Cegarra & Benoit Valery. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
+
+from __future__ import annotations
 
 from pyglet.gl import *
 from pyglet.text import Label
@@ -12,15 +14,15 @@ from core.widgets.abstractwidget import AbstractWidget
 
 
 class Scale(AbstractWidget):
-    def __init__(self, name, container, label, arrow_position=5):
+    def __init__(self, name: str, container: Any, label: str, arrow_position: int = 5) -> None:
         super().__init__(name, container)
 
-        self.background_color = (255, 255, 255)
-        self.feedback_visible = False
+        self.background_color: tuple[int, int, int] = (255, 255, 255)
+        self.feedback_visible: bool = False
 
         # Compute arrow positions list
-        self.positions = [self.container.b + (self.container.h / 11) * i + self.container.h / 22 for i in range(11)]
-        self.position = 5
+        self.positions: list[float] = [self.container.b + (self.container.h / 11) * i + self.container.h / 22 for i in range(11)]
+        self.position: int = 5
 
         # Compute vertices
         self.vertex["label"] = Label(
@@ -36,7 +38,7 @@ class Scale(AbstractWidget):
             group=G(self.m_draw + 1),
         )
 
-        scale_vertice = self.vertice_border(self.container)
+        scale_vertice: tuple[float, ...] = self.vertice_border(self.container)
         self.add_vertex(
             "background",
             4,
@@ -55,16 +57,16 @@ class Scale(AbstractWidget):
         )
 
         # Compute widths
-        self.tick_width = self.container.w * 0.25
-        v = list()
+        self.tick_width: float = self.container.w * 0.25
+        v: list[float] = list()
         for i in range(11):
-            w = self.tick_width if i != 5 else self.tick_width + 8
+            w: float = self.tick_width if i != 5 else self.tick_width + 8
             v.extend([self.container.x2 - w, self.positions[i], self.container.x2, self.positions[i]])
 
-        self.arrow_width = 0.15 * self.container.w
-        self.arrow_x_offset = 0.22 * self.container.w  # So the arrow does not stick to
+        self.arrow_width: float = 0.15 * self.container.w
+        self.arrow_x_offset: float = 0.22 * self.container.w  # So the arrow does not stick to
         # the right side of the scale
-        self.feedback_height = 0.12 * self.container.h
+        self.feedback_height: float = 0.12 * self.container.h
 
         self.add_vertex(
             "ticks",
@@ -91,9 +93,9 @@ class Scale(AbstractWidget):
             ("c4B/static", (C["BLACK"] * 3)),
         )
 
-    def return_arrow_vertice(self, position):
-        xo = self.arrow_x_offset
-        aw = self.arrow_width
+    def return_arrow_vertice(self, position: int) -> tuple[float, ...]:
+        xo: float = self.arrow_x_offset
+        aw: float = self.arrow_width
         return (
             self.container.x2 - self.tick_width - xo,
             self.positions[position],
@@ -103,12 +105,12 @@ class Scale(AbstractWidget):
             self.positions[position] + aw / 2,
         )
 
-    def set_feedback_visibility(self, visible):
+    def set_feedback_visibility(self, visible: bool) -> None:
         if visible == self.feedback_visible:
             return
         self.feedback_visible = visible
-        h = self.feedback_height
-        v = (
+        h: float = self.feedback_height
+        v: tuple[float, ...] = (
             (
                 self.container.x1,
                 self.container.y2 + h,
@@ -125,34 +127,34 @@ class Scale(AbstractWidget):
         self.on_batch["feedback"].vertices = v
         self.logger.record_state(self.name, "feedback_visible", visible)
 
-    def is_feedback_visible(self):
+    def is_feedback_visible(self) -> bool:
         return self.feedback_visible is True
 
-    def set_feedback_color(self, color):
+    def set_feedback_color(self, color: tuple[int, ...]) -> None:
         if color == self.get_feedback_color():
             return
         self.on_batch["feedback"].colors[:] = color * 4
         self.logger.record_state(self.name, "feedback_color", color)
 
-    def get_feedback_color(self):
+    def get_feedback_color(self) -> tuple[int, ...]:
         return self.get_vertex_color("feedback")
 
-    def set_arrow_position(self, position):
+    def set_arrow_position(self, position: int) -> None:
         if position == self.get_arrow_position():
             return
         self.position = position
         self.on_batch["arrow"].vertices = self.return_arrow_vertice(self.position)
         self.logger.record_state(self.name, "arrow", self.position)
 
-    def get_arrow_position(self):
+    def get_arrow_position(self) -> int:
         return self.position
 
-    def set_label(self, label):
-        label_to_upper = label.upper()
+    def set_label(self, label: str) -> None:
+        label_to_upper: str = label.upper()
         if label == self.get_label():
             return
         self.vertex["label"].text = label_to_upper
         self.logger.record_state(self.name, "label", label_to_upper)
 
-    def get_label(self):
+    def get_label(self) -> str:
         return self.vertex["label"].text

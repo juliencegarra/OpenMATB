@@ -2,6 +2,10 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
+from typing import Any, Callable, Optional
+
 from core import validation
 from core.constants import COLORS as C
 from core.container import Container
@@ -11,10 +15,10 @@ from plugins.abstractplugin import AbstractPlugin
 
 
 class Sysmon(AbstractPlugin):
-    def __init__(self, label="", taskplacement="topleft", taskupdatetime=200):
+    def __init__(self, label: str = "", taskplacement: str = "topleft", taskupdatetime: int = 200) -> None:
         super().__init__(_("System monitoring"), taskplacement, taskupdatetime)
 
-        self.validation_dict = {
+        self.validation_dict: dict[str, Callable[..., Any] | tuple[Callable[..., Any], list[str]]] = {
             "alerttimeout": validation.is_positive_integer,
             "automaticsolverdelay": validation.is_positive_integer,
             "allowanykey": validation.is_boolean,
@@ -54,11 +58,11 @@ class Sysmon(AbstractPlugin):
             "scales-4-onfailure": validation.is_boolean,
         }
 
-        self.keys = {"F1", "F2", "F3", "F4", "F5", "F6"}
-        self.moving_seed = 1  # Useful for pseudorandom generation of
+        self.keys: set[str] = {"F1", "F2", "F3", "F4", "F5", "F6"}
+        self.moving_seed: int = 1  # Useful for pseudorandom generation of
         # multiple values at once (arrows move)
 
-        new_par = dict(
+        new_par: dict[str, Any] = dict(
             alerttimeout=10000,
             automaticsolver=False,
             automaticsolverdelay=1000,
@@ -93,31 +97,31 @@ class Sysmon(AbstractPlugin):
         for gauge in self.get_scale_gauges():
             gauge.update({"_pos": 5, "_zone": 0, "_feedbacktimer": None, "_feedbacktype": None})
 
-        self.automode_position = (0.5, 0.05)
-        self.scale_zones = {1: list(range(3)), 0: list(range(3, 8)), -1: list(range(8, 11))}
+        self.automode_position: tuple[float, float] = (0.5, 0.05)
+        self.scale_zones: dict[int, list[int]] = {1: list(range(3)), 0: list(range(3, 8)), -1: list(range(8, 11))}
 
-    def get_response_timers(self):
+    def get_response_timers(self) -> list[int]:
         return [g["_milliresponsetime"] for g in self.get_all_gauges()]
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         super().create_widgets()
         # Widgets coordinates (the left l coordinate is variable)
-        scale_w = self.task_container.w * 0.1
-        scale_b = self.task_container.b + self.task_container.h * 0.15
-        scale_h = self.task_container.h * 0.5
+        scale_w: float = self.task_container.w * 0.1
+        scale_b: float = self.task_container.b + self.task_container.h * 0.15
+        scale_h: float = self.task_container.h * 0.5
 
-        light_w = self.task_container.w * 0.4
-        light_b = self.task_container.b + self.task_container.h * 0.75
-        light_h = self.task_container.h * 0.15
+        light_w: float = self.task_container.w * 0.4
+        light_b: float = self.task_container.b + self.task_container.h * 0.75
+        light_h: float = self.task_container.h * 0.15
 
         for scale_n, scale in self.parameters["scales"].items():
-            scale_l = (
+            scale_l: float = (
                 self.task_container.l
                 + (self.task_container.w / 4) * (int(scale_n) - 1)
                 + self.task_container.w / 8
                 - scale_w / 2
             )
-            scale_container = Container(f"scale_{scale_n}", scale_l, scale_b, scale_w, scale_h)
+            scale_container: Container = Container(f"scale_{scale_n}", scale_l, scale_b, scale_w, scale_h)
 
             scale["widget"] = self.add_widget(
                 f"scale{scale_n!s}",
@@ -128,13 +132,13 @@ class Sysmon(AbstractPlugin):
             )
 
         for light_n, light in self.parameters["lights"].items():
-            light_l = (
+            light_l: float = (
                 self.task_container.l
                 + (self.task_container.w / 2) * (int(light_n) - 1)
                 + self.task_container.w / 4
                 - light_w / 2
             )
-            light_container = Container(f"light_{light_n}", light_l, light_b, light_w, light_h)
+            light_container: Container = Container(f"light_{light_n}", light_l, light_b, light_w, light_h)
 
             light["widget"] = self.add_widget(
                 f"light{light_n!s}",
@@ -144,7 +148,7 @@ class Sysmon(AbstractPlugin):
                 color=self.determine_light_color(light),
             )
 
-    def compute_next_plugin_state(self):
+    def compute_next_plugin_state(self) -> None:
         if not super().compute_next_plugin_state():
             return
 
@@ -175,7 +179,7 @@ class Sysmon(AbstractPlugin):
                     self.scale_zones[scale["_zone"]], self.alias, self.scenario_time, self.moving_seed
                 )
             else:  # Move into a delimited zone
-                direction = sample([-1, 1], self.alias, self.scenario_time, self.moving_seed)
+                direction: int = sample([-1, 1], self.alias, self.scenario_time, self.moving_seed)
                 if scale["_pos"] + direction in self.scale_zones[scale["_zone"]]:
                     scale["_pos"] += direction
                 else:
@@ -194,14 +198,14 @@ class Sysmon(AbstractPlugin):
         for gauge in self.get_gauges_key_value("failure", True):
             self.start_failure(gauge)
 
-    def refresh_widgets(self):
+    def refresh_widgets(self) -> None:
         if not super().refresh_widgets():
             return
         for _scale_n, scale in self.parameters["scales"].items():
             scale["widget"].set_arrow_position(scale["_pos"])
 
             if scale["_feedbacktimer"] is not None:
-                color = self.parameters["feedbacks"][scale["_feedbacktype"]]["color"]
+                color: tuple[int, ...] = self.parameters["feedbacks"][scale["_feedbacktype"]]["color"]
                 scale["widget"].set_feedback_color(color)
                 scale["widget"].set_feedback_visibility(True)
 
@@ -216,11 +220,11 @@ class Sysmon(AbstractPlugin):
         for gauge in self.get_all_gauges():
             gauge["widget"].set_label(gauge["name"])
 
-    def determine_light_color(self, light):
-        color = light["oncolor"] if light["on"] else C["BACKGROUND"]
+    def determine_light_color(self, light: dict[str, Any]) -> tuple[int, ...]:
+        color: tuple[int, ...] = light["oncolor"] if light["on"] else C["BACKGROUND"]
         return color
 
-    def start_failure(self, gauge):
+    def start_failure(self, gauge: dict[str, Any]) -> None:
         if gauge["_onfailure"]:
             pass  # TODO : warn in case of multiple failure on the same gauge
         else:
@@ -229,27 +233,27 @@ class Sysmon(AbstractPlugin):
                 gauge["on"] = gauge["default"] != "on"
             else:  # Scale case
                 if gauge["side"] not in [-1, 1]:
-                    add = self.get_gauge_key(gauge)  # Specify a gauge integer to generate
+                    add: str | None = self.get_gauge_key(gauge)  # Specify a gauge integer to generate
                     # a unique seed
                     gauge["side"] = choice([-1, 1], self.alias, self.scenario_time, int(add))
                 gauge["_zone"] = gauge["side"]
         gauge["failure"] = False
 
         # Schedule failure timing
-        delay = (
+        delay: int = (
             self.parameters["automaticsolverdelay"]
             if self.parameters["automaticsolver"]
             else self.parameters["alerttimeout"]
         )
         gauge["_failuretimer"] = delay
 
-    def stop_failure(self, gauge, success=False):
+    def stop_failure(self, gauge: dict[str, Any], success: bool = False) -> None:
         # Reset the gauge failure timer
         gauge["_onfailure"] = False
         gauge["_failuretimer"] = None
 
         # Set the (potential) feedback type (ft)
-        ft = "positive" if self.parameters["automaticsolver"] or success else "negative"
+        ft: str = "positive" if self.parameters["automaticsolver"] or success else "negative"
 
         # Does this feedback type (positive or negative) is currently active ?
         # If so, set the feedback type and duration, if the gauge has got one
@@ -264,6 +268,8 @@ class Sysmon(AbstractPlugin):
         # IDEA: do we need to distinguish manual detection (hit) from automatic detection ?
         # Evaluate performance in terms of signal detection and response time
         if ft == "positive":
+            sdt_string: str
+            rt: int | float
             sdt_string, rt = "HIT", gauge["_milliresponsetime"]
         else:
             sdt_string, rt = "MISS", float("nan")
@@ -280,47 +286,47 @@ class Sysmon(AbstractPlugin):
             gauge["_zone"] = 0
         gauge["_milliresponsetime"] = 0
 
-    def get_gauges_key_value(self, key, value):
-        gauge_list = list()
+    def get_gauges_key_value(self, key: str, value: Any) -> list[dict[str, Any]]:
+        gauge_list: list[dict[str, Any]] = list()
         for gauge in self.get_all_gauges():
             if gauge[key] == value:
                 gauge_list.append(gauge)
         return gauge_list
 
-    def get_gauge_by_key(self, key):
+    def get_gauge_by_key(self, key: str) -> dict[str, Any]:
         return self.get_gauges_key_value("key", key)[0]
 
-    def get_gauge_key(self, gauge):
+    def get_gauge_key(self, gauge: dict[str, Any]) -> Optional[str]:
         for key in ["lights", "scales"]:
             for k, v in self.parameters[key].items():
                 if gauge == v:
                     return k
 
-    def get_gauges_on_failure(self):
+    def get_gauges_on_failure(self) -> list[dict[str, Any]]:
         return self.get_gauges_key_value("_onfailure", True)
 
-    def get_scale_gauges(self):
+    def get_scale_gauges(self) -> list[dict[str, Any]]:
         return [g for _, g in self.parameters["scales"].items()]
 
-    def get_light_gauges(self):
+    def get_light_gauges(self) -> list[dict[str, Any]]:
         return [g for _, g in self.parameters["lights"].items()]
 
-    def get_all_gauges(self):
+    def get_all_gauges(self) -> list[dict[str, Any]]:
         return [g for g in self.get_scale_gauges() + self.get_light_gauges()]
 
-    def set_scale_feedback(self, gauge, feedback_type):
+    def set_scale_feedback(self, gauge: dict[str, Any], feedback_type: str) -> None:
         # Set the feedback type and duration, if the gauge has got one
         # (the feedback widget is refreshed by the refresh_widget method)
         gauge["_feedbacktype"] = feedback_type
         gauge["_feedbacktimer"] = self.parameters["feedbackduration"]
 
-    def do_on_key(self, key, state, emulate):
+    def do_on_key(self, key: str, state: str, emulate: bool) -> None:
         key = super().do_on_key(key, state, emulate)
         if key is None:
             return
 
         if state == "press":
-            gauge = self.get_gauge_by_key(key)
+            gauge: dict[str, Any] = self.get_gauge_by_key(key)
             if key in [g["key"] for g in self.get_gauges_on_failure()]:
                 self.stop_failure(gauge=gauge, success=True)
             else:

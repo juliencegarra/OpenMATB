@@ -2,8 +2,11 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
 from bisect import bisect_right
 from time import gmtime, strftime
+from typing import Any, Optional
 
 from pyglet.window import key
 
@@ -17,7 +20,7 @@ from core.utils import clamp, get_replay_session_id
 from core.widgets import Frame, MuteButton, PlayPause, Reticle, SimpleHTML, Simpletext, Slider
 from core.window import Window
 
-CLOCK_STEP = 0.1
+CLOCK_STEP: float = 0.1
 
 
 class ReplayScheduler(Scheduler):
@@ -25,14 +28,14 @@ class ReplayScheduler(Scheduler):
     This class manages events execution in the context of the OpenMATB replay.
     """
 
-    def __init__(self, session_path=None):
-        self.logreader = None
-        self._session_path = session_path
-        self.target_time = 0
-        self.replay_time = 0
-        self._executed_key_indices = set()
-        self.keys_history = []
-        self._muted = True
+    def __init__(self, session_path: Optional[str] = None) -> None:
+        self.logreader: Optional[LogReader] = None
+        self._session_path: Optional[str] = session_path
+        self.target_time: float = 0
+        self.replay_time: float = 0
+        self._executed_key_indices: set[int] = set()
+        self.keys_history: list[str] = []
+        self._muted: bool = True
 
         self.set_media_buttons()
 
@@ -43,17 +46,17 @@ class ReplayScheduler(Scheduler):
         # Init is done after UX is set
         super().__init__()
 
-        self.is_paused = True
+        self.is_paused: bool = True
 
-    def set_scenario(self):
-        need_new_logreader = False
+    def set_scenario(self) -> None:
+        need_new_logreader: bool = False
 
         if self._session_path is not None:
             # Direct path from file selector
             need_new_logreader = self.logreader is None
         else:
             # Legacy: look up by session ID
-            replay_session_id = get_replay_session_id()
+            replay_session_id: int = get_replay_session_id()
             need_new_logreader = self.logreader is None or replay_session_id != self.logreader.replay_session_id
 
         if need_new_logreader:
@@ -62,69 +65,70 @@ class ReplayScheduler(Scheduler):
             else:
                 self.logreader = LogReader(replay_session_id)
             # Pre-compute sorted time arrays for O(log n) bisect lookup
-            self._key_times = [float(i["scenario_time"]) for i in self.logreader.keyboard_inputs]
-            self._joy_times = [float(i["scenario_time"]) for i in self.logreader.joystick_inputs]
-            self._state_times = [float(i["scenario_time"]) for i in self.logreader.states]
+            self._key_times: list[float] = [float(i["scenario_time"]) for i in self.logreader.keyboard_inputs]
+            self._joy_times: list[float] = [float(i["scenario_time"]) for i in self.logreader.joystick_inputs]
+            self._state_times: list[float] = [float(i["scenario_time"]) for i in self.logreader.states]
             # Logtime-based arrays for replay_time lookup
-            self._key_logtimes = [i["normalized_logtime"] for i in self.logreader.keyboard_inputs]
-            self._joy_logtimes = [i["normalized_logtime"] for i in self.logreader.joystick_inputs]
-            self._state_logtimes = [i["normalized_logtime"] for i in self.logreader.states]
+            self._key_logtimes: list[float] = [i["normalized_logtime"] for i in self.logreader.keyboard_inputs]
+            self._joy_logtimes: list[float] = [i["normalized_logtime"] for i in self.logreader.joystick_inputs]
+            self._state_logtimes: list[float] = [i["normalized_logtime"] for i in self.logreader.states]
 
         super().set_scenario(self.logreader.contents)
 
-        self.sliding = False
+        self.sliding: bool = False
 
         self.slider.value_max = self.logreader.session_duration
 
         self.pause_playback()
 
-    def set_inputs_buttons(self):
+    def set_inputs_buttons(self) -> None:
         # Plot the keyboard keys that are available in the present plugins
-        input_container = Window.MainWindow.get_container("inputstrip")
-        key_container = input_container.reduce_and_translate(width=0.9, height=0.8, y=0, x=0.5)
-        self.key_widget = SimpleHTML("replay_keys", key_container, "<strong>Keyboard history:\n</strong>")
+        input_container: Container = Window.MainWindow.get_container("inputstrip")
+        key_container: Container = input_container.reduce_and_translate(width=0.9, height=0.8, y=0, x=0.5)
+        self.key_widget: SimpleHTML = SimpleHTML("replay_keys", key_container, "<strong>Keyboard history:\n</strong>")
         self.key_widget.show()
 
-    def set_media_buttons(self):
+    def set_media_buttons(self) -> None:
         # Media strip
-        media_container = Window.MainWindow.get_container("mediastrip")
-        self.media_back = Frame("media_background", media_container, fill_color=C["DARKGREY"], draw_order=1)
+        media_container: Container = Window.MainWindow.get_container("mediastrip")
+        self.media_back: Frame = Frame("media_background", media_container, fill_color=C["DARKGREY"], draw_order=1)
         self.media_back.show()
-        pp_container = media_container.reduce_and_translate(width=0.06, height=1, x=0)
-        time_container = media_container.reduce_and_translate(width=0.03, height=1, x=0.78)
+        pp_container: Container = media_container.reduce_and_translate(width=0.06, height=1, x=0)
+        time_container: Container = media_container.reduce_and_translate(width=0.03, height=1, x=0.78)
 
-        self.playpause = PlayPause("Play_pause_button", pp_container, self.toggle_playpause)
-        self.time = Simpletext("elapsed_time", time_container, text="", font_size=F["LARGE"], color=C["WHITE"])
+        self.playpause: PlayPause = PlayPause("Play_pause_button", pp_container, self.toggle_playpause)
+        self.time: Simpletext = Simpletext("elapsed_time", time_container, text="", font_size=F["LARGE"], color=C["WHITE"])
 
-        margin = 10
-        btn_w = media_container.h * 1.8
-        pad_b = 4
-        mute_container = Container(
+        margin: int = 10
+        btn_w: float = media_container.h * 1.8
+        pad_b: int = 4
+        mute_container: Container = Container(
             "mute_btn",
             Window.MainWindow.width - margin - btn_w,
             media_container.b + pad_b,
             btn_w,
             media_container.h - 2 * pad_b,
         )
-        self.mute_button = MuteButton("mute_button", mute_container, self.toggle_mute)
+        self.mute_button: MuteButton = MuteButton("mute_button", mute_container, self.toggle_mute)
 
-        self.slider = Slider("timeline", media_container, None, "", "", 0, 1, 0, 1)
+        self.slider: Slider = Slider("timeline", media_container, None, "", "", 0, 1, 0, 1)
         self.time.show()
 
         # Inputs strip
-        input_container = Window.MainWindow.get_container("inputstrip")
-        self.inputs_back = Frame("inputs_background", input_container, fill_color=C["LIGHTGREY"], draw_order=1)
+        input_container: Container = Window.MainWindow.get_container("inputstrip")
+        self.inputs_back: Frame = Frame("inputs_background", input_container, fill_color=C["LIGHTGREY"], draw_order=1)
         self.inputs_back.show()
 
         # Manually compute the joystick container to ensure it is a square
-        w = h = input_container.w * 0.8
-        l = input_container.l + 0.1 * input_container.w
-        b = input_container.b + 0.85 * input_container.h
-        joy_container = Container("replay_reticle", l, b, w, h)
-        self.replay_reticle = Reticle("replay_reticle", joy_container, C["BLACK"], target_proportion=0, m_draw=5)
+        w: float = input_container.w * 0.8
+        h: float = w
+        l: float = input_container.l + 0.1 * input_container.w
+        b: float = input_container.b + 0.85 * input_container.h
+        joy_container: Container = Container("replay_reticle", l, b, w, h)
+        self.replay_reticle: Reticle = Reticle("replay_reticle", joy_container, C["BLACK"], target_proportion=0, m_draw=5)
         self.replay_reticle.show()
 
-    def on_key_press_replay(self, symbol, modifier):
+    def on_key_press_replay(self, symbol: int, modifier: int) -> None:
         if symbol == key.ESCAPE:
             Window.MainWindow.exit_prompt()
         elif symbol == key.SPACE:
@@ -144,13 +148,13 @@ class ReplayScheduler(Scheduler):
         elif symbol == key.M:
             self.toggle_mute()
 
-    def update_timers(self, dt):
+    def update_timers(self, dt: float) -> None:
         # Derive scenario_time from the replay_time -> scenario_time mapping.
         # The mapping handles blocking segments (slope=0) automatically.
         self.scenario_time = self.logreader.replay_to_scenario_time(self.replay_time)
         logger.set_scenario_time(self.scenario_time)
 
-    def update(self, dt):
+    def update(self, dt: float) -> None:
         self.pause_if_end_reached()
         self.update_time_string()
         self.slider_control_update()
@@ -177,51 +181,51 @@ class ReplayScheduler(Scheduler):
         self.process_states()
         self._enforce_mute()
 
-    def check_plugins_alive(self):
+    def check_plugins_alive(self) -> bool:
         return all([p.alive for _, p in self.plugins.items()])
 
-    def check_if_must_exit(self):
+    def check_if_must_exit(self) -> None:
         # In replay mode, exit conditions are differents. Exit only if the Window is killed.
         if not Window.MainWindow.alive:
             self.exit()
 
-    def update_time_string(self):
-        time_str = self.get_time_hms_str()
+    def update_time_string(self) -> None:
+        time_str: str = self.get_time_hms_str()
         self.time.set_text(time_str)
 
-    def get_time_hms_str(self):
+    def get_time_hms_str(self) -> str:
         # round to prevent displaying time as 0.099 instead of 0.1
-        timesec = round(self.replay_time, 2)
+        timesec: float = round(self.replay_time, 2)
 
-        t = strftime("%H:%M:%S", gmtime(timesec))
-        ms = timesec % 1 * 1000
+        t: str = strftime("%H:%M:%S", gmtime(timesec))
+        ms: float = timesec % 1 * 1000
 
         return "%s.%03d" % (t, ms)
 
-    def pause_if_end_reached(self):
+    def pause_if_end_reached(self) -> None:
         if self.replay_time >= self.logreader.session_duration and not self.is_paused:
             self.pause_playback()
 
-    def pause_playback(self):
+    def pause_playback(self) -> None:
         self.is_paused = True
         self.playpause.update_button_sprite(True)
 
-    def resume_playback(self):
+    def resume_playback(self) -> None:
         self.is_paused = False
         self.playpause.update_button_sprite(False)
 
-    def toggle_mute(self):
+    def toggle_mute(self) -> None:
         self._muted = not self._muted
         self.mute_button.update_mute_state(self._muted)
         self._enforce_mute()
 
-    def _enforce_mute(self):
+    def _enforce_mute(self) -> None:
         if "communications" in self.plugins:
-            player = getattr(self.plugins["communications"], "player", None)
+            player: Any = getattr(self.plugins["communications"], "player", None)
             if player is not None:
                 player.volume = 0.0 if self._muted else 1.0
 
-    def toggle_playpause(self):
+    def toggle_playpause(self) -> None:
         if self.is_paused:
             # If at the end, restart from beginning
             if self.replay_time >= self.logreader.session_duration:
@@ -232,11 +236,11 @@ class ReplayScheduler(Scheduler):
             self.pause_playback()
             self.target_time = self.replay_time
 
-    def slider_control_update(self):
+    def slider_control_update(self) -> None:
         # At THE FIRST slider mouse press, save the play/pause state, then pause
         if self.slider.hover and not self.sliding:
             self.sliding = True
-            self._was_paused_before_slide = self.is_paused
+            self._was_paused_before_slide: bool = self.is_paused
             self.pause_playback()
 
         # Update the position of the slider if replay time changed (only when not interacting)
@@ -253,13 +257,13 @@ class ReplayScheduler(Scheduler):
                 self.resume_playback()
                 self.target_time = self.logreader.session_duration
 
-    def pause_if_clock_target_reached(self):
+    def pause_if_clock_target_reached(self) -> None:
         # Soon as the clock target is reached, control if the scenario must switch back to pause
         if self.clock.is_target_time_reached():
             self.clock.remove_target_time()
             self.pause_playback()
 
-    def set_target_time(self, target_time):
+    def set_target_time(self, target_time: float) -> None:
         # We are already changing time, do not reenter this method
         if self.clock.isFastForward:
             return
@@ -277,7 +281,7 @@ class ReplayScheduler(Scheduler):
             self.restart_scenario()
             self.replay_time = 0
 
-        forward_time = self.target_time - self.replay_time
+        forward_time: float = self.target_time - self.replay_time
 
         # Resuming is required as we want the clock to update the scheduler
         if forward_time > 0:
@@ -287,7 +291,7 @@ class ReplayScheduler(Scheduler):
         self.slider.set_groove_position()
         self.pause_playback()
 
-    def restart_scenario(self):
+    def restart_scenario(self) -> None:
         # we need to suspend the clock as it schedules old events
         self.clock.unschedule(self.update)
 
@@ -304,27 +308,27 @@ class ReplayScheduler(Scheduler):
 
         self.clock.schedule(self.update)
 
-    def emulate_keyboard_inputs(self):
-        lo = bisect_right(self._key_logtimes, self.replay_time - CLOCK_STEP)
-        hi = bisect_right(self._key_logtimes, self.replay_time)
+    def emulate_keyboard_inputs(self) -> None:
+        lo: int = bisect_right(self._key_logtimes, self.replay_time - CLOCK_STEP)
+        hi: int = bisect_right(self._key_logtimes, self.replay_time)
 
         for idx in range(lo, hi):
             if idx not in self._executed_key_indices:
                 self._executed_key_indices.add(idx)
-                input = self.logreader.keyboard_inputs[idx]
+                input: dict[str, Any] = self.logreader.keyboard_inputs[idx]
                 for _plugin_name, plugin in self.plugins.items():
                     plugin.do_on_key(input["address"], input["value"], True)
 
-                cmd = f"{input['address']} ({input['value']})"
+                cmd: str = f"{input['address']} ({input['value']})"
                 if len(self.keys_history) == 0 or cmd != self.keys_history[-1]:
                     self.keys_history.append(cmd)
                 if len(self.keys_history) > 30:
                     del self.keys_history[0]
 
-        history_str = "<strong>Keyboard history:\n</strong>" + "<br>".join(self.keys_history)
+        history_str: str = "<strong>Keyboard history:\n</strong>" + "<br>".join(self.keys_history)
         self.key_widget.set_text(history_str)
 
-    def process_states(self):
+    def process_states(self) -> None:
         # States are displayed as a function of replay time (logtime-based).
         # It does not matter to display each and every states. Better is to catch
         # the most current one. The following states are manually handled:
@@ -332,37 +336,38 @@ class ReplayScheduler(Scheduler):
         #   - 2. The frequency of each communications radio
         #   - 3. The value of each slider, in genericscales
 
-        lo = bisect_right(self._state_logtimes, self.replay_time - CLOCK_STEP)
-        hi = bisect_right(self._state_logtimes, self.replay_time)
+        lo: int = bisect_right(self._state_logtimes, self.replay_time - CLOCK_STEP)
+        hi: int = bisect_right(self._state_logtimes, self.replay_time)
 
         for idx in range(lo, hi):
-            state = self.logreader.states[idx]
+            state: dict[str, Any] = self.logreader.states[idx]
 
             # 1. Cursor position
             if "cursor_proportional" in state["address"] and "track" in self.plugins:
-                cursor_relative = self.plugins["track"].reticle.proportional_to_relative(state["value"])
+                cursor_relative: tuple[float, float] = self.plugins["track"].reticle.proportional_to_relative(state["value"])
                 self.plugins["track"].cursor_position = cursor_relative
 
             # 2. Radio frequencies
             elif "radio_frequency" in state["address"] and "communications" in self.plugins:
-                radio_name = state["address"].replace(", radio_frequency", "").replace("radio_", "")
-                radio = self.plugins["communications"].get_radios_by_key_value("name", radio_name)[0]
+                radio_name: str = state["address"].replace(", radio_frequency", "").replace("radio_", "")
+                radio: dict[str, Any] = self.plugins["communications"].get_radios_by_key_value("name", radio_name)[0]
                 radio["currentfreq"] = state["value"]
 
             # 3. Genericscales slider values
             elif "slider_" in state["address"] and "genericscales" in self.plugins:
-                slider_name = state["address"].replace(", value", "")
-                slider = self.plugins["genericscales"].sliders[slider_name]
+                slider_name: str = state["address"].replace(", value", "")
+                slider: Any = self.plugins["genericscales"].sliders[slider_name]
                 slider.groove_value = state["value"]
                 slider.set_groove_position()
 
-    def display_joystick_inputs(self):
-        x, y = None, None
-        lo = bisect_right(self._joy_logtimes, self.replay_time - CLOCK_STEP)
-        hi = bisect_right(self._joy_logtimes, self.replay_time)
+    def display_joystick_inputs(self) -> None:
+        x: Optional[float] = None
+        y: Optional[float] = None
+        lo: int = bisect_right(self._joy_logtimes, self.replay_time - CLOCK_STEP)
+        hi: int = bisect_right(self._joy_logtimes, self.replay_time)
 
         for idx in range(lo, hi):
-            joy_input = self.logreader.joystick_inputs[idx]
+            joy_input: dict[str, Any] = self.logreader.joystick_inputs[idx]
 
             # X case
             if "_x" in joy_input["address"]:

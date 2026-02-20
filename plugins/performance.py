@@ -2,6 +2,10 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
+from typing import Any, Callable, Optional
+
 from core import validation
 from core.constants import COLORS as C
 from core.widgets import Performancescale
@@ -9,10 +13,10 @@ from plugins.abstractplugin import AbstractPlugin
 
 
 class Performance(AbstractPlugin):
-    def __init__(self, label="", taskplacement="topright", taskupdatetime=50):
+    def __init__(self, label: str = "", taskplacement: str = "topright", taskupdatetime: int = 50) -> None:
         super().__init__(_("Performance"), taskplacement, taskupdatetime)
 
-        self.validation_dict = {
+        self.validation_dict: dict[str, Callable[..., Any]] = {
             "levelmin": validation.is_positive_integer,
             "levelmax": validation.is_positive_integer,
             "ticknumber": validation.is_positive_integer,
@@ -22,7 +26,7 @@ class Performance(AbstractPlugin):
             "criticalcolor": validation.is_color,
         }
 
-        new_par = dict(
+        new_par: dict[str, Any] = dict(
             levelmin=0,
             levelmax=100,
             ticknumber=5,
@@ -33,17 +37,17 @@ class Performance(AbstractPlugin):
         )
         self.parameters.update(new_par)
 
-        self.current_level = int(self.parameters["levelmax"])
-        self.displayed_level = int(self.parameters["levelmax"])
-        self.displayed_color = self.parameters["defaultcolor"]
-        self.plugins = None
-        self.performance_levels = dict()
-        self.under_critical = None
+        self.current_level: int | float = int(self.parameters["levelmax"])
+        self.displayed_level: int | float = int(self.parameters["levelmax"])
+        self.displayed_color: tuple[int, ...] = self.parameters["defaultcolor"]
+        self.plugins: Optional[dict[str, Any]] = None
+        self.performance_levels: dict[str, float] = dict()
+        self.under_critical: Optional[bool] = None
 
-    def on_scenario_loaded(self, scenario):
+    def on_scenario_loaded(self, scenario: Any) -> None:
         self.plugins = scenario.plugins
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         super().create_widgets()
 
         # Compute performance widget container
@@ -58,7 +62,7 @@ class Performance(AbstractPlugin):
             color=C["GREEN"],
         )
 
-    def compute_next_plugin_state(self):
+    def compute_next_plugin_state(self) -> None:
         if not super().compute_next_plugin_state():
             return
 
@@ -74,39 +78,39 @@ class Performance(AbstractPlugin):
                     # Only considering hits and missed for system monitoring
                     # HIT = 1   |   MISS = 0
                     # Compute average of 4 last signal detection events
-                    perf_list = [p for p in plugin.performance["signal_detection"] if p in ["HIT", "FA", "MISS"]]
+                    perf_list: list[str] = [p for p in plugin.performance["signal_detection"] if p in ["HIT", "FA", "MISS"]]
                     if len(perf_list) >= 4:
                         self.performance_levels[p] = sum([int(p == "HIT") for p in perf_list]) / 4
 
                 # Tracking
                 elif p == "track":
                     # Time proportion spent in target for the last 5 seconds
-                    frames_n = int(5000 / plugin.parameters["taskupdatetime"])
+                    frames_n: int = int(5000 / plugin.parameters["taskupdatetime"])
                     if len(plugin.performance["cursor_in_target"]) >= frames_n:
-                        perf_list = plugin.performance["cursor_in_target"][-frames_n:]
-                        self.performance_levels[p] = sum(perf_list) / len(perf_list)
+                        perf_list_track: list[int] = plugin.performance["cursor_in_target"][-frames_n:]
+                        self.performance_levels[p] = sum(perf_list_track) / len(perf_list_track)
 
                 # Resman
                 elif p == "resman":
                     # Time proportion spent in target for the last 5 seconds
-                    frames_n = int(5000 / plugin.parameters["taskupdatetime"])
+                    frames_n_res: int = int(5000 / plugin.parameters["taskupdatetime"])
                     if (
-                        len(plugin.performance["a_in_tolerance"]) >= frames_n
-                        and len(plugin.performance["b_in_tolerance"]) >= frames_n
+                        len(plugin.performance["a_in_tolerance"]) >= frames_n_res
+                        and len(plugin.performance["b_in_tolerance"]) >= frames_n_res
                     ):
-                        a_perf_list = plugin.performance["a_in_tolerance"][-frames_n:]
-                        b_perf_list = plugin.performance["b_in_tolerance"][-frames_n:]
+                        a_perf_list: list[int] = plugin.performance["a_in_tolerance"][-frames_n_res:]
+                        b_perf_list: list[int] = plugin.performance["b_in_tolerance"][-frames_n_res:]
 
-                        perf = (sum(a_perf_list) / len(a_perf_list)) + (sum(b_perf_list) / len(b_perf_list))
+                        perf: float = (sum(a_perf_list) / len(a_perf_list)) + (sum(b_perf_list) / len(b_perf_list))
 
                         self.performance_levels[p] = perf / 2
 
                 #       Communications
                 elif p == "communications":
                     if len(plugin.performance["correct_radio"]) >= 4:
-                        perf_radio = plugin.performance["correct_radio"][-4:]
-                        perf_freq = plugin.performance["response_deviation"][-4:]
-                        all_good = [r and round(f, 1) == 0 for r, f in zip(perf_radio, perf_freq)]
+                        perf_radio: list[bool] = plugin.performance["correct_radio"][-4:]
+                        perf_freq: list[float] = plugin.performance["response_deviation"][-4:]
+                        all_good: list[bool] = [r and round(f, 1) == 0 for r, f in zip(perf_radio, perf_freq)]
 
                         self.performance_levels[p] = sum(all_good) / len(all_good)
 
@@ -127,7 +131,7 @@ class Performance(AbstractPlugin):
         else:
             self.displayed_level = self.current_level
 
-    def refresh_widgets(self):
+    def refresh_widgets(self) -> None:
         if not super().refresh_widgets():
             return
         self.widgets["performance_bar"].set_tick_number(self.parameters["ticknumber"])

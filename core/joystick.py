@@ -1,18 +1,22 @@
+from __future__ import annotations
+
+from typing import Any, Optional
+
 import pyglet.input
 
 from core.constants import REPLAY_MODE
 from core.error import errors
 from core.logger import logger
 
-hat_sides = ["LEFT", "UP", "RIGHT", "DOWN"]
+hat_sides: list[str] = ["LEFT", "UP", "RIGHT", "DOWN"]
 
 
 class Joystick:
-    def __init__(self, device):
-        self.device = device
-        self.keys = dict()
-        self.x = 0
-        self.y = 0
+    def __init__(self, device: Any) -> None:
+        self.device: Any = device
+        self.keys: dict[str, bool] = dict()
+        self.x: float = 0
+        self.y: float = 0
         try:  # Just in case Joystick is opened twice (?)
             self.open()
         except OSError:
@@ -26,21 +30,21 @@ class Joystick:
         self.keys.update({f"JOY_HAT_{side}": False for side in hat_sides})
 
         # Create a parallel dict of keys for tracking key changes
-        self.key_change = {key: None for key in self.keys}
+        self.key_change: dict[str, Optional[str]] = {key: None for key in self.keys}
 
-    def open(self):
+    def open(self) -> None:
         self.device.open()
 
-    def is_key_pressed(self, key):
+    def is_key_pressed(self, key: str) -> bool:
         return self.keys[key] is True
 
-    def has_any_key_changed(self):
+    def has_any_key_changed(self) -> bool:
         return any([v is not None for k, v in self.key_change.items()])
 
-    def reset_key_change(self, keystr):
+    def reset_key_change(self, keystr: str) -> None:
         self.key_change[keystr] = None
 
-    def update(self):
+    def update(self) -> None:
         # Update x & y joystick values
         if self.device.x != self.x:
             self.x = self.device.x
@@ -51,7 +55,7 @@ class Joystick:
 
         # Update button values
         # (Keep a copy of previous state to check for state changes)
-        previous_state = dict(self.keys)
+        previous_state: dict[str, bool] = dict(self.keys)
         for numb, button_state in enumerate(self.device.buttons):
             self.keys[f"JOY_BTN_{numb + 1}"] = button_state
 
@@ -83,13 +87,14 @@ class Joystick:
                 logger.record_input("Joystick", key, "release")
 
 
-joykey, joystick = None, None
+joykey: Optional[dict[str, bool]] = None
+joystick: Optional[Joystick] = None
 # Search and find a joystick
-joysticks = pyglet.input.get_joysticks()
+joysticks: list[Any] = pyglet.input.get_joysticks()
 
 if not REPLAY_MODE:
     if len(joysticks) > 0:
-        joystick_device = joysticks[0]
+        joystick_device: Any = joysticks[0]
         joystick = Joystick(joystick_device)
         joykey = joystick.keys
     else:

@@ -2,13 +2,16 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+from __future__ import annotations
+
+from core.container import Container
 from core.widgets.abstractwidget import *
 
 
 class Pump(AbstractWidget):
-    def __init__(self, name, container, from_cont, to_cont, pump_n, color, pump_width, y_offset=0):
+    def __init__(self, name: str, container: Container, from_cont: Container, to_cont: Container, pump_n: int, color: tuple[int, int, int, int], pump_width: float, y_offset: float = 0) -> None:
         super().__init__(name, container)
-        width = pump_width
+        width: float = pump_width
 
         # If from_container and to_container are aligned (x or y axis)
         if from_cont.cx == to_cont.cx or from_cont.cy == to_cont.cy:
@@ -23,14 +26,15 @@ class Pump(AbstractWidget):
             )
 
             # Draw the pump in the middle of the line
-            x1, x2 = min(from_cont.cx, to_cont.cx), max(from_cont.cx, to_cont.cx)
-            s = -1 if from_cont.cx > to_cont.cx else 1
-            x = x1 + (x2 - x1) / 2 + s * width / 2
-            y = from_cont.cy + y_offset
-            w = width if from_cont.cx > to_cont.cx else -width  # Pump width
-            h = abs(w)
-            self.pump_vertice = (x, y, x + w, y + h / 2, x + w, y - h / 2)
-            self.num_location = (x + w * 0.70, y + 2)
+            x1: float = min(from_cont.cx, to_cont.cx)
+            x2: float = max(from_cont.cx, to_cont.cx)
+            s: int = -1 if from_cont.cx > to_cont.cx else 1
+            x: float = x1 + (x2 - x1) / 2 + s * width / 2
+            y: float = from_cont.cy + y_offset
+            w: float = width if from_cont.cx > to_cont.cx else -width  # Pump width
+            h: float = abs(w)
+            self.pump_vertice: tuple[float, ...] = (x, y, x + w, y + h / 2, x + w, y - h / 2)
+            self.num_location: tuple[float, float] = (x + w * 0.70, y + 2)
 
         else:  # If not, make an perpendicular node
             y_offset = -y_offset - 20
@@ -88,11 +92,11 @@ class Pump(AbstractWidget):
             group=G(self.m_draw + 2),
         )
 
-    def set_color(self, color):
+    def set_color(self, color: tuple[int, int, int, int]) -> None:
         if color == self.get_color():
             return
         self.on_batch["triangle"].colors[:] = color * 3
         self.logger.record_state(self.name, "triangle", color)
 
-    def get_color(self):
+    def get_color(self) -> tuple[int, int, int, int]:
         return self.get_vertex_color("triangle")
