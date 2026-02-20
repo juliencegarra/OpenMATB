@@ -127,7 +127,9 @@ class Communications(AbstractPlugin):
             return
 
         if not new_path.exists():
-            print(_("Warning: sound path %s does not exist. Check voiceidiom/voicegender combination.") % new_path)
+            self.logger.log_manual_entry(
+                _("Warning: sound path %s does not exist. Check voiceidiom/voicegender combination.") % new_path
+            )
             return
 
         self.sound_path = new_path
@@ -135,12 +137,12 @@ class Communications(AbstractPlugin):
             self.sound_path.joinpath(f"{i}.wav")
             for i in [s for s in digits + ascii_lowercase]
             + [this_radio.lower() for this_radio in self.parameters["promptlist"]]
-            + ["radio", "point", "frequency"]
+            + ["radio", "point", "frequency", "empty"]
         ]
 
         for sample_needed in self.samples_path:
             if not sample_needed.exists():
-                print(sample_needed, _(" does not exist"))
+                self.logger.log_manual_entry(f"{sample_needed}" + _(" does not exist"))
 
     def regenerate_callsigns(self) -> None:
         self.parameters["owncallsign"] = self.get_callsign()
@@ -216,9 +218,12 @@ class Communications(AbstractPlugin):
 
         group: Any = SourceGroup()
         for f in list_of_sounds:
-            source: Any = load(str(self.sound_path.joinpath(f"{f}.wav")), streaming=False)
-            # print(f)
-            group.add(source)
+            wav_path = self.sound_path.joinpath(f"{f}.wav")
+            try:
+                source: Any = load(str(wav_path), streaming=False)
+                group.add(source)
+            except Exception:
+                self.logger.log_manual_entry(f"Audio file missing or unreadable: {wav_path}")
         return group
 
     def prompt_for_a_new_target(self, destination: str, radio_name: str) -> None:
@@ -244,9 +249,12 @@ class Communications(AbstractPlugin):
 
         sound_group: Any = self.group_audio_files(callsign, radio_name, random_frequency)
 
-        self.player: Any = Player()
-        self.player.queue(sound_group)
-        self.player.play()
+        try:
+            self.player: Any = Player()
+            self.player.queue(sound_group)
+            self.player.play()
+        except Exception:
+            self.logger.log_manual_entry("Audio prompt playback failed")
 
     def get_rand_frequency(self, radio_n: int) -> float:
         return round(
