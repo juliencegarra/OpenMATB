@@ -154,7 +154,7 @@ def distribute_events(
     random_delays = random_delays[:-1]  # The last delay is useless
 
     onset_sec: float = start_sec
-    lastline: int = int(scenario_lines[-1].line)
+    lastline: int = int(get_events_from_scenario(scenario_lines)[-1].line)
 
     for previous_delay, cmd in zip(random_delays, cmd_list):
         lastline += 1
@@ -167,17 +167,18 @@ def distribute_events(
 def add_scenario_phase(
     scenario_lines: list[str | Event], task_difficulty_tuples: tuple[tuple[str, float], ...], start_sec: int
 ) -> list[str | Event]:
-    # Compute next time (in seconds) and line number
+    # Compute next line number
     scenario_events: list[Event] = get_events_from_scenario(scenario_lines)
     start_line: int = scenario_events[-1].line + 1 if len(scenario_events) != 0 else 1
-    start_sec + STEP_DURATION_SEC
 
     # If a plugin is active and not desired, pause and hide it
     for plugin_name in ["sysmon", "tracking", "communications", "resman"]:
         task_state: list[str] | None = get_task_current_state(scenario_lines, plugin_name)
-        if task_state in ["start", "resume"] and plugin_name not in [p for (p, d) in task_difficulty_tuples]:
+        if task_state is not None and task_state[0] in ["start", "resume"] and plugin_name not in [p for (p, d) in task_difficulty_tuples]:
             scenario_lines.append(Event(start_line, start_sec, plugin_name, "pause"))
+            start_line += 1
             scenario_lines.append(Event(start_line, start_sec, plugin_name, "hide"))
+            start_line += 1
 
     # If the desired plugin is not started or inactive, add the relevant commands
     for plugin_name, difficulty in task_difficulty_tuples:
@@ -185,9 +186,12 @@ def add_scenario_phase(
         task_state = get_task_current_state(scenario_lines, plugin_name)
         if task_state is None:
             scenario_lines.append(Event(start_line, start_sec, plugin_name, "start"))
-        elif task_state == "pause":
+            start_line += 1
+        elif task_state is not None and task_state[0] == "pause":
             scenario_lines.append(Event(start_line, start_sec, plugin_name, "show"))
+            start_line += 1
             scenario_lines.append(Event(start_line, start_sec, plugin_name, "resume"))
+            start_line += 1
 
         # Handle difficulty of each plugin separately
         # Maximum difficulty cannot simple be the maximum rate of events. For instance, in the
@@ -241,6 +245,7 @@ def add_scenario_phase(
         elif plugin_name == "track":
             print("Tracking | computing events")
             scenario_lines.append(Event(start_line, start_sec, plugin_name, ["targetproportion", 1 - difficulty]))
+            start_line += 1
 
         # COMMUNICATIONS.   Here, difficulty is composed of both the number of communications,
         # and the signal to noise ratio (target versus distracting communications).
@@ -304,6 +309,7 @@ def add_scenario_phase(
             for letter in target_tank_letters:
                 cmd: list[Any] = [f"tank-{letter}-lossperminute", int(maximum_single_leakage * difficulty)]
                 scenario_lines.append(Event(start_line, start_sec, plugin_name, cmd))
+                start_line += 1
 
     return scenario_lines
 
@@ -350,9 +356,11 @@ def main() -> None:
 
     # Stop all tasks at the very end
     start_time_sec += STEP_DURATION_SEC
-    for task in set([e.plugin for e in get_events_from_scenario(scenario_lines)]):
-        start_line: int = scenario_lines[-1].line + 1 if len(scenario_lines) != 0 else 1
+    scenario_events: list[Event] = get_events_from_scenario(scenario_lines)
+    start_line: int = scenario_events[-1].line + 1 if len(scenario_events) != 0 else 1
+    for task in set([e.plugin for e in scenario_events]):
         scenario_lines.append(Event(start_line, start_time_sec, task, "stop"))
+        start_line += 1
 
     timestamp: float = time()
     date_time: datetime = datetime.fromtimestamp(timestamp)
