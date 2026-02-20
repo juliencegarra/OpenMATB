@@ -13,12 +13,13 @@ import math
 class Slider(AbstractWidget):
     def __init__(self, name, container, title, label_min, label_max,
                  value_min, value_max, value_default, rank, draw_order=1,
-                 interactive=True):
+                 interactive=True, showvalue=True):
         super().__init__(name, container)
 
         self.title = title
         self.label_min = label_min
         self.label_max = label_max
+        self.showvalue = showvalue
         self.value_min = value_min
         self.value_max = value_max
         self.value_default = value_default
@@ -63,11 +64,12 @@ class Slider(AbstractWidget):
                                       align='center', anchor_x='center',
                                       anchor_y='center', x=x, y=y, color=C['BLACK'],
                                       group=G(self.draw_order), font_size=F['MEDIUM'])
-        x, y = self.containers['value'].cx, self.containers['value'].cy
-        self.vertex['value'] = Label(str(self.groove_value), align='center', anchor_x='center',
-                                      anchor_y='center', x=x, y=y, color=C['BLACK'],
-                                      group=G(self.draw_order), font_size=F['MEDIUM'],
-                                      font_name=self.font_name)
+        if self.showvalue:
+            x, y = self.containers['value'].cx, self.containers['value'].cy
+            self.vertex['value'] = Label(str(self.groove_value), align='center', anchor_x='center',
+                                          anchor_y='center', x=x, y=y, color=C['BLACK'],
+                                          group=G(self.draw_order), font_size=F['MEDIUM'],
+                                          font_name=self.font_name)
 
 
     def set_slider_thumb_and_groove(self):
@@ -111,6 +113,8 @@ class Slider(AbstractWidget):
 
 
     def set_value_label(self):
+        if not self.showvalue:
+            return
         display_value = str(int(round(self.groove_value)))
         if display_value == self.vertex['value'].text:
             return
