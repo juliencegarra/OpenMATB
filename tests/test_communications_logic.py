@@ -1,6 +1,8 @@
 """Tests for plugins.communications - SDT and radio logic."""
 
 from unittest.mock import patch, MagicMock
+from pathlib import Path
+from string import digits, ascii_lowercase
 import pytest
 
 from plugins.communications import Communications
@@ -134,3 +136,77 @@ class TestRadioHelpers:
         waiting = c.get_waiting_response_radios()
         assert len(waiting) == 1
         assert waiting[0]['name'] == 'COM_1'
+
+
+def _make_comms_for_voice():
+    """Create a minimal Communications object for testing voice/sound methods."""
+    c = object.__new__(Communications)
+    c.alias = 'communications'
+    c.parameters = {
+        'voiceidiom': 'french',
+        'voicegender': 'female',
+        'promptlist': ['NAV_1', 'NAV_2', 'COM_1', 'COM_2'],
+    }
+    c.sound_path = None
+    return c
+
+
+class TestVoiceSwitching:
+    """Test voice language/gender switching logic."""
+
+    def test_get_sounds_path_uses_current_parameters(self):
+        """get_sounds_path() reflects current voicegender/voiceidiom values."""
+        from core.constants import PATHS as P
+        c = _make_comms_for_voice()
+        result = c.get_sounds_path()
+        assert result == P['SOUNDS'] / 'french' / 'female'
+
+        c.parameters['voiceidiom'] = 'english'
+        c.parameters['voicegender'] = 'male'
+        result = c.get_sounds_path()
+        assert result == P['SOUNDS'] / 'english' / 'male'
+
+    def test_set_sample_sounds_updates_path_on_change(self, tmp_path):
+        """set_sample_sounds() updates sound_path when parameters change."""
+        c = _make_comms_for_voice()
+        # Create a fake sounds directory with the expected wav files
+        voice_dir = tmp_path / 'french' / 'female'
+        voice_dir.mkdir(parents=True)
+        expected_names = ([s for s in digits + ascii_lowercase]
+                          + [r.lower() for r in c.parameters['promptlist']]
+                          + ['radio', 'point', 'frequency'])
+        for name in expected_names:
+            (voice_dir / f'{name}.wav').touch()
+
+        with patch.object(Communications, 'get_sounds_path', return_value=voice_dir):
+            c.set_sample_sounds()
+
+        assert c.sound_path == voice_dir
+        assert len(c.samples_path) == len(expected_names)
+
+    def test_set_sample_sounds_skips_when_unchanged(self):
+        """set_sample_sounds() is a no-op when path hasn't changed."""
+        c = _make_comms_for_voice()
+        fake_path = Path('/fake/french/female')
+        c.sound_path = fake_path
+
+        with patch.object(Communications, 'get_sounds_path', return_value=fake_path):
+            c.set_sample_sounds()
+
+        # sound_path should remain the same, no samples_path attribute set
+        assert c.sound_path == fake_path
+        assert not hasattr(c, 'samples_path')
+
+    def test_set_sample_sounds_skips_invalid_path(self, tmp_path, capsys):
+        """set_sample_sounds() warns and bails for non-existent idiom/gender combo."""
+        c = _make_comms_for_voice()
+        nonexistent = tmp_path / 'english' / 'female'  # Does not exist
+
+        with patch.object(Communications, 'get_sounds_path', return_value=nonexistent):
+            c.set_sample_sounds()
+
+        # sound_path should NOT be updated
+        assert c.sound_path is None
+        captured = capsys.readouterr()
+        assert 'Warning' in captured.out
+        assert 'does not exist' in captured.out

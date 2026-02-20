@@ -22,7 +22,9 @@ class Communications(AbstractPlugin):
             'owncallsign' : validation.is_callsign,
             'othercallsign' : validation.is_callsign_or_list_of,  # othercallsign can be a list of callsigns
             'voiceidiom': (validation.is_in_list, [p.name.lower() for p in P['SOUNDS'].iterdir()]),
-            'voicegender': (validation.is_in_list, ['male', 'female']),
+            'voicegender': (validation.is_in_list,
+                list(set(d.name.lower() for idiom in P['SOUNDS'].iterdir()
+                         if idiom.is_dir() for d in idiom.iterdir() if d.is_dir()))),
             'othercallsignnumber': validation.is_positive_integer,
             'airbandminMhz': validation.is_positive_float,
             'airbandmaxMhz': validation.is_positive_float,
@@ -88,6 +90,11 @@ class Communications(AbstractPlugin):
     def set_sample_sounds(self):
         new_path = self.get_sounds_path()
         if new_path == self.sound_path:
+            return
+
+        if not new_path.exists():
+            print(_('Warning: sound path %s does not exist. '
+                     'Check voiceidiom/voicegender combination.') % new_path)
             return
 
         self.sound_path = new_path
