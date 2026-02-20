@@ -140,6 +140,37 @@ For more information about how to use OpenMATB, please refers to [our wiki](http
 
 Since the first release of OpenMATB, there has been a lot of changes, the main one of which are listed below.
 
+### Version 1.3+
+  **Replay Mode (new)**
+  - Full session replay system — replay recorded sessions from log files
+  - File selector screen with mute button for replay mode
+  - Replay slider with play, pause, and seeking support
+  - Fast-forward capability
+  - Instruction & scale plugins supported during replay
+
+  **New Features**
+  - system;pause scenario command — trigger pause directly from scenario files
+  - Generic trigger plugin added
+  - Joystick button mapping — any joystick button can be defined as a plugin response key (e.g., scales-1-key in System Monitoring)
+  - Customizable vertical bounds of plugin areas
+  - showvalue parameter for `generic scales` — hide the numeric value on scale sliders (hidden by default)
+  - Question titles in `generic scales` displayed when title differs from question
+  - Dynamic scale layout with proper slider sub-container distribution
+  - Keyboard control for `genericscales` slides
+  - Scenario selector shown at startup when no scenario is set in config.ini
+  - Better English voice in `communications` task
+
+  **Bug Fixes**
+  - Fix `performance` scale ignoring params set after start (#34)
+  - Fix numpad keys removed when scenario sets pump key to its default value (#52)
+  - Fix `communications` voice language switching (#32)
+  - Fix automode in `track` (#57)
+  - Fix exit freezing under Windows
+  - Fix slider widgets persisting across questionnaire pages
+  - Fix pylsl import blocking the compiled version
+  - Fix scenario generator (four small bugs)
+  - Protect audio loading from crashes
+
 ### Version 1.2
 
 **New plugins/features:**
