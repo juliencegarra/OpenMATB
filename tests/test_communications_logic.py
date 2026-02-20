@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from string import ascii_lowercase, digits
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from plugins.communications import Communications
 
@@ -184,6 +184,7 @@ def _make_comms_for_voice():
         "promptlist": ["NAV_1", "NAV_2", "COM_1", "COM_2"],
     }
     c.sound_path = None
+    c.logger = MagicMock()
     return c
 
 
@@ -212,7 +213,7 @@ class TestVoiceSwitching:
         expected_names = (
             [s for s in digits + ascii_lowercase]
             + [r.lower() for r in c.parameters["promptlist"]]
-            + ["radio", "point", "frequency"]
+            + ["radio", "point", "frequency", "empty"]
         )
         for name in expected_names:
             (voice_dir / f"{name}.wav").touch()
@@ -236,7 +237,7 @@ class TestVoiceSwitching:
         assert c.sound_path == fake_path
         assert not hasattr(c, "samples_path")
 
-    def test_set_sample_sounds_skips_invalid_path(self, tmp_path, capsys):
+    def test_set_sample_sounds_skips_invalid_path(self, tmp_path):
         """set_sample_sounds() warns and bails for non-existent idiom/gender combo."""
         c = _make_comms_for_voice()
         nonexistent = tmp_path / "english" / "female"  # Does not exist
@@ -246,6 +247,7 @@ class TestVoiceSwitching:
 
         # sound_path should NOT be updated
         assert c.sound_path is None
-        captured = capsys.readouterr()
-        assert "Warning" in captured.out
-        assert "does not exist" in captured.out
+        c.logger.log_manual_entry.assert_called_once()
+        logged_msg = c.logger.log_manual_entry.call_args[0][0]
+        assert "Warning" in logged_msg
+        assert "does not exist" in logged_msg

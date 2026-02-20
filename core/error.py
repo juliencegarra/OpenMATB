@@ -37,4 +37,3 @@ class Errors:
                 title: str = _("Warning") if not self.some_fatals else _("Error(s)")
                 continue_key: str | None = None if self.some_fatals else "SPACE"
                 Window.MainWindow.open_modal_window(pass_list, title=title, continue_key=continue_key, exit_key="Q")
-

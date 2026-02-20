@@ -155,4 +155,3 @@ class Logger:
 
     def set_scenario_time(self, scenario_time: float) -> None:
         self.scenario_time = scenario_time
-
