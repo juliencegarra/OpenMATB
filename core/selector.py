@@ -42,6 +42,15 @@ class FileSelector:
         self._files: list[Path] = self._scan_files()
         self._display_texts: list[str] = [self._format_entry(f) for f in self._files]
 
+        # Identify empty/near-empty files (crash, immediate close, etc.)
+        EMPTY_THRESHOLD = 500  # bytes
+        self._empty_indices: set[int] = {
+            i for i, f in enumerate(self._files)
+            if f.stat().st_size < EMPTY_THRESHOLD
+        }
+        for i in self._empty_indices:
+            self._display_texts[i] += "  (vide)"
+
         # Selection / scroll state
         self._selected_index: int = 0 if self._files else -1
         self._scroll_offset: int = 0
@@ -200,7 +209,12 @@ class FileSelector:
             file_idx: int = self._scroll_offset + i
             if file_idx < len(self._display_texts):
                 lbl.text = self._display_texts[file_idx]
-                lbl.color = C["WHITE"] if file_idx == self._selected_index else C["BLACK"]
+                if file_idx == self._selected_index:
+                    lbl.color = C["WHITE"]
+                elif file_idx in self._empty_indices:
+                    lbl.color = C["GREY"]
+                else:
+                    lbl.color = C["BLACK"]
             else:
                 lbl.text = ""
 
