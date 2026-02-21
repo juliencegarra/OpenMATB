@@ -83,6 +83,14 @@ class Track(AbstractPlugin):
         self.y_input = y
 
     def compute_next_plugin_state(self) -> None:
+        # Reset agent joystick inputs so stale values don't persist across frames.
+        # Real joystick: scheduler refreshes x_input/y_input every frame via
+        # update_joystick() before this method is called — no reset needed.
+        # Agent: only writes when attending track; reset prevents stale force.
+        if self.parameters["automaticsolver"]:
+            self.x_input = 0
+            self.y_input = 0
+
         if not super().compute_next_plugin_state():
             return
 
