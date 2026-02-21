@@ -52,12 +52,12 @@ class Track(AbstractPlugin):
         self.cursor_position: tuple[float, float] | None = None
         self.cursor_color_key: str = "cursorcolor"
         self.gain_ratio: float = 0.8  # The proportion of the reticle area the cursor should cover
-        self.response_time: int = 0
+        self._response_start: float | None = None
         self.x_input: float = 0
         self.y_input: float = 0
 
-    def get_response_timers(self) -> list[int]:
-        return [self.response_time]
+    def get_response_timers(self) -> list[float]:
+        return [self._response_elapsed_ms(self._response_start)]
 
     def create_widgets(self) -> None:
         super().create_widgets()
@@ -110,11 +110,12 @@ class Track(AbstractPlugin):
         self.log_performance("center_deviation", self.reticle.return_deviation())
 
         if not self.reticle.is_cursor_in_target():  # A response is needed
-            self.response_time += self.parameters["taskupdatetime"]
+            if self._response_start is None:
+                self._response_start = self.scenario_time
         else:
-            if self.response_time > 0:  # The cursor drift has been recovered
-                self.log_performance("response_time", self.response_time)
-                self.response_time = 0
+            if self._response_start is not None:  # The cursor drift has been recovered
+                self.log_performance("response_time", self._response_elapsed_ms(self._response_start))
+                self._response_start = None
 
     def refresh_widgets(self) -> None:
         if not super().refresh_widgets():

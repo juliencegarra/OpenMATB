@@ -46,7 +46,7 @@ def _make_sysmon(**overrides):
                 on=True,
                 _failuretimer=None,
                 _onfailure=False,
-                _milliresponsetime=0,
+                _response_start=None,
                 _freezetimer=None,
             ),
             "2": dict(
@@ -58,7 +58,7 @@ def _make_sysmon(**overrides):
                 on=False,
                 _failuretimer=None,
                 _onfailure=False,
-                _milliresponsetime=0,
+                _response_start=None,
                 _freezetimer=None,
             ),
         },
@@ -70,7 +70,7 @@ def _make_sysmon(**overrides):
                 key="F1",
                 _failuretimer=None,
                 _onfailure=False,
-                _milliresponsetime=0,
+                _response_start=None,
                 _freezetimer=None,
                 _pos=5,
                 _zone=0,
@@ -84,7 +84,7 @@ def _make_sysmon(**overrides):
                 key="F2",
                 _failuretimer=None,
                 _onfailure=False,
-                _milliresponsetime=0,
+                _response_start=None,
                 _freezetimer=None,
                 _pos=5,
                 _zone=0,
@@ -98,7 +98,7 @@ def _make_sysmon(**overrides):
                 key="F3",
                 _failuretimer=None,
                 _onfailure=False,
-                _milliresponsetime=0,
+                _response_start=None,
                 _freezetimer=None,
                 _pos=5,
                 _zone=0,
@@ -112,7 +112,7 @@ def _make_sysmon(**overrides):
                 key="F4",
                 _failuretimer=None,
                 _onfailure=False,
-                _milliresponsetime=0,
+                _response_start=None,
                 _freezetimer=None,
                 _pos=5,
                 _zone=0,
@@ -391,15 +391,15 @@ class TestStopFailure:
         s.stop_failure(scale, success=True)
         assert scale["_zone"] == 0  # Reset to neutral
 
-    def test_resets_response_time(self):
-        """Recovery zeroes out response time."""
+    def test_resets_response_start(self):
+        """Recovery clears _response_start to None."""
         s = _make_sysmon()
         light = s.parameters["lights"]["1"]
         light["failure"] = True
         s.start_failure(light)
-        light["_milliresponsetime"] = 2000
+        assert light["_response_start"] is not None  # Set by start_failure
         s.stop_failure(light, success=True)
-        assert light["_milliresponsetime"] == 0
+        assert light["_response_start"] is None
 
 
 # ──────────────────────────────────────────────
@@ -498,30 +498,36 @@ class TestFailureTimer:
         s.start_failure(light)
         initial_timer = light["_failuretimer"]
 
-        # Simulate one update cycle
+        # Simulate one update cycle (only failure timer decrements now)
         light["_failuretimer"] -= s.parameters["taskupdatetime"]
-        light["_milliresponsetime"] += s.parameters["taskupdatetime"]
 
         assert light["_failuretimer"] == initial_timer - 200
-        assert light["_milliresponsetime"] == 200
 
-    def test_response_time_accumulates(self):
-        """Response time increases each update cycle."""
+    def test_response_start_set_by_start_failure(self):
+        """start_failure sets _response_start to scenario_time."""
         s = _make_sysmon()
+        s.scenario_time = 5.0
+        light = s.parameters["lights"]["1"]
+        light["failure"] = True
+        s.start_failure(light)
+        assert light["_response_start"] == 5.0
+
+    def test_elapsed_response_time_grows(self):
+        """Elapsed response time grows as scenario_time advances."""
+        s = _make_sysmon()
+        s.scenario_time = 1.0
         light = s.parameters["lights"]["1"]
         light["failure"] = True
         s.start_failure(light)
 
-        # Simulate 5 update cycles
-        for _ in range(5):
-            light["_failuretimer"] -= s.parameters["taskupdatetime"]
-            light["_milliresponsetime"] += s.parameters["taskupdatetime"]
-
-        assert light["_milliresponsetime"] == 1000
+        # Advance scenario time by 1 second
+        s.scenario_time = 2.0
+        elapsed = s._response_elapsed_ms(light["_response_start"])
+        assert abs(elapsed - 1000.0) < 0.01
 
     def test_get_response_timers(self):
         """Returns list of all 6 gauge response times."""
         s = _make_sysmon()
         timers = s.get_response_timers()
         assert len(timers) == 6
-        assert all(t == 0 for t in timers)
+        assert all(t == 0.0 for t in timers)

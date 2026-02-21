@@ -442,6 +442,12 @@ class AbstractPlugin:
         """
         return {f"{prefix}-{i}-{k}": v for i in indices for k, v in validators.items()}
 
+    def _response_elapsed_ms(self, start: float | None) -> float:
+        """Return elapsed milliseconds since *start* (a scenario_time), or 0.0 if None."""
+        if start is None:
+            return 0.0
+        return (self.scenario_time - start) * 1000
+
     def keep_value_between(self, value: float, down: float, up: float) -> float:
         return max(min(value, up), down)
 

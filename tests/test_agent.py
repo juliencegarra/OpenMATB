@@ -346,29 +346,31 @@ class TestDefaultAgentSysmon:
         assert result == {"delay": 10000}
 
     def test_update_sysmon_sends_key_after_delay(self):
-        """Agent sends gauge key when _milliresponsetime >= automaticsolverdelay."""
+        """Agent sends gauge key when elapsed response time >= automaticsolverdelay."""
         agent = DefaultAgent()
         plugin = MagicMock()
         plugin.alias = "sysmon"
+        plugin.scenario_time = 2.0
         plugin.parameters = {"automaticsolverdelay": 1000}
-        gauge = {"name": "F1", "_milliresponsetime": 1000, "key": "F1"}
+        gauge = {"name": "F1", "_response_start": 1.0, "key": "F1"}  # 1s elapsed = 1000ms
         plugin.get_gauges_on_failure.return_value = [gauge]
         with patch("agents.abstract_agent.get_logger") as mock_gl:
             mock_gl.return_value = MagicMock()
-            agent.on_plugin_update(plugin, 0)
+            agent.on_plugin_update(plugin, 2.0)
         plugin.do_on_key.assert_called_once_with("F1", "press", emulate=True)
 
     def test_update_sysmon_skips_before_delay(self):
-        """Agent does not send key when _milliresponsetime < automaticsolverdelay."""
+        """Agent does not send key when elapsed response time < automaticsolverdelay."""
         agent = DefaultAgent()
         plugin = MagicMock()
         plugin.alias = "sysmon"
+        plugin.scenario_time = 1.8
         plugin.parameters = {"automaticsolverdelay": 1000}
-        gauge = {"name": "F1", "_milliresponsetime": 800, "key": "F1"}
+        gauge = {"name": "F1", "_response_start": 1.0, "key": "F1"}  # 0.8s elapsed = 800ms
         plugin.get_gauges_on_failure.return_value = [gauge]
         with patch("agents.abstract_agent.get_logger") as mock_gl:
             mock_gl.return_value = MagicMock()
-            agent.on_plugin_update(plugin, 0)
+            agent.on_plugin_update(plugin, 1.8)
         plugin.do_on_key.assert_not_called()
 
     def test_update_sysmon_no_failure(self):
@@ -376,11 +378,12 @@ class TestDefaultAgentSysmon:
         agent = DefaultAgent()
         plugin = MagicMock()
         plugin.alias = "sysmon"
+        plugin.scenario_time = 5.0
         plugin.parameters = {"automaticsolverdelay": 1000}
         plugin.get_gauges_on_failure.return_value = []
         with patch("agents.abstract_agent.get_logger") as mock_gl:
             mock_gl.return_value = MagicMock()
-            agent.on_plugin_update(plugin, 0)
+            agent.on_plugin_update(plugin, 5.0)
         plugin.do_on_key.assert_not_called()
 
     def test_update_sysmon_multiple_gauges(self):
@@ -388,13 +391,14 @@ class TestDefaultAgentSysmon:
         agent = DefaultAgent()
         plugin = MagicMock()
         plugin.alias = "sysmon"
+        plugin.scenario_time = 2.0
         plugin.parameters = {"automaticsolverdelay": 1000}
-        ready = {"name": "F1", "_milliresponsetime": 1200, "key": "F1"}
-        not_ready = {"name": "F2", "_milliresponsetime": 500, "key": "F2"}
+        ready = {"name": "F1", "_response_start": 0.8, "key": "F1"}    # 1.2s elapsed = 1200ms >= 1000
+        not_ready = {"name": "F2", "_response_start": 1.5, "key": "F2"}  # 0.5s elapsed = 500ms < 1000
         plugin.get_gauges_on_failure.return_value = [ready, not_ready]
         with patch("agents.abstract_agent.get_logger") as mock_gl:
             mock_gl.return_value = MagicMock()
-            agent.on_plugin_update(plugin, 0)
+            agent.on_plugin_update(plugin, 2.0)
         plugin.do_on_key.assert_called_once_with("F1", "press", emulate=True)
 
 
@@ -949,12 +953,13 @@ class TestHumanLikeSysmon:
 
         plugin = MagicMock()
         plugin.alias = "sysmon"
-        gauge = {"name": "F1", "_milliresponsetime": 5000, "key": "F1"}
+        plugin.scenario_time = 6.0
+        gauge = {"name": "F1", "_response_start": 1.0, "key": "F1"}  # 5s elapsed
         plugin.get_gauges_on_failure.return_value = [gauge]
 
         with patch("agents.abstract_agent.get_logger") as mock_gl:
             mock_gl.return_value = MagicMock()
-            agent._update_sysmon(plugin, 1.0)
+            agent._update_sysmon(plugin, 6.0)
         plugin.do_on_key.assert_called_once_with("F1", "press", emulate=True)
 
     def test_ignores_failure_when_not_attended(self):
@@ -964,7 +969,8 @@ class TestHumanLikeSysmon:
 
         plugin = MagicMock()
         plugin.alias = "sysmon"
-        gauge = {"name": "F1", "_milliresponsetime": 5000, "key": "F1"}
+        plugin.scenario_time = 6.0
+        gauge = {"name": "F1", "_response_start": 1.0, "key": "F1"}  # 5s elapsed
         plugin.get_gauges_on_failure.return_value = [gauge]
 
         with patch("agents.abstract_agent.get_logger") as mock_gl:
@@ -1006,7 +1012,7 @@ class TestHumanLikeSysmon:
 # ──────────────────────────────────────────────
 class TestHumanLikeTrack:
     def test_compensates_when_attended(self):
-        """Agent sends joystick when attending track."""
+        """Agent sends proportional joystick when attending track."""
         agent = HumanLikeAgent(seed=42)
         agent._attended_task = "track"
         agent.track_reaction_ms = 0
@@ -1016,13 +1022,15 @@ class TestHumanLikeTrack:
         plugin.alias = "track"
         plugin.reticle = MagicMock()
         plugin.reticle.cursor_relative = (-5, -5)
+        plugin.reticle.container.w = 20  # half_w=10 → jx = 5/10 = 0.5
+        plugin.reticle.container.h = 20  # half_h=10 → jy = -5/10 = -0.5
         plugin.reticle.is_cursor_in_target.return_value = False
 
         agent._track_react_start = 0.0  # Already reacted
         with patch("agents.abstract_agent.get_logger") as mock_gl:
             mock_gl.return_value = MagicMock()
             agent._update_track(plugin, 10.0)
-        plugin.get_joystick_inputs.assert_called_once_with(1.0, -1.0)
+        plugin.get_joystick_inputs.assert_called_once_with(0.5, -0.5)
 
     def test_no_compensation_when_not_attended(self):
         """Agent does NOT compensate when attending another task."""
@@ -1048,6 +1056,8 @@ class TestHumanLikeTrack:
         plugin.alias = "track"
         plugin.reticle = MagicMock()
         plugin.reticle.cursor_relative = (-5, -5)
+        plugin.reticle.container.w = 20
+        plugin.reticle.container.h = 20
         plugin.reticle.is_cursor_in_target.return_value = False
 
         with patch("agents.abstract_agent.get_logger") as mock_gl:
@@ -1063,7 +1073,7 @@ class TestHumanLikeTrack:
 
             # t=0.6s: past reaction delay, should compensate
             agent._update_track(plugin, 0.6)
-            plugin.get_joystick_inputs.assert_called_once_with(1.0, -1.0)
+            plugin.get_joystick_inputs.assert_called_once_with(0.5, -0.5)
 
     def test_micro_hesitation(self):
         """With track_noise_prob=1.0, compensation is always skipped."""
@@ -1094,6 +1104,8 @@ class TestHumanLikeTrack:
         plugin.reticle = MagicMock()
         plugin.reticle.is_cursor_in_target.return_value = True
         plugin.reticle.cursor_relative = (0, 0)
+        plugin.reticle.container.w = 20
+        plugin.reticle.container.h = 20
 
         agent._update_track(plugin, 2.0)
         assert agent._track_react_start is None
@@ -1516,13 +1528,15 @@ class TestHumanLikeDispatch:
         plugin.alias = "track"
         plugin.reticle = MagicMock()
         plugin.reticle.cursor_relative = (-1, -1)
+        plugin.reticle.container.w = 20  # half_w=10 → jx = 1/10 = 0.1
+        plugin.reticle.container.h = 20  # half_h=10 → jy = -1/10 = -0.1
         plugin.reticle.is_cursor_in_target.return_value = False
         agent._track_react_start = 0.0
 
         with patch("agents.abstract_agent.get_logger") as mock_gl:
             mock_gl.return_value = MagicMock()
             agent.on_plugin_update(plugin, 0.5)
-        plugin.get_joystick_inputs.assert_called_once_with(1.0, -1.0)
+        plugin.get_joystick_inputs.assert_called_once_with(0.1, -0.1)
 
     def test_dispatch_unknown_alias(self):
         """on_plugin_update with unknown alias does nothing (no crash)."""

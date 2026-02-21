@@ -32,7 +32,7 @@ class DefaultAgent(AbstractAgent):
     def _update_sysmon(self, plugin: Any) -> None:
         delay = plugin.parameters["automaticsolverdelay"]
         for gauge in plugin.get_gauges_on_failure():
-            if gauge["_milliresponsetime"] >= delay:
+            if gauge["_response_start"] is not None and (plugin.scenario_time - gauge["_response_start"]) * 1000 >= delay:
                 self.send_key(plugin, gauge["key"])
 
     def _update_resman(self, plugin: Any) -> None:

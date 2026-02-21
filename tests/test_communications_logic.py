@@ -18,7 +18,7 @@ def _make_comms_with_radios():
                 "currentfreq": 110.0,
                 "targetfreq": None,
                 "pos": 0,
-                "response_time": 0,
+                "_response_start": None,
                 "is_active": True,
                 "is_prompting": False,
                 "_feedbacktimer": None,
@@ -29,7 +29,7 @@ def _make_comms_with_radios():
                 "currentfreq": 120.0,
                 "targetfreq": None,
                 "pos": 1,
-                "response_time": 0,
+                "_response_start": None,
                 "is_active": False,
                 "is_prompting": False,
                 "_feedbacktimer": None,
@@ -40,7 +40,7 @@ def _make_comms_with_radios():
                 "currentfreq": 125.0,
                 "targetfreq": 130.0,
                 "pos": 2,
-                "response_time": 500,
+                "_response_start": 0.5,
                 "is_active": False,
                 "is_prompting": False,
                 "_feedbacktimer": None,
@@ -51,7 +51,7 @@ def _make_comms_with_radios():
                 "currentfreq": 130.0,
                 "targetfreq": None,
                 "pos": 3,
-                "response_time": 0,
+                "_response_start": None,
                 "is_active": False,
                 "is_prompting": False,
                 "_feedbacktimer": None,
@@ -138,10 +138,12 @@ class TestRadioHelpers:
         assert c.get_min_pos() == 0
 
     def test_get_response_timers(self):
-        """Returns list of non-zero response timers."""
+        """Returns list of response timers for radios with _response_start set."""
         c = _make_comms_with_radios()
+        c.scenario_time = 1.0  # COM_1 has _response_start=0.5 → elapsed=500ms
         timers = c.get_response_timers()
-        assert timers == [500]
+        assert len(timers) == 1
+        assert abs(timers[0] - 500.0) < 0.01
 
     def test_get_radios_by_key_value(self):
         """Filters radios by key-value pair."""
@@ -163,7 +165,7 @@ class TestRadioHelpers:
         assert radio["targetfreq"] == 130.0
         c.disable_radio_target(radio)
         assert radio["targetfreq"] is None
-        assert radio["response_time"] == 0
+        assert radio["_response_start"] is None
 
     def test_get_waiting_response_radios(self):
         """Returns radios awaiting a response."""

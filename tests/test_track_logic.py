@@ -25,7 +25,7 @@ def _make_track(**overrides):
     t.keys = set()
     t.performance = {}
     t.logger = MagicMock()
-    t.response_time = 0
+    t._response_start = None
     t.x_input = 0
     t.y_input = 0
     t.cursor_color_key = "cursorcolor"
@@ -96,14 +96,17 @@ class TestGetJoystickInputs:
 # ──────────────────────────────────────────────
 class TestGetResponseTimers:
     def test_initial_timer(self):
-        """Initial response timer is [0]."""
+        """Initial response timer is [0.0] (no response pending)."""
         t = _make_track()
-        assert t.get_response_timers() == [0]
+        assert t.get_response_timers() == [0.0]
 
-    def test_accumulated_timer(self):
-        """Accumulated timer is returned."""
-        t = _make_track(response_time=500)
-        assert t.get_response_timers() == [500]
+    def test_timer_reflects_elapsed(self):
+        """Timer reflects elapsed time since _response_start."""
+        t = _make_track()
+        t._response_start = 1.0
+        t.scenario_time = 1.5
+        timers = t.get_response_timers()
+        assert abs(timers[0] - 500.0) < 0.01
 
 
 # ──────────────────────────────────────────────
@@ -368,40 +371,49 @@ class TestCursorColorSwitching:
 # Response time tracking
 # ──────────────────────────────────────────────
 class TestResponseTimeTracking:
-    """Test response time accumulation when cursor is outside target."""
+    """Test response time tracking when cursor is outside target."""
 
-    def test_accumulates_when_outside(self):
-        """Time accumulates while cursor is out of target."""
+    def test_starts_when_outside(self):
+        """_response_start is set when cursor leaves target."""
         t = _make_track()
+        t.scenario_time = 1.0
         t.reticle.is_cursor_in_target.return_value = False
 
-        # Simulate multiple update cycles
-        for _ in range(5):
-            t.response_time += t.parameters["taskupdatetime"]
+        # Simulate the logic from compute_next_plugin_state
+        if not t.reticle.is_cursor_in_target():
+            if t._response_start is None:
+                t._response_start = t.scenario_time
 
-        assert t.response_time == 100  # 5 * 20ms
+        assert t._response_start == 1.0
+
+    def test_elapsed_grows_with_time(self):
+        """Elapsed ms grows as scenario_time advances."""
+        t = _make_track()
+        t._response_start = 1.0
+        t.scenario_time = 1.1  # 100ms later
+        assert abs(t._response_elapsed_ms(t._response_start) - 100.0) < 0.01
 
     def test_resets_when_back_in_target(self):
-        """Timer resets when cursor returns to target."""
+        """_response_start resets to None when cursor returns to target."""
         t = _make_track()
-        t.response_time = 500  # Was outside
+        t._response_start = 1.0  # Was outside
+        t.scenario_time = 1.5
 
         # Cursor returns to target
         t.reticle.is_cursor_in_target.return_value = True
         if t.reticle.is_cursor_in_target():
-            if t.response_time > 0:
-                logged_rt = t.response_time
-                t.response_time = 0
+            if t._response_start is not None:
+                logged_rt = t._response_elapsed_ms(t._response_start)
+                t._response_start = None
 
-        assert t.response_time == 0
-        assert logged_rt == 500
+        assert t._response_start is None
+        assert abs(logged_rt - 500.0) < 0.01
 
-    def test_no_accumulation_when_inside(self):
-        """No accumulation while cursor is in target."""
+    def test_no_start_when_inside(self):
+        """_response_start stays None while cursor is in target."""
         t = _make_track()
         t.reticle.is_cursor_in_target.return_value = True
-        # Don't increment when in target
-        initial_rt = t.response_time
         if not t.reticle.is_cursor_in_target():
-            t.response_time += t.parameters["taskupdatetime"]
-        assert t.response_time == initial_rt
+            if t._response_start is None:
+                t._response_start = t.scenario_time
+        assert t._response_start is None
