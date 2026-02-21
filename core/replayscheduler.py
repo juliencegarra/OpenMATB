@@ -8,10 +8,13 @@ from bisect import bisect_right
 from time import gmtime, strftime
 from typing import Any
 
+from pyglet.shapes import Circle
 from pyglet.window import key
 
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
+from core.constants import REPLAY_STRIP_PROPORTION
+from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
 from core.logreader import LogReader
@@ -36,6 +39,10 @@ class ReplayScheduler(Scheduler):
         self._executed_key_indices: set[int] = set()
         self.keys_history: list[str] = []
         self._muted: bool = True
+        self._click_marker: Circle | None = None
+        self._click_held: bool = False
+        self._last_mouse_x: int | None = None
+        self._last_mouse_y: int | None = None
 
         self.set_media_buttons()
 
@@ -349,6 +356,12 @@ class ReplayScheduler(Scheduler):
 
         self._executed_key_indices = set()
         self.keys_history = []
+        self._last_mouse_x = None
+        self._last_mouse_y = None
+        self._click_held = False
+        if self._click_marker is not None:
+            self._click_marker.visible = False
+            self._click_marker = None
         self.clock.set_time(0)
         self.clock.tick()
         self.scenario_time = 0
@@ -415,26 +428,65 @@ class ReplayScheduler(Scheduler):
                 slider.groove_value = state["value"]
                 slider.set_groove_position()
 
+    def _remap_mouse(self, x: int, y: int) -> tuple[int, int]:
+        """Remap original full-screen coordinates to the reduced replay area."""
+        scale: float = 1 - REPLAY_STRIP_PROPORTION
+        replay_x: int = int(x * scale)
+        replay_y: int = int(y * scale + Window.MainWindow.height * REPLAY_STRIP_PROPORTION)
+        return replay_x, replay_y
+
     def display_mouse_inputs(self) -> None:
-        x: int | None = None
-        y: int | None = None
         lo: int = bisect_right(self._mouse_logtimes, self.replay_time - CLOCK_STEP)
         hi: int = bisect_right(self._mouse_logtimes, self.replay_time)
 
         for idx in range(lo, hi):
             mouse_input: dict[str, Any] = self.logreader.mouse_inputs[idx]
             if mouse_input["address"] == "x":
-                x = int(mouse_input["value"])
+                self._last_mouse_x = int(float(mouse_input["value"]))
             elif mouse_input["address"] == "y":
-                y = int(mouse_input["value"])
+                self._last_mouse_y = int(float(mouse_input["value"]))
+            elif mouse_input["address"] == "click":
+                parts: list[str] = mouse_input["value"].split(";")
+                action: str = parts[0]
+                cx, cy = int(float(parts[1])), int(float(parts[2]))
+                rx, ry = self._remap_mouse(cx, cy)
+                if action == "press":
+                    self._click_held = True
+                    if self._click_marker is not None:
+                        self._click_marker.visible = False
+                    self._click_marker = Circle(
+                        x=rx, y=ry, radius=12, color=(40, 180, 40),
+                        batch=Window.MainWindow.batch, group=G(99),
+                    )
+                    self._click_marker.opacity = 180
+                else:
+                    self._click_held = False
+                    if self._click_marker is not None:
+                        self._click_marker.visible = False
+                        self._click_marker = None
 
-        if x is not None and y is not None:
-            self.mouse_label.set_text(f"Mouse: {x}, {y}")
-            Window.MainWindow.set_mouse_position(x, y)
-        elif x is not None:
-            self.mouse_label.set_text(f"Mouse: {x}, ?")
-        elif y is not None:
-            self.mouse_label.set_text(f"Mouse: ?, {y}")
+        # Move the marker with the cursor while held
+        if self._click_held and self._click_marker is not None:
+            if self._last_mouse_x is not None and self._last_mouse_y is not None:
+                rx, ry = self._remap_mouse(self._last_mouse_x, self._last_mouse_y)
+                self._click_marker.x = rx
+                self._click_marker.y = ry
+
+        # Update cursor position when we have coordinates
+        if self._last_mouse_x is not None and self._last_mouse_y is not None:
+            rx, ry = self._remap_mouse(self._last_mouse_x, self._last_mouse_y)
+            Window.MainWindow.set_mouse_position(rx, ry)
+
+        label: str = "Mouse: "
+        if self._last_mouse_x is not None and self._last_mouse_y is not None:
+            label += f"{self._last_mouse_x}, {self._last_mouse_y}"
+        else:
+            label += "--"
+
+        if self._click_held:
+            label += " [held]"
+
+        self.mouse_label.set_text(label)
 
     def display_joystick_inputs(self) -> None:
         x: float | None = None
