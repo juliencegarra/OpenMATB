@@ -296,6 +296,72 @@ class TestOnKeyRelease:
         mock_get_logger.return_value.record_input.assert_not_called()
 
 
+class TestOnMouseMotion:
+    @patch("core.window.REPLAY_MODE", False)
+    @patch("core.window.get_logger")
+    def test_logs_mouse_position(self, mock_get_logger):
+        """Mouse motion logs x and y positions."""
+        w = _make_window()
+        w.on_mouse_motion(512, 384, 1, 0)
+        calls = mock_get_logger.return_value.record_input.call_args_list
+        assert len(calls) == 2
+        assert calls[0].args == ("mouse", "x", 512)
+        assert calls[1].args == ("mouse", "y", 384)
+
+    @patch("core.window.REPLAY_MODE", True)
+    @patch("core.window.get_logger")
+    def test_replay_mode_ignores_motion(self, mock_get_logger):
+        """Replay mode ignores mouse motion."""
+        w = _make_window()
+        w.on_mouse_motion(512, 384, 1, 0)
+        mock_get_logger.return_value.record_input.assert_not_called()
+
+
+class TestOnMouseDrag:
+    @patch("core.window.REPLAY_MODE", False)
+    @patch("core.window.get_logger")
+    def test_logs_drag_position(self, mock_get_logger):
+        """Mouse drag logs x and y positions."""
+        w = _make_window()
+        w.on_mouse_drag(100, 200, 5, 5, 1, 0)
+        calls = mock_get_logger.return_value.record_input.call_args_list
+        assert len(calls) == 2
+        assert calls[0].args == ("mouse", "x", 100)
+        assert calls[1].args == ("mouse", "y", 200)
+
+
+class TestOnMousePress:
+    @patch("core.window.REPLAY_MODE", False)
+    @patch("core.window.get_logger")
+    def test_logs_click_press(self, mock_get_logger):
+        """Mouse press logs click with position and button."""
+        w = _make_window()
+        w.on_mouse_press(512, 384, 1, 0)
+        mock_get_logger.return_value.record_input.assert_called_once_with(
+            "mouse", "click", "press;512;384;1"
+        )
+
+    @patch("core.window.REPLAY_MODE", True)
+    @patch("core.window.get_logger")
+    def test_replay_mode_ignores_press(self, mock_get_logger):
+        """Replay mode ignores mouse press."""
+        w = _make_window()
+        w.on_mouse_press(512, 384, 1, 0)
+        mock_get_logger.return_value.record_input.assert_not_called()
+
+
+class TestOnMouseRelease:
+    @patch("core.window.REPLAY_MODE", False)
+    @patch("core.window.get_logger")
+    def test_logs_click_release(self, mock_get_logger):
+        """Mouse release logs click with position and button."""
+        w = _make_window()
+        w.on_mouse_release(512, 384, 1, 0)
+        mock_get_logger.return_value.record_input.assert_called_once_with(
+            "mouse", "click", "release;512;384;1"
+        )
+
+
 class TestSetSizeAndLocation:
     def test_computes_centered_position(self):
         """Centers window on matching-size screen."""

@@ -71,6 +71,7 @@ class ReplayScheduler(Scheduler):
             # Logtime-based arrays for replay_time lookup
             self._key_logtimes: list[float] = [i["normalized_logtime"] for i in self.logreader.keyboard_inputs]
             self._joy_logtimes: list[float] = [i["normalized_logtime"] for i in self.logreader.joystick_inputs]
+            self._mouse_logtimes: list[float] = [i["normalized_logtime"] for i in self.logreader.mouse_inputs]
             self._state_logtimes: list[float] = [i["normalized_logtime"] for i in self.logreader.states]
 
         super().set_scenario(self.logreader.contents)
@@ -132,6 +133,12 @@ class ReplayScheduler(Scheduler):
         )
         self.replay_reticle.show()
 
+        mouse_container: Container = input_container.reduce_and_translate(width=0.9, height=0.05, y=0.82, x=0.5)
+        self.mouse_label: Simpletext = Simpletext(
+            "replay_mouse", mouse_container, text="Mouse: --", font_size=F["SMALL"], color=C["BLACK"]
+        )
+        self.mouse_label.show()
+
     def on_key_press_replay(self, symbol: int, modifier: int) -> None:
         if symbol == key.ESCAPE:
             Window.MainWindow.exit_prompt()
@@ -182,6 +189,7 @@ class ReplayScheduler(Scheduler):
 
         self.emulate_keyboard_inputs()
         self.display_joystick_inputs()
+        self.display_mouse_inputs()
         self.process_states()
         self._enforce_mute()
 
@@ -394,6 +402,27 @@ class ReplayScheduler(Scheduler):
                 slider: Any = self.plugins["genericscales"].sliders[slider_name]
                 slider.groove_value = state["value"]
                 slider.set_groove_position()
+
+    def display_mouse_inputs(self) -> None:
+        x: int | None = None
+        y: int | None = None
+        lo: int = bisect_right(self._mouse_logtimes, self.replay_time - CLOCK_STEP)
+        hi: int = bisect_right(self._mouse_logtimes, self.replay_time)
+
+        for idx in range(lo, hi):
+            mouse_input: dict[str, Any] = self.logreader.mouse_inputs[idx]
+            if mouse_input["address"] == "x":
+                x = int(mouse_input["value"])
+            elif mouse_input["address"] == "y":
+                y = int(mouse_input["value"])
+
+        if x is not None and y is not None:
+            self.mouse_label.set_text(f"Mouse: {x}, {y}")
+            Window.MainWindow.set_mouse_position(x, y)
+        elif x is not None:
+            self.mouse_label.set_text(f"Mouse: {x}, ?")
+        elif y is not None:
+            self.mouse_label.set_text(f"Mouse: ?, {y}")
 
     def display_joystick_inputs(self) -> None:
         x: float | None = None

@@ -168,7 +168,7 @@ def interactive_slider():
     obj.containers = {}
     obj.visible = True
     obj.selected = False
-    obj.on_batch = {}
+
     obj.logger = MagicMock()
     obj.name = "test_slider"
     obj.set_sub_containers()
@@ -300,7 +300,7 @@ class TestOnMouseFocusCallback:
         obj.visible = True
         obj.selected = False
         obj.hover = False
-        obj.on_batch = {}
+    
         obj.logger = MagicMock()
         obj.name = "test_slider"
         obj.on_mouse_focus = callback

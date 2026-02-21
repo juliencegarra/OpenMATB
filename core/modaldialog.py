@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pyglet.gl import GL_BLEND, GL_LINES, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_TRIANGLES, glBlendFunc, glEnable
+from pyglet.shapes import Line, Rectangle
 from pyglet.text import HTMLLabel
 from pyglet.window import key as winkey
 
@@ -14,7 +14,6 @@ from core.constants import COLORS as C
 from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
-from core.rendering import get_group, get_program, polygon_indices
 from core.utils import get_conf_value
 
 
@@ -27,10 +26,6 @@ class ModalDialog:
         continue_key: str | None = "SPACE",
         exit_key: str | None = None,
     ) -> None:
-        # Allow for drawing of transparent vertices
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
         self.win: Any = win
         self.name: str = title
         self.continue_key: str | None = continue_key
@@ -41,16 +36,11 @@ class ModalDialog:
         if self.hide_on_pause:
             MATB_container: Container = self.win.get_container("fullscreen")
             l, b, w, h = MATB_container.get_lbwh()
-            program = get_program()
-            self.back_vertice: Any | None = program.vertex_list_indexed(
-                4,
-                GL_TRIANGLES,
-                polygon_indices(4),
-                batch=self.win.batch,
-                group=get_group(order=20),
-                position=("f", (l, b + h, l + w, b + h, l + w, b, l, b)),
-                colors=("Bn", C["BACKGROUND"] * 4),
+            self.back_vertice: Any | None = Rectangle(
+                x=l, y=b, width=w, height=h,
+                color=C["BACKGROUND"][:3], batch=self.win.batch, group=G(20),
             )
+            self.back_vertice.opacity = C["BACKGROUND"][3]
         else:
             self.back_vertice = None
 
@@ -104,32 +94,26 @@ class ModalDialog:
         l, b, w, h = self.container.get_lbwh()
 
         # Container background
-        program = get_program()
-        self.back_dialog: Any = program.vertex_list_indexed(
-            4,
-            GL_TRIANGLES,
-            polygon_indices(4),
-            batch=self.win.batch,
-            group=get_group(order=21),
-            position=("f", (l, b + h, l + w, b + h, l + w, b, l, b)),
-            colors=("Bn", C["WHITE_TRANSLUCENT"] * 4),
+        self.back_dialog: Any = Rectangle(
+            x=l, y=b, width=w, height=h,
+            color=C["WHITE_TRANSLUCENT"][:3], batch=self.win.batch, group=G(21),
         )
+        self.back_dialog.opacity = C["WHITE_TRANSLUCENT"][3]
 
-        # Container border
-        self.border_dialog: Any = program.vertex_list(
-            8,
-            GL_LINES,
-            batch=self.win.batch,
-            group=get_group(order=21),
-            position=("f", (l, b + h, l + w, b + h, l + w, b + h, l + w, b, l + w, b, l, b, l, b, l, b + h)),
-            colors=("Bn", C["GREY"] * 8),
-        )
+        # Container border (4 lines)
+        grey: tuple[int, ...] = C["GREY"][:3]
+        self.border_lines: list[Line] = [
+            Line(l, b + h, l + w, b + h, color=grey, batch=self.win.batch, group=G(21)),      # top
+            Line(l + w, b + h, l + w, b, color=grey, batch=self.win.batch, group=G(21)),       # right
+            Line(l + w, b, l, b, color=grey, batch=self.win.batch, group=G(21)),               # bottom
+            Line(l, b, l, b + h, color=grey, batch=self.win.batch, group=G(21)),               # left
+        ]
 
         # HTMLLabel placement #
         self.html_label.x = self.container.cx
         self.html_label.y = self.container.cy
 
-        self.vertices: list[Any | None] = [self.html_label, self.back_dialog, self.border_dialog, self.back_vertice]
+        self.vertices: list[Any | None] = [self.html_label, self.back_dialog, self.back_vertice] + self.border_lines
 
     def on_delete(self) -> None:
         """The user wants to continue. So only delete the modal dialog"""
