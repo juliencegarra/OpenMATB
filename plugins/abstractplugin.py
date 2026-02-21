@@ -415,6 +415,17 @@ class AbstractPlugin:
         self.performance[name].append(value)
         self.logger.log_performance(self.alias, name, value)
 
+    @staticmethod
+    def _filter_by(collection: Any, key: str, value: Any) -> list[dict[str, Any]]:
+        """Filter a list or dict-of-dicts, returning items where item[key] == value."""
+        items = collection.values() if isinstance(collection, dict) else collection
+        return [item for item in items if item[key] == value]
+
+    @staticmethod
+    def _filter_keys_by(collection: dict[Any, dict[str, Any]], key: str, value: Any) -> list[Any]:
+        """Return dict keys where item[key] == value."""
+        return [k for k, item in collection.items() if item[key] == value]
+
     def keep_value_between(self, value: float, down: float, up: float) -> float:
         return max(min(value, up), down)
 

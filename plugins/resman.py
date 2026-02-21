@@ -377,9 +377,8 @@ class Resman(AbstractPlugin):
                 this_tank["widget"].set_tolerance_color(this_tank["_tolerance_color"])
 
     def get_pump_by_key(self, key: str) -> dict[str, Any] | None:
-        pump: list[dict[str, Any]] = [p for _, p in self.parameters["pump"].items() if p["key"] == key]
-        if len(pump) > 0:
-            return pump[0]
+        result: list[dict[str, Any]] = self._filter_by(self.parameters["pump"], "key", key)
+        return result[0] if result else None
 
     def do_on_key(self, key: str, state: str, emulate: bool) -> None:
         key = super().do_on_key(key, state, emulate)
