@@ -155,7 +155,6 @@ class Slider(AbstractWidget):
             return
         self.vertex["value"].text = display_value
 
-    # TODO: hide cursor when finished
     def coordinates_in_groove_container(self, x: float, y: float) -> bool:
         return self.containers["allgroove"].contains_xy(x, y)
 
@@ -230,6 +229,9 @@ class Slider(AbstractWidget):
             self.set_value_label()
 
     def hide(self) -> None:
+        if self.hover:
+            self.hover = False
+            self.update_cursor_appearance()
         super().hide()
         Window.MainWindow.slider_visible = False
 
