@@ -78,7 +78,7 @@ class Reticle(AbstractWidget):
         self.vertex["target_area"] = Circle(
             x=self.container.cx, y=self.container.cy,
             radius=self.target_radius,
-            segments=50,
+            segments=500,
             color=(255, 255, 255, 255),
             batch=None,
             group=G(self.m_draw),
@@ -86,7 +86,7 @@ class Reticle(AbstractWidget):
         self.vertex["target_border"] = Arc(
             x=self.container.cx, y=self.container.cy,
             radius=self.target_radius,
-            segments=50,
+            segments=500,
             color=C["BLACK"],
             batch=None,
             group=G(self.m_draw + 1),
@@ -103,7 +103,7 @@ class Reticle(AbstractWidget):
 
         self.vertex["cursor_circle"] = Arc(
             x=ax, y=ay, radius=r,
-            segments=20,
+            segments=100,
             color=self._cursorcolor,
             batch=None,
             group=G(self.m_draw + 2),

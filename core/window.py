@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pyglet import image
+from pyglet import gl, image
 from pyglet.display import get_display
 from pyglet.gl import glClearColor
 from pyglet.graphics import Batch
@@ -37,8 +37,15 @@ class Window(Window):
         self._height: int = int(screen.height)
         self._fullscreen: bool = get_conf_value("Openmatb", "fullscreen")
 
+        # Enable 4x multisampling antialiasing (MSAA) for smooth edges
+        config: Any = screen.get_best_config(gl.Config(
+            sample_buffers=1, samples=4,
+            double_buffer=True,
+        ))
+
         super().__init__(
-            fullscreen=self._fullscreen, width=self._width, height=self._height, vsync=True, *args, **kwargs
+            fullscreen=self._fullscreen, width=self._width, height=self._height,
+            vsync=True, config=config, *args, **kwargs
         )
 
         img_path: Any = P["IMG"]
