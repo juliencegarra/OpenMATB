@@ -154,7 +154,6 @@ class Scheduling(AbstractPlugin):
 
     def on_scenario_loaded(self, scenario: Any) -> None:
         events: list[Any] = scenario.events
-        # TODO: Remove redundant events (stop -> stop), keep the earliest.
         start_stop_labels: list[str] = ["start", "stop", "resume", "pause"]
         auto_labels: list[str] = ["automaticsolver"]
 
@@ -169,6 +168,15 @@ class Scheduling(AbstractPlugin):
             start_stop_events: list[tuple[int, str]] = [
                 (e.time_sec, e.command[0]) for e in events if e.plugin == task and e.command[0] in start_stop_labels
             ]
+
+            # Remove redundant consecutive events (e.g. stop -> stop), keep the earliest
+            if start_stop_events:
+                filtered: list[tuple[int, str]] = [start_stop_events[0]]
+                for evt in start_stop_events[1:]:
+                    if evt[1] != filtered[-1][1]:
+                        filtered.append(evt)
+                start_stop_events = filtered
+
             for event in start_stop_events:
                 self.planning[task]["running"].append(event[0])
             if len(self.planning[task]["running"]) % 2 == 1:
