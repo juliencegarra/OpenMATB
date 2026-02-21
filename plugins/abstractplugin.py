@@ -97,6 +97,9 @@ class AbstractPlugin:
             if self.get_widget("overdue") is not None:
                 self.get_widget("overdue").set_visibility(False)
 
+            if self.get_widget("attention") is not None:
+                self.get_widget("attention").set_visibility(False)
+
     def hide(self) -> None:
         """
         Hiding means showing a neutral foreground before the plugin for non-blocking plugins
@@ -263,6 +266,14 @@ class AbstractPlugin:
         if "widget" in overdue:
             overdue["widget"].set_visibility(overdue["_is_visible"])
             overdue["widget"].set_border_color(overdue["color"])
+
+        if self.get_widget("attention") is not None:
+            show = (
+                self.agent is not None
+                and getattr(self.agent, "show_attention", False)
+                and getattr(self.agent, "_attended_task", None) == self.alias
+            )
+            self.get_widget("attention").set_visibility(show)
         return True
 
     def filter_key(self, keystr: str) -> str | None:
@@ -339,6 +350,15 @@ class AbstractPlugin:
                 border_thickness=0.025,
                 border_color=C["RED"],
                 fill_color=None,
+            )
+            self.add_widget(
+                "attention",
+                Frame,
+                container=self.task_container,
+                border_thickness=0.02,
+                border_color=C["CYAN"],
+                fill_color=None,
+                draw_order=3,
             )
 
         if self.display_title:

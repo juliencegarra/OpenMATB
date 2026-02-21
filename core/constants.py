@@ -22,6 +22,7 @@ COLORS: dict[str, tuple[int, int, int, int]] = dict(
     DARKGREY=(50, 50, 50, 255),
     GREY=(200, 200, 200, 255),
     BLUE=(153, 204, 255, 255),
+    CYAN=(0, 190, 255, 255),
 )
 C = COLORS
 

@@ -1610,3 +1610,61 @@ class TestReplayCompatibility:
             mock_gl.return_value = mock_logger
             agent.send_joystick(plugin, 0.5, -0.3)
         mock_logger.record_input.assert_not_called()
+
+
+# ──────────────────────────────────────────────
+# Attention focus visualization
+# ──────────────────────────────────────────────
+class TestAttentionFocusVisualization:
+    def test_show_attention_default_true(self):
+        """HumanLikeAgent.show_attention is True by default."""
+        agent = HumanLikeAgent(seed=42)
+        assert agent.show_attention is True
+
+    def test_default_agent_no_show_attention(self):
+        """DefaultAgent has no show_attention → getattr returns False."""
+        agent = DefaultAgent()
+        assert getattr(agent, "show_attention", False) is False
+
+    def test_attention_widget_visibility_follows_attended_task(self):
+        """refresh_widgets sets attention visible when agent attends this plugin, hidden otherwise."""
+        from plugins.abstractplugin import AbstractPlugin
+
+        p = object.__new__(AbstractPlugin)
+        p.alias = "sysmon"
+        p.paused = False
+        p.visible = True
+        p.verbose = False
+        p.display_title = False
+        p.automode_string = ""
+        p.scenario_time = 1.0
+
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "sysmon"
+        p.agent = agent
+
+        # Mock widgets dict with attention and foreground
+        attention_widget = MagicMock()
+        p.widgets = {
+            "sysmon_attention": attention_widget,
+        }
+        p.parameters = dict(
+            taskplacement="topleft",
+            taskfeedback=dict(
+                overdue=dict(
+                    active=False, color=(241, 100, 100, 255),
+                    delayms=2000, blinkdurationms=1000,
+                    _nexttoggletime=0, _is_visible=False,
+                )
+            ),
+        )
+
+        # Agent attends sysmon → attention visible
+        p.refresh_widgets()
+        attention_widget.set_visibility.assert_called_with(True)
+
+        # Agent switches to track → attention hidden
+        attention_widget.reset_mock()
+        agent._attended_task = "track"
+        p.refresh_widgets()
+        attention_widget.set_visibility.assert_called_with(False)
