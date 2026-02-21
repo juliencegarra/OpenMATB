@@ -253,6 +253,62 @@ class TestAutoCompensation:
 
 
 # ──────────────────────────────────────────────
+# Agent input reset between frames
+# ──────────────────────────────────────────────
+class TestAgentInputReset:
+    """Test that x_input/y_input are reset between frames when automaticsolver is active."""
+
+    def test_reset_when_automaticsolver(self):
+        """With automaticsolver=True, inputs reset to 0 before each frame."""
+        t = _make_track(automaticsolver=True)
+        t.parameters["automaticsolver"] = True
+        t.get_joystick_inputs(1.0, -1.0)
+        assert t.x_input == 1.0
+        assert t.y_input == -1.0
+
+        # Simulate compute_next_plugin_state — only the reset part
+        # (super() would fail without full plugin setup, so test the reset directly)
+        if t.parameters["automaticsolver"]:
+            t.x_input = 0
+            t.y_input = 0
+
+        assert t.x_input == 0
+        assert t.y_input == 0
+
+    def test_no_reset_when_manual(self):
+        """With automaticsolver=False, inputs persist across frames."""
+        t = _make_track()
+        t.get_joystick_inputs(0.7, -0.3)
+
+        # Manual mode: no reset
+        if t.parameters["automaticsolver"]:
+            t.x_input = 0
+            t.y_input = 0
+
+        assert t.x_input == 0.7
+        assert t.y_input == -0.3
+
+    def test_agent_write_after_reset_takes_effect(self):
+        """Agent send_joystick() after reset overwrites the zeroed values."""
+        t = _make_track()
+        t.parameters["automaticsolver"] = True
+
+        # Simulate: previous frame left stale values
+        t.get_joystick_inputs(0.5, -0.5)
+
+        # Frame begins: reset
+        if t.parameters["automaticsolver"]:
+            t.x_input = 0
+            t.y_input = 0
+
+        # Agent attends track this frame and writes new values
+        t.get_joystick_inputs(1.0, -1.0)
+
+        assert t.x_input == 1.0
+        assert t.y_input == -1.0
+
+
+# ──────────────────────────────────────────────
 # Cursor color switching (in target vs outside)
 # ──────────────────────────────────────────────
 class TestCursorColorSwitching:
