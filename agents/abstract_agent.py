@@ -37,7 +37,7 @@ class AbstractAgent(ABC):
     def send_key(self, plugin: Any, keystr: str, state: str = "press") -> None:
         """Inject a key event into the plugin via do_on_key(emulate=True).
         Logs the input for replay compatibility."""
-        get_logger().record_input("keyboard", keystr, state)
+        get_logger().record_input("agent", keystr, state)
         plugin.do_on_key(keystr, state, emulate=True)
 
     def send_joystick(self, plugin: Any, x: float, y: float) -> None:

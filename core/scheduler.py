@@ -228,13 +228,16 @@ class Scheduler:
         if command == "pause":
             Window.MainWindow.pause_prompt()
         elif command == "agent":
-            from agents import create_agent
+            # In replay mode, agent inputs are replayed from the log —
+            # do not activate the agent or it would produce double inputs.
+            if not REPLAY_MODE:
+                from agents import create_agent
 
-            agent_name: str = event.command[1]
-            self.agent = create_agent(agent_name)
-            for p in self.plugins:
-                if "automaticsolver" in self.plugins[p].parameters:
-                    self.plugins[p].agent = self.agent
+                agent_name: str = event.command[1]
+                self.agent = create_agent(agent_name)
+                for p in self.plugins:
+                    if "automaticsolver" in self.plugins[p].parameters:
+                        self.plugins[p].agent = self.agent
         event.done = 1
         get_logger().record_event(event)
 
