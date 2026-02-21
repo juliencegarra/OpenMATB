@@ -315,14 +315,10 @@ class Communications(AbstractPlugin):
             return radio[0]
 
     def get_radios_by_key_value(self, k: str, v: Any) -> list[dict[str, Any]] | None:
-        radio_list: list[dict[str, Any]] = [r for _, r in self.parameters["radios"].items() if r[k] == v]
-        if len(radio_list) > 0:
-            return radio_list
+        return self._filter_by(self.parameters["radios"], k, v) or None
 
     def get_radios_number_by_key_value(self, k: str, v: Any) -> list[int] | None:
-        num_list: list[int] = [i for i, r in self.parameters["radios"].items() if r[k] == v]
-        if len(num_list) > 0:
-            return num_list
+        return self._filter_keys_by(self.parameters["radios"], k, v) or None
 
     def get_response_timers(self) -> list[int]:
         return [r["response_time"] for _, r in self.parameters["radios"].items() if r["response_time"] > 0]

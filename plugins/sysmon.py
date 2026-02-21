@@ -298,14 +298,10 @@ class Sysmon(AbstractPlugin):
         gauge["_milliresponsetime"] = 0
 
     def get_gauges_key_value(self, key: str, value: Any) -> list[dict[str, Any]]:
-        gauge_list: list[dict[str, Any]] = list()
-        for gauge in self.get_all_gauges():
-            if gauge[key] == value:
-                gauge_list.append(gauge)
-        return gauge_list
+        return self._filter_by(self.get_all_gauges(), key, value)
 
     def get_gauge_by_key(self, key: str) -> dict[str, Any]:
-        return self.get_gauges_key_value("key", key)[0]
+        return self._filter_by(self.get_all_gauges(), "key", key)[0]
 
     def get_gauge_key(self, gauge: dict[str, Any]) -> str | None:
         for key in ["lights", "scales"]:
