@@ -426,6 +426,15 @@ class AbstractPlugin:
         """Return dict keys where item[key] == value."""
         return [k for k, item in collection.items() if item[key] == value]
 
+    @staticmethod
+    def _indexed_validators(prefix: str, indices: Any, validators: dict[str, Any]) -> dict[str, Any]:
+        """Generate validation entries for indexed parameters.
+
+        >>> _indexed_validators("pump", range(1, 3), {"flow": v.is_positive_integer})
+        {"pump-1-flow": v.is_positive_integer, "pump-2-flow": v.is_positive_integer}
+        """
+        return {f"{prefix}-{i}-{k}": v for i in indices for k, v in validators.items()}
+
     def keep_value_between(self, value: float, down: float, up: float) -> float:
         return max(min(value, up), down)
 
