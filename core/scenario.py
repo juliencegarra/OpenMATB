@@ -168,14 +168,28 @@ class Scenario:
                     pass  # Not a problem during a replay (because a scenario can have been exited
                     # manually before the end, it's not mandatory to have it)
 
-        # Rule 1 bis - As for the blocking plugins, they should have their input file
-        # defined before they start (check that each start command is preceeded by filename information)
-        ## TODO
+        # Rule 1 bis - Blocking plugins should have their input file
+        # defined before they start
+        for plug_name in self.get_plugins_name_list():
+            if self.plugins[plug_name].blocking is True:
+                plug_events = self.get_plugin_events(plug_name)
+                for i, e in enumerate(plug_events):
+                    if "start" in e.command:
+                        preceding = plug_events[:i]
+                        if not any("filename" in pe.command for pe in preceding):
+                            errors.append(
+                                _("The (%s) plugin has a start command without "
+                                  "a preceding filename command.") % plug_name
+                            )
 
         for e in self.events:
             # System pseudo-plugin: validate command and skip plugin checks
             if e.plugin == SYSTEM_PSEUDO_PLUGIN:
-                if len(e.command) != 1 or e.command[0] not in SYSTEM_COMMANDS:
+                if e.command[0] not in SYSTEM_COMMANDS:
+                    errors.append(_("Error on line %s. Invalid system command: %s") % (e.line, e.get_command_str()))
+                elif e.command[0] == "agent" and len(e.command) != 2:
+                    errors.append(_("Error on line %s. Agent command requires a name argument") % e.line)
+                elif e.command[0] != "agent" and len(e.command) != 1:
                     errors.append(_("Error on line %s. Invalid system command: %s") % (e.line, e.get_command_str()))
                 continue
 
