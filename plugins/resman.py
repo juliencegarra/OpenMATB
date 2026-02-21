@@ -265,29 +265,7 @@ class Resman(AbstractPlugin):
         if self.wait_before_leak > 0:
             self.wait_before_leak -= 1
         else:
-            if self.parameters["automaticsolver"] is True:
-                for _pump_n, this_pump in {p: v for p, v in pumps.items() if v["state"] != "failure"}.items():
-                    from_tank: dict[str, Any] = tanks[this_pump["_fromtank"]]
-                    to_tank: dict[str, Any] = tanks[this_pump["_totank"]]
-
-                    # 0.1. Systematically activate pumps draining non-depletable tanks
-                    if not from_tank["depletable"] and this_pump["state"] == "off":
-                        this_pump["state"] = "on"
-
-                    # 0.2. Activate/deactivate pump whose target tank is too low/high
-                    # "Too" means level is out of a tolerance zone around the target level (2500 +/- 150)
-                    if to_tank["target"] is not None:
-                        if to_tank["level"] <= to_tank["target"] - 50:
-                            this_pump["state"] = "on"
-                        elif to_tank["level"] >= to_tank["target"] + 50:
-                            this_pump["state"] = "off"
-
-                    # 0.3. Equilibrate between the two A/B tanks if sufficient level
-                    if from_tank["target"] is not None and to_tank["target"] is not None:
-                        if from_tank["level"] >= to_tank["target"] >= to_tank["level"]:
-                            this_pump["state"] = "on"
-                        else:
-                            this_pump["state"] = "off"
+            # Automatic solver logic is handled by the agent via on_plugin_update
 
             for _, this_tank in tanks.items():  # 1. Deplete target tanks
                 if this_tank["target"] is not None:

@@ -18,6 +18,7 @@ def _make_plugin(**kwargs):
     p.keys = set()
     p.display_title = True
     p.automode_string = ""
+    p.agent = None
     p.next_refresh_time = 0
     p.scenario_time = 0
     p.blocking = False

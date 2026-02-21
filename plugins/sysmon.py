@@ -190,7 +190,7 @@ class Sysmon(AbstractPlugin):
                 scale["_freezetimer"] -= self.parameters["taskupdatetime"]
                 if scale["_freezetimer"] > 0:
                     # Here, freeze position
-                    scale["_pos"] = 5  # TODO: Check central scale value
+                    scale["_pos"] = 5
                 else:
                     scale["_freezetimer"] = None
 
@@ -226,7 +226,7 @@ class Sysmon(AbstractPlugin):
 
     def start_failure(self, gauge: dict[str, Any]) -> None:
         if gauge["_onfailure"]:
-            pass  # TODO : warn in case of multiple failure on the same gauge
+            self.logger.log(f"[{self.alias}] Failure ignored on '{gauge['name']}': already on failure")
         else:
             gauge["_onfailure"] = True
             if "default" in gauge:  # Light case
@@ -240,11 +240,11 @@ class Sysmon(AbstractPlugin):
         gauge["failure"] = False
 
         # Schedule failure timing
-        delay: int = (
-            self.parameters["automaticsolverdelay"]
-            if self.parameters["automaticsolver"]
-            else self.parameters["alerttimeout"]
-        )
+        delay: int = self.parameters["alerttimeout"]
+        if self.parameters["automaticsolver"] and self.agent is not None:
+            overrides: dict = self.agent.on_failure_started(self, gauge)
+            if "delay" in overrides:
+                delay = overrides["delay"]
         gauge["_failuretimer"] = delay
 
     def stop_failure(self, gauge: dict[str, Any], success: bool = False) -> None:

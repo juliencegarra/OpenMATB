@@ -50,6 +50,14 @@ class Scheduler:
         self.events: list[Event] = self.scenario.events
         self.plugins: dict[str, Any] = self.scenario.plugins
 
+        # Create a default agent and assign it to plugins
+        from agents import DefaultAgent
+
+        self.agent: Any = DefaultAgent()
+        for p in self.plugins:
+            if "automaticsolver" in self.plugins[p].parameters:
+                self.plugins[p].agent = self.agent
+
         # Attribute window to plugins in use, and push their handles to window
         for p in self.plugins:
             self.plugins[p].win = Window.MainWindow
@@ -219,6 +227,14 @@ class Scheduler:
         command: str = event.command[0]
         if command == "pause":
             Window.MainWindow.pause_prompt()
+        elif command == "agent":
+            from agents import create_agent
+
+            agent_name: str = event.command[1]
+            self.agent = create_agent(agent_name)
+            for p in self.plugins:
+                if "automaticsolver" in self.plugins[p].parameters:
+                    self.plugins[p].agent = self.agent
         event.done = 1
         get_logger().record_event(event)
 

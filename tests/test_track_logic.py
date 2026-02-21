@@ -30,6 +30,7 @@ def _make_track(**overrides):
     t.y_input = 0
     t.cursor_color_key = "cursorcolor"
     t.gain_ratio = 0.8
+    t.agent = None
 
     t.parameters = dict(
         taskupdatetime=20,
@@ -232,23 +233,22 @@ class TestJoystickCompensation:
 # Auto compensation
 # ──────────────────────────────────────────────
 class TestAutoCompensation:
-    """Test automatic solver compensation."""
+    """Test automatic solver compensation via joystick input injection."""
 
-    def test_auto_solver_moves_toward_center(self):
-        """With automaticsolver, cursor should stay closer to center."""
+    def test_auto_compensation_moves_toward_center(self):
+        """With joystick input set, cursor should stay closer to center."""
         t_manual = _make_track()
         manual_pos = [next(t_manual.cursor_path_gen) for _ in range(500)]
 
         t_auto = _make_track()
-        t_auto.parameters["automaticsolver"] = True
-        t_auto.reticle.cursor_relative = (-5, -5)  # Cursor is left-down
+        t_auto.get_joystick_inputs(1.0, -1.0)  # Compensate toward center via joystick
         t_auto.cursor_path_gen = iter(t_auto.compute_next_cursor_position())
         auto_pos = [next(t_auto.cursor_path_gen) for _ in range(500)]
 
-        # Auto solver should keep deviations smaller on average
+        # Joystick compensation should keep deviations smaller on average
         manual_devs = [abs(p[0]) + abs(p[1]) for p in manual_pos]
         auto_devs = [abs(p[0]) + abs(p[1]) for p in auto_pos]
-        # Auto mean deviation should be less (it compensates)
+        # Compensated mean deviation should differ (it compensates)
         assert sum(auto_devs) / len(auto_devs) != sum(manual_devs) / len(manual_devs)
 
 

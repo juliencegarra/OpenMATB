@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-from math import copysign
 from pathlib import Path
 from string import ascii_lowercase, ascii_uppercase, digits
 from typing import Any, Callable
@@ -14,7 +13,6 @@ from pyglet.media import Player, SourceGroup, load
 from core import validation
 from core.constants import COLORS as C
 from core.constants import PATHS as P
-from core.constants import REPLAY_MODE
 from core.container import Container
 from core.pseudorandom import choice, randint, uniform, xeger
 from core.widgets import Radio, Simpletext
@@ -398,29 +396,7 @@ class Communications(AbstractPlugin):
                 radio["is_prompting"] = False
                 self.logger.log_manual_entry(f"Target {radio['name']}:{radio['targetfreq']}")
 
-        # If multiple radios must be modified
-        # The automatic solver sticks to the first one (until it is tuned)
-        if self.parameters["automaticsolver"] is True and not REPLAY_MODE:
-            waiting_radios: list[dict[str, Any]] = self.get_waiting_response_radios()
-
-            # Only if a radio is waiting autosolving, do it
-            if len(waiting_radios) > 0:
-                autoradio: dict[str, Any] = waiting_radios[0]
-
-                if active != autoradio:  # Automatic radio switch if needed
-                    active["is_active"] = False
-                    current_index: int = active["pos"]
-                    target_index: int = autoradio["pos"]
-                    new_index: float = current_index + copysign(1, target_index - current_index)
-                    self.get_radio_dict_by_pos(new_index)["is_active"] = True
-
-                # Automatic radio tune
-                elif active["targetfreq"] != active["currentfreq"]:
-                    active["currentfreq"] = round(
-                        active["currentfreq"] + copysign(0.1, active["targetfreq"] - active["currentfreq"]), 1
-                    )
-                else:
-                    self.confirm_response()  # Emulate a response confirmation
+        # Automatic solver logic is handled by the agent via on_plugin_update
 
         active["currentfreq"] = self.keep_value_between(
             active["currentfreq"], up=self.parameters["airbandmaxMhz"], down=self.parameters["airbandminMhz"]
@@ -560,7 +536,7 @@ class Communications(AbstractPlugin):
             radio["_feedbacktimer"] = self.parameters["feedbackduration"]
 
     def do_on_key(self, key: str, state: str, emulate: bool) -> None:
-        """Check for radio change and frequency validation"""
+        """Check for radio change, frequency tuning, and frequency validation"""
         key = super().do_on_key(key, state, emulate)
         if key is None:
             return
@@ -579,6 +555,12 @@ class Communications(AbstractPlugin):
 
                 self.get_active_radio_dict()["is_active"] = False
                 self.get_radio_dict_by_pos(next_active_n)["is_active"] = True
+
+            # Frequency tuning (discrete step per key press)
+            elif key == self.parameters["keys"]["tunefrequencyup"]:
+                self.get_active_radio_dict()["currentfreq"] += self.frequency_modulation
+            elif key == self.parameters["keys"]["tunefrequencydown"]:
+                self.get_active_radio_dict()["currentfreq"] -= self.frequency_modulation
 
             elif key == self.parameters["keys"]["validateresponse"]:
                 self.confirm_response()

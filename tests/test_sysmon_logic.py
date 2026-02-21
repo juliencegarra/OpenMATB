@@ -24,6 +24,7 @@ def _make_sysmon(**overrides):
     s.keys = {"F1", "F2", "F3", "F4", "F5", "F6"}
     s.performance = {}
     s.logger = MagicMock()
+    s.agent = None
 
     s.parameters = dict(
         taskupdatetime=200,
@@ -217,14 +218,17 @@ class TestStartFailure:
         s.start_failure(light)
         assert light["_failuretimer"] == 10000  # alerttimeout
 
-    def test_failure_timer_uses_autosolver_delay(self):
-        """With autosolver, timer uses shorter delay."""
+    def test_failure_timer_uses_alerttimeout(self):
+        """With autosolver + agent, timer uses alerttimeout as safety net."""
+        from agents import DefaultAgent
+
         s = _make_sysmon()
         s.parameters["automaticsolver"] = True
+        s.agent = DefaultAgent()
         light = s.parameters["lights"]["1"]
         light["failure"] = True
         s.start_failure(light)
-        assert light["_failuretimer"] == 1000  # automaticsolverdelay
+        assert light["_failuretimer"] == 10000  # alerttimeout via DefaultAgent
 
     def test_double_failure_does_not_re_toggle(self):
         """Second failure on same gauge keeps state."""

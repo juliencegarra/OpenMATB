@@ -34,6 +34,7 @@ class AbstractPlugin:
         self.keys: set[str] = set()  #   Handle the keys that are allowed
         self.display_title: bool = taskplacement != "invisible"
         self.automode_string: str = ""
+        self.agent: Any = None
 
         self.next_refresh_time: float = 0
         self.scenario_time: float = 0
@@ -185,9 +186,9 @@ class AbstractPlugin:
             else:
                 self.can_receive_keys = True
 
-        if REPLAY_MODE:
+        if REPLAY_MODE or self.parameters.get("automaticsolver", False):
             self.can_receive_keys = False
-            self.can_execute_keys = True
+            self.can_execute_keys = True    # Agents and replay can inject via emulate=True
         else:
             self.can_execute_keys = self.can_receive_keys
 
@@ -200,10 +201,17 @@ class AbstractPlugin:
 
         self.next_refresh_time = self.scenario_time + self.parameters["taskupdatetime"] / 1000
 
+        # Let the agent act on this plugin if automaticsolver is enabled
+        if self.agent is not None and self.parameters.get("automaticsolver"):
+            self.agent.on_plugin_update(self, self.scenario_time)
+
         # Should an automation state (string) be displayed ?
         if self.parameters.get("displayautomationstate"):
             if "automaticsolver" in self.parameters:
-                self.automode_string = _("MANUAL") if not self.parameters["automaticsolver"] else _("AUTO")
+                if self.parameters["automaticsolver"] and self.agent is not None:
+                    self.automode_string = _(self.agent.get_automode_string())
+                else:
+                    self.automode_string = _("MANUAL")
             else:
                 self.automode_string = _("MANUAL")
         else:
@@ -521,27 +529,3 @@ class BlockingPlugin(AbstractPlugin):
             self.go_to_next_slide = True
 
         return keystr
-
-
-# TODO : Include a Solver class like
-# ~ """
-# ~ class Solver():
-# ~ def __init__(name: str, block_input: bool, solvermode_string=_('AUTO')):
-# ~ self.name = name
-# ~ self.block_input = block_input
-# ~ self.solvermode_string = display
-
-# ~ def get_solvermode_string():
-# ~ return self.solvermode_string
-
-# ~ def on_plugin_update(plugin, *param):
-# ~ if plugin is RESMAN:
-# ~ ...
-# ~ plugin.do_on_key(...)
-
-# ~ def on_plugin_failure(plugin, *param):
-# ~ if plugin is SYSMON or plugin is communications:
-# ~ ...
-# ~ plugin.do_on_key(...)
-
-# ~ """

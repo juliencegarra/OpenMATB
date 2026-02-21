@@ -27,6 +27,7 @@ def _make_resman(**overrides):
     r.performance = {}
     r.logger = MagicMock()
     r.wait_before_leak = 0  # Skip initial wait
+    r.agent = None
 
     r.parameters = dict(
         taskupdatetime=2000,
@@ -378,12 +379,15 @@ class TestToleranceZone:
 # Automatic solver
 # ──────────────────────────────────────────────
 class TestAutoSolver:
-    """Test automatic solver heuristics."""
+    """Test automatic solver heuristics via DefaultAgent."""
 
-    def test_activates_pumps_from_non_depletable(self):
+    def test_activates_pumps_from_non_depletable(self, mock_window, mock_logger):
         """Heuristic 1: pumps from non-depletable tanks are activated."""
+        from agents import DefaultAgent
+
         r = _make_resman()
         r.parameters["automaticsolver"] = True
+        r.agent = DefaultAgent()
         _run_one_update(r)
         # Pump 2 (e→a), pump 4 (f→b), pump 5 (e→c), pump 6 (f→d)
         # These should all be turned on since e,f are non-depletable
@@ -392,29 +396,38 @@ class TestAutoSolver:
         assert r.parameters["pump"]["5"]["state"] == "on"
         assert r.parameters["pump"]["6"]["state"] == "on"
 
-    def test_activates_pump_when_target_too_low(self):
+    def test_activates_pump_when_target_too_low(self, mock_window, mock_logger):
         """Heuristic 2: if target tank is below target-50, activate pump."""
+        from agents import DefaultAgent
+
         r = _make_resman()
         r.parameters["automaticsolver"] = True
+        r.agent = DefaultAgent()
         r.parameters["tank"]["a"]["level"] = 2400  # Below 2500-50=2450
         _run_one_update(r)
         # Pumps feeding A (1: c→a, 2: e→a, 8: b→a) should be on
         assert r.parameters["pump"]["2"]["state"] == "on"
 
-    def test_deactivates_pump_when_target_too_high(self):
+    def test_deactivates_pump_when_target_too_high(self, mock_window, mock_logger):
         """Heuristic 2: if target tank is above target+50, deactivate pump."""
+        from agents import DefaultAgent
+
         r = _make_resman()
         r.parameters["automaticsolver"] = True
+        r.agent = DefaultAgent()
         r.parameters["tank"]["a"]["level"] = 2600  # Above 2500+50=2550
         r.parameters["pump"]["1"]["state"] = "on"
         _run_one_update(r)
         # Pump 1 (c→a) should be deactivated because a is too high
         assert r.parameters["pump"]["1"]["state"] == "off"
 
-    def test_failure_pump_not_touched_by_autosolver(self):
+    def test_failure_pump_not_touched_by_autosolver(self, mock_window, mock_logger):
         """Auto solver skips pumps in failure state."""
+        from agents import DefaultAgent
+
         r = _make_resman()
         r.parameters["automaticsolver"] = True
+        r.agent = DefaultAgent()
         r.parameters["pump"]["2"]["state"] = "failure"
         _run_one_update(r)
         assert r.parameters["pump"]["2"]["state"] == "failure"

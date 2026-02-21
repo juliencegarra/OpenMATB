@@ -14,6 +14,7 @@ def _make_pp(**overrides):
     pp.paused = False
     pp.verbose = False
     pp.automode_string = ""
+    pp.agent = None
     pp._port = MagicMock()
     pp._downvalue = 0
     pp._last_trigger = 0
