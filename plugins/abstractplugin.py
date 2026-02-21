@@ -81,23 +81,19 @@ class AbstractPlugin:
         self.visible = True
         self.update_can_receive_key()
 
-        for _name, widget in self.widgets.items():
-            widget.show()
+        if self.parameters["taskplacement"] == "fullscreen":
+            for _name, widget in self.widgets.items():
+                widget.show()
 
-    ##      TODO: Check why we do not reverse the hide() like this
-    ##        if self.parameters['taskplacement'] == 'fullscreen':
-    ##            for name, widget in self.widgets.items():
-    ##                widget.show()
-    ##
-    ##        elif self.parameters['taskplacement'] != 'invisible':
-    ##            for name, widget in self.widgets.items():
-    ##                widget.show()
-    ##
-    ##            if self.get_widget('foreground') is not None:
-    ##                self.get_widget('foreground').hide()
-    ##
-    ##            if self.get_widget('border') is not None:
-    ##                self.get_widget('borer').hide()
+        elif self.parameters["taskplacement"] != "invisible":
+            for _name, widget in self.widgets.items():
+                widget.show()
+
+            if self.get_widget("foreground") is not None:
+                self.get_widget("foreground").hide()
+
+            if self.get_widget("overdue") is not None:
+                self.get_widget("overdue").set_visibility(False)
 
     def hide(self) -> None:
         """
