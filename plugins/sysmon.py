@@ -19,6 +19,17 @@ class Sysmon(AbstractPlugin):
         super().__init__(_("System monitoring"), taskplacement, taskupdatetime)
 
         self.validation_dict: dict[str, Callable[..., Any] | tuple[Callable[..., Any], list[str]]] = {
+            "automaticsolver": validation.is_boolean,
+            "displayautomationstate": validation.is_boolean,
+            "taskfeedback-overdue-active": validation.is_boolean,
+            "taskfeedback-overdue-color": validation.is_color,
+            "taskfeedback-overdue-delayms": validation.is_natural_integer,
+            "taskfeedback-overdue-blinkdurationms": validation.is_natural_integer,
+            "feedbackduration": validation.is_positive_integer,
+            "feedbacks-positive-active": validation.is_boolean,
+            "feedbacks-positive-color": validation.is_color,
+            "feedbacks-negative-active": validation.is_boolean,
+            "feedbacks-negative-color": validation.is_color,
             "alerttimeout": validation.is_positive_integer,
             "automaticsolverdelay": validation.is_positive_integer,
             "allowanykey": validation.is_boolean,

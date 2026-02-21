@@ -26,6 +26,17 @@ class Communications(AbstractPlugin):
         super().__init__(_("Communications"), taskplacement, taskupdatetime)
 
         self.validation_dict: dict[str, Callable[..., Any] | tuple[Callable[..., Any], list[str]]] = {
+            "automaticsolver": validation.is_boolean,
+            "displayautomationstate": validation.is_boolean,
+            "taskfeedback-overdue-active": validation.is_boolean,
+            "taskfeedback-overdue-color": validation.is_color,
+            "taskfeedback-overdue-delayms": validation.is_natural_integer,
+            "taskfeedback-overdue-blinkdurationms": validation.is_natural_integer,
+            "feedbackduration": validation.is_positive_integer,
+            "feedbacks-positive-active": validation.is_boolean,
+            "feedbacks-positive-color": validation.is_color,
+            "feedbacks-negative-active": validation.is_boolean,
+            "feedbacks-negative-color": validation.is_color,
             "owncallsign": validation.is_callsign,
             "othercallsign": validation.is_callsign_or_list_of,  # othercallsign can be a list of callsigns
             "voiceidiom": (validation.is_in_list, [p.name.lower() for p in P["SOUNDS"].iterdir()]),

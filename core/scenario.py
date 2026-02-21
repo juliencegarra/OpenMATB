@@ -256,7 +256,7 @@ class Scenario:
         return errors
 
     def get_validation_dict(self, pluginname: str) -> dict[str, Any]:
-        validation_dict: dict[str, Any] = global_validation_dict.copy()
+        validation_dict: dict[str, Any] = base_validation_dict.copy()
 
         plugin_validation_dict: dict[str, Any] | None = getattr(self.plugins[pluginname], "validation_dict", None)
 
@@ -270,33 +270,8 @@ class Scenario:
 
 
 # This dictionary associates to each parameter name a checking method
-# TODO: probably move each of them to plugins to remove any global parameter
-global_validation_dict: dict[str, Any] = {
-    # If the key points to a tuple, the first argument is the method
-    # the other arguments are extra-method arguments
-    # General values #
+base_validation_dict: dict[str, Any] = {
     "title": validation.is_string,
     "taskplacement": validation.is_task_location,
     "taskupdatetime": validation.is_positive_integer,
-    # Shared values # TODO: move to each plugin
-    "automaticsolver": validation.is_boolean,
-    "displayautomationstate": validation.is_boolean,
-    "taskfeedback-overdue-active": validation.is_boolean,
-    "taskfeedback-overdue-color": validation.is_color,
-    "taskfeedback-overdue-delayms": validation.is_natural_integer,
-    "taskfeedback-overdue-blinkdurationms": validation.is_natural_integer,
-    # (sysmon & communications)
-    "feedbackduration": validation.is_positive_integer,
-    "feedbacks-positive-active": validation.is_boolean,
-    "feedbacks-positive-color": validation.is_color,
-    "feedbacks-negative-active": validation.is_boolean,
-    "feedbacks-negative-color": validation.is_color,
-    # Blocking plugins (genericscales, instructions)
-    "boldtitle": validation.is_boolean,
-    "filename": validation.is_available_text_file,
-    "pointsize": validation.is_natural_integer,
-    "maxdurationsec": validation.is_natural_integer,
-    "response-text": validation.is_string,
-    "response-key": validation.is_keyboard_key,
-    "allowkeypress": validation.is_boolean,
 }

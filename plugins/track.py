@@ -24,6 +24,12 @@ class Track(AbstractPlugin):
         super().__init__(_("Tracking"), taskplacement, taskupdatetime)
 
         self.validation_dict: dict[str, Callable[..., Any]] = {
+            "automaticsolver": validation.is_boolean,
+            "displayautomationstate": validation.is_boolean,
+            "taskfeedback-overdue-active": validation.is_boolean,
+            "taskfeedback-overdue-color": validation.is_color,
+            "taskfeedback-overdue-delayms": validation.is_natural_integer,
+            "taskfeedback-overdue-blinkdurationms": validation.is_natural_integer,
             "cursorcolor": validation.is_color,
             "cursorcoloroutside": validation.is_color,
             "targetproportion": validation.is_in_unit_interval,

@@ -17,6 +17,10 @@ class Performance(AbstractPlugin):
         super().__init__(_("Performance"), taskplacement, taskupdatetime)
 
         self.validation_dict: dict[str, Callable[..., Any]] = {
+            "taskfeedback-overdue-active": validation.is_boolean,
+            "taskfeedback-overdue-color": validation.is_color,
+            "taskfeedback-overdue-delayms": validation.is_natural_integer,
+            "taskfeedback-overdue-blinkdurationms": validation.is_natural_integer,
             "levelmin": validation.is_positive_integer,
             "levelmax": validation.is_positive_integer,
             "ticknumber": validation.is_positive_integer,
