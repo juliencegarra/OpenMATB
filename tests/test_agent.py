@@ -1253,6 +1253,123 @@ class TestHumanLikeComms:
 
 
 # ──────────────────────────────────────────────
+# Comms timing fixes (reaction persistence + dwell override)
+# ──────────────────────────────────────────────
+class TestHumanLikeCommsTimingFixes:
+    def _make_comms_plugin(self, active_radio, waiting_radios=None):
+        p = MagicMock()
+        p.alias = "communications"
+        p.parameters = dict(keys=dict(
+            selectradioup="UP",
+            selectradiodown="DOWN",
+            tunefrequencyup="RIGHT",
+            tunefrequencydown="LEFT",
+            validateresponse="ENTER",
+        ))
+        p.get_waiting_response_radios.return_value = waiting_radios if waiting_radios is not None else []
+        p.get_active_radio_dict.return_value = active_radio
+        return p
+
+    def test_reaction_not_repaid_on_return(self):
+        """After _advance_scan, _comms_react_start persists so tuning resumes immediately."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "communications"
+        agent.comms_reaction_ms = 1500
+        agent._comms_react_start = 10.0  # Set earlier when prompt was first seen
+
+        # Advance scan away from comms
+        agent._advance_scan(20.0)
+        assert agent._attended_task != "communications"
+
+        # _comms_react_start should persist (not reset)
+        assert agent._comms_react_start == 10.0
+
+        # Now simulate returning to comms — reaction already paid
+        agent._attended_task = "communications"
+        agent.comms_tune_interval_ms = 0
+        agent.comms_overshoot_prob = 0
+
+        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": 115.0,
+                 "pos": 0, "is_active": True}
+        plugin = self._make_comms_plugin(radio, waiting_radios=[radio])
+
+        with patch("agents.abstract_agent.get_logger") as mock_gl:
+            mock_gl.return_value = MagicMock()
+            # t=20.5: well past reaction start (10.0 + 1.5s = 11.5s)
+            agent._update_communications(plugin, 20.5)
+        # Should tune immediately, no re-paid reaction delay
+        plugin.do_on_key.assert_called_once_with("RIGHT", "press", emulate=True)
+
+    def test_stays_on_comms_while_tuning(self):
+        """Dwell expired + tuning active → scan does NOT advance."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "communications"
+        agent._attend_start = 0.0
+        agent._current_dwell = 1000  # 1s dwell
+        agent.comms_reaction_ms = 500
+        agent._comms_react_start = 0.5  # Prompt seen at t=0.5
+
+        # At t=2.0: dwell expired (2000ms > 1000ms) and past reaction
+        # (2.0 - 0.5)*1000 = 1500ms >= 500ms → actively tuning
+        agent._update_attention(2.0)
+
+        # Should still be on comms
+        assert agent._attended_task == "communications"
+
+    def test_resumes_scanning_after_prompt_resolved(self):
+        """waiting_radios empty → _comms_react_start resets → scan resumes."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "communications"
+        agent._attend_start = 0.0
+        agent._current_dwell = 1000
+        agent.comms_reaction_ms = 500
+        agent._comms_react_start = 0.5  # Was tuning
+
+        radio = {"name": "NAV_1", "currentfreq": 115.0, "targetfreq": None,
+                 "pos": 0, "is_active": True}
+        plugin = self._make_comms_plugin(radio)  # No waiting radios
+
+        with patch("agents.abstract_agent.get_logger") as mock_gl:
+            mock_gl.return_value = MagicMock()
+            # Call _update_communications to clear _comms_react_start
+            agent._update_communications(plugin, 2.0)
+
+        assert agent._comms_react_start is None
+
+        # Now _update_attention should advance scan (dwell expired, no tuning)
+        agent._update_attention(2.0)
+        assert agent._attended_task != "communications"
+
+    def test_does_not_stay_during_reaction(self):
+        """During reaction delay (not yet tuning) → scan advances normally."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "communications"
+        agent._attend_start = 0.0
+        agent._current_dwell = 1000
+        agent.comms_reaction_ms = 1500
+        agent._comms_react_start = 0.8  # Prompt seen at t=0.8
+
+        # At t=1.5: dwell expired (1500ms > 1000ms) but still in reaction
+        # (1.5 - 0.8)*1000 = 700ms < 1500ms → not yet tuning
+        agent._update_attention(1.5)
+
+        # Should have advanced to next task
+        assert agent._attended_task != "communications"
+
+    def test_normal_scanning_unaffected(self):
+        """Without comms prompt (_comms_react_start=None) → scan advances normally."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "communications"
+        agent._attend_start = 0.0
+        agent._current_dwell = 1000
+        agent._comms_react_start = None  # No prompt pending
+
+        # At t=1.5: dwell expired, no comms prompt → should advance
+        agent._update_attention(1.5)
+        assert agent._attended_task != "communications"
+
+
+# ──────────────────────────────────────────────
 # Resman behavior
 # ──────────────────────────────────────────────
 class TestHumanLikeResman:
