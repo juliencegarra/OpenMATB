@@ -18,6 +18,7 @@ from pyglet.gl import (  # noqa: F401
     glEnable,
     glLineWidth,
 )
+from pyglet.shapes import ShapeBase
 from pyglet.text import HTMLLabel, Label
 
 from core.constants import BFLIM
@@ -26,14 +27,7 @@ from core.constants import FONT_SIZES as F  # noqa: F401
 from core.constants import Group as G
 from core.container import Container
 from core.logger import Logger, get_logger
-from core.rendering import (
-    expand_colors_for_line_loop,
-    get_group,
-    get_program,
-    line_loop_to_lines,
-    polygon_indices,
-    quad_indices,
-)
+from core.rendering import get_group, get_program, quad_indices
 from core.utils import get_conf_value
 from core.window import Window
 
@@ -46,6 +40,7 @@ class AbstractWidget:
         self.vertex: dict[str, Any] = dict()
         self.on_batch: dict[str, Any] = dict()
         self.visible: bool = False
+        self._batch_assigned: bool = False  # True after first show assigns batch
         self.logger: Logger = get_logger()
         self.highlight_aoi: str = get_conf_value("Openmatb", "highlight_aoi")
         glLineWidth(2)
@@ -68,7 +63,11 @@ class AbstractWidget:
         if self.verbose:
             print("Show ", self.name)
         self.show_aoi_highlight()
-        self.assign_vertices_to_batch()
+        if self._batch_assigned:
+            self._show_all_vertices()
+        else:
+            self.assign_vertices_to_batch()
+            self._batch_assigned = True
         if hasattr(self, "set_visibility"):
             self.set_visibility(True)
         else:
@@ -80,31 +79,44 @@ class AbstractWidget:
         if self.verbose:
             print("Hide ", self.name)
 
-        self.empty_batch()
+        self._hide_all_vertices()
         if hasattr(self, "set_visibility"):
             self.set_visibility(False)
         else:
             self.visible = False
 
+    def _show_all_vertices(self) -> None:
+        """Re-show: set .visible=True on shapes/labels, rebuild legacy on_batch entries."""
+        batch = Window.MainWindow.batch
+        for name, v_def in self.vertex.items():
+            if isinstance(v_def, ShapeBase):
+                if v_def.batch is None:
+                    v_def.batch = batch
+                v_def.visible = True
+            elif isinstance(v_def, (Label, HTMLLabel, sprite.Sprite)):
+                if v_def.batch is None:
+                    v_def.batch = batch
+            elif name not in self.on_batch:
+                self._assign_single_legacy(name, v_def)
+
+    def _hide_all_vertices(self) -> None:
+        """Hide: set .visible=False on shapes/labels, delete legacy on_batch entries."""
+        for name in list(self.vertex.keys()):
+            if isinstance(self.vertex[name], ShapeBase):
+                self.vertex[name].visible = False
+            elif isinstance(self.vertex[name], (Label, HTMLLabel)):
+                self.vertex[name].batch = None
+            elif name in self.on_batch:
+                self.on_batch[name].delete()
+                del self.on_batch[name]
+
     def add_quad(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
         """Register a quad (4 vertices, 2 triangles via indexing)."""
         self.vertex[name] = ("quad", group, positions, colors)
 
-    def add_polygon(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
-        """Register a convex polygon (fan triangulation via indexing)."""
-        self.vertex[name] = ("polygon", group, positions, colors)
-
     def add_lines(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
         """Register GL_LINES segments."""
         self.vertex[name] = ("lines", group, positions, colors)
-
-    def add_triangles(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
-        """Register GL_TRIANGLES."""
-        self.vertex[name] = ("triangles", group, positions, colors)
-
-    def add_line_loop(self, name: str, group: Any, positions: tuple | list, colors: tuple | list) -> None:
-        """Register a line loop (converted to GL_LINES on batch assignment)."""
-        self.vertex[name] = ("line_loop", group, positions, colors)
 
     def show_aoi_highlight(self) -> None:
         """Add some AOI vertices (frame and text)"""
@@ -120,59 +132,40 @@ class AbstractWidget:
             )
 
     def assign_vertices_to_batch(self) -> None:
-        program = get_program()
         batch = Window.MainWindow.batch
         for name, v_def in self.vertex.items():
-            if isinstance(v_def, (Label, HTMLLabel, sprite.Sprite)):
+            if isinstance(v_def, ShapeBase):
+                v_def.batch = batch
+            elif isinstance(v_def, (Label, HTMLLabel, sprite.Sprite)):
                 v_def.batch = batch
             else:
-                kind, group, positions, colors = v_def
-                sg = get_group(order=group.order, parent=group.parent)
-                count = len(positions) // 2
+                self._assign_single_legacy(name, v_def)
 
-                if kind == "quad":
-                    indices = quad_indices(count)
-                    self.on_batch[name] = program.vertex_list_indexed(
-                        count,
-                        GL_TRIANGLES,
-                        indices,
-                        batch=batch,
-                        group=sg,
-                        position=("f", positions),
-                        colors=("Bn", colors),
-                    )
-                elif kind == "polygon":
-                    indices = polygon_indices(count)
-                    self.on_batch[name] = program.vertex_list_indexed(
-                        count,
-                        GL_TRIANGLES,
-                        indices,
-                        batch=batch,
-                        group=sg,
-                        position=("f", positions),
-                        colors=("Bn", colors),
-                    )
-                elif kind == "line_loop":
-                    new_pos, new_count = line_loop_to_lines(positions)
-                    new_colors = expand_colors_for_line_loop(colors, count)
-                    self.on_batch[name] = program.vertex_list(
-                        new_count, GL_LINES, batch=batch, group=sg, position=("f", new_pos), colors=("Bn", new_colors)
-                    )
-                elif kind in ("lines", "triangles"):
-                    gl_mode = GL_TRIANGLES if kind == "triangles" else GL_LINES
-                    self.on_batch[name] = program.vertex_list(
-                        count, gl_mode, batch=batch, group=sg, position=("f", positions), colors=("Bn", colors)
-                    )
+    def _assign_single_legacy(self, name: str, v_def: tuple) -> None:
+        """Create a legacy on_batch vertex list for a tuple-based vertex definition."""
+        program = get_program()
+        batch = Window.MainWindow.batch
+        kind, group, positions, colors = v_def
+        sg = get_group(order=group.order, parent=group.parent)
+        count = len(positions) // 2
+
+        if kind == "quad":
+            indices = quad_indices(count)
+            self.on_batch[name] = program.vertex_list_indexed(
+                count, GL_TRIANGLES, indices,
+                batch=batch, group=sg,
+                position=("f", positions), colors=("Bn", colors),
+            )
+        elif kind == "lines":
+            self.on_batch[name] = program.vertex_list(
+                count, GL_LINES, batch=batch, group=sg,
+                position=("f", positions), colors=("Bn", colors),
+            )
 
     def empty_batch(self) -> None:
-        for name in list(self.vertex.keys()):
-            if isinstance(self.vertex[name], (Label, HTMLLabel)):
-                self.vertex[name].batch = None
-            elif name in self.on_batch:
-                self.on_batch[name].delete()
-                del self.on_batch[name]
-
+        self._hide_all_vertices()
         self.on_batch = dict()
+        self._batch_assigned = False
 
     def resize_quad(self, name: str, new_count: int) -> None:
         """Resize an indexed quad vertex list, recalculating indices."""
@@ -180,10 +173,6 @@ class AbstractWidget:
         new_indices = quad_indices(new_count)
         vlist.resize(new_count, len(new_indices))
         vlist.indices[:] = new_indices
-
-    def get_positions(self, name: str) -> list[float]:
-        """Read vertex positions back as a list."""
-        return list(self.on_batch[name].position[:])
 
     def get_vertex_color(self, vertex_name: str) -> tuple[int, int, int, int]:
         return tuple(self.on_batch[vertex_name].colors[:][0:4])
@@ -243,21 +232,9 @@ class AbstractWidget:
             rotated_vertices.extend([qx, qy])
         return rotated_vertices
 
-    def vertice_circle(self, center: tuple[float, float], radius: float, points_n: int = 30) -> list[float]:
-        v: list[float] = list()
-        for i in range(points_n):
-            cosine: float = radius * math.cos(i * 2 * math.pi / points_n) + center[0]
-            sine: float = radius * math.sin(i * 2 * math.pi / points_n) + center[1]
-            v.extend([cosine, sine])
-        return list(v)
-
     def vertice_border(self, container: Container) -> tuple[float, float, float, float, float, float, float, float]:
         c: Container = container
         return c.x1, c.y1, c.x2, c.y1, c.x2, c.y2, c.x1, c.y2
-
-    def vertice_line_border(self, container: Container) -> tuple[float, ...]:
-        c: Container = container
-        return c.x1, c.y1, c.x2, c.y1, c.x2, c.y1, c.x2, c.y2, c.x2, c.y2, c.x1, c.y2, c.x1, c.y2, c.x1, c.y1
 
     def remove_all_vertices(self) -> None:
         self.vertex = dict()

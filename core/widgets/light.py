@@ -4,21 +4,40 @@
 
 from __future__ import annotations
 
+from pyglet.shapes import Line, Rectangle
+from pyglet.text import Label
+
+from core.constants import COLORS as C
+from core.constants import FONT_SIZES as F
+from core.constants import Group as G
 from core.container import Container
-from core.widgets.abstractwidget import *
+from core.widgets import AbstractWidget
 
 
 class Light(AbstractWidget):
     def __init__(self, name: str, container: Container, label: str, color: tuple[int, int, int, int]) -> None:
         super().__init__(name, container)
 
-        # Compute vertices
-        self.border_vertice: tuple[float, ...] = self.vertice_border(self.container)
-        self.border_color: tuple[int, int, int, int] = C["BLACK"]
+        x1, y1, x2, y2 = self.container.get_x1y1x2y2()
 
-        self.add_quad("background", G(self.m_draw), self.border_vertice, color * 4)
+        self.vertex["background"] = Rectangle(
+            x=x1, y=y2,
+            width=self.container.w,
+            height=self.container.h,
+            color=color[:3],
+            batch=None,
+            group=G(self.m_draw),
+        )
+        self.vertex["background"].opacity = color[3]
 
-        self.add_lines("border", G(self.m_draw + 1), self.vertice_strip(self.border_vertice), self.border_color * 8)
+        # Border on top
+        for bname, coords in [("border_top", (x1, y1, x2, y1)),
+                               ("border_right", (x2, y1, x2, y2)),
+                               ("border_bottom", (x2, y2, x1, y2)),
+                               ("border_left", (x1, y2, x1, y1))]:
+            self.vertex[bname] = Line(
+                *coords, color=C["BLACK"], batch=None, group=G(self.m_draw + 1),
+            )
 
         self.vertex["label"] = Label(
             label.upper(),
@@ -29,7 +48,7 @@ class Light(AbstractWidget):
             anchor_y="center",
             color=C["BLACK"],
             batch=None,
-            group=G(self.m_draw + 1),
+            group=G(self.m_draw + 2),
             font_name=self.font_name,
         )
 
@@ -46,11 +65,12 @@ class Light(AbstractWidget):
     def set_color(self, color: tuple[int, int, int, int]) -> None:
         if color == self.get_color():
             return
-        self.on_batch["background"].colors[:] = color * 4
-        self.on_batch["border"].colors[:] = self.border_color * 8
+        self.vertex["background"].color = color[:3]
+        self.vertex["background"].opacity = color[3]
 
         self.logger.record_state(self.name, "background", color)
-        self.logger.record_state(self.name, "border", self.border_color)
+        self.logger.record_state(self.name, "border", C["BLACK"])
 
     def get_color(self) -> tuple[int, int, int, int]:
-        return self.get_vertex_color("background")
+        shape = self.vertex["background"]
+        return (*shape.color[:3], shape.opacity)

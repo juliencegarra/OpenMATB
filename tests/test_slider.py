@@ -180,14 +180,13 @@ class TestAdjustValue:
 
     @staticmethod
     def _setup_groove(s):
-        """Set up containers and mock on_batch entries needed by update()."""
+        """Set up containers and mock shape entries needed by update()."""
         s.containers["thumb"] = s.containers["slide"].get_reduced(0.9, 0.05)
         s.containers["allgroove"] = s.containers["slide"].get_reduced(0.9, 0.2)
-        s.on_batch["groove"] = MagicMock()
-        s.on_batch["groove_b"] = MagicMock()
-        # Ensure get_groove_vertices != on_batch vertices so update proceeds
-        s.on_batch["groove"].vertices = []
-        s.on_batch["groove_b"].vertices = []
+        s._groove_radius = s.containers["allgroove"].h
+        # Create mock shapes in vertex dict (matching new shapes-based slider)
+        s.vertex["groove_b"] = MagicMock(x=0, y=0)
+        s.vertex["groove"] = MagicMock(x=0, y=0)
 
     def test_adjust_value_increases(self, interactive_slider):
         s = interactive_slider
@@ -256,19 +255,20 @@ class TestSetSelected:
         s.set_selected(False)
         assert s.selected is False
 
-    def test_set_selected_updates_colors_when_on_batch(self, interactive_slider):
+    def test_set_selected_updates_colors_when_shape_exists(self, interactive_slider):
         from core.constants import COLORS as C
 
         s = interactive_slider
-        mock_vl = MagicMock()
-        s.on_batch["thumb"] = mock_vl
+        mock_shape = MagicMock()
+        s.vertex["thumb"] = mock_shape
+        s.vertex["groove"] = MagicMock()
         s.set_selected(True)
-        assert mock_vl.colors == C["BLUE"] * 4
+        assert mock_shape.color == C["BLUE"][:3]
         assert s.selected is True
 
-    def test_set_selected_no_error_when_not_on_batch(self, interactive_slider):
+    def test_set_selected_no_error_when_no_shapes(self, interactive_slider):
         s = interactive_slider
-        s.on_batch = {}
+        s.vertex = {}
         s.set_selected(True)  # should not raise
         assert s.selected is True
 
@@ -308,10 +308,9 @@ class TestOnMouseFocusCallback:
         # Set up groove containers needed by on_mouse_press
         obj.containers["thumb"] = obj.containers["slide"].get_reduced(0.9, 0.05)
         obj.containers["allgroove"] = obj.containers["slide"].get_reduced(0.9, 0.2)
-        obj.on_batch["groove"] = MagicMock()
-        obj.on_batch["groove_b"] = MagicMock()
-        obj.on_batch["groove"].vertices = []
-        obj.on_batch["groove_b"].vertices = []
+        obj._groove_radius = obj.containers["allgroove"].h
+        obj.vertex["groove_b"] = MagicMock(x=0, y=0)
+        obj.vertex["groove"] = MagicMock(x=0, y=0)
         return obj
 
     def test_callback_called_with_rank(self):

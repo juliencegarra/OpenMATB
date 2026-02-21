@@ -4,10 +4,17 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
+from pyglet.shapes import Line, Triangle
+from pyglet.text import Label
+
+from core.constants import COLORS as C
+from core.constants import FONT_SIZES as F
+from core.constants import Group as G
 from core.container import Container
-from core.widgets.abstractwidget import *
+from core.widgets import AbstractWidget
 from core.window import Window
 
 
@@ -39,15 +46,33 @@ class Radio(AbstractWidget):
             group=G(self.m_draw + 1),
         )
 
-        # Arrows vertices #
-        # Only a change in vertices is needed to show/hide arrows --> (0, 0, 0...) = hide
-        for name, _info in self.arrows.items():
-            self.add_triangles(name, G(self.m_draw + 2), (0, 0, 0, 0, 0, 0), C["BLACK"] * 3)
+        # Arrow shapes — created with actual positions, hidden by default
+        for arrow_name, info in self.arrows.items():
+            v: list[float] = self.get_triangle_vertice(x_ratio=info["x_ratio"], angle=info["angle"])
+            self.vertex[arrow_name] = Triangle(
+                v[0], v[1], v[2], v[3], v[4], v[5],
+                color=C["BLACK"],
+                batch=None,
+                group=G(self.m_draw + 2),
+            )
+            self.vertex[arrow_name].visible = False
 
-        # Feedback vertices #
-        # A frame slightly smaller than the radio container
-        vertices: tuple[float, ...] = self.vertice_line_border(container.get_reduced(0.6, 0.9))
-        self.add_lines("feedback_lines", G(self.m_draw + 3), vertices, C["BACKGROUND"] * 8)
+        # Feedback lines — a frame slightly smaller than the radio container
+        reduced: Container = container.get_reduced(0.6, 0.9)
+        segments: list[tuple[float, float, float, float]] = [
+            (reduced.x1, reduced.y1, reduced.x2, reduced.y1),
+            (reduced.x2, reduced.y1, reduced.x2, reduced.y2),
+            (reduced.x2, reduced.y2, reduced.x1, reduced.y2),
+            (reduced.x1, reduced.y2, reduced.x1, reduced.y1),
+        ]
+        for i, (lx1, ly1, lx2, ly2) in enumerate(segments):
+            self.vertex[f"feedback_line_{i}"] = Line(
+                lx1, ly1, lx2, ly2,
+                color=C["BACKGROUND"],
+                batch=None,
+                group=G(self.m_draw + 3),
+            )
+
         self.show()
 
     def show(self) -> None:
@@ -62,16 +87,14 @@ class Radio(AbstractWidget):
         return self.pos
 
     def hide_arrows(self) -> None:
-        for name, _info in self.arrows.items():
-            v: tuple[int, ...] = (0, 0) * 3  # Get an invisible vertice (hide)
-            self.on_batch[name].position[:] = v
+        for arrow_name in self.arrows:
+            self.vertex[arrow_name].visible = False
         self.is_selected = False
         self.logger.record_state(self.name, "selected", False)
 
     def show_arrows(self) -> None:
-        for name, info in self.arrows.items():
-            v: list[float] = self.get_triangle_vertice(x_ratio=info["x_ratio"], angle=info["angle"])
-            self.on_batch[name].position[:] = v
+        for arrow_name in self.arrows:
+            self.vertex[arrow_name].visible = True
         self.is_selected = True
         self.logger.record_state(self.name, "selected", True)
 
@@ -85,7 +108,14 @@ class Radio(AbstractWidget):
         self.logger.record_state(self.name, "radio_frequency", frequency)
 
     def set_feedback_color(self, color: tuple[int, int, int, int]) -> None:
-        if color == self.get_vertex_color("feedback_lines"):
+        current = self._get_feedback_color()
+        if color == current:
             return
-        self.on_batch["feedback_lines"].colors[:] = color * 8
+        for i in range(4):
+            self.vertex[f"feedback_line_{i}"].color = color[:3]
+            self.vertex[f"feedback_line_{i}"].opacity = color[3]
         self.logger.record_state(self.name, "feedback_color", color)
+
+    def _get_feedback_color(self) -> tuple[int, int, int, int]:
+        shape = self.vertex["feedback_line_0"]
+        return (*shape.color[:3], shape.opacity)

@@ -8,13 +8,13 @@ import math
 from typing import Any, Callable
 
 from pyglet.gl import GL_BLEND, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, glBlendFunc, glEnable, glLineWidth
+from pyglet.shapes import Arc, Circle, Rectangle
 from pyglet.text import Label
 
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.constants import Group as G
 from core.container import Container
-from core.rendering import line_loop_to_lines
 from core.widgets import AbstractWidget
 from core.window import Window
 
@@ -125,27 +125,47 @@ class Slider(AbstractWidget):
         # The groove container comprises the whole groove movements area
         self.containers["allgroove"] = self.containers["slide"].get_reduced(slider_thumb_w, slider_groove_h)
 
-        v1: tuple[float, ...] = self.vertice_border(self.containers["thumb"])
-        self.add_quad("thumb", G(self.draw_order + self.rank), v1, C["GREY"] * 4)
+        tc = self.containers["thumb"]
+        self.vertex["thumb"] = Rectangle(
+            x=tc.x1, y=tc.y2, width=tc.w, height=tc.h,
+            color=C["GREY"],
+            batch=None,
+            group=G(self.draw_order + self.rank),
+        )
 
-        v2: list[float] = self.get_groove_vertices()
-        self.add_polygon("groove_b", G(self.draw_order + self.rank), v2, C["BLUE"] * (len(v2) // 2))
-        self.add_line_loop("groove", G(self.draw_order + self.rank), v2, C["BLACK"] * (len(v2) // 2))
+        self._groove_radius: float = self.containers["allgroove"].h
+        gx, gy = self._get_groove_center()
+        self.vertex["groove_b"] = Circle(
+            x=gx, y=gy, radius=self._groove_radius,
+            segments=30,
+            color=C["BLUE"],
+            batch=None,
+            group=G(self.draw_order + self.rank),
+        )
+        self.vertex["groove"] = Arc(
+            x=gx, y=gy, radius=self._groove_radius,
+            segments=30,
+            color=C["BLACK"],
+            batch=None,
+            group=G(self.draw_order + self.rank),
+        )
 
-    def get_groove_vertices(self) -> list[float]:
-        groove_radius: float = self.containers["allgroove"].h
+    def _get_groove_center(self) -> tuple[float, float]:
         center_ratio: float = (self.groove_value - self.value_min) / (self.value_max - self.value_min)
         x: float = self.containers["allgroove"].l + center_ratio * self.containers["allgroove"].w
         y: float = self.containers["allgroove"].cy
-        return self.vertice_circle([x, y], groove_radius)
+        return x, y
 
     def set_groove_position(self) -> None:
-        new_verts: list[float] = self.get_groove_vertices()
-        if new_verts == self.get_positions("groove_b"):
+        gx, gy = self._get_groove_center()
+        groove_b = self.vertex["groove_b"]
+        groove = self.vertex["groove"]
+        if math.isclose(groove_b.x, gx) and math.isclose(groove_b.y, gy):
             return
-        self.on_batch["groove_b"].position[:] = new_verts
-        new_line_pos, _ = line_loop_to_lines(new_verts)
-        self.on_batch["groove"].position[:] = new_line_pos
+        groove_b.x = gx
+        groove_b.y = gy
+        groove.x = gx
+        groove.y = gy
 
     def set_value_label(self) -> None:
         if not self.showvalue:
@@ -207,13 +227,14 @@ class Slider(AbstractWidget):
 
     def set_selected(self, is_selected: bool) -> None:
         self.selected = is_selected
-        if self.visible and "thumb" in self.on_batch:
+        if self.visible and "thumb" in self.vertex:
             color = C["BLUE"] if is_selected else C["GREY"]
-            self.on_batch["thumb"].colors = color * 4
-        if self.visible and "groove" in self.on_batch:
+            self.vertex["thumb"].color = color[:3]
+            self.vertex["thumb"].opacity = color[3]
+        if self.visible and "groove" in self.vertex:
             outline = C["BLUE"] if is_selected else C["BLACK"]
-            n_verts = len(self.on_batch["groove"].colors) // 4
-            self.on_batch["groove"].colors = outline * n_verts
+            self.vertex["groove"].color = outline[:3]
+            self.vertex["groove"].opacity = outline[3]
 
     def adjust_value(self, steps: int) -> None:
         step_size: float = (self.value_max - self.value_min) / 20

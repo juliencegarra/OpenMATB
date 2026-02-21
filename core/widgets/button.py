@@ -4,7 +4,10 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any, Callable
+
+from pyglet.shapes import Line, Rectangle, Triangle
 
 from core.constants import COLORS as C
 from core.constants import Group as G
@@ -23,10 +26,27 @@ class Button(AbstractWidget):
 
         # Draw the button
         self.active_area: Container = self.container.get_reduced(1 - self.padding, 1 - self.padding)
-        button_vertice: tuple[float, ...] = self.vertice_border(self.active_area)
 
-        self.add_quad("background", G(self.m_draw + self.m_draw + 1), button_vertice, C["DARKGREY"] * 4)
-        self.add_lines("border", G(self.m_draw + self.m_draw + 3), self.vertice_strip(button_vertice), C["BLACK"] * 8)
+        aa = self.active_area
+        ax1, ay1, ax2, ay2 = aa.get_x1y1x2y2()
+
+        self.vertex["background"] = Rectangle(
+            x=ax1, y=ay2,
+            width=aa.w,
+            height=aa.h,
+            color=C["DARKGREY"][:3],
+            batch=None,
+            group=G(self.m_draw + self.m_draw + 1),
+        )
+
+        for bname, coords in [("border_top", (ax1, ay1, ax2, ay1)),
+                               ("border_right", (ax2, ay1, ax2, ay2)),
+                               ("border_bottom", (ax2, ay2, ax1, ay2)),
+                               ("border_left", (ax1, ay2, ax1, ay1))]:
+            self.vertex[bname] = Line(
+                *coords, color=C["BLACK"], batch=None,
+                group=G(self.m_draw + self.m_draw + 2),
+            )
 
         Window.MainWindow.push_handlers(self.on_mouse_press, self.on_mouse_release)
 
@@ -59,40 +79,43 @@ class PlayPause(Button):
         s: float = self.container.h * 0.35
         g: Any = G(self.m_draw + 8)
         W: tuple[int, int, int, int] = C["WHITE"]
-        HIDDEN: tuple[int, int, int, int] = (255, 255, 255, 0)
 
-        # --- Play triangle (pointing right, 3 vertices) ---
-        self.add_triangles(
-            "play_tri",
-            g,
-            (cx - 0.3 * s, cy + 0.5 * s, cx - 0.3 * s, cy - 0.5 * s, cx + 0.5 * s, cy),
-            list(W * 3),
+        # --- Play triangle (pointing right) ---
+        self.vertex["play_tri"] = Triangle(
+            cx - 0.3 * s, cy + 0.5 * s,
+            cx - 0.3 * s, cy - 0.5 * s,
+            cx + 0.5 * s, cy,
+            color=W,
+            batch=None,
+            group=g,
         )
 
-        # --- Pause bars (2 quads = 8 vertices) ---
+        # --- Pause bars (2 rectangles) ---
         gap: float = 0.1 * s
         bw: float = 0.2 * s
         bh: float = 0.45 * s
-        lx1: float = cx - gap - bw
-        lx2: float = cx - gap
-        rx1: float = cx + gap
-        rx2: float = cx + gap + bw
-        yt: float = cy + bh
-        yb: float = cy - bh
-        self.add_quad(
-            "pause_bars",
-            g,
-            (lx1, yt, lx2, yt, lx2, yb, lx1, yb, rx1, yt, rx2, yt, rx2, yb, rx1, yb),
-            list(HIDDEN * 8),
+        self.vertex["pause_left"] = Rectangle(
+            x=cx - gap - bw, y=cy - bh, width=bw, height=2 * bh,
+            color=W,
+            batch=None,
+            group=g,
         )
+        self.vertex["pause_left"].visible = False
+
+        self.vertex["pause_right"] = Rectangle(
+            x=cx + gap, y=cy - bh, width=bw, height=2 * bh,
+            color=W,
+            batch=None,
+            group=g,
+        )
+        self.vertex["pause_right"].visible = False
 
         self.show()
 
     def update_button_sprite(self, is_paused: bool) -> None:
-        W: tuple[int, int, int, int] = C["WHITE"]
-        HIDDEN: tuple[int, int, int, int] = (255, 255, 255, 0)
-        self.on_batch["play_tri"].colors = list(W * 3) if is_paused else list(HIDDEN * 3)
-        self.on_batch["pause_bars"].colors = list(HIDDEN * 8) if is_paused else list(W * 8)
+        self.vertex["play_tri"].visible = is_paused
+        self.vertex["pause_left"].visible = not is_paused
+        self.vertex["pause_right"].visible = not is_paused
 
 
 class MuteButton(Button):
@@ -102,67 +125,91 @@ class MuteButton(Button):
         super().__init__(name, container, callback)
         self.is_muted: bool = True
 
-        import math
-
         cx: float = self.container.cx
         cy: float = self.container.cy
         s: float = self.container.h * 0.30
         g: Any = G(self.m_draw + 8)
         W: tuple[int, int, int, int] = C["WHITE"]
-        HIDDEN: tuple[int, int, int, int] = (255, 255, 255, 0)
 
-        # --- Speaker body (quad) ---
+        # --- Speaker body (rectangle) ---
         bx1: float = cx - 0.8 * s
         bx2: float = cx - 0.3 * s
         byt: float = cy + 0.25 * s
         byb: float = cy - 0.25 * s
-        self.add_quad("spk_body", g, (bx1, byt, bx2, byt, bx2, byb, bx1, byb), W * 4)
-
-        # --- Speaker cone (quad / trapezoid) ---
-        tip_x: float = cx + 0.2 * s
-        self.add_quad(
-            "spk_cone",
-            g,
-            (bx2, byt, tip_x, cy + 0.55 * s, tip_x, cy - 0.55 * s, bx2, byb),
-            W * 4,
+        self.vertex["spk_body"] = Rectangle(
+            x=bx1, y=byb, width=bx2 - bx1, height=byt - byb,
+            color=W,
+            batch=None,
+            group=g,
         )
 
-        # --- X mark (2 lines = 4 vertices) — visible when muted ---
+        # --- Speaker cone (triangle / trapezoid approximation) ---
+        tip_x: float = cx + 0.2 * s
+        self.vertex["spk_cone"] = Triangle(
+            bx2, byt,
+            tip_x, cy + 0.55 * s,
+            tip_x, cy - 0.55 * s,
+            color=W,
+            batch=None,
+            group=g,
+        )
+        # Second triangle to fill the quad shape
+        self.vertex["spk_cone2"] = Triangle(
+            bx2, byt,
+            tip_x, cy - 0.55 * s,
+            bx2, byb,
+            color=W,
+            batch=None,
+            group=g,
+        )
+
+        # --- X mark (2 lines) — visible when muted ---
         xx1: float = cx + 0.35 * s
         xx2: float = cx + 0.85 * s
         xy1: float = cy + 0.45 * s
         xy2: float = cy - 0.45 * s
-        self.add_lines("mute_x", g, (xx1, xy1, xx2, xy2, xx1, xy2, xx2, xy1), list(W * 4))
+        self.vertex["mute_x1"] = Line(
+            xx1, xy1, xx2, xy2,
+            color=W,
+            batch=None,
+            group=g,
+        )
+        self.vertex["mute_x2"] = Line(
+            xx1, xy2, xx2, xy1,
+            color=W,
+            batch=None,
+            group=g,
+        )
 
         # --- Sound waves (2 arcs) — hidden when muted ---
+        from pyglet.shapes import Arc
+
         arc_cx: float = tip_x
-        n_seg: int = 10
+        self.vertex["wave1"] = Arc(
+            x=arc_cx, y=cy, radius=0.45 * s,
+            segments=10, angle=90.0, start_angle=-45.0,
+            color=W,
+            batch=None,
+            group=g,
+        )
+        self.vertex["wave1"].visible = False
 
-        def arc_line_verts(acx: float, acy: float, r: float, start_deg: float, end_deg: float) -> list[float]:
-            pts: list[tuple[float, float]] = []
-            for i in range(n_seg + 1):
-                a: float = math.radians(start_deg + (end_deg - start_deg) * i / n_seg)
-                pts.append((acx + r * math.cos(a), acy + r * math.sin(a)))
-            verts: list[float] = []
-            for i in range(n_seg):
-                verts.extend([pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]])
-            return verts
+        self.vertex["wave2"] = Arc(
+            x=arc_cx, y=cy, radius=0.70 * s,
+            segments=10, angle=90.0, start_angle=-45.0,
+            color=W,
+            batch=None,
+            group=g,
+        )
+        self.vertex["wave2"].visible = False
 
-        wave1: list[float] = arc_line_verts(arc_cx, cy, 0.45 * s, -45, 45)
-        wave2: list[float] = arc_line_verts(arc_cx, cy, 0.70 * s, -45, 45)
-        wave_verts: list[float] = wave1 + wave2
-        n_wave_pts: int = len(wave_verts) // 2
-        self.add_lines("unmute_waves", g, wave_verts, list(HIDDEN * n_wave_pts))
-
-        self._n_wave_pts: int = n_wave_pts
         self.show()
 
     def update_mute_state(self, is_muted: bool) -> None:
         self.is_muted = is_muted
-        W: tuple[int, int, int, int] = C["WHITE"]
-        HIDDEN: tuple[int, int, int, int] = (255, 255, 255, 0)
-
-        self.on_batch["mute_x"].colors = list(W * 4) if is_muted else list(HIDDEN * 4)
-        self.on_batch["unmute_waves"].colors = (
-            list(HIDDEN * self._n_wave_pts) if is_muted else list(W * self._n_wave_pts)
-        )
+        # X mark visible when muted
+        self.vertex["mute_x1"].visible = is_muted
+        self.vertex["mute_x2"].visible = is_muted
+        # Waves visible when unmuted
+        self.vertex["wave1"].visible = not is_muted
+        self.vertex["wave2"].visible = not is_muted

@@ -108,32 +108,6 @@ class TestRotateVerticeList:
             assert abs(orig - rotated) < 1e-10
 
 
-class TestVerticeCircle:
-    def test_point_count(self):
-        """30 points produce 60 coordinate values."""
-        w = _make_bare_widget()
-        result = w.vertice_circle((100, 100), 50, points_n=30)
-        assert len(result) == 60  # 30 points * 2 coords
-
-    def test_custom_point_count(self):
-        """4 points produce 8 coordinate values."""
-        w = _make_bare_widget()
-        result = w.vertice_circle((0, 0), 10, points_n=4)
-        assert len(result) == 8
-
-    def test_radius_constraint(self):
-        """All points lie at exactly the given radius."""
-        w = _make_bare_widget()
-        center = (100, 100)
-        radius = 50
-        result = w.vertice_circle(center, radius, points_n=100)
-        # All points should be at distance ~radius from center
-        for i in range(0, len(result), 2):
-            x, y = result[i], result[i + 1]
-            dist = math.sqrt((x - center[0]) ** 2 + (y - center[1]) ** 2)
-            assert abs(dist - radius) < 1e-10
-
-
 class TestGrouped:
     def test_pairs(self):
         """Groups list into consecutive pairs."""

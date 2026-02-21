@@ -11,7 +11,6 @@ that binds the program during batch.draw().
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import Any
 
 from pyglet.gl import GL_BLEND, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, glBlendFunc, glDisable, glEnable
@@ -108,33 +107,3 @@ def polygon_indices(n: int) -> list[int]:
     return indices
 
 
-def line_loop_to_lines(vertices: Sequence[float]) -> tuple[list[float], int]:
-    """Convert a GL_LINE_LOOP vertex list to GL_LINES segments."""
-    n: int = len(vertices) // 2
-    result: list[float] = []
-    for i in range(n):
-        x1, y1 = vertices[i * 2], vertices[i * 2 + 1]
-        j: int = (i + 1) % n
-        x2, y2 = vertices[j * 2], vertices[j * 2 + 1]
-        result.extend([x1, y1, x2, y2])
-    return result, n * 2
-
-
-def colors_3to4(data: Sequence[int], n: int) -> tuple[int, ...]:
-    """Convert c3B (RGB) color data to c4B (RGBA) by adding alpha=255."""
-    result: list[int] = []
-    for i in range(n):
-        r, g, b = data[i * 3], data[i * 3 + 1], data[i * 3 + 2]
-        result.extend([r, g, b, 255])
-    return tuple(result)
-
-
-def expand_colors_for_line_loop(colors: Sequence[int], orig_n: int) -> tuple[int, ...]:
-    """Expand colors from LINE_LOOP (n vertices) to LINES (2n vertices)."""
-    bpv: int = 4
-    result: list[int] = []
-    for i in range(orig_n):
-        j: int = (i + 1) % orig_n
-        result.extend(colors[i * bpv : (i + 1) * bpv])
-        result.extend(colors[j * bpv : (j + 1) * bpv])
-    return tuple(result)
