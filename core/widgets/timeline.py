@@ -4,7 +4,15 @@
 
 from __future__ import annotations
 
-from core.widgets.abstractwidget import *
+from typing import Any
+
+from pyglet.shapes import Line
+from pyglet.text import Label
+
+from core.constants import COLORS as C
+from core.constants import FONT_SIZES as F
+from core.constants import Group as G
+from core.widgets import AbstractWidget
 
 
 class Timeline(AbstractWidget):
@@ -19,13 +27,26 @@ class Timeline(AbstractWidget):
         self.vertex = dict()
         interval_n: int = self.max_time_minute * 2
         x1, y1, x2, y2 = self.container.get_x1y1x2y2()
-        v: list[float] = [x2, y1, x2, y2]
+
+        # Main vertical line
+        self.vertex["main_line"] = Line(
+            x2, y1, x2, y2,
+            color=C["BLACK"],
+            batch=None,
+            group=G(self.m_draw + 1),
+        )
+
+        # Graduation lines
         for i, this_y in enumerate([y1 + i * ((y2 - y1) / interval_n) for i in range(interval_n + 1)]):
             size: float = self.graduation_width / 2 if i % 2 != 0 else self.graduation_width
-            v.extend([x2 - size, this_y, x2, this_y])
+            self.vertex[f"grad_{i}"] = Line(
+                x2 - size, this_y, x2, this_y,
+                color=C["BLACK"],
+                batch=None,
+                group=G(self.m_draw + 1),
+            )
 
-        self.add_lines("lines", G(self.m_draw + 1), v, C["BLACK"] * (len(v) // 2))
-
+        # Time labels
         for i, this_y in enumerate(
             [y1 + i * ((y2 - y1) / self.max_time_minute) for i in range(self.max_time_minute + 1)]
         ):

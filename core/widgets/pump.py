@@ -4,8 +4,14 @@
 
 from __future__ import annotations
 
+from pyglet.shapes import Line, Triangle
+from pyglet.text import Label
+
+from core.constants import COLORS as C
+from core.constants import FONT_SIZES as F
+from core.constants import Group as G
 from core.container import Container
-from core.widgets.abstractwidget import *
+from core.widgets import AbstractWidget
 
 
 class Pump(AbstractWidget):
@@ -26,11 +32,12 @@ class Pump(AbstractWidget):
         # If from_container and to_container are aligned (x or y axis)
         if from_cont.cx == to_cont.cx or from_cont.cy == to_cont.cy:
             # Draw a straight line
-            self.add_lines(
-                "connector_1",
-                G(self.m_draw),
-                (from_cont.cx, from_cont.cy + y_offset, to_cont.cx, to_cont.cy + y_offset),
-                C["BLACK"] * 2,
+            self.vertex["connector_1"] = Line(
+                from_cont.cx, from_cont.cy + y_offset,
+                to_cont.cx, to_cont.cy + y_offset,
+                color=C["BLACK"],
+                batch=None,
+                group=G(self.m_draw),
             )
 
             # Draw the pump in the middle of the line
@@ -41,41 +48,63 @@ class Pump(AbstractWidget):
             y: float = from_cont.cy + y_offset
             w: float = width if from_cont.cx > to_cont.cx else -width  # Pump width
             h: float = abs(w)
-            self.pump_vertice: tuple[float, ...] = (x, y, x + w, y + h / 2, x + w, y - h / 2)
-            self.num_location: tuple[float, float] = (x + w * 0.70, y + 2)
+            pump_verts = (x, y, x + w, y + h / 2, x + w, y - h / 2)
+            num_location: tuple[float, float] = (x + w * 0.70, y + 2)
 
-        else:  # If not, make an perpendicular node
+        else:  # If not, make a perpendicular node
             y_offset = -y_offset - 20
-            self.add_lines(
-                "connector_1",
-                G(self.m_draw),
-                (from_cont.cx, from_cont.cy, from_cont.cx, to_cont.cy + y_offset),
-                C["BLACK"] * 2,
+            self.vertex["connector_1"] = Line(
+                from_cont.cx, from_cont.cy,
+                from_cont.cx, to_cont.cy + y_offset,
+                color=C["BLACK"],
+                batch=None,
+                group=G(self.m_draw),
             )
-            self.add_lines(
-                "connector_2",
-                G(self.m_draw),
-                (to_cont.cx, to_cont.cy + y_offset, from_cont.cx, to_cont.cy + y_offset),
-                C["BLACK"] * 2,
+            self.vertex["connector_2"] = Line(
+                to_cont.cx, to_cont.cy + y_offset,
+                from_cont.cx, to_cont.cy + y_offset,
+                color=C["BLACK"],
+                batch=None,
+                group=G(self.m_draw),
             )
 
             # And stick the pump to the source tank
             x = from_cont.cx
             y = from_cont.cy + from_cont.h / 2 + width * 2
             w = width
-            self.pump_vertice = (x, y, x - w / 2, y - w, x + w / 2, y - w)
-            self.num_location = (x, y - w / 2 - 3)
+            pump_verts = (x, y, x - w / 2, y - w, x + w / 2, y - w)
+            num_location = (x, y - w / 2 - 3)
 
-        self.add_triangles("triangle", G(self.m_draw + 1), self.pump_vertice, color * 3)
+        # Triangle shape
+        self.vertex["triangle"] = Triangle(
+            pump_verts[0], pump_verts[1],
+            pump_verts[2], pump_verts[3],
+            pump_verts[4], pump_verts[5],
+            color=color,
+            batch=None,
+            group=G(self.m_draw + 1),
+        )
 
-        self.add_lines("border", G(self.m_draw + 2), self.vertice_strip(self.pump_vertice), C["BLACK"] * 6)
+        # Border lines around the triangle
+        pv = pump_verts
+        for i, (lx1, ly1, lx2, ly2) in enumerate([
+            (pv[0], pv[1], pv[2], pv[3]),
+            (pv[2], pv[3], pv[4], pv[5]),
+            (pv[4], pv[5], pv[0], pv[1]),
+        ]):
+            self.vertex[f"border_{i}"] = Line(
+                lx1, ly1, lx2, ly2,
+                color=C["BLACK"],
+                batch=None,
+                group=G(self.m_draw + 2),
+            )
 
         self.vertex["label"] = Label(
             str(pump_n),
             font_size=F["SMALL"],
             font_name=self.font_name,
-            x=self.num_location[0],
-            y=self.num_location[1],
+            x=num_location[0],
+            y=num_location[1],
             anchor_x="center",
             anchor_y="center",
             color=C["BLACK"],
@@ -85,8 +114,10 @@ class Pump(AbstractWidget):
     def set_color(self, color: tuple[int, int, int, int]) -> None:
         if color == self.get_color():
             return
-        self.on_batch["triangle"].colors[:] = color * 3
+        self.vertex["triangle"].color = color[:3]
+        self.vertex["triangle"].opacity = color[3]
         self.logger.record_state(self.name, "triangle", color)
 
     def get_color(self) -> tuple[int, int, int, int]:
-        return self.get_vertex_color("triangle")
+        shape = self.vertex["triangle"]
+        return (*shape.color[:3], shape.opacity)

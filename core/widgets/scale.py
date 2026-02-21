@@ -4,10 +4,15 @@
 
 from __future__ import annotations
 
+from typing import Any
+
+from pyglet.shapes import Line, Rectangle, Triangle
+from pyglet.text import Label
+
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.constants import Group as G
-from core.widgets.abstractwidget import *
+from core.widgets import AbstractWidget
 
 
 class Scale(AbstractWidget):
@@ -23,7 +28,7 @@ class Scale(AbstractWidget):
         ]
         self.position: int = 5
 
-        # Compute vertices
+        # Label
         self.vertex["label"] = Label(
             label.upper(),
             font_size=F["MEDIUM"],
@@ -37,25 +42,62 @@ class Scale(AbstractWidget):
             group=G(self.m_draw + 1),
         )
 
-        scale_vertice: tuple[float, ...] = self.vertice_border(self.container)
-        self.add_quad("background", G(self.m_draw + self.m_draw + 1), scale_vertice, (255, 255, 255, 255) * 4)
-        self.add_lines("border", G(self.m_draw + self.m_draw + 3), self.vertice_strip(scale_vertice), C["BLACK"] * 8)
+        x1, y1, x2, y2 = self.container.get_x1y1x2y2()
 
-        # Compute widths
+        # Background fill
+        self.vertex["background"] = Rectangle(
+            x=x1, y=y2,
+            width=self.container.w,
+            height=self.container.h,
+            color=(255, 255, 255),
+            batch=None,
+            group=G(self.m_draw + self.m_draw + 1),
+        )
+
+        # Border on top
+        for bname, coords in [("border_top", (x1, y1, x2, y1)),
+                               ("border_right", (x2, y1, x2, y2)),
+                               ("border_bottom", (x2, y2, x1, y2)),
+                               ("border_left", (x1, y2, x1, y1))]:
+            self.vertex[bname] = Line(
+                *coords, color=C["BLACK"], batch=None,
+                group=G(self.m_draw + self.m_draw + 3),
+            )
+
+        # Ticks
         self.tick_width: float = self.container.w * 0.25
-        v: list[float] = list()
         for i in range(11):
             w: float = self.tick_width if i != 5 else self.tick_width + 8
-            v.extend([self.container.x2 - w, self.positions[i], self.container.x2, self.positions[i]])
+            self.vertex[f"tick_{i}"] = Line(
+                self.container.x2 - w, self.positions[i],
+                self.container.x2, self.positions[i],
+                color=C["BLACK"],
+                batch=None,
+                group=G(self.m_draw + 3),
+            )
 
+        # Arrow dimensions
         self.arrow_width: float = 0.15 * self.container.w
-        self.arrow_x_offset: float = 0.22 * self.container.w  # So the arrow does not stick to
-        # the right side of the scale
+        self.arrow_x_offset: float = 0.22 * self.container.w
         self.feedback_height: float = 0.12 * self.container.h
 
-        self.add_lines("ticks", G(self.m_draw + 3), v, C["BLACK"] * (len(v) // 2))
-        self.add_quad("feedback", G(self.m_draw + 2), (0, 0, 0, 0, 0, 0, 0, 0), C["GREEN"] * 4)
-        self.add_triangles("arrow", G(self.m_draw + 2), self.return_arrow_vertice(arrow_position), C["BLACK"] * 3)
+        # Feedback rectangle (hidden by default)
+        self.vertex["feedback"] = Rectangle(
+            x=0, y=0, width=0, height=0,
+            color=C["GREEN"],
+            batch=None,
+            group=G(self.m_draw + 2),
+        )
+        self.vertex["feedback"].visible = False
+
+        # Arrow triangle
+        av = self.return_arrow_vertice(arrow_position)
+        self.vertex["arrow"] = Triangle(
+            av[0], av[1], av[2], av[3], av[4], av[5],
+            color=C["BLACK"],
+            batch=None,
+            group=G(self.m_draw + 2),
+        )
 
     def return_arrow_vertice(self, position: int) -> tuple[float, ...]:
         xo: float = self.arrow_x_offset
@@ -73,22 +115,16 @@ class Scale(AbstractWidget):
         if visible == self.feedback_visible:
             return
         self.feedback_visible = visible
-        h: float = self.feedback_height
-        v: tuple[float, ...] = (
-            (
-                self.container.x1,
-                self.container.y2 + h,
-                self.container.x2,
-                self.container.y2 + h,
-                self.container.x2,
-                self.container.y2,
-                self.container.x1,
-                self.container.y2,
-            )
-            if visible
-            else (0, 0) * 4
-        )
-        self.on_batch["feedback"].position[:] = v
+        shape = self.vertex["feedback"]
+        if visible:
+            h: float = self.feedback_height
+            shape.x = self.container.x1
+            shape.y = self.container.y2
+            shape.width = self.container.w
+            shape.height = h
+            shape.visible = True
+        else:
+            shape.visible = False
         self.logger.record_state(self.name, "feedback_visible", visible)
 
     def is_feedback_visible(self) -> bool:
@@ -97,17 +133,27 @@ class Scale(AbstractWidget):
     def set_feedback_color(self, color: tuple[int, ...]) -> None:
         if color == self.get_feedback_color():
             return
-        self.on_batch["feedback"].colors[:] = color * 4
+        self.vertex["feedback"].color = color[:3]
+        self.vertex["feedback"].opacity = color[3]
         self.logger.record_state(self.name, "feedback_color", color)
 
     def get_feedback_color(self) -> tuple[int, ...]:
-        return self.get_vertex_color("feedback")
+        shape = self.vertex["feedback"]
+        return (*shape.color[:3], shape.opacity)
 
     def set_arrow_position(self, position: int) -> None:
         if position == self.get_arrow_position():
             return
         self.position = position
-        self.on_batch["arrow"].position[:] = self.return_arrow_vertice(self.position)
+        av = self.return_arrow_vertice(self.position)
+        old = self.vertex["arrow"]
+        self.vertex["arrow"] = Triangle(
+            av[0], av[1], av[2], av[3], av[4], av[5],
+            color=C["BLACK"],
+            batch=old.batch,
+            group=old.group,
+        )
+        old.delete()
         self.logger.record_state(self.name, "arrow", self.position)
 
     def get_arrow_position(self) -> int:

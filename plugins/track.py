@@ -12,6 +12,7 @@ from core import validation
 from core.constants import COLORS as C
 from core.constants import REPLAY_MODE
 from core.container import Container
+from core.utils import clamp
 from core.widgets import Reticle
 from plugins.abstractplugin import AbstractPlugin
 
@@ -154,25 +155,37 @@ class Track(AbstractPlugin):
                 moffx = moffx + compx
                 moffy = moffy + compy
 
-                cursorx = cursorx + moffx
-                cursory = cursory + moffy
+                sin_x = sin(xsin) * self.xgain
+                sin_y = sin(ysin) * self.ygain
+                cursorx = sin_x + moffx
+                cursory = sin_y + moffy
 
-                limitx: float = min(max(cursorx, -self.reticle.container.w / 2), self.reticle.container.w / 2)
-                limity: float = min(max(cursory, -self.reticle.container.h / 2), self.reticle.container.h / 2)
+                limitx: float = clamp(cursorx, -self.reticle.container.w / 2, self.reticle.container.w / 2)
+                limity: float = clamp(cursory, -self.reticle.container.h / 2, self.reticle.container.h / 2)
+
+                clamp_x = limitx != cursorx
+                clamp_y = limity != cursory
 
                 # If outside reticle limits, compensate cursor position
                 # Neutralize the joystick only if it does not go toward the center
-                if limitx != cursorx:
+                if clamp_x:
                     diff: float = cursorx - limitx
                     cursorx -= diff
                     if compx != 0 and diff / compx > 0:  # Same sign
                         moffx -= diff + compx * self.parameters["joystickforce"]
 
-                if limity != cursory:
+                if clamp_y:
                     diff = cursory - limity
                     cursory -= diff
                     if compy != 0 and diff / compy > 0:  # Same sign
                         moffy -= diff + compy * self.parameters["joystickforce"]
+
+                if compx != 0 or compy != 0 or clamp_x or clamp_y:
+                    print(f"[TRACK-GEN] sin=({sin_x:+7.1f},{sin_y:+7.1f})  "
+                          f"moff=({moffx:+7.1f},{moffy:+7.1f})  "
+                          f"comp=({compx:+5.2f},{compy:+5.2f})  "
+                          f"cursor=({cursorx:+7.1f},{cursory:+7.1f})  "
+                          f"clamp={'X' if clamp_x else '.'}{'Y' if clamp_y else '.'}")
                 yield (cursorx, cursory)
             else:
                 yield (0, 0)

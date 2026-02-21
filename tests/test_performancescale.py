@@ -37,12 +37,12 @@ class TestInit:
         assert scale.tick_number == 5
 
     def test_creates_expected_vertices(self, scale):
-        """__init__ via _draw_scale creates background, performance, borders, ticks, and tick labels."""
+        """__init__ via _draw_scale creates background, performance, tick lines, and tick labels."""
         assert "background" in scale.vertex
         assert "performance" in scale.vertex
-        assert "borders" in scale.vertex
-        assert "ticks" in scale.vertex
-        # 5 ticks → 5 labels (tick_0_label, tick_25_label, etc.)
+        # 5 ticks → 5 Line shapes + 5 labels
+        tick_lines = [k for k in scale.vertex if k.startswith("tick_") and not k.endswith("_label")]
+        assert len(tick_lines) == 5
         tick_labels = [k for k in scale.vertex if k.startswith("tick_") and k.endswith("_label")]
         assert len(tick_labels) == 5
 
@@ -87,8 +87,8 @@ class TestRebuild:
         # Same structural keys should exist after rebuild
         assert "background" in new_vertex_keys
         assert "performance" in new_vertex_keys
-        assert "borders" in new_vertex_keys
-        assert "ticks" in new_vertex_keys
+        tick_lines = [k for k in new_vertex_keys if k.startswith("tick_") and not k.endswith("_label")]
+        assert len(tick_lines) > 0
 
     def test_rebuild_calls_hide_then_show(self, scale):
         """_rebuild should transition through hide → show."""

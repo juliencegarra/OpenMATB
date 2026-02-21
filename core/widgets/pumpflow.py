@@ -4,8 +4,16 @@
 
 from __future__ import annotations
 
+import math
+
+from pyglet.shapes import Triangle
+from pyglet.text import Label
+
+from core.constants import COLORS as C
+from core.constants import FONT_SIZES as F
+from core.constants import Group as G
 from core.container import Container
-from core.widgets.abstractwidget import *
+from core.widgets import AbstractWidget
 
 
 class PumpFlow(AbstractWidget):
@@ -28,9 +36,14 @@ class PumpFlow(AbstractWidget):
             group=G(self.m_draw + 1),
         )
 
-        # Pump arrow #
+        # Pump arrow — compute triangle vertices using the parent helper
         v: list[float] = self.get_triangle_vertice(h_ratio=0.25, x_ratio=-0.05, angle=3 * math.pi / 2)
-        self.add_triangles(f"{self.label}_arrow", G(self.m_draw + 2), v, C["BLACK"] * 3)
+        self.vertex[f"{self.label}_arrow"] = Triangle(
+            v[0], v[1], v[2], v[3], v[4], v[5],
+            color=C["BLACK"],
+            batch=None,
+            group=G(self.m_draw + 2),
+        )
 
     def pump_string(self, value: int) -> str:
         return f"{self.label}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t{value}"
