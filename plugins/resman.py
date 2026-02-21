@@ -21,6 +21,12 @@ class Resman(AbstractPlugin):
         super().__init__(_("Resources management"), taskplacement, taskupdatetime)
 
         self.validation_dict: dict[str, Callable[..., Any] | tuple[Callable[..., Any], list[str]]] = {
+            "automaticsolver": validation.is_boolean,
+            "displayautomationstate": validation.is_boolean,
+            "taskfeedback-overdue-active": validation.is_boolean,
+            "taskfeedback-overdue-color": validation.is_color,
+            "taskfeedback-overdue-delayms": validation.is_natural_integer,
+            "taskfeedback-overdue-blinkdurationms": validation.is_natural_integer,
             "pumpcoloroff": validation.is_color,
             "pumpcoloron": validation.is_color,
             "pumpcolorfailure": validation.is_color,

@@ -19,6 +19,10 @@ class Scheduling(AbstractPlugin):
         super().__init__(_("Scheduling"), taskplacement, taskupdatetime)
 
         self.validation_dict: dict[str, Callable[..., Any] | tuple[Callable[..., Any], list[str]]] = {
+            "taskfeedback-overdue-active": validation.is_boolean,
+            "taskfeedback-overdue-color": validation.is_color,
+            "taskfeedback-overdue-delayms": validation.is_natural_integer,
+            "taskfeedback-overdue-blinkdurationms": validation.is_natural_integer,
             "minduration": validation.is_positive_integer,
             "displaychronometer": validation.is_boolean,
             "reversechronometer": validation.is_boolean,

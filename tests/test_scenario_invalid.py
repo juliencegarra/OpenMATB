@@ -164,7 +164,7 @@ class TestRule2CommandLength:
         ]
         s = _make_scenario(plugins={"myplugin": plugin}, events=events)
         vdict = {"title": validation.is_string}
-        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.global_validation_dict", vdict):
+        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.base_validation_dict", vdict):
             errors = s.check_events()
         assert not any("does not trigger any command" in e for e in errors)
         assert not any("Maximum length" in e for e in errors)
@@ -226,7 +226,7 @@ class TestRule4ParameterValidation:
         )
         events = _base_events() + [Event(10, 30, "myplugin", ["customkey", "val"])]
         s = _make_scenario(plugins={"myplugin": plugin}, events=events)
-        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.global_validation_dict", {}):
+        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.base_validation_dict", {}):
             errors = s.check_events()
         assert any("has no verification method" in e for e in errors)
 
@@ -239,7 +239,7 @@ class TestRule4ParameterValidation:
         events = _base_events() + [Event(10, 30, "myplugin", ["taskupdatetime", "abc"])]
         s = _make_scenario(plugins={"myplugin": plugin}, events=events)
         vdict = {"taskupdatetime": validation.is_positive_integer}
-        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.global_validation_dict", vdict):
+        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.base_validation_dict", vdict):
             errors = s.check_events()
         param_errors = [e for e in errors if "taskupdatetime" in e and "positive" in e]
         assert len(param_errors) == 1
@@ -254,7 +254,7 @@ class TestRule4ParameterValidation:
         events = _base_events() + [param_event]
         s = _make_scenario(plugins={"myplugin": plugin}, events=events)
         vdict = {"taskupdatetime": validation.is_positive_integer}
-        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.global_validation_dict", vdict):
+        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.base_validation_dict", vdict):
             errors = s.check_events()
         assert not any("taskupdatetime" in e for e in errors)
         assert param_event.command[1] == 200  # str '200' → int 200
@@ -269,7 +269,7 @@ class TestRule4ParameterValidation:
         events = _base_events() + [param_event]
         s = _make_scenario(plugins={"myplugin": plugin}, events=events)
         vdict = {"title": validation.is_string}
-        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.global_validation_dict", vdict):
+        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.base_validation_dict", vdict):
             s.check_events()
         assert param_event.command[1] == "Hello World"
 
@@ -283,7 +283,7 @@ class TestRule4ParameterValidation:
         events = _base_events() + [param_event]
         s = _make_scenario(plugins={"myplugin": plugin}, events=events)
         vdict = {"taskupdatetime": validation.is_positive_integer}
-        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.global_validation_dict", vdict):
+        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.base_validation_dict", vdict):
             s.check_events()
         # '1 00' → spaces stripped → '100' → evaluated to int 100
         assert param_event.command[1] == 100
@@ -304,7 +304,7 @@ class TestRule4ParameterValidation:
         events = _base_events() + [param_event]
         s = _make_scenario(plugins={"myplugin": plugin}, events=events)
         vdict = {"mode": (custom_validator, ["normal", "easy"])}
-        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.global_validation_dict", vdict):
+        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.base_validation_dict", vdict):
             errors = s.check_events()
         assert any("not in allowed list" in e for e in errors)
 
@@ -318,7 +318,7 @@ class TestValidationDictMerge:
         plugin = _make_plugin()  # No validation_dict attribute
         s = _make_scenario(plugins={"myplugin": plugin})
         gdict = {"title": validation.is_string}
-        with patch("core.scenario.global_validation_dict", gdict):
+        with patch("core.scenario.base_validation_dict", gdict):
             result = s.get_validation_dict("myplugin")
         assert "title" in result
 
@@ -331,7 +331,7 @@ class TestValidationDictMerge:
         custom_fn.__name__ = "custom_fn"
         plugin = _make_plugin(validation_dict={"title": custom_fn})
         s = _make_scenario(plugins={"myplugin": plugin})
-        with patch("core.scenario.global_validation_dict", dict()):
+        with patch("core.scenario.base_validation_dict", dict()):
             result = s.get_validation_dict("myplugin")
         assert result["title"] is custom_fn
 
@@ -344,7 +344,7 @@ class TestValidationDictMerge:
         custom_fn.__name__ = "custom_fn"
         plugin = _make_plugin(validation_dict={"special": custom_fn})
         s = _make_scenario(plugins={"myplugin": plugin})
-        with patch("core.scenario.global_validation_dict", dict()):
+        with patch("core.scenario.base_validation_dict", dict()):
             result = s.get_validation_dict("myplugin")
         assert "special" in result
 
@@ -384,7 +384,7 @@ class TestCheckEventsIntegration:
         ]
         s = _make_scenario(plugins={"myplugin": plugin}, events=events)
         vdict = {"title": validation.is_string}
-        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.global_validation_dict", vdict):
+        with patch("core.scenario.REPLAY_MODE", False), patch("core.scenario.base_validation_dict", vdict):
             errors = s.check_events()
         assert errors == []
 

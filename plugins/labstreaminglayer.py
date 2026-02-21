@@ -19,12 +19,12 @@ class Labstreaminglayer(Instructions):
     def __init__(self) -> None:
         super().__init__()
 
-        self.validation_dict: dict[str, Callable[..., Any]] = {
+        self.validation_dict.update({
             "marker": validation.is_string,
             "streamsession": validation.is_boolean,
             "pauseatstart": validation.is_boolean,
             "state": validation.is_string,
-        }
+        })
 
         self.parameters.update({"marker": "", "streamsession": False, "pauseatstart": False})
 

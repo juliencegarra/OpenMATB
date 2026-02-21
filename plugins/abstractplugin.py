@@ -10,6 +10,7 @@ from typing import Any
 
 from pyglet.window import key as winkey
 
+from core import validation
 from core.constants import BFLIM, PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
@@ -415,6 +416,16 @@ class BlockingPlugin(AbstractPlugin):
         self.keys.update({"SPACE"})
         new_par: dict[str, bool] = dict(boldtitle=False)
         self.parameters.update(new_par)
+
+        self.validation_dict: dict[str, Any] = {
+            "boldtitle": validation.is_boolean,
+            "filename": validation.is_available_text_file,
+            "pointsize": validation.is_natural_integer,
+            "maxdurationsec": validation.is_natural_integer,
+            "response-text": validation.is_string,
+            "response-key": validation.is_keyboard_key,
+            "allowkeypress": validation.is_boolean,
+        }
 
         self.blocking: bool = True
         self.display_title: bool = False
