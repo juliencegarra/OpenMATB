@@ -43,26 +43,12 @@ class SimpleHTML(AbstractWidget):
         )
 
     def preparse(self, text: str) -> str:
-        def get_nearest_size_of_pt(pt: int) -> int:
-            # See https://github.com/pyglet/pyglet/blob/master/pyglet/text/formats/html.py
-            # Where pyglet HTML sizes are defined
-            # TODO: Migrating to pyglet 2 -> real_size font attribute will be usable
-
-            font_sizes: dict[int, int] = {8: 1, 10: 2, 12: 3, 14: 4, 18: 5, 24: 6, 48: 7}
-            diffs: list[int] = [abs(pt - k) for k, v in font_sizes.items()]
-            nearest_key: int = [k for k, v in zip(list(font_sizes.keys()), diffs) if v == min(diffs)][0]
-            # if len(nearest_key) > 1:    # If equality, take greatest
-            # nearest_key = nearest_key[0]
-            return font_sizes[nearest_key]
-
-        hs: dict[str, int] = {k: get_nearest_size_of_pt(v) for k, v in F.items()}
-
         pars_dict: dict[str, str] = {
-            "<h1>": f"<center><strong><font size={hs['XLARGE']} face={self.font_name}>",
+            "<h1>": f"<center><strong><font real_size={F['XLARGE']} face={self.font_name}>",
             "</h1>": "</font></strong></center><br>",
-            "<h2>": f"<center><font size={hs['XLARGE']} face={self.font_name}><em>",
+            "<h2>": f"<center><font real_size={F['XLARGE']} face={self.font_name}><em>",
             "</h2>": "</em></font></center><br>",
-            "<p>": f"<p><font size={hs['LARGE']} face={self.font_name}>",
+            "<p>": f"<p><font real_size={F['LARGE']} face={self.font_name}>",
             "</p>": "</font></p>",
         }
 
