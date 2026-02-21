@@ -57,7 +57,6 @@ class Logger:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             self.open()
 
-    # TODO: see if we can/should merge record_* methods into one
     def record_event(self, event: Any) -> None:
         if len(event.command) == 1:
             adress: str = "self"
