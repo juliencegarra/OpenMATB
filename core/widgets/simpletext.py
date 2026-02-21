@@ -46,9 +46,6 @@ class Simpletext(AbstractWidget):
             label_kwargs["weight"] = "bold"
         self.vertex["text"] = Label(text, **label_kwargs)
 
-        # TODO   Is this first log needed ?
-        # self.logger.record_state(self.name, 'text', text)
-
     def set_text(self, text: str) -> None:
         if text == self.get_text():
             return
