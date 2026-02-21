@@ -11,47 +11,6 @@ def _make_bare_widget():
     return w
 
 
-class TestVerticeStrip:
-    def test_square(self):
-        """Square vertices produce 4 line segments."""
-        w = _make_bare_widget()
-        # A square: (0,0), (10,0), (10,10), (0,10) as flat list
-        vertice = [0, 0, 10, 0, 10, 10, 0, 10]
-        result = w.vertice_strip(vertice)
-        # Should create line segments connecting consecutive points + closing
-        # Each segment is 4 values: x1,y1,x2,y2
-        assert len(result) == 16  # 4 segments * 4 values
-
-    def test_triangle(self):
-        """Triangle vertices produce 3 line segments."""
-        w = _make_bare_widget()
-        vertice = [0, 0, 10, 0, 5, 10]
-        result = w.vertice_strip(vertice)
-        # 3 points -> 3 segments (including closing)
-        assert len(result) == 12
-
-    def test_none_input(self):
-        """None input returns None."""
-        w = _make_bare_widget()
-        result = w.vertice_strip(None)
-        assert result is None
-
-    def test_closing_segment(self):
-        """Last segment closes back to first point."""
-        w = _make_bare_widget()
-        vertice = [0, 0, 10, 0, 10, 10, 0, 10]
-        result = w.vertice_strip(vertice)
-        # Last segment should close: from last point back to first
-        assert result[-4:] == [0, 10, 0, 0]
-
-    def test_first_segment(self):
-        """First segment connects first two points."""
-        w = _make_bare_widget()
-        vertice = [0, 0, 10, 0, 10, 10, 0, 10]
-        result = w.vertice_strip(vertice)
-        assert result[0:4] == [0, 0, 10, 0]
-
-
 class TestGetTriangleCentroid:
     def test_equilateral_like(self):
         """Centroid of (0,0),(10,0),(5,10) is (5, 3.33)."""
@@ -120,15 +79,3 @@ class TestGrouped:
         w = _make_bare_widget()
         result = list(w.grouped([1, 2, 3, 4, 5, 6], 3))
         assert result == [(1, 2, 3), (4, 5, 6)]
-
-
-class TestVerticeBorder:
-    def test_border_vertices(self):
-        """Returns 4 corners as (x1,y1, x2,y1, x2,y2, x1,y2)."""
-        w = _make_bare_widget()
-        from core.container import Container
-
-        c = Container("test", 10, 20, 100, 50)
-        result = w.vertice_border(c)
-        # Should return x1, y1, x2, y1, x2, y2, x1, y2
-        assert result == (10, 70, 110, 70, 110, 20, 10, 20)

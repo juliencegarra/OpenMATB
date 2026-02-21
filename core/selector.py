@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import pyglet
-from pyglet.gl import GL_TRIANGLES
+from pyglet.shapes import Rectangle
 from pyglet.text import Label
 from pyglet.window import key as winkey
 from pyglet.window import mouse
@@ -19,7 +19,6 @@ from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.constants import PATHS as P
 from core.constants import Group as G
-from core.rendering import get_group, get_program, polygon_indices
 
 
 class FileSelector:
@@ -112,19 +111,10 @@ class FileSelector:
         h: int = self.win.height
 
         # Full-screen background
-        program = get_program()
-        indices = polygon_indices(4)
-        self._vertices.append(
-            program.vertex_list_indexed(
-                4,
-                GL_TRIANGLES,
-                indices,
-                batch=self.win.batch,
-                group=get_group(order=self._BG_GROUP.order),
-                position=("f", (0, h, w, h, w, 0, 0, 0)),
-                colors=("Bn", C["BACKGROUND"] * 4),
-            )
-        )
+        bg = Rectangle(x=0, y=0, width=w, height=h,
+                        color=C["BACKGROUND"][:3], batch=self.win.batch, group=self._BG_GROUP)
+        bg.opacity = C["BACKGROUND"][3]
+        self._vertices.append(bg)
 
         # Title
         title_text: str = _("Select a scenario") if self.mode == "scenario" else _("Select a session")
@@ -156,16 +146,13 @@ class FileSelector:
         )
         self._vertices.append(self._footer_label)
 
-        # Highlight bar (dynamic vertices)
-        self._highlight: Any = program.vertex_list_indexed(
-            4,
-            GL_TRIANGLES,
-            indices,
-            batch=self.win.batch,
-            group=get_group(order=self._HIGHLIGHT_GROUP.order),
-            position=("f", (0, 0, 0, 0, 0, 0, 0, 0)),
-            colors=("Bn", C["BLUE"] * 4),
+        # Highlight bar (dynamic rectangle)
+        self._highlight: Any = Rectangle(
+            x=0, y=0, width=0, height=0,
+            color=C["BLUE"][:3], batch=self.win.batch, group=self._HIGHLIGHT_GROUP,
         )
+        self._highlight.opacity = C["BLUE"][3]
+        self._highlight.visible = False
         self._vertices.append(self._highlight)
 
         # Label pool for visible rows
@@ -222,11 +209,13 @@ class FileSelector:
         vis_idx: int = self._selected_index - self._scroll_offset
         if 0 <= vis_idx < self._visible_rows and 0 <= self._selected_index < len(self._files):
             y: float = self._list_top - (vis_idx + 1) * self._row_height
-            x: int = self._margin
-            w: int = self._list_width
-            self._highlight.position[:] = [x, y + self._row_height, x + w, y + self._row_height, x + w, y, x, y]
+            self._highlight.x = self._margin
+            self._highlight.y = y
+            self._highlight.width = self._list_width
+            self._highlight.height = self._row_height
+            self._highlight.visible = True
         else:
-            self._highlight.position[:] = [0, 0, 0, 0, 0, 0, 0, 0]
+            self._highlight.visible = False
 
     def _ensure_visible(self) -> None:
         if self._selected_index < self._scroll_offset:

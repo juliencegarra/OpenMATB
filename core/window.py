@@ -8,18 +8,19 @@ from typing import Any
 
 from pyglet import image
 from pyglet.display import get_display
-from pyglet.gl import GL_TRIANGLES, glClearColor
+from pyglet.gl import glClearColor
 from pyglet.graphics import Batch
+from pyglet.shapes import Rectangle
 from pyglet.window import Window
 from pyglet.window import key as winkey
 
 from core.constants import COLORS as C
 from core.constants import PATHS as P
 from core.constants import PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE, REPLAY_STRIP_PROPORTION
+from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
 from core.modaldialog import ModalDialog
-from core.rendering import get_group, get_program, polygon_indices
 from core.utils import get_conf_value
 
 
@@ -100,56 +101,27 @@ class Window(Window):
         MATB_container: Container = self.get_container("fullscreen")
         l, b, w, h = MATB_container.get_lbwh()
         container_title_h: float = PLUGIN_TITLE_HEIGHT_PROPORTION / 2
-        program = get_program()
-        indices = polygon_indices(4)
 
         # Main background
-        program.vertex_list_indexed(
-            4,
-            GL_TRIANGLES,
-            indices,
-            batch=self.batch,
-            group=get_group(order=-1),
-            position=("f", (l, b + h, l + w, b + h, l + w, b, l, b)),
-            colors=("Bn", C["BACKGROUND"] * 4),
-        )
+        bg = Rectangle(x=l, y=b, width=w, height=h,
+                        color=C["BACKGROUND"][:3], batch=self.batch, group=G(-1))
+        bg.opacity = C["BACKGROUND"][3]
 
         # Upper band
-        program.vertex_list_indexed(
-            4,
-            GL_TRIANGLES,
-            indices,
-            batch=self.batch,
-            group=get_group(order=-1),
-            position=(
-                "f",
-                (l, b + h, l + w, b + h, l + w, b + h * (1 - container_title_h), l, b + h * (1 - container_title_h)),
-            ),
-            colors=("Bn", C["BLACK"] * 4),
-        )
+        upper_h: float = h * container_title_h
+        upper_y: float = b + h - upper_h
+        upper = Rectangle(x=l, y=upper_y, width=w, height=upper_h,
+                           color=C["BLACK"][:3], batch=self.batch, group=G(-1))
+        upper.opacity = C["BLACK"][3]
 
         # Middle band
-        program.vertex_list_indexed(
-            4,
-            GL_TRIANGLES,
-            indices,
-            batch=self.batch,
-            group=get_group(order=0),
-            position=(
-                "f",
-                (
-                    l,
-                    b + h / 2,
-                    l + w,
-                    b + h / 2,
-                    l + w,
-                    b + h * (0.5 - container_title_h),
-                    0,
-                    b + h * (0.5 - container_title_h),
-                ),
-            ),
-            colors=("Bn", C["BLACK"] * 4),
-        )
+        mid_h: float = h * container_title_h
+        mid_y: float = b + h * (0.5 - container_title_h)
+        mid = Rectangle(x=l, y=mid_y, width=w, height=mid_h,
+                         color=C["BLACK"][:3], batch=self.batch, group=G(0))
+        mid.opacity = C["BLACK"][3]
+
+        self.bg_shapes: list[Rectangle] = [bg, upper, mid]
 
     def on_draw(self) -> None:
         self.set_mouse_visible(self.is_mouse_necessary())
@@ -188,6 +160,28 @@ class Window(Window):
         keystr: str = winkey.symbol_string(symbol)
         self.keyboard[keystr] = False  # KeyStateHandler
         get_logger().record_input("keyboard", keystr, "release")
+
+    def on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> None:
+        if REPLAY_MODE:
+            return
+        get_logger().record_input("mouse", "x", x)
+        get_logger().record_input("mouse", "y", y)
+
+    def on_mouse_drag(self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int) -> None:
+        if REPLAY_MODE:
+            return
+        get_logger().record_input("mouse", "x", x)
+        get_logger().record_input("mouse", "y", y)
+
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
+        if REPLAY_MODE:
+            return
+        get_logger().record_input("mouse", "click", f"press;{x};{y};{button}")
+
+    def on_mouse_release(self, x: int, y: int, button: int, modifiers: int) -> None:
+        if REPLAY_MODE:
+            return
+        get_logger().record_input("mouse", "click", f"release;{x};{y};{button}")
 
     def exit_prompt(self) -> None:
         self.modal_dialog = ModalDialog(self, _("You hit the Escape key"), title=_("Exit OpenMATB?"), exit_key="q")

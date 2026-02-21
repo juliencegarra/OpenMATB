@@ -63,6 +63,7 @@ class LogReader:
         self.line_n: int = 0
         self.keyboard_inputs: list[dict[str, Any]] = []
         self.joystick_inputs: list[dict[str, Any]] = []
+        self.mouse_inputs: list[dict[str, Any]] = []
         self.blocking_segments: list[tuple[float, float, float]] = []
         self._bp_replay_times: list[float] = [0.0]
         self._bp_scenario_times: list[float] = [0.0]
@@ -79,6 +80,7 @@ class LogReader:
         self.line_n = 0
         self.keyboard_inputs = []
         self.joystick_inputs = []
+        self.mouse_inputs = []
         self.blocking_segments = []
         self._bp_replay_times = [0.0]
         self._bp_scenario_times = [0.0]
@@ -123,6 +125,8 @@ class LogReader:
                     self.keyboard_inputs.append(row)
                 elif "joystick" in row["address"]:
                     self.joystick_inputs.append(row)
+                elif row["module"] == "mouse":
+                    self.mouse_inputs.append(row)
 
             # State case
             elif row["type"] == "state":
