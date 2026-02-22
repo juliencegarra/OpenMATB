@@ -121,6 +121,7 @@ class Window(Window):
         self.modal_dialog: ModalDialog | None = None
         self.slider_visible: bool = False
         self.selector_visible: bool = False
+        self.mouse_control_active: bool = False
 
         self.on_key_press_replay: Any | None = None  # used by the replay
 
@@ -225,7 +226,7 @@ class Window(Window):
         self.batch.draw()
 
     def is_mouse_necessary(self) -> bool:
-        return self.slider_visible or self.selector_visible or REPLAY_MODE
+        return self.slider_visible or self.selector_visible or REPLAY_MODE or self.mouse_control_active
 
     # Log any keyboard input, either plugins accept it or not
     # is subclassed in replay mode
