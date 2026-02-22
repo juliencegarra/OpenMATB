@@ -70,6 +70,7 @@ class Scheduler:
             self.plugins[p].on_scenario_loaded(self.scenario)
 
         self.pause_scenario_time: bool = False
+        self.mouse_control_enabled: bool = False
         self.scenario_time = 0
 
         # We store events in a list in case their execution is delayed by a blocking event
@@ -233,6 +234,25 @@ class Scheduler:
         command: str = event.command[0]
         if command == "pause":
             Window.MainWindow.pause_prompt()
+        elif command == "mousecontrol":
+            if not REPLAY_MODE:
+                enabled = event.command[1] in (True, "True", "true")
+                self.mouse_control_enabled = enabled
+                Window.MainWindow.mouse_control_active = enabled
+                if enabled:
+                    for p in self.plugins:
+                        Window.MainWindow.push_handlers(
+                            self.plugins[p].on_mouse_press,
+                            self.plugins[p].on_mouse_release,
+                            self.plugins[p].on_mouse_drag,
+                        )
+                else:
+                    for p in self.plugins:
+                        Window.MainWindow.remove_handlers(
+                            self.plugins[p].on_mouse_press,
+                            self.plugins[p].on_mouse_release,
+                            self.plugins[p].on_mouse_drag,
+                        )
         event.done = 1
         get_logger().record_event(event)
 

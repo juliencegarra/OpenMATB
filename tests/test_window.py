@@ -20,6 +20,7 @@ def _make_window(**overrides):
     w.alive = True
     w.slider_visible = False
     w.selector_visible = False
+    w.mouse_control_active = False
     w.on_key_press_replay = None
     w.__dict__.update(overrides)
     return w

@@ -9,6 +9,8 @@ from pathlib import Path
 from string import ascii_lowercase, ascii_uppercase, digits
 from typing import Any, Callable
 
+from pyglet.window import mouse as winmouse
+
 from core import validation
 from core.audio import SequencePlayer, load_sound
 from core.constants import COLORS as C
@@ -585,3 +587,50 @@ class Communications(AbstractPlugin):
 
             elif key == self.parameters["keys"]["validateresponse"]:
                 self.confirm_response()
+
+    def do_on_mouse_press(self, x: int, y: int, button: int) -> None:
+        if button != winmouse.LEFT:
+            return
+
+        # Find which radio was clicked
+        clicked_radio = None
+        for _pos, radio in self.parameters["radios"].items():
+            if radio["widget"].container.contains_xy(x, y):
+                clicked_radio = radio
+                break
+
+        if clicked_radio is None:
+            return
+
+        active_radio = self.get_active_radio_dict()
+
+        # If the clicked radio is not the active one, navigate to it
+        if clicked_radio != active_radio:
+            active_pos = active_radio["pos"]
+            clicked_pos = clicked_radio["pos"]
+            direction = 1 if clicked_pos > active_pos else -1
+            key = self.parameters["keys"]["selectradiodown"] if direction == 1 else self.parameters["keys"]["selectradioup"]
+            for _i in range(abs(clicked_pos - active_pos)):
+                self.logger.record_input("mouse_key", key, "press")
+                self.do_on_key(key, "press", False)
+            return
+
+        # The clicked radio is active — determine the zone
+        cont = clicked_radio["widget"].container
+        relative_x = (x - cont.l) / cont.w
+
+        if relative_x < 0.25:
+            # Left zone: tune frequency down
+            key = self.parameters["keys"]["tunefrequencydown"]
+            self.logger.record_input("mouse_key", key, "press")
+            self.do_on_key(key, "press", False)
+        elif relative_x > 0.75:
+            # Right zone: tune frequency up
+            key = self.parameters["keys"]["tunefrequencyup"]
+            self.logger.record_input("mouse_key", key, "press")
+            self.do_on_key(key, "press", False)
+        else:
+            # Center zone: validate response
+            key = self.parameters["keys"]["validateresponse"]
+            self.logger.record_input("mouse_key", key, "press")
+            self.do_on_key(key, "press", False)

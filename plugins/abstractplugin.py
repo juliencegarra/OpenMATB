@@ -37,6 +37,7 @@ class AbstractPlugin:
 
         self.can_receive_keys: bool = False
         self.can_execute_keys: bool = False
+        self.can_receive_mouse: bool = False
         self.keys: set[str] = set()  #   Handle the keys that are allowed
         self.display_title: bool = taskplacement != "invisible"
         self.automode_string: str = ""
@@ -204,6 +205,17 @@ class AbstractPlugin:
         else:
             self.can_execute_keys = self.can_receive_keys
 
+        self.update_can_receive_mouse()
+
+    def update_can_receive_mouse(self) -> None:
+        """Update the ability of the plugin to receive mouse inputs"""
+        if self.paused or not self.is_visible() or REPLAY_MODE:
+            self.can_receive_mouse = False
+        elif self.parameters.get("automaticsolver", False):
+            self.can_receive_mouse = False
+        else:
+            self.can_receive_mouse = True
+
     def compute_next_plugin_state(self) -> bool:
         if not self.scenario_time >= self.next_refresh_time or self.is_paused():
             return False
@@ -309,6 +321,36 @@ class AbstractPlugin:
             return
         keystr: str = winkey.symbol_string(symbol)
         self.do_on_key(keystr, "release", False)
+
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
+        if not self.can_receive_mouse:
+            return
+        if Window.MainWindow.modal_dialog is not None:
+            return
+        self.do_on_mouse_press(x, y, button)
+
+    def on_mouse_release(self, x: int, y: int, button: int, modifiers: int) -> None:
+        if not self.can_receive_mouse:
+            return
+        if Window.MainWindow.modal_dialog is not None:
+            return
+        self.do_on_mouse_release(x, y, button)
+
+    def on_mouse_drag(self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int) -> None:
+        if not self.can_receive_mouse:
+            return
+        if Window.MainWindow.modal_dialog is not None:
+            return
+        self.do_on_mouse_drag(x, y, dx, dy, buttons)
+
+    def do_on_mouse_press(self, x: int, y: int, button: int) -> None:
+        pass
+
+    def do_on_mouse_release(self, x: int, y: int, button: int) -> None:
+        pass
+
+    def do_on_mouse_drag(self, x: int, y: int, dx: int, dy: int, buttons: int) -> None:
+        pass
 
     def do_on_key(
         self, keystr: str, state: str, emulate: bool = False

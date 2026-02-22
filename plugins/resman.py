@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
+from pyglet.window import mouse as winmouse
+
 from core import validation
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
@@ -216,6 +218,17 @@ class Resman(AbstractPlugin):
                 y_offset=y_offset,
             )
 
+            # Create a click container around the pump triangle for mouse interaction
+            tri = this_pump["widget"].vertex["triangle"]
+            tri_xs = [tri.x, tri.x2, tri.x3]
+            tri_ys = [tri.y, tri.y2, tri.y3]
+            margin = pump_width * 0.5
+            cl = min(tri_xs) - margin
+            cb = min(tri_ys) - margin
+            cw = max(tri_xs) - min(tri_xs) + 2 * margin
+            ch = max(tri_ys) - min(tri_ys) + 2 * margin
+            this_pump["_click_container"] = Container(f"pump_{pump_number}_click", cl, cb, cw, ch)
+
     def compute_next_plugin_state(self) -> None:
         if not super().compute_next_plugin_state():
             return
@@ -352,3 +365,12 @@ class Resman(AbstractPlugin):
                 return
             if pump_key["state"] != "failure":
                 pump_key["state"] = "on" if pump_key["state"] == "off" else "off"
+
+    def do_on_mouse_press(self, x: int, y: int, button: int) -> None:
+        if button != winmouse.LEFT:
+            return
+        for _pump_number, this_pump in self.parameters["pump"].items():
+            if this_pump["_click_container"].contains_xy(x, y):
+                self.logger.record_input("mouse_key", this_pump["key"], "press")
+                self.do_on_key(this_pump["key"], "press", False)
+                return

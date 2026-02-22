@@ -8,6 +8,8 @@ from collections.abc import Generator
 from math import pi, sin
 from typing import Any, Callable
 
+from pyglet.window import mouse as winmouse
+
 from core import validation
 from core.constants import COLORS as C
 from core.constants import REPLAY_MODE
@@ -56,6 +58,9 @@ class Track(AbstractPlugin):
         self._response_start: float | None = None
         self.x_input: float = 0
         self.y_input: float = 0
+        self._mouse_dragging: bool = False
+        self._drag_origin_x: int = 0
+        self._drag_origin_y: int = 0
 
     def get_response_timers(self) -> list[float]:
         return [self._response_elapsed_ms(self._response_start)]
@@ -86,6 +91,9 @@ class Track(AbstractPlugin):
 
     def get_joystick_inputs(self, x: float, y: float) -> None:
         # Called by the scheduler (which distribute joystick inputs to plugins) at each update
+        # Skip joystick overwrite while mouse is actively dragging
+        if self._mouse_dragging:
+            return
         self.x_input = x
         self.y_input = y
 
@@ -124,6 +132,39 @@ class Track(AbstractPlugin):
         self.reticle.set_cursor_position(*self.cursor_position)
         self.reticle.set_cursor_color(self.parameters[self.cursor_color_key])
         self.reticle.set_target_proportion(self.parameters["targetproportion"])
+
+    def do_on_mouse_press(self, x: int, y: int, button: int) -> None:
+        if button != winmouse.LEFT:
+            return
+        if self.reticle_container.contains_xy(x, y):
+            self._mouse_dragging = True
+            self._drag_origin_x = x
+            self._drag_origin_y = y
+            self.x_input = 0
+            self.y_input = 0
+
+    def do_on_mouse_release(self, x: int, y: int, button: int) -> None:
+        if self._mouse_dragging:
+            self._mouse_dragging = False
+            self.x_input = 0
+            self.y_input = 0
+
+    def do_on_mouse_drag(self, x: int, y: int, dx: int, dy: int, buttons: int) -> None:
+        if self._mouse_dragging:
+            self._apply_mouse_as_joystick(x, y)
+
+    def _apply_mouse_as_joystick(self, x: int, y: int) -> None:
+        # Force is proportional to drag delta from click origin, not reticle center.
+        # Dragging right from click point → push cursor right. Intuitive.
+        half_w = self.reticle_container.w / 2
+        half_h = self.reticle_container.h / 2
+        dx = clamp((x - self._drag_origin_x) / half_w, -1.0, 1.0)
+        dy = clamp((y - self._drag_origin_y) / half_h, -1.0, 1.0)
+        mouse_force = 3
+        self.x_input = dx * mouse_force
+        # Negate dy: the generator does compy = -y_input (joystick convention),
+        # but screen Y already matches cursor Y direction (both go up).
+        self.y_input = -dy * mouse_force
 
     def compute_next_cursor_position(self) -> Generator[tuple[float, float], None, None]:
         # Adapted from Comstock et al., (1992) : the first MATB documentation

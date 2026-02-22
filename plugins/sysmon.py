@@ -9,6 +9,8 @@ from typing import Any, Callable
 from core import validation
 from core.constants import COLORS as C
 from core.container import Container
+from pyglet.window import mouse as winmouse
+
 from core.pseudorandom import choice, sample
 from core.widgets import Light, Scale
 from plugins.abstractplugin import AbstractPlugin
@@ -326,3 +328,12 @@ class Sysmon(AbstractPlugin):
                 # Set a negative feedback if relevant
                 if self.parameters["feedbacks"]["negative"]["active"]:
                     self.set_scale_feedback(gauge, "negative")
+
+    def do_on_mouse_press(self, x: int, y: int, button: int) -> None:
+        if button != winmouse.LEFT:
+            return
+        for gauge in self.get_all_gauges():
+            if gauge["widget"].container.contains_xy(x, y):
+                self.logger.record_input("mouse_key", gauge["key"], "press")
+                self.do_on_key(gauge["key"], "press", False)
+                return
