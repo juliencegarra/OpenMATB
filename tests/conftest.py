@@ -543,6 +543,7 @@ def mock_window(monkeypatch):
     mock = MagicMock()
     mock.keyboard = {}
     mock.modal_dialog = None
+    mock.set_bg_bands_visible = MagicMock()
     mock.batch = MagicMock()
     mock.width = 1920
     mock.height = 1080

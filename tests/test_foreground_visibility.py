@@ -506,3 +506,28 @@ class TestEdgeCases:
         fa = _get_foreground_fillarea(p)
         assert fa.color[:3] == C["BACKGROUND"][:3]
         assert fa.opacity == 255
+
+
+# ── 9. TestBgBandsVisibility ─────────────────────────────────────────────
+
+
+class TestBgBandsVisibility:
+    def test_fullscreen_show_hides_bands(self, mock_window, mock_logger):
+        p = _make_plugin_with_widgets(mock_window, mock_logger, "fullscreen")
+        with _CONF_PATCH:
+            p.show()
+        mock_window.set_bg_bands_visible.assert_called_with(False)
+
+    def test_fullscreen_hide_restores_bands(self, mock_window, mock_logger):
+        p = _make_plugin_with_widgets(mock_window, mock_logger, "fullscreen")
+        with _CONF_PATCH:
+            p.show()
+            p.hide()
+        mock_window.set_bg_bands_visible.assert_called_with(True)
+
+    def test_non_fullscreen_does_not_touch_bands(self, mock_window, mock_logger):
+        p = _make_plugin_with_widgets(mock_window, mock_logger, "topleft")
+        with _CONF_PATCH:
+            p.show()
+            p.hide()
+        mock_window.set_bg_bands_visible.assert_not_called()
