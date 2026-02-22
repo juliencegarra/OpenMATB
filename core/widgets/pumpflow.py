@@ -23,14 +23,27 @@ class PumpFlow(AbstractWidget):
         self.label: str = label
         self.flow: int = flow
 
-        # Pump label #
+        # Pump number label (left-aligned)
         self.vertex[self.label] = Label(
-            self.pump_string(0),
+            self.label,
             font_size=F["SMALL"],
             font_name=self.font_name,
             x=self.container.l + self.container.w * 0.3,
             y=self.container.cy,
             anchor_x="left",
+            anchor_y="center",
+            color=C["BLACK"],
+            group=G(self.m_draw + 1),
+        )
+
+        # Flow value label (same gap as label-to-triangle, on the right side)
+        self.vertex["flow_label"] = Label(
+            str(0),
+            font_size=F["SMALL"],
+            font_name=self.font_name,
+            x=self.container.l + self.container.w * 0.7,
+            y=self.container.cy,
+            anchor_x="right",
             anchor_y="center",
             color=C["BLACK"],
             group=G(self.m_draw + 1),
@@ -45,14 +58,12 @@ class PumpFlow(AbstractWidget):
             group=G(self.m_draw + 2),
         )
 
-    def pump_string(self, value: int) -> str:
-        return f"{self.label}\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t{value}"
-
     def set_flow(self, flow: int) -> None:
-        if self.pump_string(flow) == self.get_flow():
+        flow_str = str(flow)
+        if flow_str == self.vertex["flow_label"].text:
             return
-        self.vertex[self.label].text = self.pump_string(flow)
+        self.vertex["flow_label"].text = flow_str
         self.logger.record_state(self.name, self.label, flow)
 
     def get_flow(self) -> str:
-        return self.vertex[self.label].text
+        return self.vertex["flow_label"].text
