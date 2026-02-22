@@ -311,13 +311,46 @@ msgstr "Press SPACE to continue"
 msgid "Please enable the OpenMATB stream into your LabRecorder."
 msgstr "Please enable the OpenMATB stream into your LabRecorder."
 
-#: plugins/parallelport.py:17
-msgid "Python Parallel module is missing. Skipping parallel plugin"
-msgstr "Python Parallel module is missing. Skipping parallel plugin"
+#: plugins/parallelport.py
+msgid "Parallel port is not supported on macOS. Skipping parallel plugin."
+msgstr "Parallel port is not supported on macOS. Skipping parallel plugin."
 
-#: plugins/parallelport.py:23
-msgid "The physical parallel port was not found."
-msgstr "The physical parallel port was not found."
+#: plugins/parallelport.py
+msgid ""
+"Python Parallel module is missing. On Windows, install pyparallel (pip "
+"install pyparallel) and the InpOut32 driver (provides simpleio.dll)."
+msgstr ""
+"Python Parallel module is missing. On Windows, install pyparallel (pip "
+"install pyparallel) and the InpOut32 driver (provides simpleio.dll)."
+
+#: plugins/parallelport.py
+msgid ""
+"Python Parallel module is missing. On Linux, install pyparallel (pip install "
+"pyparallel) and ensure the ppdev kernel module is loaded."
+msgstr ""
+"Python Parallel module is missing. On Linux, install pyparallel (pip install "
+"pyparallel) and ensure the ppdev kernel module is loaded."
+
+#: plugins/parallelport.py
+msgid ""
+"Parallel port not found. Ensure the InpOut32 driver is installed (provides "
+"simpleio.dll) and that a physical parallel port is available."
+msgstr ""
+"Parallel port not found. Ensure the InpOut32 driver is installed (provides "
+"simpleio.dll) and that a physical parallel port is available."
+
+#: plugins/parallelport.py
+msgid ""
+"Parallel port not found. Ensure /dev/parport0 exists and you have read/write "
+"permissions (try: sudo chmod 666 /dev/parport0)."
+msgstr ""
+"Parallel port not found. Ensure /dev/parport0 exists and you have read/write "
+"permissions (try: sudo chmod 666 /dev/parport0)."
+
+#: plugins/parallelport.py
+#, python-brace-format
+msgid "Parallel port error: {error}"
+msgstr "Parallel port error: {error}"
 
 #: plugins/resman.py:114
 msgid "Pump status"
@@ -344,6 +377,97 @@ msgid ""
 msgstr ""
 "In config.ini, screen index must be an integer, not {config['Openmatb']"
 "['screen_index']}"
+
+#: core/logreader.py:48
+#, python-format
+msgid "The desired session file (ID=%s) does not exist"
+msgstr "The desired session file (ID=%s) does not exist"
+
+#: core/logreader.py:52
+#, python-format
+msgid "Multiple session files match the desired session ID (%s)"
+msgstr "Multiple session files match the desired session ID (%s)"
+
+#: core/scenario.py:190
+#, python-format
+msgid "Error on line %s. Invalid system command: %s"
+msgstr "Error on line %s. Invalid system command: %s"
+
+#: core/scenario.py:192
+#, python-format
+msgid "Error on line %s. Agent command requires a name argument"
+msgstr "Error on line %s. Agent command requires a name argument"
+
+#: core/scenario.py:194
+#, python-format
+msgid "Error on line %s. mousecontrol command requires True/False argument"
+msgstr "Error on line %s. mousecontrol command requires True/False argument"
+
+#: core/selector.py:120
+msgid "Select a scenario"
+msgstr "Select a scenario"
+
+#: core/selector.py:120
+msgid "Select a session"
+msgstr "Select a session"
+
+#: core/selector.py:135
+msgid "Enter: Select"
+msgstr "Enter: Select"
+
+#: core/selector.py:135
+msgid "Esc: Quit"
+msgstr "Esc: Quit"
+
+#: core/selector.py:135
+msgid "UP/DOWN: Navigate"
+msgstr "UP/DOWN: Navigate"
+
+#: core/selector.py:178
+msgid "No files found"
+msgstr "No files found"
+
+#: core/utils.py:79
+#, python-format
+msgid "In config.ini, [%s] parameter must be an integer (not %s)"
+msgstr "In config.ini, [%s] parameter must be an integer (not %s)"
+
+#: core/utils.py:88
+#, python-format
+msgid "In config.ini, [%s] parameter must be a float (not %s)"
+msgstr "In config.ini, [%s] parameter must be a float (not %s)"
+
+#: core/utils.py:98
+#, python-format
+msgid "In config.ini, [%s] parameter must be a list of floats (not %s)"
+msgstr "In config.ini, [%s] parameter must be a list of floats (not %s)"
+
+#: core/validation.py:148
+#, python-format
+msgid "should be an acceptable joystick key value (not %s). See documentation."
+msgstr "should be an acceptable joystick key value (not %s). See documentation."
+
+#: core/validation.py:161
+#, python-format
+msgid ""
+"should be an acceptable (keyboard or joystick) key value (not %s). See "
+"documentation."
+msgstr ""
+"should be an acceptable (keyboard or joystick) key value (not %s). See "
+"documentation."
+
+#: plugins/communications.py:142
+#, python-format
+msgid ""
+"Warning: sound path %s does not exist. Check voiceidiom/voicegender "
+"combination."
+msgstr ""
+"Warning: sound path %s does not exist. Check voiceidiom/voicegender "
+"combination."
+
+#: plugins/generictrigger.py:15
+msgid "Generic Trigger"
+msgstr "Generic Trigger"
 
 #~ msgid "Press any key to exit"
 #~ msgstr "Press any key to exit"

@@ -290,12 +290,37 @@ msgstr ""
 msgid "Please enable the OpenMATB stream into your LabRecorder."
 msgstr ""
 
-#: plugins/parallelport.py:14
-msgid "Python Parallel module is missing. Skipping parallel plugin"
+#: plugins/parallelport.py
+msgid "Parallel port is not supported on macOS. Skipping parallel plugin."
 msgstr ""
 
-#: plugins/parallelport.py:21
-msgid "The physical parallel port was not found."
+#: plugins/parallelport.py
+msgid ""
+"Python Parallel module is missing. On Windows, install pyparallel (pip "
+"install pyparallel) and the InpOut32 driver (provides simpleio.dll)."
+msgstr ""
+
+#: plugins/parallelport.py
+msgid ""
+"Python Parallel module is missing. On Linux, install pyparallel (pip install "
+"pyparallel) and ensure the ppdev kernel module is loaded."
+msgstr ""
+
+#: plugins/parallelport.py
+msgid ""
+"Parallel port not found. Ensure the InpOut32 driver is installed (provides "
+"simpleio.dll) and that a physical parallel port is available."
+msgstr ""
+
+#: plugins/parallelport.py
+msgid ""
+"Parallel port not found. Ensure /dev/parport0 exists and you have read/write "
+"permissions (try: sudo chmod 666 /dev/parport0)."
+msgstr ""
+
+#: plugins/parallelport.py
+#, python-brace-format
+msgid "Parallel port error: {error}"
 msgstr ""
 
 #: plugins/resman.py:110

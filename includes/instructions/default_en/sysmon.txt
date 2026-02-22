@@ -1,0 +1,5 @@
+<h1>Task overview</h1>
+
+<p>In the system monitoring task, participants monitor a set of <strong>six gauges</strong>.</p>
+
+<p>They must correct the system when necessary: when the green light turns off, when the red light turns on, or when one of the moving arrows reaches the end of one of the four scales.</p>
