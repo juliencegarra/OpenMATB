@@ -94,9 +94,11 @@ class Track(AbstractPlugin):
         # Real joystick: scheduler refreshes x_input/y_input every frame via
         # update_joystick() before this method is called — no reset needed.
         # Agent: only writes when attending track; reset prevents stale force.
+        # Skip reset when agent allows human input (cooperative/assisted modes).
         if self.parameters["automaticsolver"]:
-            self.x_input = 0
-            self.y_input = 0
+            if self.agent is None or not self.agent.allows_human_input:
+                self.x_input = 0
+                self.y_input = 0
 
         if not super().compute_next_plugin_state():
             return

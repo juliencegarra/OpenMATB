@@ -159,6 +159,15 @@ class Scale(AbstractWidget):
     def get_arrow_position(self) -> int:
         return self.position
 
+    def set_arrow_color(self, color: tuple[int, ...]) -> None:
+        arrow = self.vertex["arrow"]
+        rgb = color[:3]
+        if arrow.color[:3] == rgb:
+            return
+        arrow.color = rgb
+        if len(color) > 3:
+            arrow.opacity = color[3]
+
     def set_label(self, label: str) -> None:
         label_to_upper: str = label.upper()
         if label == self.get_label():

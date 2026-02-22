@@ -88,7 +88,8 @@ class Sysmon(AbstractPlugin):
 
         # and to scale only
         for gauge in self.get_scale_gauges():
-            gauge.update({"_pos": 5, "_zone": 0, "_feedbacktimer": None, "_feedbacktype": None})
+            gauge.update({"_pos": 5, "_zone": 0, "_feedbacktimer": None, "_feedbacktype": None,
+                          "_hint_arrow_color": None})
 
         self.automode_position: tuple[float, float] = (0.5, 0.05)
         self.scale_zones: dict[int, list[int]] = {1: list(range(3)), 0: list(range(3, 8)), -1: list(range(8, 11))}
@@ -195,6 +196,12 @@ class Sysmon(AbstractPlugin):
             return
         for _scale_n, scale in self.parameters["scales"].items():
             scale["widget"].set_arrow_position(scale["_pos"])
+
+            # Apply agent hint color on arrow if set
+            if scale["_hint_arrow_color"] is not None:
+                scale["widget"].set_arrow_color(scale["_hint_arrow_color"])
+            else:
+                scale["widget"].set_arrow_color(C["BLACK"])
 
             if scale["_feedbacktimer"] is not None:
                 color: tuple[int, ...] = self.parameters["feedbacks"][scale["_feedbacktype"]]["color"]
@@ -315,6 +322,13 @@ class Sysmon(AbstractPlugin):
             return
 
         if state == "press":
+            # allowanykey mode: SPACE resolves the first active failure
+            if self.parameters["allowanykey"] and key == "SPACE":
+                failures = self.get_gauges_on_failure()
+                if failures:
+                    self.stop_failure(gauge=failures[0], success=True)
+                return
+
             gauge: dict[str, Any] = self.get_gauge_by_key(key)
             if key in [g["key"] for g in self.get_gauges_on_failure()]:
                 self.stop_failure(gauge=gauge, success=True)

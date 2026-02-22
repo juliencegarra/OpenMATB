@@ -39,6 +39,7 @@ class Scenario:
                 get_logger().log_manual_entry(sp, key="scenario_path")
             else:
                 get_errors().add_error(_("%s was not found") % str(sp), fatal=True)
+                return
 
         # Convert the scenario content into a list of events #
         # (Squeeze empty and commented [#] lines)

@@ -190,9 +190,19 @@ class AbstractPlugin:
             else:
                 self.can_receive_keys = True
 
-        if REPLAY_MODE or self.parameters.get("automaticsolver", False):
+        if REPLAY_MODE:
+            # Replay always blocks human input but allows emulated keys
             self.can_receive_keys = False
-            self.can_execute_keys = True    # Agents and replay can inject via emulate=True
+            self.can_execute_keys = True
+        elif self.parameters.get("automaticsolver", False):
+            # Agent is active — allow emulated keys always
+            self.can_execute_keys = True
+            # Allow human input if agent explicitly permits it
+            agent = getattr(self, "agent", None)
+            if agent is not None and agent.allows_human_input:
+                self.can_receive_keys = not self.paused and self.is_visible()
+            else:
+                self.can_receive_keys = False
         else:
             self.can_execute_keys = self.can_receive_keys
 
@@ -274,7 +284,6 @@ class AbstractPlugin:
                 and getattr(self.agent, "_attended_task", None) == self.alias
             )
             self.get_widget("attention").set_visibility(show)
-            print(f"[ATTENTION] t={self.scenario_time:.3f}  plugin={self.alias!r}  _attended_task={getattr(self.agent, '_attended_task', None)!r}  show={show}")
         return True
 
     def filter_key(self, keystr: str) -> str | None:

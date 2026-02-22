@@ -81,6 +81,9 @@ class Scheduler:
         self._dialog_paused: bool = False
 
     def update(self, dt: float) -> None:
+        if not get_errors().is_empty():
+            get_errors().show_errors()
+
         if Window.MainWindow.modal_dialog is not None:
             if not self._dialog_paused:
                 self.execute_plugins_methods(self.get_active_plugins(), ["pause"])
@@ -90,9 +93,6 @@ class Scheduler:
         if self._dialog_paused:
             self.execute_plugins_methods(self.get_active_plugins(), ["resume"])
             self._dialog_paused = False
-
-        if not get_errors().is_empty():
-            get_errors().show_errors()
 
         self.update_timers(dt)
         self.update_joystick()

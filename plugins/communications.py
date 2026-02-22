@@ -118,6 +118,7 @@ class Communications(AbstractPlugin):
                 "is_prompting": False,
                 "_feedbacktimer": None,
                 "_feedbacktype": None,
+                "_hint_color": None,
             }
         self.lastradioselected: int | None = None
         self.frequency_modulation: float = 0.1
@@ -438,6 +439,8 @@ class Communications(AbstractPlugin):
             # ... also check a need for feedback refreshing
             if radio["_feedbacktimer"] is not None:
                 color: tuple[int, ...] = self.parameters["feedbacks"][radio["_feedbacktype"]]["color"]
+            elif radio["_hint_color"] is not None:
+                color = radio["_hint_color"]
             else:
                 color = C["BACKGROUND"]
             radio["widget"].set_feedback_color(color)
