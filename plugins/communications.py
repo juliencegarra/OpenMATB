@@ -89,7 +89,7 @@ class Communications(AbstractPlugin):
             airbandminvariationMhz=5,
             airbandmaxvariationMhz=6,
             voicegender="female",
-            voiceidiom="french",
+            voiceidiom="english",
             radioprompt="",
             maxresponsedelay=20000,
             promptlist=["NAV_1", "NAV_2", "COM_1", "COM_2"],

@@ -64,6 +64,18 @@ msgstr "Oculomètre"
 msgid "Performance"
 msgstr "Performance"
 
+#: core/constants.py:22
+msgid "Path to a scenario file (.txt) to launch directly"
+msgstr "Chemin vers un fichier scénario (.txt) à lancer directement"
+
+#: core/constants.py:31
+msgid "Launch in replay mode (optional: session path)"
+msgstr "Lancer en mode replay (optionnel : chemin de session)"
+
+#: core/constants.py:37
+msgid "Skip dialog boxes (session, non-fatal errors, questionnaires, instructions)"
+msgstr "Passer les boîtes de dialogue (session, erreurs non fatales, questionnaires, instructions)"
+
 #: core/error.py:21
 msgid "Warning"
 msgstr "Attention"

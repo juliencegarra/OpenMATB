@@ -1274,7 +1274,7 @@ class UIAdvancedPanel:
                 "voiceidiom",
                 "Voice language",
                 "radio",
-                {"options": ["fr", "en"], "labels": ["French", "English"], "default": "fr"},
+                {"options": ["fr", "en"], "labels": ["French", "English"], "default": "en"},
             ),
             (
                 "voicegender",

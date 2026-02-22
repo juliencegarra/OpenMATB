@@ -356,7 +356,7 @@ def generate_scenario(config: ScenarioConfig, plugins: dict[str, Any]) -> list[s
 
         # Compute average difficulty for the block label
         avg_difficulty: float = sum(block.plugins.values()) / len(block.plugins) if block.plugins else 0
-        ch_str: str = f"Block n\u00b0 {i + 1}. Technical load = {round(avg_difficulty * 100, 1)} %"
+        ch_str: str = f"Block #{i + 1}. Technical load = {round(avg_difficulty * 100, 1)} %"
         scenario_lines.append(ch_str)
         print("\nAdding " + ch_str)
 
