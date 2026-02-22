@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import sys
 from typing import Any, Callable
 
 from core import validation
@@ -35,16 +36,59 @@ class Parallelport(AbstractPlugin):
             get_errors().add_error(_("The parallel port is not available in the browser. Skipping parallel plugin"))
             return
 
+        platform = sys.platform
+
+        # 1. Check platform
+        if platform == "darwin":
+            get_errors().add_error(_("Parallel port is not supported on macOS. Skipping parallel plugin."))
+            return
+
+        # 2. Try importing pyparallel
         try:
             import parallel
         except ImportError:
-            get_errors().add_error(_("Python Parallel module is missing. Skipping parallel plugin"))
+            if platform == "win32":
+                get_errors().add_error(
+                    _(
+                        "Python Parallel module is missing. "
+                        "On Windows, install pyparallel (pip install pyparallel) "
+                        "and the InpOut32 driver (provides simpleio.dll)."
+                    )
+                )
+            else:
+                get_errors().add_error(
+                    _(
+                        "Python Parallel module is missing. "
+                        "On Linux, install pyparallel (pip install pyparallel) "
+                        "and ensure the ppdev kernel module is loaded."
+                    )
+                )
             return
 
+        # 3. Try opening the port
         try:
             self._port = parallel.Parallel()
-        except OSError:  # Exception under Linux platforms : FileNotFoundError (/dev/parport0)
-            get_errors().add_error(_("The physical parallel port was not found."))
+        except FileNotFoundError:
+            if platform == "win32":
+                get_errors().add_error(
+                    _(
+                        "Parallel port not found. "
+                        "Ensure the InpOut32 driver is installed (provides simpleio.dll) "
+                        "and that a physical parallel port is available."
+                    )
+                )
+            else:
+                get_errors().add_error(
+                    _(
+                        "Parallel port not found. "
+                        "Ensure /dev/parport0 exists and you have read/write permissions "
+                        "(try: sudo chmod 666 /dev/parport0)."
+                    )
+                )
+            return
+        except OSError as exc:
+            get_errors().add_error(_("Parallel port error: {error}").format(error=str(exc)))
+            return
 
     def is_trigger_being_sent(self) -> bool:
         """Return if the last trigger value is not the down value (trigger being sent)"""
@@ -58,7 +102,9 @@ class Parallelport(AbstractPlugin):
 
     def compute_next_plugin_state(self) -> None:
         """Send the trigger value defined in upvalue, lasting for delayms"""
-        if not super().compute_next_plugin_state() or self._port is None:
+        if self._port is None:
+            return
+        if not super().compute_next_plugin_state():
             return
 
         # If the trigger value is not null...

@@ -1,4 +1,7 @@
 pyglet==3.0.dev10
 rstr==3.1.0
-pyparallel==0.2.2
 pylsl==1.16.1
+# Optional: needed only for the parallelport plugin
+# pip install pyparallel
+# On Windows, also install the InpOut32 driver
+# pyparallel==0.2.2
