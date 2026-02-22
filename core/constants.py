@@ -19,7 +19,7 @@ def _parse_args() -> argparse.Namespace:
         "scenario",
         nargs="?",
         default=None,
-        help=_("Chemin vers un fichier scénario (.txt) à lancer directement"),
+        help=_("Path to a scenario file (.txt) to launch directly"),
     )
     parser.add_argument(
         "-r",
@@ -28,13 +28,13 @@ def _parse_args() -> argparse.Namespace:
         const=True,
         default=False,
         metavar="SESSION",
-        help=_("Lancer en mode replay (optionnel : chemin de session)"),
+        help=_("Launch in replay mode (optional: session path)"),
     )
     parser.add_argument(
         "--headless",
         action="store_true",
         default=False,
-        help=_("Passer les boîtes de dialogue (session, erreurs non fatales, questionnaires, instructions)"),
+        help=_("Skip dialog boxes (session, non-fatal errors, questionnaires, instructions)"),
     )
     # When running under pytest, ignore test runner arguments
     if "pytest" in sys.modules or "unittest" in sys.argv[0:1]:

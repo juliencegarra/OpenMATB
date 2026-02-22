@@ -110,7 +110,7 @@ class TestGetEventsFromScenario:
         lines = [
             "# Comment",
             Event(1, 0, "sysmon", ["start"]),
-            "Block n° 1",
+            "Block #1",
             Event(2, 10, "track", ["start"]),
         ]
         result = get_events_from_scenario(lines)
@@ -123,7 +123,7 @@ class TestGetEventsFromScenario:
 
     def test_no_events(self):
         """List with no Events returns empty."""
-        lines = ["# Comment", "Block n° 1"]
+        lines = ["# Comment", "Block #1"]
         assert get_events_from_scenario(lines) == []
 
     def test_all_events(self):

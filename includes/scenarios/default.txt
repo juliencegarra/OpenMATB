@@ -1,17 +1,17 @@
-# Scénario de démonstration du OpenMATB
+# OpenMATB demonstration scenario
 
-# Message d'accueil
+# Welcome message
 0:00:00;instructions;filename;default/welcome_screen.txt
 0:00:00;instructions;start
 
-# Visionnage de l'environnement complet pendant dix secondes
+# View the full environment for ten seconds
 0:00:00;sysmon;start
 0:00:00;track;start
 0:00:00;scheduling;start
 0:00:00;resman;start
 0:00:00;communications;start
 
-# Présentation du sysmon
+# Sysmon presentation
 0:00:10;resman;hide
 0:00:10;resman;pause
 0:00:10;track;hide
@@ -24,12 +24,12 @@
 0:00:10;instructions;start
 
 
-# Dans le Sysmon, apparition de deux erreurs, sur dix secondes
+# Sysmon: two failures over ten seconds
 0:00:15;sysmon;scales-1-failure;True
 0:00:20;sysmon;lights-1-failure;True
 
 
-# Présentation de la Poursuite
+# Tracking presentation
 0:00:25;track;show
 0:00:25;track;resume
 0:00:25;sysmon;hide
@@ -38,7 +38,7 @@
 0:00:25;instructions;start
 
 
-# Présentation de la tâche de Communication
+# Communications task presentation
 0:00:45;communications;show
 0:00:45;communications;resume
 0:00:45;track;hide
@@ -48,7 +48,7 @@
 
 0:00:48;communications;radioprompt;own
 
-# Présentation du Resman
+# Resman presentation
 0:01:05;resman;show
 0:01:05;resman;resume
 0:01:05;communications;hide
@@ -58,7 +58,7 @@
 
 0:01:10;resman;pump-1-state;failure
 
-# Présentation du planificateur
+# Scheduling presentation
 0:01:35;resman;hide
 0:01:35;scheduling;show
 0:01:35;sysmon;resume

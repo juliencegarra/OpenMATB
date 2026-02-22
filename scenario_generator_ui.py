@@ -1068,7 +1068,7 @@ class UIAdvancedPanel:
         "communications": [
             ("voiceidiom", "Voice language", "radio",
              {"options": ["fr", "en"], "labels": ["French", "English"],
-              "default": "fr"}),
+              "default": "en"}),
             ("voicegender", "Voice gender", "radio",
              {"options": ["female", "male"], "labels": ["Female", "Male"],
               "default": "female"}),

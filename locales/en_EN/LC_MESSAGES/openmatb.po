@@ -64,6 +64,18 @@ msgstr "Eye tracker"
 msgid "Performance"
 msgstr "Performance"
 
+#: core/constants.py:22
+msgid "Path to a scenario file (.txt) to launch directly"
+msgstr "Path to a scenario file (.txt) to launch directly"
+
+#: core/constants.py:31
+msgid "Launch in replay mode (optional: session path)"
+msgstr "Launch in replay mode (optional: session path)"
+
+#: core/constants.py:37
+msgid "Skip dialog boxes (session, non-fatal errors, questionnaires, instructions)"
+msgstr "Skip dialog boxes (session, non-fatal errors, questionnaires, instructions)"
+
 #: core/error.py:21
 msgid "Warning"
 msgstr "Warning"
