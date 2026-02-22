@@ -1,0 +1,7 @@
+<h1>Task overview</h1>
+
+<p>In the resource management task, participants must limit the depletion of the two main tanks (A and B) by using a set of backup tanks and pumps, each with a specific flow rate.</p>
+
+<p>The participant's task is to turn the numbered pumps on/off to bring tanks A and B as close as possible to their normal levels.</p>
+
+<p>Pumps may occasionally fail.</p>

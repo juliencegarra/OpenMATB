@@ -1,17 +1,17 @@
-# OpenMATB demonstration scenario
+# Scénario de démonstration du OpenMATB
 
-# Welcome message
-0:00:00;instructions;filename;default/welcome_screen.txt
+# Message d'accueil
+0:00:00;instructions;filename;default_fr/welcome_screen.txt
 0:00:00;instructions;start
 
-# View the full environment for ten seconds
+# Visionnage de l'environnement complet pendant dix secondes
 0:00:00;sysmon;start
 0:00:00;track;start
 0:00:00;scheduling;start
 0:00:00;resman;start
 0:00:00;communications;start
 
-# Sysmon presentation
+# Présentation du sysmon
 0:00:10;resman;hide
 0:00:10;resman;pause
 0:00:10;track;hide
@@ -20,45 +20,45 @@
 0:00:10;scheduling;pause
 0:00:10;communications;hide
 0:00:10;communications;pause
-0:00:10;instructions;filename;default/sysmon.txt
+0:00:10;instructions;filename;default_fr/sysmon.txt
 0:00:10;instructions;start
 
 
-# Sysmon: two failures over ten seconds
+# Dans le Sysmon, apparition de deux erreurs, sur dix secondes
 0:00:15;sysmon;scales-1-failure;True
 0:00:20;sysmon;lights-1-failure;True
 
 
-# Tracking presentation
+# Présentation de la Poursuite
 0:00:25;track;show
 0:00:25;track;resume
 0:00:25;sysmon;hide
 0:00:25;sysmon;pause
-0:00:25;instructions;filename;default/track.txt
+0:00:25;instructions;filename;default_fr/track.txt
 0:00:25;instructions;start
 
 
-# Communications task presentation
+# Présentation de la tâche de Communication
 0:00:45;communications;show
 0:00:45;communications;resume
 0:00:45;track;hide
 0:00:45;track;pause
-0:00:45;instructions;filename;default/communications.txt
+0:00:45;instructions;filename;default_fr/communications.txt
 0:00:45;instructions;start
 
 0:00:48;communications;radioprompt;own
 
-# Resman presentation
+# Présentation du Resman
 0:01:05;resman;show
 0:01:05;resman;resume
 0:01:05;communications;hide
 0:01:05;communications;pause
-0:01:05;instructions;filename;default/resman.txt
+0:01:05;instructions;filename;default_fr/resman.txt
 0:01:05;instructions;start
 
 0:01:10;resman;pump-1-state;failure
 
-# Scheduling presentation
+# Présentation du planificateur
 0:01:35;resman;hide
 0:01:35;scheduling;show
 0:01:35;sysmon;resume
@@ -68,14 +68,14 @@
 
 
 0:01:35;scheduling;resume
-0:01:35;instructions;filename;default/scheduling.txt
+0:01:35;instructions;filename;default_fr/scheduling.txt
 0:01:35;instructions;start
 
 0:01:45;sysmon;show
 0:01:45;track;show
 0:01:45;communications;show
 0:01:45;resman;show
-0:01:45;instructions;filename;default/full.txt
+0:01:45;instructions;filename;default_fr/full.txt
 0:01:45;instructions;start
 0:01:55;sysmon;automaticsolver;false
 
