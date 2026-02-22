@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 import pyglet.font
@@ -122,7 +124,6 @@ class Window(Window):
         self.slider_visible: bool = False
         self.selector_visible: bool = False
         self.mouse_control_active: bool = False
-
         self.on_key_press_replay: Any | None = None  # used by the replay
 
         # In the browser, timers are throttled in hidden tabs: pause the scenario
@@ -224,6 +225,14 @@ class Window(Window):
         for band in self.bg_shapes[1:]:
             band.visible = visible
 
+    def take_screenshot(self) -> None:
+        """Capture the OpenGL framebuffer directly (bypasses DWM cache issues)."""
+        timestamp: str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filepath = Path(f"screenshot_{timestamp}.png")
+        color_buffer = image.get_buffer_manager().get_color_buffer()
+        color_buffer.save(str(filepath))
+        get_logger().log_manual_entry(str(filepath), key="screenshot")
+
     def on_draw(self) -> None:
         self.set_mouse_cursor_visible(self.is_mouse_necessary())
         self.clear()
@@ -235,6 +244,10 @@ class Window(Window):
     # Log any keyboard input, either plugins accept it or not
     # is subclassed in replay mode
     def on_key_press(self, symbol: int, modifiers: int) -> None:
+        if symbol == winkey.F12:
+            self.take_screenshot()
+            return
+
         if REPLAY_MODE:
             return
 
