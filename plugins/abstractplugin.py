@@ -11,7 +11,7 @@ from typing import Any
 from pyglet.window import key as winkey
 
 from core import validation
-from core.constants import BFLIM, PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE
+from core.constants import BFLIM, HEADLESS_MODE, PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.container import Container
@@ -274,6 +274,7 @@ class AbstractPlugin:
                 and getattr(self.agent, "_attended_task", None) == self.alias
             )
             self.get_widget("attention").set_visibility(show)
+            print(f"[ATTENTION] t={self.scenario_time:.3f}  plugin={self.alias!r}  _attended_task={getattr(self.agent, '_attended_task', None)!r}  show={show}")
         return True
 
     def filter_key(self, keystr: str) -> str | None:
@@ -517,6 +518,11 @@ class BlockingPlugin(AbstractPlugin):
 
     def update(self, dt: float) -> None:
         super().update(dt)
+
+        # In headless mode, auto-advance through all slides without waiting
+        if HEADLESS_MODE:
+            self.go_to_next_slide = True
+
         if self.go_to_next_slide:
             self.go_to_next_slide = False
             if len(self.slides) > 0:  # Are there remaining slides ?

@@ -2,13 +2,49 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+import argparse
 import configparser
 import sys
 from pathlib import Path
 
 from pyglet.graphics import Group  # noqa: F401
 
-REPLAY_MODE: bool = len(sys.argv) > 1 and sys.argv[1] == "-r"
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="OpenMATB",
+        description="Open Multi-Attribute Task Battery",
+    )
+    parser.add_argument(
+        "scenario",
+        nargs="?",
+        default=None,
+        help=_("Chemin vers un fichier scénario (.txt) à lancer directement"),
+    )
+    parser.add_argument(
+        "-r",
+        dest="replay",
+        nargs="?",
+        const=True,
+        default=False,
+        metavar="SESSION",
+        help=_("Lancer en mode replay (optionnel : chemin de session)"),
+    )
+    parser.add_argument(
+        "--headless",
+        action="store_true",
+        default=False,
+        help=_("Passer les boîtes de dialogue (session, erreurs non fatales, questionnaires, instructions)"),
+    )
+    # When running under pytest, ignore test runner arguments
+    if "pytest" in sys.modules or "unittest" in sys.argv[0:1]:
+        return parser.parse_args([])
+    return parser.parse_args()
+
+
+ARGS: argparse.Namespace = _parse_args()
+REPLAY_MODE: bool = ARGS.replay is not False
+HEADLESS_MODE: bool = ARGS.headless
 REPLAY_STRIP_PROPORTION: float = 0.08
 
 COLORS: dict[str, tuple[int, int, int, int]] = dict(

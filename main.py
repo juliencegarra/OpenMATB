@@ -25,7 +25,7 @@ language.install()
 
 # Only after language installation, import core modules (they must be translated)
 from core import ReplayScheduler, Scheduler
-from core.constants import PATHS, REPLAY_MODE
+from core.constants import ARGS, PATHS, REPLAY_MODE
 from core.selector import FileSelector
 from core.utils import get_conf_value
 from core.window import Window
@@ -37,8 +37,8 @@ class OpenMATB:
         Window(style=Window.WINDOW_STYLE_DIALOG, resizable=True)
 
         if REPLAY_MODE:
-            # Skip the selector when a replay session ID is given via command line
-            if len(sys.argv) > 2:
+            # A session path can be given via -r <path>
+            if isinstance(ARGS.replay, str):
                 selected: Path | None = None
             else:
                 selected = FileSelector(Window.MainWindow, "replay").run()
@@ -46,14 +46,21 @@ class OpenMATB:
                     sys.exit(0)
             ReplayScheduler(session_path=selected)
         else:
-            # Show the scenario selector only if no scenario is set in config.ini
-            ini_scenario: str = get_conf_value("Openmatb", "scenario_path").strip()
-            if ini_scenario:
-                selected = PATHS["SCENARIOS"].joinpath(ini_scenario)
+            # Priority: 1) command-line scenario, 2) config.ini, 3) selector UI
+            if ARGS.scenario:
+                scenario_path = Path(ARGS.scenario)
+                if not scenario_path.is_absolute():
+                    selected = PATHS["SCENARIOS"].joinpath(scenario_path)
+                else:
+                    selected = scenario_path
             else:
-                selected = FileSelector(Window.MainWindow, "scenario").run()
-                if selected is None:
-                    sys.exit(0)
+                ini_scenario: str = get_conf_value("Openmatb", "scenario_path").strip()
+                if ini_scenario:
+                    selected = PATHS["SCENARIOS"].joinpath(ini_scenario)
+                else:
+                    selected = FileSelector(Window.MainWindow, "scenario").run()
+                    if selected is None:
+                        sys.exit(0)
             Scheduler(scenario_path=selected)
 
 
