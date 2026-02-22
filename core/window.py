@@ -18,6 +18,7 @@ from pyglet.window import Window
 from pyglet.window import key as winkey
 
 from core.constants import COLORS as C
+from core.constants import HEADLESS_MODE
 from core.constants import PATHS as P
 from core.constants import PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE, REPLAY_STRIP_PROPORTION
 from core.constants import Group as G
@@ -87,7 +88,7 @@ class Window(Window):
             screen = self.get_screen()
             self._width: int = int(screen.width)
             self._height: int = int(screen.height)
-            self._fullscreen = get_conf_value("Openmatb", "fullscreen")
+            self._fullscreen = False if HEADLESS_MODE else get_conf_value("Openmatb", "fullscreen")
 
         super().__init__(
             fullscreen=self._fullscreen,
@@ -108,6 +109,9 @@ class Window(Window):
             self.set_size_and_location(screen)  # Postpone multiple monitor support
 
         self.set_mouse_cursor_visible(REPLAY_MODE)
+
+        if HEADLESS_MODE:
+            self.set_visible(False)
 
         self.batch: Batch = Batch()
         self.keyboard: dict[str, bool] = dict()  # Reproduce a simple KeyStateHandler
@@ -154,6 +158,8 @@ class Window(Window):
 
     def display_session_id(self) -> None:
         # Display the session ID if needed at window instanciation
+        if HEADLESS_MODE:
+            return
         if not REPLAY_MODE and get_conf_value("Openmatb", "display_session_number"):
             msg: str = _("Session ID: %s") % get_logger().session_id
             title: str = "OpenMATB"
@@ -273,9 +279,13 @@ class Window(Window):
         get_logger().record_input("mouse", "click", f"release;{x};{y};{button}")
 
     def exit_prompt(self) -> None:
+        if HEADLESS_MODE:
+            return
         self.modal_dialog = ModalDialog(self, _("You hit the Escape key"), title=_("Exit OpenMATB?"), exit_key="q")
 
     def pause_prompt(self) -> None:
+        if HEADLESS_MODE:
+            return
         self.modal_dialog = ModalDialog(self, _("Pause"))
 
     def exit(self) -> None:

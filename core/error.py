@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import sys
+
+from core.constants import HEADLESS_MODE
 from core.window import Window
 
 _errors: Errors | None = None
@@ -34,6 +37,14 @@ class Errors:
             if not self.is_empty():
                 pass_list = list(self.errors_list)
                 self.errors_list = list()
+
+                if HEADLESS_MODE:
+                    for msg in pass_list:
+                        print(msg, file=sys.stderr)
+                    if self.some_fatals:
+                        sys.exit(1)
+                    return
+
                 title: str = _("Warning") if not self.some_fatals else _("Error(s)")
                 continue_key: str | None = None if self.some_fatals else "SPACE"
                 Window.MainWindow.open_modal_window(pass_list, title=title, continue_key=continue_key, exit_key="Q")

@@ -34,7 +34,7 @@ language.install()
 
 # Only after language installation, import core modules (they must be translated)
 from core import ReplayScheduler, Scheduler
-from core.constants import PATHS, REPLAY_MODE
+from core.constants import ARGS, PATHS, REPLAY_MODE
 from core.platform import notify_page, setup_web, url_params
 from core.selector import FileSelector
 from core.utils import get_conf_value
@@ -51,16 +51,19 @@ class OpenMATB:
         self.scheduler: Scheduler | None = None
 
         if REPLAY_MODE:
-            # Skip the selector when a replay session ID is given (command line or ?session=)
-            if len(sys.argv) > 2 or "session" in url_params():
+            # Skip the selector when a replay session is given (-r <session> or ?session=)
+            if isinstance(ARGS.replay, str) or "session" in url_params():
                 self.start(None)
             else:
                 self.selector = FileSelector(Window.MainWindow, "replay")
                 self.selector.open(self.on_selected)
         else:
-            # Show the scenario selector only if no scenario is set (?scenario= or config.ini)
+            # Priority: 1) command-line scenario, 2) ?scenario= or config.ini, 3) selector UI
             ini_scenario: str = url_params().get("scenario") or get_conf_value("Openmatb", "scenario_path").strip()
-            if ini_scenario:
+            if ARGS.scenario:
+                scenario_path: Path = Path(ARGS.scenario)
+                self.start(scenario_path if scenario_path.is_absolute() else PATHS["SCENARIOS"] / scenario_path)
+            elif ini_scenario:
                 self.start(PATHS["SCENARIOS"].joinpath(ini_scenario))
             else:
                 self.selector = FileSelector(Window.MainWindow, "scenario")
