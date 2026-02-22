@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import ast
 import csv
 from bisect import bisect_right
 from pathlib import Path
@@ -137,7 +138,7 @@ class LogReader:
                     or "cursor_proportional" in row["address"]
                     or "slider_" in row["address"]
                 ):
-                    row["value"] = eval(row["value"])
+                    row["value"] = ast.literal_eval(row["value"])
                     self.states.append(row)
 
         # The last row browsed contains the ending time

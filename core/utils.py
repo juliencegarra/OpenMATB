@@ -1,6 +1,7 @@
 # Copyright 2023-2026, by Julien Cegarra & Benoît Valéry. All rights reserved.
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
+import ast
 import sys
 from typing import Any, Optional
 
@@ -91,7 +92,7 @@ def get_conf_value(section: str, key: str, val_type: Optional[type] = None) -> A
     # List values
     elif key in ["top_bounds", "bottom_bounds"]:
         try:
-            value = eval(value)
+            value = ast.literal_eval(value)
         except (ValueError, TypeError, SyntaxError, NameError):
             raise TypeError(
                 _("In config.ini, [%s] parameter must be a list of floats (not %s)") % (key, value)
