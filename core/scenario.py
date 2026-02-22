@@ -190,7 +190,9 @@ class Scenario:
                     errors.append(_("Error on line %s. Invalid system command: %s") % (e.line, e.get_command_str()))
                 elif e.command[0] == "agent" and len(e.command) != 2:
                     errors.append(_("Error on line %s. Agent command requires a name argument") % e.line)
-                elif e.command[0] != "agent" and len(e.command) != 1:
+                elif e.command[0] == "mousecontrol" and len(e.command) != 2:
+                    errors.append(_("Error on line %s. mousecontrol command requires True/False argument") % e.line)
+                elif e.command[0] not in ("agent", "mousecontrol") and len(e.command) != 1:
                     errors.append(_("Error on line %s. Invalid system command: %s") % (e.line, e.get_command_str()))
                 continue
 

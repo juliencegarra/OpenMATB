@@ -28,6 +28,7 @@ def _make_track(**overrides):
     t._response_start = None
     t.x_input = 0
     t.y_input = 0
+    t._mouse_dragging = False
     t.cursor_color_key = "cursorcolor"
     t.gain_ratio = 0.8
     t.agent = None

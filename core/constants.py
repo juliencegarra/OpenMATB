@@ -76,7 +76,7 @@ BFLIM: int = 15
 DEPRECATED: list[str] = ["pumpstatus", "end", "cutofffrequency", "equalproportions"]
 
 SYSTEM_PSEUDO_PLUGIN: str = "system"
-SYSTEM_COMMANDS: list[str] = ["pause", "agent"]
+SYSTEM_COMMANDS: list[str] = ["pause", "agent", "mousecontrol"]
 
 PATHS: dict[str, Path] = {k.upper(): Path(".", k) for k in ["plugins", "sessions"]}
 PATHS.update(

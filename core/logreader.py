@@ -122,7 +122,7 @@ class LogReader:
             # Input case
             elif row["type"] == "input":
                 self.inputs.append(row)
-                if row["module"] in ("keyboard", "agent"):
+                if row["module"] in ("keyboard", "agent", "mouse_key"):
                     self.keyboard_inputs.append(row)
                 elif "joystick" in row["address"]:
                     self.joystick_inputs.append(row)
