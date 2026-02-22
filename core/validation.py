@@ -6,6 +6,7 @@
 # The following methods, associated with the valid_type dictionary, allows to check that
 # each scenario parameter value is accepted.
 
+import ast
 import re
 from typing import Any, Optional
 
@@ -31,27 +32,27 @@ def is_string(x: str) -> ValidationResult:
 def is_natural_integer(x: str) -> ValidationResult:
     msg: str = _("should be a natural (0 included) integer (not %s).") % x
     try:
-        x = eval(x)
-        x = int(x)
-    except (ValueError, TypeError, SyntaxError, NameError):
+        val = int(float(x))
+    except (ValueError, TypeError):
         return None, msg
     else:
-        if x >= 0:
-            return x, None
+        if val >= 0:
+            return val, None
         else:
             return None, msg
 
 
 def is_positive_integer(x: str) -> ValidationResult:
-    if is_natural_integer(x)[0] is not None and int(eval(x)) > 0:
-        return eval(x), None
+    val, _err = is_natural_integer(x)
+    if val is not None and val > 0:
+        return val, None
     else:
         return None, _("should be a positive (0 excluded) integer (not %s).") % x
 
 
 def is_boolean(x: str) -> ValidationResult:
     if x.capitalize() in ["True", "False"]:
-        return eval(x.capitalize()), None
+        return x.capitalize() == "True", None
     elif x in ["1", "0"]:
         return bool(int(x)), None
     else:
@@ -68,8 +69,8 @@ def is_color(x: str) -> ValidationResult:  # Can be an hexadecimal value, a cons
         return C[x], None
     else:
         try:
-            x = eval(x)
-        except (ValueError, TypeError, SyntaxError, NameError):
+            x = ast.literal_eval(x)
+        except (ValueError, TypeError, SyntaxError):
             return None, _("must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)") % x
         else:
             if (isinstance(x, (tuple, list))) and len(x) == 4 and all([0 <= v <= 255 for v in x]):
@@ -84,7 +85,7 @@ def is_positive_float(x: str) -> ValidationResult:
     msg: str = _("should be a positive float (not %s)") % x
     is_float: bool = x.replace(".", "", 1).isdigit() and "." in x
     if is_float:
-        x = eval(x)
+        x = float(x)
         if x > 0:
             return x, None
         else:
@@ -106,8 +107,8 @@ def is_in_list(x: str, li: list[str]) -> ValidationResult:
     if result:  # If all elements of x are in target (li) list
         # Try to get an evaluated version of the (x) input
         try:
-            x = [eval(el) for el in x]
-        except NameError:
+            x = [ast.literal_eval(el) for el in x]
+        except (ValueError, SyntaxError):
             if len(x) == 1:
                 x = x[0]
             return x, None
@@ -196,9 +197,8 @@ def is_callsign_or_list_of(x: str) -> ValidationResult:
 def is_in_unit_interval(x: str) -> ValidationResult:
     msg: str = _("should be a float between 0 and 1 (included) (not %s)") % x
     try:
-        x = eval(x)
         x = float(x)
-    except NameError:
+    except (ValueError, TypeError):
         return None, msg
     else:
         if 0 <= x <= 1:
