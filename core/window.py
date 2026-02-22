@@ -220,6 +220,10 @@ class Window(Window):
 
         self.bg_shapes: list[Rectangle] = [bg, upper, mid]
 
+    def set_bg_bands_visible(self, visible: bool) -> None:
+        for band in self.bg_shapes[1:]:
+            band.visible = visible
+
     def on_draw(self) -> None:
         self.set_mouse_cursor_visible(self.is_mouse_necessary())
         self.clear()

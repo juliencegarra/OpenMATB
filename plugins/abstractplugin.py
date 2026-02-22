@@ -98,6 +98,8 @@ class AbstractPlugin:
         if self.parameters["taskplacement"] == "fullscreen":
             for _name, widget in self.widgets.items():
                 widget.show()
+            if Window.MainWindow is not None:
+                Window.MainWindow.set_bg_bands_visible(False)
 
         elif self.parameters["taskplacement"] != "invisible":
             for _name, widget in self.widgets.items():
@@ -127,6 +129,8 @@ class AbstractPlugin:
         if self.parameters["taskplacement"] == "fullscreen":
             for _name, widget in self.widgets.items():
                 widget.hide()
+            if Window.MainWindow is not None:
+                Window.MainWindow.set_bg_bands_visible(True)
 
         elif self.parameters["taskplacement"] != "invisible":
             self.get_widget("task_title").hide()
