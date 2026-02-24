@@ -98,6 +98,9 @@ class Sysmon(AbstractPlugin):
     def get_response_timers(self) -> list[float]:
         return [self._response_elapsed_ms(g["_response_start"]) for g in self.get_all_gauges()]
 
+    def has_active_fault(self) -> bool:
+        return len(self.get_gauges_on_failure()) > 0
+
     def create_widgets(self) -> None:
         super().create_widgets()
         # Widgets coordinates (the left l coordinate is variable)

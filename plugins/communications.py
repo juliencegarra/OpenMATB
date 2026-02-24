@@ -13,6 +13,7 @@ from pyglet.window import mouse as winmouse
 
 from core import validation
 from core.audio import SequencePlayer, load_sound
+from core.error import get_errors
 from core.constants import COLORS as C
 from core.constants import PATHS as P
 from core.constants import REPLAY_MODE
@@ -88,7 +89,7 @@ class Communications(AbstractPlugin):
             airbandmaxMhz=137.0,
             airbandminvariationMhz=5,
             airbandmaxvariationMhz=6,
-            voicegender="female",
+            voicegender="male",
             voiceidiom="english",
             radioprompt="",
             maxresponsedelay=20000,
@@ -140,8 +141,8 @@ class Communications(AbstractPlugin):
             return
 
         if not new_path.exists():
-            self.logger.log_manual_entry(
-                _("Warning: sound path %s does not exist. Check voiceidiom/voicegender combination.") % new_path
+            get_errors().add_error(
+                _("Sound path %s does not exist. Check voiceidiom/voicegender combination.") % new_path
             )
             return
 
@@ -243,6 +244,9 @@ class Communications(AbstractPlugin):
         )
 
         sources: list[Any] = []
+        if self.sound_path is None:
+            return SourceGroup()
+
         for f in list_of_sounds:
             wav_path = self.sound_path.joinpath(f"{f}.wav")
             try:
@@ -321,6 +325,9 @@ class Communications(AbstractPlugin):
     def get_response_timers(self) -> list[float]:
         return [self._response_elapsed_ms(r["_response_start"])
                 for _, r in self.parameters["radios"].items() if r["_response_start"] is not None]
+
+    def has_active_fault(self) -> bool:
+        return len(self.get_waiting_response_radios()) > 0
 
     def get_waiting_response_radios(self) -> list[dict[str, Any]]:
         """A radio is waiting a response when it specifies a target and its prompting message

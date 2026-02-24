@@ -192,6 +192,10 @@ class AbstractPlugin:
         """Return the time since which responses are expected (list of int)"""
         pass
 
+    def has_active_fault(self) -> bool:
+        """Return True if this plugin has an unresolved problem requiring action."""
+        return False
+
     def update_can_receive_key(self) -> None:
         """Update the ability of the plugin to receive either material or emulated inputs"""
 
