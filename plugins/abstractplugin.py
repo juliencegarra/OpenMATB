@@ -103,6 +103,9 @@ class AbstractPlugin:
             if self.get_widget("attention") is not None:
                 self.get_widget("attention").set_visibility(False)
 
+            if self.get_widget("fault_icon") is not None:
+                self.get_widget("fault_icon").set_text("")
+
     def hide(self) -> None:
         """
         Hiding means showing a neutral foreground before the plugin for non-blocking plugins
@@ -183,6 +186,10 @@ class AbstractPlugin:
     def get_response_timers(self) -> list[float] | None:
         """Return the time since which responses are expected (list of int)"""
         pass
+
+    def has_active_fault(self) -> bool:
+        """Return True if this plugin has an unresolved problem requiring action."""
+        return False
 
     def update_can_receive_key(self) -> None:
         """Update the ability of the plugin to receive either material or emulated inputs"""
@@ -300,6 +307,16 @@ class AbstractPlugin:
                 and getattr(self.agent, "_attended_task", None) == self.alias
             )
             self.get_widget("attention").set_visibility(show)
+
+        fault_w = self.get_widget("fault_icon")
+        if fault_w is not None:
+            show_fault = (
+                self.agent is not None
+                and getattr(self.agent, "show_attention", False)
+                and self.has_active_fault()
+            )
+            fault_w.set_text("!" if show_fault else "")
+
         return True
 
     def filter_key(self, keystr: str) -> str | None:
@@ -415,6 +432,21 @@ class AbstractPlugin:
                 border_color=C["CYAN"],
                 fill_color=None,
                 draw_order=3,
+            )
+
+            # Fault indicator — bold red "!" at bottom-right of task area
+            fault_cont = self.task_container.reduce_and_translate(
+                width=0.12, height=0.12, x=1, y=0
+            )
+            self.add_widget(
+                "fault_icon",
+                Simpletext,
+                container=fault_cont,
+                text="!",
+                font_size=F["XLARGE"],
+                color=C["RED"],
+                bold=True,
+                draw_order=self.m_draw + 4,
             )
 
         if self.display_title:

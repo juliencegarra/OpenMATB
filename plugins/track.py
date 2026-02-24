@@ -65,6 +65,9 @@ class Track(AbstractPlugin):
     def get_response_timers(self) -> list[float]:
         return [self._response_elapsed_ms(self._response_start)]
 
+    def has_active_fault(self) -> bool:
+        return self._response_start is not None
+
     def create_widgets(self) -> None:
         super().create_widgets()
 

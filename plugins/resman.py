@@ -114,6 +114,12 @@ class Resman(AbstractPlugin):
         return [self._response_elapsed_ms(t["_response_start"])
                 for l, t in self.parameters["tank"].items() if t["target"] is not None]
 
+    def has_active_fault(self) -> bool:
+        for _, tank in self.parameters["tank"].items():
+            if tank.get("_is_in_tolerance") is False:
+                return True
+        return False
+
     def create_widgets(self) -> None:
         super().create_widgets()
 
