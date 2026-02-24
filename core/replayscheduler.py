@@ -147,7 +147,10 @@ class ReplayScheduler(Scheduler):
         self.mouse_label.show()
 
     def on_key_press_replay(self, symbol: int, modifier: int) -> None:
-        if symbol == key.ESCAPE:
+        if symbol == key.F12:
+            Window.MainWindow.take_screenshot()
+            return
+        elif symbol == key.ESCAPE:
             Window.MainWindow.exit_prompt()
         elif symbol == key.SPACE:
             self.toggle_playpause()
