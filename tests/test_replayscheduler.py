@@ -322,7 +322,7 @@ class TestExecuteDueEvents:
     def _replay_with_events(self, events):
         from core.event import Event
 
-        rs = _make_replay(scenario_time=8, paused_plugins=[], executed=[])
+        rs = _make_replay(scenario_time=8, paused_plugins=[], executed=[], _event_cursor=0)
         rs.events = [Event(line, t, plugin, command) for line, t, plugin, command in events]
 
         def execute_one_event(event):

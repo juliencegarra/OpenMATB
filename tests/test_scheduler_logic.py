@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock
 
+from core.event import Event
+
 
 class TestGetPluginsByStates:
     def _make_scheduler_methods(self):
@@ -183,3 +185,92 @@ class TestExit:
         sched.exit()
 
         logger.end_session.assert_called_once()
+
+
+class TestGetEventAtScenarioTime:
+    def _make_scheduler(self, events):
+        from core.scheduler import Scheduler
+
+        sched = object.__new__(Scheduler)
+        sched.events = sorted(events, key=lambda e: (e.time_sec, e.line))
+        sched._event_cursor = 0
+        sched.events_queue = []
+        return sched
+
+    def test_events_in_time_order(self):
+        """Events are returned in ascending time order."""
+        e1 = Event(1, 5, "sysmon", "start")
+        e2 = Event(2, 10, "track", "start")
+        sched = self._make_scheduler([e2, e1])
+
+        result = sched.get_event_at_scenario_time(5)
+        assert result is e1
+
+        result = sched.get_event_at_scenario_time(10)
+        assert result is e2
+
+    def test_simultaneous_events_line_order(self):
+        """Same time_sec events are dispatched in line-number order."""
+        e1 = Event(3, 10, "sysmon", "start")
+        e2 = Event(1, 10, "track", "start")
+        e3 = Event(2, 10, "resman", "start")
+        sched = self._make_scheduler([e1, e2, e3])
+
+        # All three enqueued at once, returned one per call in line order
+        r1 = sched.get_event_at_scenario_time(10)
+        r2 = sched.get_event_at_scenario_time(10)
+        r3 = sched.get_event_at_scenario_time(10)
+        assert r1 is e2  # line 1
+        assert r2 is e3  # line 2
+        assert r3 is e1  # line 3
+
+    def test_cursor_advance(self):
+        """Calling with increasing times returns events progressively."""
+        e1 = Event(1, 5, "sysmon", "start")
+        e2 = Event(2, 10, "track", "start")
+        e3 = Event(3, 20, "resman", "start")
+        sched = self._make_scheduler([e1, e2, e3])
+
+        assert sched.get_event_at_scenario_time(3) is None
+        assert sched.get_event_at_scenario_time(5) is e1
+        assert sched.get_event_at_scenario_time(7) is None
+        assert sched.get_event_at_scenario_time(10) is e2
+        assert sched.get_event_at_scenario_time(15) is None
+        assert sched.get_event_at_scenario_time(20) is e3
+
+    def test_no_events_before_first(self):
+        """Returns None when scenario_time < first event time."""
+        e1 = Event(1, 10, "sysmon", "start")
+        sched = self._make_scheduler([e1])
+
+        assert sched.get_event_at_scenario_time(0) is None
+        assert sched.get_event_at_scenario_time(9) is None
+
+    def test_all_consumed(self):
+        """Returns None after all events have been dispatched."""
+        e1 = Event(1, 5, "sysmon", "start")
+        sched = self._make_scheduler([e1])
+
+        assert sched.get_event_at_scenario_time(5) is e1
+        assert sched.get_event_at_scenario_time(5) is None
+        assert sched.get_event_at_scenario_time(100) is None
+
+    def test_queue_drains_before_cursor_advances(self):
+        """Multiple calls at the same time drain the queue one by one."""
+        e1 = Event(1, 5, "sysmon", "start")
+        e2 = Event(2, 5, "track", "start")
+        e3 = Event(3, 10, "resman", "start")
+        sched = self._make_scheduler([e1, e2, e3])
+
+        # First call at t=5 enqueues e1 and e2, returns e1
+        r1 = sched.get_event_at_scenario_time(5)
+        assert r1 is e1
+        # Second call at t=5 — cursor doesn't move, drains e2 from queue
+        r2 = sched.get_event_at_scenario_time(5)
+        assert r2 is e2
+        # Third call at t=5 — queue empty, no new events
+        r3 = sched.get_event_at_scenario_time(5)
+        assert r3 is None
+        # Now advance to t=10
+        r4 = sched.get_event_at_scenario_time(10)
+        assert r4 is e3

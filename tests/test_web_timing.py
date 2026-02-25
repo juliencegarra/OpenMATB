@@ -255,6 +255,7 @@ def scheduler(mock_logger, main_clock):
     s = object.__new__(Scheduler)
     s.clock = main_clock
     s.events = []
+    s._event_cursor = 0  # Events are sorted by (time, line) in set_scenario()
     s.events_queue = []
     s.plugins = {}
     s.paused_plugins = []
@@ -302,7 +303,8 @@ class TestEventTiming:
 
     def test_simultaneous_events_run_one_per_update_in_line_order(self, browser, scheduler):
         """Events of the same second are executed on consecutive updates (~8 ms apart at 120 Hz)."""
-        scheduler.events = [_event(line, 2) for line in (5, 3, 9, 1, 7)]
+        # Written in any order in the scenario: set_scenario() sorts them by (time, line)
+        scheduler.events = sorted((_event(line, 2) for line in (5, 3, 9, 1, 7)), key=lambda e: e.line)
         browser.run([1 / 120] * 400)
         lines = [e.line for e, _, _ in scheduler.executed]
         assert lines == [1, 3, 5, 7, 9]
