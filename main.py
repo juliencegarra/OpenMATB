@@ -17,7 +17,7 @@ LOCALE_PATH: Path = Path(".", "locales")
 
 # Only language is accessed manually from the config.ini to avoid circular imports
 # (i.e., utils needing translation needing utils and so on)
-with open("config.ini", "r") as f:
+with open("config.ini", "r", encoding="utf-8") as f:
     language_iso: str = [l for l in f.readlines() if "language=" in l][0].split("=")[-1].strip()
 language: gettext.GNUTranslations = gettext.translation("openmatb", LOCALE_PATH, [language_iso])
 language.install()

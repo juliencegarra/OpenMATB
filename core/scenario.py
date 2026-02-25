@@ -34,7 +34,7 @@ class Scenario:
                 sp = P["SCENARIOS"].joinpath(get_conf_value("Openmatb", "scenario_path"))
 
             if sp.exists():
-                with open(sp, "r") as f:
+                with open(sp, "r", encoding="utf-8") as f:
                     contents = f.readlines()
                 get_logger().log_manual_entry(sp, key="scenario_path")
             else:
@@ -69,7 +69,7 @@ class Scenario:
         self.events = self.events_retrocompatibility()  # Apply retrocompatiblity to events
         event_errors: list[str] = self.check_events()  # Check that events are properly expressed
 
-        with open(P["SCENARIO_ERRORS"], "w") as errorf:
+        with open(P["SCENARIO_ERRORS"], "w", encoding="utf-8") as errorf:
             if len(event_errors) > 0:
                 for this_error in event_errors:
                     print(this_error, file=errorf)
