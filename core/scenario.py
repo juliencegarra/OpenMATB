@@ -59,6 +59,9 @@ class Scenario:
                     _("Scenario error: %s is not a valid plugin name (l. %s)") % (event.plugin, event.line), fatal=True
                 )
 
+        if get_errors().some_fatals:
+            return
+
         self.plugins = {
             name: getattr(globals()["plugins"], name.capitalize())() for name in self.get_plugins_name_list()
         }
