@@ -102,7 +102,7 @@ class Scenario:
             # If plugin or command is DEPRECATED, ignore the event
             if e.is_deprecated():
                 get_errors().add_error(
-                    f"Line {e.line}: '{e}' is deprecated and will be ignored",
+                    _("Line %s: '%s' is deprecated and will be ignored") % (e.line, e),
                     fatal=False
                 )
 
