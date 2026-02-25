@@ -30,15 +30,15 @@ class TestGetContainerList:
 
     @patch("core.window.REPLAY_MODE", False)
     @patch("core.window.get_conf_value")
-    def test_returns_10_containers(self, mock_conf):
-        """Layout produces 10 named containers."""
+    def test_returns_11_containers(self, mock_conf):
+        """Layout produces 11 named containers."""
         mock_conf.side_effect = lambda section, key: {
             "top_bounds": [0.35, 0.85],
             "bottom_bounds": [0.30, 0.85],
         }[key]
         w = _make_window()
         containers = w.get_container_list()
-        assert len(containers) == 10
+        assert len(containers) == 11
 
     @patch("core.window.REPLAY_MODE", False)
     @patch("core.window.get_conf_value")
@@ -60,6 +60,7 @@ class TestGetContainerList:
         assert "invisible" in names
         assert "mediastrip" in names
         assert "inputstrip" in names
+        assert "perfstrip" in names
 
     @patch("core.window.REPLAY_MODE", False)
     @patch("core.window.get_conf_value")
@@ -79,9 +80,10 @@ class TestGetContainerList:
 
     @patch("core.window.REPLAY_MODE", True)
     @patch("core.window.REPLAY_STRIP_PROPORTION", 0.08)
+    @patch("core.window.REPLAY_PERF_STRIP_PROPORTION", 0.08)
     @patch("core.window.get_conf_value")
     def test_replay_mode_reduces_area(self, mock_conf):
-        """Replay mode shrinks containers by strip proportion."""
+        """Replay mode shrinks containers by strip + perf strip proportions."""
         mock_conf.side_effect = lambda section, key: {
             "top_bounds": [0.35, 0.85],
             "bottom_bounds": [0.30, 0.85],
@@ -89,9 +91,9 @@ class TestGetContainerList:
         w = _make_window()
         containers = w.get_container_list()
         fs = [c for c in containers if c.name == "fullscreen"][0]
-        # In replay mode, mar=0.08, so w = 0.92*1920, h = 0.92*1080
+        # In replay mode, mar=0.08, perf_mar=0.08, so w = 0.92*1920, h = 0.84*1080
         assert fs.w == pytest.approx(0.92 * 1920)
-        assert fs.h == pytest.approx(0.92 * 1080)
+        assert fs.h == pytest.approx(0.84 * 1080)
         assert fs.b == pytest.approx(1080 * 0.08)
 
     @patch("core.window.REPLAY_MODE", False)

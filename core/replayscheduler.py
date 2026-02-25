@@ -13,11 +13,12 @@ from pyglet.window import key
 
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
-from core.constants import REPLAY_STRIP_PROPORTION
+from core.constants import REPLAY_PERF_STRIP_PROPORTION, REPLAY_STRIP_PROPORTION
 from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
 from core.logreader import LogReader
+from core.perfoverlay import PerfOverlay
 from core.scheduler import Scheduler
 from core.utils import clamp, get_replay_session_id
 from core.widgets import Frame, MuteButton, PlayPause, Reticle, SimpleHTML, Simpletext, Slider
@@ -43,6 +44,7 @@ class ReplayScheduler(Scheduler):
         self._click_held: bool = False
         self._last_mouse_x: int | None = None
         self._last_mouse_y: int | None = None
+        self._perf_overlay: PerfOverlay | None = None
 
         self.set_media_buttons()
 
@@ -82,6 +84,15 @@ class ReplayScheduler(Scheduler):
             self._state_logtimes: list[float] = [i["normalized_logtime"] for i in self.logreader.states]
 
         super().set_scenario(self.logreader.contents)
+
+        # Create performance overlay if data is available
+        if self._perf_overlay is None:
+            perfstrip_container: Container | None = Window.MainWindow.get_container("perfstrip")
+            if perfstrip_container is not None and self.logreader.perf_series:
+                self._perf_overlay = PerfOverlay(
+                    perfstrip_container, Window.MainWindow.batch,
+                    self.logreader.perf_series, self.logreader.duration_sec,
+                )
 
         self.sliding: bool = False
 
@@ -202,6 +213,10 @@ class ReplayScheduler(Scheduler):
         self.display_mouse_inputs()
         self.process_states()
         self._enforce_mute()
+
+        if self._perf_overlay is not None:
+            st: float = self.logreader.replay_to_scenario_time(self.replay_time)
+            self._perf_overlay.update_cursor(st)
 
     def check_plugins_alive(self) -> bool:
         return all([p.alive for _, p in self.plugins.items()])
@@ -421,9 +436,10 @@ class ReplayScheduler(Scheduler):
 
     def _remap_mouse(self, x: int, y: int) -> tuple[int, int]:
         """Remap original full-screen coordinates to the reduced replay area."""
-        scale: float = 1 - REPLAY_STRIP_PROPORTION
-        replay_x: int = int(x * scale)
-        replay_y: int = int(y * scale + Window.MainWindow.height * REPLAY_STRIP_PROPORTION)
+        x_scale: float = 1 - REPLAY_STRIP_PROPORTION
+        y_scale: float = 1 - REPLAY_STRIP_PROPORTION - REPLAY_PERF_STRIP_PROPORTION
+        replay_x: int = int(x * x_scale)
+        replay_y: int = int(y * y_scale + Window.MainWindow.height * REPLAY_STRIP_PROPORTION)
         return replay_x, replay_y
 
     def display_mouse_inputs(self) -> None:
