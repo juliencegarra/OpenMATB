@@ -265,7 +265,7 @@ class TestMultipleScales:
 
 
 @pytest.fixture
-def gs_with_keys():
+def gs_with_keys(mock_window):
     """Genericscales with enough state for do_on_key testing."""
     from plugins.genericscales import Genericscales
 
@@ -310,72 +310,51 @@ class TestKeyboardNavigation:
 
     def test_down_increments_index(self, gs_with_keys):
         self._add_mock_sliders(gs_with_keys, 3)
-        with patch.object(type(gs_with_keys), "_mock_modal", None, create=True):
-            pass
-        # Mock the Window for filter_key
-        with patch("plugins.abstractplugin.Window") as mock_win:
-            mock_win.MainWindow.modal_dialog = None
-            gs_with_keys.do_on_key("DOWN", "press", emulate=True)
+        gs_with_keys.do_on_key("DOWN", "press", emulate=True)
         assert gs_with_keys.selected_slider_index == 1
 
     def test_up_decrements_index_with_wrap(self, gs_with_keys):
         self._add_mock_sliders(gs_with_keys, 3)
-        with patch("plugins.abstractplugin.Window") as mock_win:
-            mock_win.MainWindow.modal_dialog = None
-            gs_with_keys.do_on_key("UP", "press", emulate=True)
+        gs_with_keys.do_on_key("UP", "press", emulate=True)
         assert gs_with_keys.selected_slider_index == 2  # wraps to last
 
     def test_down_wraps_to_first(self, gs_with_keys):
         self._add_mock_sliders(gs_with_keys, 3)
         gs_with_keys.selected_slider_index = 2
-        with patch("plugins.abstractplugin.Window") as mock_win:
-            mock_win.MainWindow.modal_dialog = None
-            gs_with_keys.do_on_key("DOWN", "press", emulate=True)
+        gs_with_keys.do_on_key("DOWN", "press", emulate=True)
         assert gs_with_keys.selected_slider_index == 0
 
     def test_right_calls_adjust_value(self, gs_with_keys):
         self._add_mock_sliders(gs_with_keys, 2)
-        with patch("plugins.abstractplugin.Window") as mock_win:
-            mock_win.MainWindow.modal_dialog = None
-            gs_with_keys.do_on_key("RIGHT", "press", emulate=True)
+        gs_with_keys.do_on_key("RIGHT", "press", emulate=True)
         slider_list = list(gs_with_keys.sliders.values())
         slider_list[0].adjust_value.assert_called_once_with(1)
 
     def test_left_calls_adjust_value(self, gs_with_keys):
         self._add_mock_sliders(gs_with_keys, 2)
-        with patch("plugins.abstractplugin.Window") as mock_win:
-            mock_win.MainWindow.modal_dialog = None
-            gs_with_keys.do_on_key("LEFT", "press", emulate=True)
+        gs_with_keys.do_on_key("LEFT", "press", emulate=True)
         slider_list = list(gs_with_keys.sliders.values())
         slider_list[0].adjust_value.assert_called_once_with(-1)
 
     def test_space_release_triggers_next_slide(self, gs_with_keys):
         self._add_mock_sliders(gs_with_keys, 2)
-        with patch("plugins.abstractplugin.Window") as mock_win:
-            mock_win.MainWindow.modal_dialog = None
-            gs_with_keys.do_on_key("SPACE", "release", emulate=True)
+        gs_with_keys.do_on_key("SPACE", "release", emulate=True)
         assert gs_with_keys.go_to_next_slide is True
 
     def test_set_selected_called_on_navigation(self, gs_with_keys):
         self._add_mock_sliders(gs_with_keys, 2)
-        with patch("plugins.abstractplugin.Window") as mock_win:
-            mock_win.MainWindow.modal_dialog = None
-            gs_with_keys.do_on_key("DOWN", "press", emulate=True)
+        gs_with_keys.do_on_key("DOWN", "press", emulate=True)
         slider_list = list(gs_with_keys.sliders.values())
         slider_list[0].set_selected.assert_called_with(False)
         slider_list[1].set_selected.assert_called_with(True)
 
     def test_no_action_on_release_for_arrows(self, gs_with_keys):
         self._add_mock_sliders(gs_with_keys, 2)
-        with patch("plugins.abstractplugin.Window") as mock_win:
-            mock_win.MainWindow.modal_dialog = None
-            gs_with_keys.do_on_key("DOWN", "release", emulate=True)
+        gs_with_keys.do_on_key("DOWN", "release", emulate=True)
         assert gs_with_keys.selected_slider_index == 0  # unchanged
 
     def test_no_action_when_no_sliders(self, gs_with_keys):
-        with patch("plugins.abstractplugin.Window") as mock_win:
-            mock_win.MainWindow.modal_dialog = None
-            gs_with_keys.do_on_key("DOWN", "press", emulate=True)
+        gs_with_keys.do_on_key("DOWN", "press", emulate=True)
         assert gs_with_keys.selected_slider_index == 0  # unchanged
 
 
@@ -408,7 +387,5 @@ class TestMouseFocusSync:
     def test_mouse_focus_then_keyboard_uses_new_index(self, gs_with_keys):
         self._add_mock_sliders(gs_with_keys, 3)
         gs_with_keys._on_slider_mouse_focus(2)
-        with patch("plugins.abstractplugin.Window") as mock_win:
-            mock_win.MainWindow.modal_dialog = None
-            gs_with_keys.do_on_key("RIGHT", "press", emulate=True)
+        gs_with_keys.do_on_key("RIGHT", "press", emulate=True)
         list(gs_with_keys.sliders.values())[2].adjust_value.assert_called_once_with(1)

@@ -207,7 +207,7 @@ class TestPluginStates:
         p.resume()
         assert p.paused is False
 
-    def test_show_hide(self):
+    def test_show_hide(self, mock_window):
         """show/hide toggle the visible flag."""
         # Use fullscreen placement so hide() iterates widgets dict (empty = no-op)
         p = _make_plugin(visible=False)
@@ -217,7 +217,7 @@ class TestPluginStates:
         p.hide()
         assert p.visible is False
 
-    def test_stop_sets_states(self):
+    def test_stop_sets_states(self, mock_window):
         """stop() sets alive=False, paused=True, visible=False."""
         p = _make_plugin(alive=True, paused=False, visible=True)
         p.parameters["taskplacement"] = "fullscreen"

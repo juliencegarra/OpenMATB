@@ -59,9 +59,8 @@ class Scheduler:
             if "automaticsolver" in self.plugins[p].parameters:
                 self.plugins[p].agent = self.agent
 
-        # Attribute window to plugins in use, and push their handles to window
+        # Push plugin handles to window
         for p in self.plugins:
-            self.plugins[p].win = Window.MainWindow
             self.plugins[p].joystick = self.joystick
             if not REPLAY_MODE:
                 Window.MainWindow.push_handlers(self.plugins[p].on_key_press, self.plugins[p].on_key_release)
