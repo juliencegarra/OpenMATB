@@ -92,7 +92,7 @@ class LogReader:
 
         # First pass: read all rows
         all_rows: list[dict[str, Any]] = []
-        with open(self.session_file_path, newline="") as csvfile:
+        with open(self.session_file_path, newline="", encoding="utf-8") as csvfile:
             reader: csv.DictReader = csv.DictReader(csvfile)
             for row in reader:
                 row["logtime"] = float(row["logtime"])

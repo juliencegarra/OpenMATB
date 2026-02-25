@@ -34,7 +34,7 @@ class Scheduler:
     """
 
     def __init__(self, scenario_path: Path | None = None) -> None:
-        with open("VERSION", "r") as f:
+        with open("VERSION", "r", encoding="utf-8") as f:
             get_logger().log_manual_entry(f.read().strip(), key="version")
         for key, value in browser_environment():  # Browser, version and system (timing differs between them)
             get_logger().log_manual_entry(value, key=key)
