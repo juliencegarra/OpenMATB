@@ -1,10 +1,11 @@
-"""Tests for Scenario.check_events() — invalid scenario data validation.
+"""Tests for Scenario validation — invalid plugin names and check_events() rules.
 
-Covers the 4 validation rules in check_events() (core/scenario.py:140-222),
-get_validation_dict() merge logic, and Event.parse_from_string() with malformed input.
+Covers the early-return guard for unknown plugin names, the 4 validation rules
+in check_events() (core/scenario.py), get_validation_dict() merge logic, and
+Event.parse_from_string() with malformed input.
 """
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -50,6 +51,38 @@ def _base_events(plugin="myplugin"):
         Event(1, 0, plugin, ["start"]),
         Event(99, 600, plugin, ["stop"]),
     ]
+
+
+# ──── Invalid plugin name → early return ────
+
+
+class TestInvalidPluginName:
+    """Scenario.__init__ with unknown plugin name: fatal error, no crash."""
+
+    @pytest.fixture()
+    def mock_errors(self):
+        m = MagicMock()
+        m.some_fatals = False
+        m.errors_list = []
+
+        def track_fatal(msg, fatal=False):
+            if fatal:
+                m.some_fatals = True
+            m.errors_list.append(msg)
+
+        m.add_error.side_effect = track_fatal
+        return m
+
+    def test_unknown_plugin_registers_fatal_no_crash(self, mock_errors):
+        """Unknown plugin -> fatal error, empty plugins dict, no AttributeError."""
+        with patch("core.scenario.get_errors", return_value=mock_errors), \
+             patch("core.scenario.get_logger") as mock_logger:
+            mock_logger.return_value = MagicMock()
+            s = Scenario(contents=["0:00:00;nonexistent;somecmd"])
+
+        assert s.plugins == {}
+        mock_errors.add_error.assert_called_once()
+        assert mock_errors.some_fatals is True
 
 
 # ──── Rule 1: start/stop commands ────
