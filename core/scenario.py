@@ -7,7 +7,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import plugins  # noqa: F401 — needed by globals()["plugins"] for dynamic plugin loading
+import plugins
 from core import validation
 from core.constants import DEPRECATED, REPLAY_MODE, SYSTEM_COMMANDS, SYSTEM_PSEUDO_PLUGIN
 from core.constants import PATHS as P
@@ -54,7 +54,7 @@ class Scenario:
         for event in self.events:
             if event.plugin == SYSTEM_PSEUDO_PLUGIN:
                 continue
-            if not hasattr(globals()["plugins"], event.plugin.capitalize()):
+            if not hasattr(plugins, event.plugin.capitalize()):
                 get_errors().add_error(
                     _("Scenario error: %s is not a valid plugin name (l. %s)") % (event.plugin, event.line), fatal=True
                 )
@@ -63,7 +63,7 @@ class Scenario:
             return
 
         self.plugins = {
-            name: getattr(globals()["plugins"], name.capitalize())() for name in self.get_plugins_name_list()
+            name: getattr(plugins, name.capitalize())() for name in self.get_plugins_name_list()
         }
 
         self.events = self.events_retrocompatibility()  # Apply retrocompatiblity to events
@@ -90,11 +90,11 @@ class Scenario:
 
             del plugin
 
-            if hasattr(globals()["plugins"], name):
-                delattr(globals()["plugins"], name)
+            if hasattr(plugins, name):
+                delattr(plugins, name)
 
             # Instantiate plugins
-            self.plugins[name] = getattr(globals()["plugins"], name.capitalize())()
+            self.plugins[name] = getattr(plugins, name.capitalize())()
 
     def events_retrocompatibility(self) -> list[Event]:
         new_list: list[Event] = list()
