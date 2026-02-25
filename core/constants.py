@@ -91,7 +91,9 @@ if IS_WEB:
     # Session logs are kept in the browser persistent storage, so they can be replayed later
     PATHS["SESSIONS"] = web_sessions_path()
 
-[path.mkdir(parents=False, exist_ok=True) for p, path in PATHS.items() if path.exists() is False]
+for path in PATHS.values():
+    if not path.exists():
+        path.mkdir(parents=False, exist_ok=True)
 PATHS["SCENARIO_ERRORS"] = Path(".", "last_scenario_errors.log")
 
 # Read the configuration file
