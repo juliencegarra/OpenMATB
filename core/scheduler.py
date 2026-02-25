@@ -48,6 +48,7 @@ class Scheduler:
         self.scenario: Scenario = Scenario(events, scenario_path=scenario_path)
 
         self.events: list[Event] = self.scenario.events
+        self.events.sort(key=lambda e: (e.time_sec, e.line))
         self.plugins: dict[str, Any] = self.scenario.plugins
 
         # Create a default agent and assign it to plugins
@@ -70,6 +71,9 @@ class Scheduler:
         self.pause_scenario_time: bool = False
         self.mouse_control_enabled: bool = False
         self.scenario_time = 0
+
+        # Cursor into the sorted events list — advances monotonically
+        self._event_cursor: int = 0
 
         # We store events in a list in case their execution is delayed by a blocking event
         self.events_queue: list[Event] = list()
@@ -280,18 +284,16 @@ class Scheduler:
         return [p for _, p in plugins.items()]
 
     def get_event_at_scenario_time(self, scenario_time: float) -> Event | None:
-        # Retrieve (simultaneous) events matching scenario_duration_sec
-        # We look to the most precise point in the near future that might matches a set of event time(s)
-        events_time: list[Event] = [event for event in self.events if event.time_sec <= scenario_time]
-
-        # Filter events that are either done or already in the queue
-        events_time = [event for event in events_time if event.done != 1]
-
-        # Sort them according to their line number (ascending order)
-        # and append the listed events in the correct order
-        for event in sorted(events_time, key=lambda x: x.line):
-            if event not in self.events_queue:
-                self.events_queue.append(event)
+        # Advance cursor past events whose time has arrived, enqueuing them.
+        # Events are pre-sorted by (time_sec, line) in set_scenario(), so
+        # simultaneous events are dispatched in line order. Each event is
+        # visited exactly once — O(1) amortized per tick.
+        while self._event_cursor < len(self.events):
+            event: Event = self.events[self._event_cursor]
+            if event.time_sec > scenario_time:
+                break
+            self._event_cursor += 1
+            self.events_queue.append(event)
 
         return self.unqueue_event()
 
