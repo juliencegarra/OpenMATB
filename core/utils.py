@@ -26,6 +26,9 @@ def get_session_numbers() -> list[int]:
     except (ValueError, IndexError):
         session_numbers = [0]
 
+    if len(session_numbers) == 0:
+        session_numbers = [0]
+
     return session_numbers
 
 
@@ -50,6 +53,8 @@ def find_the_first_available_session_number() -> int:
 
 def find_the_last_session_number() -> int:
     session_numbers: list[int] = get_session_numbers()
+    if len(session_numbers) == 0:
+        return 0
     return max(session_numbers)
 
 

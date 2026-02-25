@@ -5,7 +5,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from core.utils import clamp, find_the_first_available_session_number, get_session_numbers
+from core.utils import (
+    clamp,
+    find_the_first_available_session_number,
+    find_the_last_session_number,
+    get_session_numbers,
+)
 
 
 class TestClamp:
@@ -55,6 +60,13 @@ class TestGetSessionNumbers:
         result = get_session_numbers()
         assert result == [0]
 
+    @patch("core.utils.P")
+    def test_no_csv_files_returns_zero(self, mock_paths):
+        """No CSV files in directory returns [0]."""
+        mock_paths.__getitem__ = lambda self, k: MagicMock(glob=MagicMock(return_value=[]))
+        result = get_session_numbers()
+        assert result == [0]
+
 
 class TestFindFirstAvailableSessionNumber:
     @patch("core.utils.get_session_numbers")
@@ -86,6 +98,26 @@ class TestFindFirstAvailableSessionNumber:
         """Sessions [2, 3] returns 1 (gap at start)."""
         mock_get.return_value = [2, 3]
         assert find_the_first_available_session_number() == 1
+
+
+class TestFindLastSessionNumber:
+    @patch("core.utils.get_session_numbers")
+    def test_returns_max(self, mock_get):
+        """Returns the highest session number."""
+        mock_get.return_value = [1, 3, 5]
+        assert find_the_last_session_number() == 5
+
+    @patch("core.utils.get_session_numbers")
+    def test_single_session(self, mock_get):
+        """Single session returns that number."""
+        mock_get.return_value = [2]
+        assert find_the_last_session_number() == 2
+
+    @patch("core.utils.get_session_numbers")
+    def test_empty_returns_zero(self, mock_get):
+        """Empty session list returns 0."""
+        mock_get.return_value = []
+        assert find_the_last_session_number() == 0
 
 
 class TestGetConfValue:
