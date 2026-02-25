@@ -84,7 +84,9 @@ PATHS.update(
     {k.upper(): Path(".", "includes", k) for k in ["img", "instructions", "scenarios", "sounds", "questionnaires"]}
 )
 
-[path.mkdir(parents=False, exist_ok=True) for p, path in PATHS.items() if path.exists() is False]
+for path in PATHS.values():
+    if not path.exists():
+        path.mkdir(parents=False, exist_ok=True)
 PATHS["SCENARIO_ERRORS"] = Path(".", "last_scenario_errors.log")
 
 # Read the configuration file
