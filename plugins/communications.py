@@ -474,15 +474,16 @@ class Communications(AbstractPlugin):
         radio["targetfreq"] = None
 
     def record_target_missing(self, target_radio: dict[str, Any]) -> None:
-        self.log_performance("target_radio", target_radio["name"])
-        self.log_performance("target_frequency", target_radio["targetfreq"])
         self.log_performance("response_was_needed", True)
+        self.log_performance("target_radio", target_radio["name"])
         self.log_performance("responded_radio", float("nan"))
+        self.log_performance("target_frequency", target_radio["targetfreq"])
         self.log_performance("responded_frequency", float("nan"))
         self.log_performance("correct_radio", False)
         self.log_performance("response_deviation", float("nan"))
         self.log_performance("response_time", float("nan"))
         self.log_performance("sdt_value", "MISS")
+        self.log_performance("resolved_by", "")
 
         self.disable_radio_target(target_radio)
 
@@ -504,7 +505,7 @@ class Communications(AbstractPlugin):
         elif correct_radio is False and response_deviation != 0:
             return "BAD_RADIO_FREQ"
 
-    def confirm_response(self) -> None:
+    def confirm_response(self, emulate: bool = False) -> None:
         """Evaluate response performance and log it"""
 
         # Retrieve the responded radio and the target radios
@@ -553,6 +554,7 @@ class Communications(AbstractPlugin):
         self.log_performance("response_deviation", deviation)
         self.log_performance("response_time", rt)
         self.log_performance("sdt_value", sdt)
+        self.log_performance("resolved_by", "agent" if emulate else "human")
 
         # Response is good if both radio and frequency are correct
         if not response_needed:
@@ -593,7 +595,7 @@ class Communications(AbstractPlugin):
                 self.get_radio_dict_by_pos(next_active_n)["is_active"] = True
 
             elif key == self.parameters["keys"]["validateresponse"]:
-                self.confirm_response()
+                self.confirm_response(emulate=emulate)
 
     def do_on_mouse_press(self, x: int, y: int, button: int) -> None:
         if button != winmouse.LEFT:
