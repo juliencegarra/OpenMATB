@@ -54,7 +54,7 @@ def find_the_last_session_number() -> int:
 
 
 def has_conf_value(section: str, key: str) -> bool:
-    return key in CONFIG
+    return CONFIG.has_option(section, key)
 
 
 def get_conf_value(section: str, key: str, val_type: Optional[type] = None) -> Any:
