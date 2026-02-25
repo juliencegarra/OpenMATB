@@ -160,3 +160,31 @@ class TestGetConfValue:
         config.read_dict({"General": {"some_key": "hello"}})
         with patch("core.utils.CONFIG", config):
             assert get_conf_value("General", "some_key") == "hello"
+
+
+class TestHasConfValue:
+    def test_existing_option(self):
+        """Return True when section and key both exist."""
+        from core.utils import has_conf_value
+
+        config = configparser.ConfigParser()
+        config.read_dict({"General": {"fullscreen": "true"}})
+        with patch("core.utils.CONFIG", config):
+            assert has_conf_value("General", "fullscreen") is True
+
+    def test_missing_option(self):
+        """Return False when section exists but key does not."""
+        from core.utils import has_conf_value
+
+        config = configparser.ConfigParser()
+        config.read_dict({"General": {"fullscreen": "true"}})
+        with patch("core.utils.CONFIG", config):
+            assert has_conf_value("General", "no_such_key") is False
+
+    def test_missing_section(self):
+        """Return False when section does not exist."""
+        from core.utils import has_conf_value
+
+        config = configparser.ConfigParser()
+        with patch("core.utils.CONFIG", config):
+            assert has_conf_value("NoSection", "key") is False
