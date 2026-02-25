@@ -22,7 +22,7 @@ from pyglet.window import key as winkey
 from core.constants import COLORS as C
 from core.constants import HEADLESS_MODE
 from core.constants import PATHS as P
-from core.constants import PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE, REPLAY_STRIP_PROPORTION
+from core.constants import PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE, REPLAY_PERF_STRIP_PROPORTION, REPLAY_STRIP_PROPORTION
 from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
@@ -311,8 +311,9 @@ class Window(Window):
 
     def get_container_list(self) -> list[Container]:
         mar: float = REPLAY_STRIP_PROPORTION if REPLAY_MODE else 0
+        perf_mar: float = REPLAY_PERF_STRIP_PROPORTION if REPLAY_MODE else 0
         w: float = (1 - mar) * self.width
-        h: float = (1 - mar) * self.height
+        h: float = (1 - mar - perf_mar) * self.height
         b: float = self.height * mar
 
         # Vertical bounds
@@ -333,6 +334,7 @@ class Window(Window):
             Container("bottomright", x4, b, w - x4, h / 2),
             Container("mediastrip", 0, 0, self._width * (1 + mar), b),
             Container("inputstrip", w, b, self._width * mar, h),
+            Container("perfstrip", 0, b + h, self._width * (1 + mar), self.height * perf_mar),
         ]
 
     def get_container(self, placement_name: str) -> Container | None:

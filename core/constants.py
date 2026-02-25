@@ -52,6 +52,7 @@ else:
     REPLAY_MODE = ARGS.replay is not False
 HEADLESS_MODE: bool = ARGS.headless
 REPLAY_STRIP_PROPORTION: float = 0.08
+REPLAY_PERF_STRIP_PROPORTION: float = 0.08
 
 COLORS: dict[str, tuple[int, int, int, int]] = dict(
     WHITE=(255, 255, 255, 255),

@@ -68,6 +68,8 @@ class LogReader:
         self.blocking_segments: list[tuple[float, float, float]] = []
         self._bp_replay_times: list[float] = [0.0]
         self._bp_scenario_times: list[float] = [0.0]
+        self.perf_rows: list[dict[str, Any]] = []
+        self.perf_series: dict[str, list[tuple[float, dict[str, str]]]] = {}
 
         self.reload_session()
 
@@ -85,6 +87,8 @@ class LogReader:
         self.blocking_segments = []
         self._bp_replay_times = [0.0]
         self._bp_scenario_times = [0.0]
+        self.perf_rows = []
+        self.perf_series = {}
 
         # First pass: read all rows
         all_rows: list[dict[str, Any]] = []
@@ -141,9 +145,30 @@ class LogReader:
                     row["value"] = ast.literal_eval(row["value"])
                     self.states.append(row)
 
+            # Performance case
+            elif row["type"] == "performance":
+                self.perf_rows.append(row)
+
         # The last row browsed contains the ending time
         self.end_sec = all_rows[-1]["scenario_time"]
         self.duration_sec = self.end_sec - self.start_sec
+        self._index_performance_data()
+
+    def _index_performance_data(self) -> None:
+        """Group performance rows by module and scenario_time into sorted series."""
+        from collections import defaultdict
+
+        # Group by (module, scenario_time) → {address: value}
+        grouped: dict[str, dict[float, dict[str, str]]] = defaultdict(lambda: defaultdict(dict))
+        for row in self.perf_rows:
+            module: str = row["module"]
+            t: float = row["scenario_time"]
+            grouped[module][t][row["address"]] = row["value"]
+
+        # Convert to sorted lists
+        self.perf_series = {}
+        for module, time_dict in grouped.items():
+            self.perf_series[module] = sorted(time_dict.items(), key=lambda x: x[0])
 
     def _detect_blocking_segments(self, all_rows: list[dict[str, Any]]) -> None:
         """Identify periods where scenario_time is frozen while logtime advances."""
