@@ -33,8 +33,10 @@ class Pump(AbstractWidget):
         if from_cont.cx == to_cont.cx or from_cont.cy == to_cont.cy:
             # Draw a straight line
             self.vertex["connector_1"] = Line(
-                from_cont.cx, from_cont.cy + y_offset,
-                to_cont.cx, to_cont.cy + y_offset,
+                from_cont.cx,
+                from_cont.cy + y_offset,
+                to_cont.cx,
+                to_cont.cy + y_offset,
                 color=C["BLACK"],
                 batch=None,
                 group=G(self.m_draw),
@@ -54,15 +56,19 @@ class Pump(AbstractWidget):
         else:  # If not, make a perpendicular node
             y_offset = -y_offset - 20
             self.vertex["connector_1"] = Line(
-                from_cont.cx, from_cont.cy,
-                from_cont.cx, to_cont.cy + y_offset,
+                from_cont.cx,
+                from_cont.cy,
+                from_cont.cx,
+                to_cont.cy + y_offset,
                 color=C["BLACK"],
                 batch=None,
                 group=G(self.m_draw),
             )
             self.vertex["connector_2"] = Line(
-                to_cont.cx, to_cont.cy + y_offset,
-                from_cont.cx, to_cont.cy + y_offset,
+                to_cont.cx,
+                to_cont.cy + y_offset,
+                from_cont.cx,
+                to_cont.cy + y_offset,
                 color=C["BLACK"],
                 batch=None,
                 group=G(self.m_draw),
@@ -77,9 +83,12 @@ class Pump(AbstractWidget):
 
         # Triangle shape
         self.vertex["triangle"] = Triangle(
-            pump_verts[0], pump_verts[1],
-            pump_verts[2], pump_verts[3],
-            pump_verts[4], pump_verts[5],
+            pump_verts[0],
+            pump_verts[1],
+            pump_verts[2],
+            pump_verts[3],
+            pump_verts[4],
+            pump_verts[5],
             color=color,
             batch=None,
             group=G(self.m_draw + 1),
@@ -87,13 +96,18 @@ class Pump(AbstractWidget):
 
         # Border lines around the triangle
         pv = pump_verts
-        for i, (lx1, ly1, lx2, ly2) in enumerate([
-            (pv[0], pv[1], pv[2], pv[3]),
-            (pv[2], pv[3], pv[4], pv[5]),
-            (pv[4], pv[5], pv[0], pv[1]),
-        ]):
+        for i, (lx1, ly1, lx2, ly2) in enumerate(
+            [
+                (pv[0], pv[1], pv[2], pv[3]),
+                (pv[2], pv[3], pv[4], pv[5]),
+                (pv[4], pv[5], pv[0], pv[1]),
+            ]
+        ):
             self.vertex[f"border_{i}"] = Line(
-                lx1, ly1, lx2, ly2,
+                lx1,
+                ly1,
+                lx2,
+                ly2,
                 color=C["BLACK"],
                 batch=None,
                 group=G(self.m_draw + 2),

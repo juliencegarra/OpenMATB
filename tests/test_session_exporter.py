@@ -13,13 +13,13 @@ from __future__ import annotations
 
 import csv
 import math
-import textwrap
-from io import StringIO
 from pathlib import Path
 
 import pytest
 
 from session_exporter import (
+    TIMESERIES_COLUMNS,
+    TRIALS_COLUMNS,
     CommsTrial,
     RawRow,
     SessionSummary,
@@ -45,17 +45,12 @@ from session_exporter import (
     write_summary,
     write_timeseries,
     write_trials,
-    TRIALS_COLUMNS,
-    SUMMARY_FIXED_COLUMNS,
-    TIMESERIES_COLUMNS,
 )
-
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 
-def _row(scenario_time: float, type_: str, module: str,
-         address: str, value: str) -> RawRow:
+def _row(scenario_time: float, type_: str, module: str, address: str, value: str) -> RawRow:
     """Shortcut to build a RawRow with a dummy logtime."""
     return RawRow(
         logtime=1000.0 + scenario_time,
@@ -91,8 +86,7 @@ def _write_csv(path: Path, rows: list[list[str]]) -> None:
     """Write a minimal session CSV with header + data rows."""
     with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow(["logtime", "scenario_time", "type",
-                     "module", "address", "value"])
+        w.writerow(["logtime", "scenario_time", "type", "module", "address", "value"])
         for r in rows:
             w.writerow(r)
 
@@ -224,15 +218,16 @@ class TestSafeStats:
 class TestLoadSession:
     def test_categorises_rows(self, tmp_path: Path) -> None:
         csv_path = tmp_path / "session.csv"
-        _write_csv(csv_path, [
-            ["100.0", "1.0", "performance", "track",
-             "cursor_in_target", "1"],
-            ["100.1", "1.0", "input", "keyboard", "F5", "press"],
-            ["100.2", "1.0", "event", "sysmon", "self", "start"],
-            ["100.3", "1.0", "parameter", "track",
-             "automaticsolver", "0"],
-            ["100.4", "1.0", "state", "track", "visibility", "1"],
-        ])
+        _write_csv(
+            csv_path,
+            [
+                ["100.0", "1.0", "performance", "track", "cursor_in_target", "1"],
+                ["100.1", "1.0", "input", "keyboard", "F5", "press"],
+                ["100.2", "1.0", "event", "sysmon", "self", "start"],
+                ["100.3", "1.0", "parameter", "track", "automaticsolver", "0"],
+                ["100.4", "1.0", "state", "track", "visibility", "1"],
+            ],
+        )
         perf, inp, evt = load_session(csv_path)
         assert len(perf) == 1
         assert perf[0].module == "track"
@@ -251,21 +246,22 @@ class TestLoadSession:
 
     def test_skips_malformed_rows(self, tmp_path: Path) -> None:
         csv_path = tmp_path / "bad.csv"
-        _write_csv(csv_path, [
-            ["not_a_float", "1.0", "performance", "track", "x", "1"],
-            ["100.0", "2.0", "performance", "track", "cursor_in_target", "1"],
-        ])
-        perf, inp, evt = load_session(csv_path)
+        _write_csv(
+            csv_path,
+            [
+                ["not_a_float", "1.0", "performance", "track", "x", "1"],
+                ["100.0", "2.0", "performance", "track", "cursor_in_target", "1"],
+            ],
+        )
+        perf, _inp, _evt = load_session(csv_path)
         assert len(perf) == 1
 
     def test_row_with_five_columns(self, tmp_path: Path) -> None:
         csv_path = tmp_path / "five.csv"
         with open(csv_path, "w", newline="", encoding="utf-8") as f:
             w = csv.writer(f)
-            w.writerow(["logtime", "scenario_time", "type",
-                         "module", "address", "value"])
-            w.writerow(["100.0", "1.0", "performance", "track",
-                         "cursor_in_target"])  # no value column
+            w.writerow(["logtime", "scenario_time", "type", "module", "address", "value"])
+            w.writerow(["100.0", "1.0", "performance", "track", "cursor_in_target"])  # no value column
         perf, _, _ = load_session(csv_path)
         assert len(perf) == 1
         assert perf[0].value == ""
@@ -279,16 +275,13 @@ class TestGroupByScenarioTime:
         assert _group_by_scenario_time([]) == []
 
     def test_single_group(self) -> None:
-        rows = [_perf(1.0, "track", "a", "1"),
-                _perf(1.0, "track", "b", "2")]
+        rows = [_perf(1.0, "track", "a", "1"), _perf(1.0, "track", "b", "2")]
         groups = _group_by_scenario_time(rows)
         assert len(groups) == 1
         assert len(groups[0]) == 2
 
     def test_multiple_groups(self) -> None:
-        rows = [_perf(1.0, "track", "a", "1"),
-                _perf(2.0, "track", "a", "2"),
-                _perf(2.0, "track", "b", "3")]
+        rows = [_perf(1.0, "track", "a", "1"), _perf(2.0, "track", "a", "2"), _perf(2.0, "track", "b", "3")]
         groups = _group_by_scenario_time(rows)
         assert len(groups) == 2
         assert len(groups[0]) == 1
@@ -404,9 +397,9 @@ class TestDetermineResolvedBy:
 
 
 class TestExtractSysmonTrials:
-    def _make_triplet(self, t: float, name: str, sdt: str,
-                      rt: str = "nan",
-                      resolved_by: str | None = None) -> list[RawRow]:
+    def _make_triplet(
+        self, t: float, name: str, sdt: str, rt: str = "nan", resolved_by: str | None = None
+    ) -> list[RawRow]:
         rows = [
             _perf(t, "sysmon", "name", name),
             _perf(t, "sysmon", "signal_detection", sdt),
@@ -437,22 +430,18 @@ class TestExtractSysmonTrials:
 
     def test_multiple_trials_numbered(self) -> None:
         perf = (
-            self._make_triplet(10.0, "F5", "HIT", "200") +
-            self._make_triplet(20.0, "F1", "MISS") +
-            self._make_triplet(30.0, "F3", "FA")
+            self._make_triplet(10.0, "F5", "HIT", "200")
+            + self._make_triplet(20.0, "F1", "MISS")
+            + self._make_triplet(30.0, "F3", "FA")
         )
-        inputs = [_input(10.0, "keyboard", "F5"),
-                  _input(30.0, "keyboard", "F3")]
+        inputs = [_input(10.0, "keyboard", "F5"), _input(30.0, "keyboard", "F3")]
         trials = extract_sysmon_trials("s1", perf, inputs, [])
         assert len(trials) == 3
         assert [t.trial_number for t in trials] == [1, 2, 3]
         assert [t.signal_detection for t in trials] == ["HIT", "MISS", "FA"]
 
     def test_filters_non_sysmon(self) -> None:
-        perf = (
-            self._make_triplet(10.0, "F5", "HIT", "200") +
-            [_perf(10.0, "track", "cursor_in_target", "1")]
-        )
+        perf = self._make_triplet(10.0, "F5", "HIT", "200") + [_perf(10.0, "track", "cursor_in_target", "1")]
         inputs = [_input(10.0, "keyboard", "F5")]
         trials = extract_sysmon_trials("s1", perf, inputs, [])
         assert len(trials) == 1
@@ -470,15 +459,13 @@ class TestExtractSysmonTrials:
 
     def test_resolved_by_from_csv(self) -> None:
         """New format: resolved_by is read directly from the CSV."""
-        perf = self._make_triplet(10.0, "F5", "HIT", "200",
-                                  resolved_by="agent")
+        perf = self._make_triplet(10.0, "F5", "HIT", "200", resolved_by="agent")
         trials = extract_sysmon_trials("s1", perf, [], [])
         assert trials[0].resolved_by == "agent"
 
     def test_resolved_by_csv_overrides_heuristic(self) -> None:
         """When resolved_by is in CSV, the heuristic is not used."""
-        perf = self._make_triplet(10.0, "F5", "HIT", "200",
-                                  resolved_by="human")
+        perf = self._make_triplet(10.0, "F5", "HIT", "200", resolved_by="human")
         # Even with auto intervals, the CSV value takes priority
         auto = [(0.0, float("inf"))]
         trials = extract_sysmon_trials("s1", perf, [], auto)
@@ -486,8 +473,7 @@ class TestExtractSysmonTrials:
 
     def test_resolved_by_empty_for_miss(self) -> None:
         """MISS with resolved_by='' in CSV."""
-        perf = self._make_triplet(20.0, "F1", "MISS", "nan",
-                                  resolved_by="")
+        perf = self._make_triplet(20.0, "F1", "MISS", "nan", resolved_by="")
         trials = extract_sysmon_trials("s1", perf, [], [])
         assert trials[0].resolved_by == ""
 
@@ -503,16 +489,20 @@ class TestExtractSysmonTrials:
 
 
 class TestExtractCommsTrials:
-    def _make_9tuple(self, t: float, sdt: str = "HIT",
-                     needed: str = "1",
-                     target_radio: str = "NAV_2",
-                     responded_radio: str = "NAV_2",
-                     target_freq: str = "114.2",
-                     responded_freq: str = "114.2",
-                     correct_radio: str = "1",
-                     deviation: str = "0.0",
-                     rt: str = "4640",
-                     resolved_by: str | None = None) -> list[RawRow]:
+    def _make_9tuple(
+        self,
+        t: float,
+        sdt: str = "HIT",
+        needed: str = "1",
+        target_radio: str = "NAV_2",
+        responded_radio: str = "NAV_2",
+        target_freq: str = "114.2",
+        responded_freq: str = "114.2",
+        correct_radio: str = "1",
+        deviation: str = "0.0",
+        rt: str = "4640",
+        resolved_by: str | None = None,
+    ) -> list[RawRow]:
         rows = [
             _perf(t, "communications", "response_was_needed", needed),
             _perf(t, "communications", "target_radio", target_radio),
@@ -542,9 +532,13 @@ class TestExtractCommsTrials:
 
     def test_miss_trial(self) -> None:
         perf = self._make_9tuple(
-            20.0, sdt="MISS", responded_radio="nan",
-            responded_freq="nan", correct_radio="0",
-            deviation="nan", rt="nan",
+            20.0,
+            sdt="MISS",
+            responded_radio="nan",
+            responded_freq="nan",
+            correct_radio="0",
+            deviation="nan",
+            rt="nan",
         )
         trials = extract_comms_trials("s1", perf, [], [])
         assert len(trials) == 1
@@ -596,20 +590,20 @@ class TestExtractCommsTrials:
 
     def test_bad_radio(self) -> None:
         perf = self._make_9tuple(
-            20.0, sdt="BAD_RADIO",
-            target_radio="NAV_1", responded_radio="COM_2",
-            correct_radio="0", deviation="0.0",
+            20.0,
+            sdt="BAD_RADIO",
+            target_radio="NAV_1",
+            responded_radio="COM_2",
+            correct_radio="0",
+            deviation="0.0",
         )
         inputs = [_input(20.0, "keyboard", "SPACE")]
         trials = extract_comms_trials("s1", perf, inputs, [])
         assert trials[0].sdt_value == "BAD_RADIO"
 
     def test_multiple_trials(self) -> None:
-        perf = (
-            self._make_9tuple(10.0, sdt="HIT") +
-            self._make_9tuple(20.0, sdt="MISS", rt="nan",
-                              responded_radio="nan", responded_freq="nan",
-                              correct_radio="0", deviation="nan")
+        perf = self._make_9tuple(10.0, sdt="HIT") + self._make_9tuple(
+            20.0, sdt="MISS", rt="nan", responded_radio="nan", responded_freq="nan", correct_radio="0", deviation="nan"
         )
         inputs = [_input(10.0, "keyboard", "SPACE")]
         trials = extract_comms_trials("s1", perf, inputs, [])
@@ -647,8 +641,7 @@ class TestExtractCommsTrials:
 
 class TestComputeSummary:
     def test_duration(self) -> None:
-        perf = [_perf(2.0, "track", "cursor_in_target", "1"),
-                _perf(12.0, "track", "cursor_in_target", "0")]
+        perf = [_perf(2.0, "track", "cursor_in_target", "1"), _perf(12.0, "track", "cursor_in_target", "0")]
         s = compute_summary("s1", perf, [], [], [])
         assert s.duration_sec == pytest.approx(10.0)
 
@@ -758,16 +751,11 @@ class TestComputeSummary:
 
     def test_comms_counts(self) -> None:
         trials = [
-            CommsTrial("s", 10, 1, "HIT", "1", "NAV_2", "NAV_2",
-                       "114.2", "114.2", "1", "0.0", 4000, "human"),
-            CommsTrial("s", 20, 2, "MISS", "1", "COM_1", "nan",
-                       "128.1", "nan", "0", "nan", float("nan"), ""),
-            CommsTrial("s", 30, 3, "FA", "0", "nan", "NAV_1",
-                       "nan", "120.0", "nan", "nan", 3000, "human"),
-            CommsTrial("s", 40, 4, "BAD_RADIO", "1", "NAV_1", "COM_2",
-                       "114.2", "114.2", "0", "0.0", 5000, "human"),
-            CommsTrial("s", 50, 5, "BAD_FREQ", "1", "NAV_2", "NAV_2",
-                       "114.2", "115.0", "1", "0.8", 6000, "human"),
+            CommsTrial("s", 10, 1, "HIT", "1", "NAV_2", "NAV_2", "114.2", "114.2", "1", "0.0", 4000, "human"),
+            CommsTrial("s", 20, 2, "MISS", "1", "COM_1", "nan", "128.1", "nan", "0", "nan", float("nan"), ""),
+            CommsTrial("s", 30, 3, "FA", "0", "nan", "NAV_1", "nan", "120.0", "nan", "nan", 3000, "human"),
+            CommsTrial("s", 40, 4, "BAD_RADIO", "1", "NAV_1", "COM_2", "114.2", "114.2", "0", "0.0", 5000, "human"),
+            CommsTrial("s", 50, 5, "BAD_FREQ", "1", "NAV_2", "NAV_2", "114.2", "115.0", "1", "0.8", 6000, "human"),
         ]
         perf = [_perf(0.0, "track", "cursor_in_target", "1")]
         s = compute_summary("s", perf, [], trials, [])
@@ -782,10 +770,8 @@ class TestComputeSummary:
 
     def test_comms_rt_excludes_miss(self) -> None:
         trials = [
-            CommsTrial("s", 10, 1, "HIT", "1", "NAV_2", "NAV_2",
-                       "114.2", "114.2", "1", "0.0", 2000, "human"),
-            CommsTrial("s", 20, 2, "MISS", "1", "COM_1", "nan",
-                       "128.1", "nan", "0", "nan", float("nan"), ""),
+            CommsTrial("s", 10, 1, "HIT", "1", "NAV_2", "NAV_2", "114.2", "114.2", "1", "0.0", 2000, "human"),
+            CommsTrial("s", 20, 2, "MISS", "1", "COM_1", "nan", "128.1", "nan", "0", "nan", float("nan"), ""),
         ]
         perf = [_perf(0.0, "track", "cursor_in_target", "1")]
         s = compute_summary("s", perf, [], trials, [])
@@ -793,10 +779,8 @@ class TestComputeSummary:
 
     def test_comms_freq_deviation(self) -> None:
         trials = [
-            CommsTrial("s", 10, 1, "BAD_FREQ", "1", "N", "N",
-                       "114.2", "115.0", "1", "0.8", 5000, "human"),
-            CommsTrial("s", 20, 2, "BAD_FREQ", "1", "N", "N",
-                       "114.2", "113.0", "1", "-1.2", 5000, "human"),
+            CommsTrial("s", 10, 1, "BAD_FREQ", "1", "N", "N", "114.2", "115.0", "1", "0.8", 5000, "human"),
+            CommsTrial("s", 20, 2, "BAD_FREQ", "1", "N", "N", "114.2", "113.0", "1", "-1.2", 5000, "human"),
         ]
         perf = [_perf(0.0, "track", "cursor_in_target", "1")]
         s = compute_summary("s", perf, [], trials, [])
@@ -1013,10 +997,23 @@ class TestWriteTrials:
 
     def test_comms_row_format(self, tmp_path: Path) -> None:
         out = tmp_path / "trials.csv"
-        trials = [CommsTrial(
-            "s1", 20.0, 1, "HIT", "1", "NAV_2", "NAV_2",
-            "114.2", "114.2", "1", "0.0", 4640.0, "human",
-        )]
+        trials = [
+            CommsTrial(
+                "s1",
+                20.0,
+                1,
+                "HIT",
+                "1",
+                "NAV_2",
+                "NAV_2",
+                "114.2",
+                "114.2",
+                "1",
+                "0.0",
+                4640.0,
+                "human",
+            )
+        ]
         write_trials([], trials, out, ",")
         rows = list(csv.reader(open(out, encoding="utf-8")))
         data = dict(zip(rows[0], rows[1]))
@@ -1028,8 +1025,7 @@ class TestWriteTrials:
 
     def test_miss_empty_rt(self, tmp_path: Path) -> None:
         out = tmp_path / "trials.csv"
-        trials = [SysmonTrial("s1", 10.0, 1, "F1", "MISS",
-                              float("nan"), "")]
+        trials = [SysmonTrial("s1", 10.0, 1, "F1", "MISS", float("nan"), "")]
         write_trials(trials, [], out, ",")
         rows = list(csv.reader(open(out, encoding="utf-8")))
         data = dict(zip(rows[0], rows[1]))
@@ -1038,10 +1034,23 @@ class TestWriteTrials:
 
     def test_nan_values_become_empty(self, tmp_path: Path) -> None:
         out = tmp_path / "trials.csv"
-        trials = [CommsTrial(
-            "s1", 20.0, 1, "MISS", "1", "COM_2", "nan",
-            "127.9", "nan", "0", "nan", float("nan"), "",
-        )]
+        trials = [
+            CommsTrial(
+                "s1",
+                20.0,
+                1,
+                "MISS",
+                "1",
+                "COM_2",
+                "nan",
+                "127.9",
+                "nan",
+                "0",
+                "nan",
+                float("nan"),
+                "",
+            )
+        ]
         write_trials([], trials, out, ",")
         rows = list(csv.reader(open(out, encoding="utf-8")))
         data = dict(zip(rows[0], rows[1]))
@@ -1195,29 +1204,19 @@ class TestEndToEnd:
             ["102", "2.0", "performance", "sysmon", "signal_detection", "HIT"],
             ["102", "2.0", "performance", "sysmon", "response_time", "500"],
             ["104", "4.0", "performance", "sysmon", "name", "F1"],
-            ["104", "4.0", "performance", "sysmon",
-             "signal_detection", "MISS"],
+            ["104", "4.0", "performance", "sysmon", "signal_detection", "MISS"],
             ["104", "4.0", "performance", "sysmon", "response_time", "nan"],
             # -- Comms: 1 HIT ---
             ["103", "3.0", "input", "keyboard", "SPACE", "press"],
-            ["103", "3.0", "performance", "communications",
-             "response_was_needed", "1"],
-            ["103", "3.0", "performance", "communications",
-             "target_radio", "NAV_1"],
-            ["103", "3.0", "performance", "communications",
-             "responded_radio", "NAV_1"],
-            ["103", "3.0", "performance", "communications",
-             "target_frequency", "112.5"],
-            ["103", "3.0", "performance", "communications",
-             "responded_frequency", "112.5"],
-            ["103", "3.0", "performance", "communications",
-             "correct_radio", "1"],
-            ["103", "3.0", "performance", "communications",
-             "response_deviation", "0.0"],
-            ["103", "3.0", "performance", "communications",
-             "response_time", "6000"],
-            ["103", "3.0", "performance", "communications",
-             "sdt_value", "HIT"],
+            ["103", "3.0", "performance", "communications", "response_was_needed", "1"],
+            ["103", "3.0", "performance", "communications", "target_radio", "NAV_1"],
+            ["103", "3.0", "performance", "communications", "responded_radio", "NAV_1"],
+            ["103", "3.0", "performance", "communications", "target_frequency", "112.5"],
+            ["103", "3.0", "performance", "communications", "responded_frequency", "112.5"],
+            ["103", "3.0", "performance", "communications", "correct_radio", "1"],
+            ["103", "3.0", "performance", "communications", "response_deviation", "0.0"],
+            ["103", "3.0", "performance", "communications", "response_time", "6000"],
+            ["103", "3.0", "performance", "communications", "sdt_value", "HIT"],
         ]
         _write_csv(csv_path, rows)
         return csv_path
@@ -1276,7 +1275,7 @@ class TestEndToEnd:
 
     def test_timeseries(self, tmp_path: Path) -> None:
         csv_path = self._build_session_csv(tmp_path)
-        perf, inp, evt = load_session(csv_path)
+        perf, _inp, evt = load_session(csv_path)
         ts = build_timeseries("e2e", perf, evt, 1.0)
         # t_max = 4.0, n_points = 5 → t=0,1,2,3,4
         assert len(ts) == 5
@@ -1301,16 +1300,13 @@ class TestEndToEnd:
         write_timeseries(ts, tmp_path / "timeseries.csv", ",")
 
         # Verify files exist and have correct row counts
-        trials_rows = list(csv.reader(
-            open(tmp_path / "trials.csv", encoding="utf-8")))
+        trials_rows = list(csv.reader(open(tmp_path / "trials.csv", encoding="utf-8")))
         assert len(trials_rows) == 4  # header + 2 sysmon + 1 comms
 
-        summary_rows = list(csv.reader(
-            open(tmp_path / "summary.csv", encoding="utf-8")))
+        summary_rows = list(csv.reader(open(tmp_path / "summary.csv", encoding="utf-8")))
         assert len(summary_rows) == 2  # header + 1 session
 
-        ts_rows = list(csv.reader(
-            open(tmp_path / "timeseries.csv", encoding="utf-8")))
+        ts_rows = list(csv.reader(open(tmp_path / "timeseries.csv", encoding="utf-8")))
         assert len(ts_rows) == 6  # header + 5 time points
 
     def test_agent_trials_excluded_from_summary(self, tmp_path: Path) -> None:
@@ -1321,14 +1317,12 @@ class TestEndToEnd:
             # HIT by human
             ["101", "1.0", "input", "keyboard", "F5", "press"],
             ["101", "1.0", "performance", "sysmon", "name", "F5"],
-            ["101", "1.0", "performance", "sysmon",
-             "signal_detection", "HIT"],
+            ["101", "1.0", "performance", "sysmon", "signal_detection", "HIT"],
             ["101", "1.0", "performance", "sysmon", "response_time", "200"],
             # HIT by agent
             ["102", "2.0", "input", "agent", "F1", "press"],
             ["102", "2.0", "performance", "sysmon", "name", "F1"],
-            ["102", "2.0", "performance", "sysmon",
-             "signal_detection", "HIT"],
+            ["102", "2.0", "performance", "sysmon", "signal_detection", "HIT"],
             ["102", "2.0", "performance", "sysmon", "response_time", "9000"],
         ]
         _write_csv(csv_path, rows)
@@ -1351,8 +1345,7 @@ class TestEndToEnd:
             ["100", "0.0", "event", "sysmon", "automaticsolver", "1"],
             ["100", "0.0", "parameter", "sysmon", "automaticsolver", "1"],
             ["101", "1.0", "performance", "sysmon", "name", "F2"],
-            ["101", "1.0", "performance", "sysmon",
-             "signal_detection", "HIT"],
+            ["101", "1.0", "performance", "sysmon", "signal_detection", "HIT"],
             ["101", "1.0", "performance", "sysmon", "response_time", "1000"],
         ]
         _write_csv(csv_path, rows)

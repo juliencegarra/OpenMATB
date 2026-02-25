@@ -46,7 +46,8 @@ class Scale(AbstractWidget):
 
         # Background fill
         self.vertex["background"] = Rectangle(
-            x=x1, y=y2,
+            x=x1,
+            y=y2,
             width=self.container.w,
             height=self.container.h,
             color=(255, 255, 255),
@@ -55,12 +56,16 @@ class Scale(AbstractWidget):
         )
 
         # Border on top
-        for bname, coords in [("border_top", (x1, y1, x2, y1)),
-                               ("border_right", (x2, y1, x2, y2)),
-                               ("border_bottom", (x2, y2, x1, y2)),
-                               ("border_left", (x1, y2, x1, y1))]:
+        for bname, coords in [
+            ("border_top", (x1, y1, x2, y1)),
+            ("border_right", (x2, y1, x2, y2)),
+            ("border_bottom", (x2, y2, x1, y2)),
+            ("border_left", (x1, y2, x1, y1)),
+        ]:
             self.vertex[bname] = Line(
-                *coords, color=C["BLACK"], batch=None,
+                *coords,
+                color=C["BLACK"],
+                batch=None,
                 group=G(self.m_draw + self.m_draw + 3),
             )
 
@@ -69,8 +74,10 @@ class Scale(AbstractWidget):
         for i in range(11):
             w: float = self.tick_width if i != 5 else self.tick_width + 8
             self.vertex[f"tick_{i}"] = Line(
-                self.container.x2 - w, self.positions[i],
-                self.container.x2, self.positions[i],
+                self.container.x2 - w,
+                self.positions[i],
+                self.container.x2,
+                self.positions[i],
                 color=C["BLACK"],
                 batch=None,
                 group=G(self.m_draw + 3),
@@ -83,7 +90,10 @@ class Scale(AbstractWidget):
 
         # Feedback rectangle (hidden by default)
         self.vertex["feedback"] = Rectangle(
-            x=0, y=0, width=0, height=0,
+            x=0,
+            y=0,
+            width=0,
+            height=0,
             color=C["GREEN"],
             batch=None,
             group=G(self.m_draw + 2),
@@ -93,7 +103,12 @@ class Scale(AbstractWidget):
         # Arrow triangle
         av = self.return_arrow_vertice(arrow_position)
         self.vertex["arrow"] = Triangle(
-            av[0], av[1], av[2], av[3], av[4], av[5],
+            av[0],
+            av[1],
+            av[2],
+            av[3],
+            av[4],
+            av[5],
             color=C["BLACK"],
             batch=None,
             group=G(self.m_draw + 2),
@@ -148,7 +163,12 @@ class Scale(AbstractWidget):
         av = self.return_arrow_vertice(self.position)
         old = self.vertex["arrow"]
         self.vertex["arrow"] = Triangle(
-            av[0], av[1], av[2], av[3], av[4], av[5],
+            av[0],
+            av[1],
+            av[2],
+            av[3],
+            av[4],
+            av[5],
             color=C["BLACK"],
             batch=old.batch,
             group=old.group,

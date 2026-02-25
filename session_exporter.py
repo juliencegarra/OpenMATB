@@ -26,13 +26,13 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-
 # ── Dataclasses ───────────────────────────────────────────────────────────────
 
 
 @dataclass
 class RawRow:
     """A single row from the raw session CSV."""
+
     logtime: float
     scenario_time: float
     type: str
@@ -44,22 +44,24 @@ class RawRow:
 @dataclass
 class SysmonTrial:
     """A sysmon trial extracted from three consecutive performance rows."""
+
     session: str
     scenario_time: float
     trial_number: int
     gauge_name: str
-    signal_detection: str       # HIT, MISS, FA
-    response_time_ms: float     # milliseconds or NaN
-    resolved_by: str            # "human", "agent", or ""
+    signal_detection: str  # HIT, MISS, FA
+    response_time_ms: float  # milliseconds or NaN
+    resolved_by: str  # "human", "agent", or ""
 
 
 @dataclass
 class CommsTrial:
     """A communications trial extracted from nine consecutive performance rows."""
+
     session: str
     scenario_time: float
     trial_number: int
-    sdt_value: str              # HIT, MISS, FA, BAD_RADIO, BAD_FREQ, BAD_RADIO_FREQ
+    sdt_value: str  # HIT, MISS, FA, BAD_RADIO, BAD_FREQ, BAD_RADIO_FREQ
     response_was_needed: str
     target_radio: str
     responded_radio: str
@@ -67,28 +69,30 @@ class CommsTrial:
     responded_frequency: str
     correct_radio: str
     response_deviation: str
-    response_time_ms: float     # milliseconds or NaN
+    response_time_ms: float  # milliseconds or NaN
     resolved_by: str
 
 
 @dataclass
 class TimeSeriesRow:
     """A single resampled point in the time series."""
+
     session: str
     time_sec: float
-    track_in_target: str        # "1"/"0" or ""
-    track_deviation: str        # float string or ""
+    track_in_target: str  # "1"/"0" or ""
+    track_deviation: str  # float string or ""
     resman_a_in_tolerance: str
     resman_b_in_tolerance: str
     resman_a_deviation: str
     resman_b_deviation: str
-    track_auto: int             # 1 or 0
-    resman_auto: int            # 1 or 0
+    track_auto: int  # 1 or 0
+    resman_auto: int  # 1 or 0
 
 
 @dataclass
 class SessionSummary:
     """Aggregated metrics for a single session."""
+
     session: str
     duration_sec: float
     # Sysmon
@@ -211,9 +215,9 @@ def load_session(path: Path) -> tuple[list[RawRow], list[RawRow], list[RawRow]]:
 # ── Agent / human attribution ────────────────────────────────────────────────
 
 
-def _determine_resolved_by(trial_time: float, sdt: str,
-                           input_rows: list[RawRow],
-                           auto_intervals: list[tuple[float, float]]) -> str:
+def _determine_resolved_by(
+    trial_time: float, sdt: str, input_rows: list[RawRow], auto_intervals: list[tuple[float, float]]
+) -> str:
     """Determine whether a trial was resolved by a human or an agent.
 
     Looks for the last ``type=input`` row within 0.5 s before *trial_time*.
@@ -269,9 +273,9 @@ def _group_by_scenario_time(rows: list[RawRow]) -> list[list[RawRow]]:
 # ── Trial extraction ─────────────────────────────────────────────────────────
 
 
-def extract_sysmon_trials(session: str, perf_rows: list[RawRow],
-                          input_rows: list[RawRow],
-                          auto_intervals: list[tuple[float, float]]) -> list[SysmonTrial]:
+def extract_sysmon_trials(
+    session: str, perf_rows: list[RawRow], input_rows: list[RawRow], auto_intervals: list[tuple[float, float]]
+) -> list[SysmonTrial]:
     """Extract sysmon trials by grouping performance rows with the same time."""
     sysmon_rows = sorted(
         [r for r in perf_rows if r.module == "sysmon"],
@@ -296,26 +300,30 @@ def extract_sysmon_trials(session: str, perf_rows: list[RawRow],
             resolved: str = data["resolved_by"]
         else:
             resolved = _determine_resolved_by(
-                group[0].scenario_time, data["signal_detection"], input_rows,
+                group[0].scenario_time,
+                data["signal_detection"],
+                input_rows,
                 auto_intervals,
             )
 
-        trials.append(SysmonTrial(
-            session=session,
-            scenario_time=group[0].scenario_time,
-            trial_number=trial_num,
-            gauge_name=data["name"],
-            signal_detection=data["signal_detection"],
-            response_time_ms=rt_ms,
-            resolved_by=resolved,
-        ))
+        trials.append(
+            SysmonTrial(
+                session=session,
+                scenario_time=group[0].scenario_time,
+                trial_number=trial_num,
+                gauge_name=data["name"],
+                signal_detection=data["signal_detection"],
+                response_time_ms=rt_ms,
+                resolved_by=resolved,
+            )
+        )
 
     return trials
 
 
-def extract_comms_trials(session: str, perf_rows: list[RawRow],
-                         input_rows: list[RawRow],
-                         auto_intervals: list[tuple[float, float]]) -> list[CommsTrial]:
+def extract_comms_trials(
+    session: str, perf_rows: list[RawRow], input_rows: list[RawRow], auto_intervals: list[tuple[float, float]]
+) -> list[CommsTrial]:
     """Extract communications trials by grouping performance rows with the same time."""
     comms_rows = sorted(
         [r for r in perf_rows if r.module == "communications"],
@@ -341,25 +349,29 @@ def extract_comms_trials(session: str, perf_rows: list[RawRow],
             resolved: str = data["resolved_by"]
         else:
             resolved = _determine_resolved_by(
-                group[0].scenario_time, sdt, input_rows,
+                group[0].scenario_time,
+                sdt,
+                input_rows,
                 auto_intervals,
             )
 
-        trials.append(CommsTrial(
-            session=session,
-            scenario_time=group[0].scenario_time,
-            trial_number=trial_num,
-            sdt_value=sdt,
-            response_was_needed=data.get("response_was_needed", ""),
-            target_radio=data.get("target_radio", ""),
-            responded_radio=data.get("responded_radio", ""),
-            target_frequency=data.get("target_frequency", ""),
-            responded_frequency=data.get("responded_frequency", ""),
-            correct_radio=data.get("correct_radio", ""),
-            response_deviation=data.get("response_deviation", ""),
-            response_time_ms=rt_ms,
-            resolved_by=resolved,
-        ))
+        trials.append(
+            CommsTrial(
+                session=session,
+                scenario_time=group[0].scenario_time,
+                trial_number=trial_num,
+                sdt_value=sdt,
+                response_was_needed=data.get("response_was_needed", ""),
+                target_radio=data.get("target_radio", ""),
+                responded_radio=data.get("responded_radio", ""),
+                target_frequency=data.get("target_frequency", ""),
+                responded_frequency=data.get("responded_frequency", ""),
+                correct_radio=data.get("correct_radio", ""),
+                response_deviation=data.get("response_deviation", ""),
+                response_time_ms=rt_ms,
+                resolved_by=resolved,
+            )
+        )
 
     return trials
 
@@ -367,12 +379,10 @@ def extract_comms_trials(session: str, perf_rows: list[RawRow],
 # ── Automation intervals ─────────────────────────────────────────────────────
 
 
-def _build_auto_intervals(event_rows: list[RawRow],
-                          module: str) -> list[tuple[float, float]]:
+def _build_auto_intervals(event_rows: list[RawRow], module: str) -> list[tuple[float, float]]:
     """Build a list of ``(start, end)`` intervals where automaticsolver is on."""
     auto_rows = sorted(
-        [r for r in event_rows
-         if r.module == module and r.address == "automaticsolver"],
+        [r for r in event_rows if r.module == module and r.address == "automaticsolver"],
         key=lambda r: r.scenario_time,
     )
 
@@ -418,10 +428,13 @@ def _safe_stdev(vals: list[float]) -> float:
 # ── Summary computation ──────────────────────────────────────────────────────
 
 
-def compute_summary(session: str, perf_rows: list[RawRow],
-                    sysmon_trials: list[SysmonTrial],
-                    comms_trials: list[CommsTrial],
-                    event_rows: list[RawRow]) -> SessionSummary:
+def compute_summary(
+    session: str,
+    perf_rows: list[RawRow],
+    sysmon_trials: list[SysmonTrial],
+    comms_trials: list[CommsTrial],
+    event_rows: list[RawRow],
+) -> SessionSummary:
     """Compute aggregated metrics for a single session.
 
     Only human performance is counted: agent-resolved trials are excluded,
@@ -433,15 +446,11 @@ def compute_summary(session: str, perf_rows: list[RawRow],
     summary = SessionSummary(session=session, duration_sec=duration)
 
     # ── Sysmon ────────────────────────────────────────────────────────────
-    human_sysmon = [t for t in sysmon_trials
-                    if t.resolved_by not in ("agent", "auto")]
+    human_sysmon = [t for t in sysmon_trials if t.resolved_by not in ("agent", "auto")]
     summary.sysmon_n_trials = len(human_sysmon)
-    summary.sysmon_hit_count = sum(
-        1 for t in human_sysmon if t.signal_detection == "HIT")
-    summary.sysmon_miss_count = sum(
-        1 for t in human_sysmon if t.signal_detection == "MISS")
-    summary.sysmon_fa_count = sum(
-        1 for t in human_sysmon if t.signal_detection == "FA")
+    summary.sysmon_hit_count = sum(1 for t in human_sysmon if t.signal_detection == "HIT")
+    summary.sysmon_miss_count = sum(1 for t in human_sysmon if t.signal_detection == "MISS")
+    summary.sysmon_fa_count = sum(1 for t in human_sysmon if t.signal_detection == "FA")
 
     denom: int = summary.sysmon_hit_count + summary.sysmon_miss_count
     if denom > 0:
@@ -459,9 +468,7 @@ def compute_summary(session: str, perf_rows: list[RawRow],
     # ── Track ─────────────────────────────────────────────────────────────
     track_auto_intervals = _build_auto_intervals(event_rows, "track")
     track_rows = sorted(
-        [r for r in perf_rows
-         if r.module == "track"
-         and not _is_in_auto(r.scenario_time, track_auto_intervals)],
+        [r for r in perf_rows if r.module == "track" and not _is_in_auto(r.scenario_time, track_auto_intervals)],
         key=lambda r: r.scenario_time,
     )
 
@@ -490,40 +497,29 @@ def compute_summary(session: str, perf_rows: list[RawRow],
                 track_excursion_rts.append(float(v) / 1000)
 
     if in_target_vals:
-        summary.track_proportion_in_target = (
-            sum(in_target_vals) / len(in_target_vals)
-        )
+        summary.track_proportion_in_target = sum(in_target_vals) / len(in_target_vals)
     summary.track_mean_deviation = _safe_mean(deviation_vals)
     summary.track_sd_deviation = _safe_stdev(deviation_vals)
     summary.track_n_excursions = len(track_excursion_rts)
     summary.track_mean_excursion_rt_sec = _safe_mean(track_excursion_rts)
 
     # ── Communications ────────────────────────────────────────────────────
-    human_comms = [t for t in comms_trials
-                   if t.resolved_by not in ("agent", "auto")]
+    human_comms = [t for t in comms_trials if t.resolved_by not in ("agent", "auto")]
     summary.comms_n_trials = len(human_comms)
-    summary.comms_hit_count = sum(
-        1 for t in human_comms if t.sdt_value == "HIT")
-    summary.comms_miss_count = sum(
-        1 for t in human_comms if t.sdt_value == "MISS")
-    summary.comms_fa_count = sum(
-        1 for t in human_comms if t.sdt_value == "FA")
-    summary.comms_bad_radio_count = sum(
-        1 for t in human_comms if t.sdt_value == "BAD_RADIO")
-    summary.comms_bad_freq_count = sum(
-        1 for t in human_comms if t.sdt_value == "BAD_FREQ")
+    summary.comms_hit_count = sum(1 for t in human_comms if t.sdt_value == "HIT")
+    summary.comms_miss_count = sum(1 for t in human_comms if t.sdt_value == "MISS")
+    summary.comms_fa_count = sum(1 for t in human_comms if t.sdt_value == "FA")
+    summary.comms_bad_radio_count = sum(1 for t in human_comms if t.sdt_value == "BAD_RADIO")
+    summary.comms_bad_freq_count = sum(1 for t in human_comms if t.sdt_value == "BAD_FREQ")
 
     # hit_rate denominator: trials where a response was needed (exclude FA)
-    needed = [t for t in human_comms
-              if t.sdt_value not in ("FA", "", "None", None)]
+    needed = [t for t in human_comms if t.sdt_value not in ("FA", "", "None", None)]
     if needed:
         summary.comms_hit_rate = summary.comms_hit_count / len(needed)
 
     # RT for all non-MISS responses
     comms_rts: list[float] = [
-        t.response_time_ms / 1000
-        for t in human_comms
-        if t.sdt_value != "MISS" and not math.isnan(t.response_time_ms)
+        t.response_time_ms / 1000 for t in human_comms if t.sdt_value != "MISS" and not math.isnan(t.response_time_ms)
     ]
     summary.comms_mean_rt_sec = _safe_mean(comms_rts)
     summary.comms_median_rt_sec = _safe_median(comms_rts)
@@ -539,9 +535,7 @@ def compute_summary(session: str, perf_rows: list[RawRow],
     # ── Resman ────────────────────────────────────────────────────────────
     resman_auto_intervals = _build_auto_intervals(event_rows, "resman")
     resman_rows = sorted(
-        [r for r in perf_rows
-         if r.module == "resman"
-         and not _is_in_auto(r.scenario_time, resman_auto_intervals)],
+        [r for r in perf_rows if r.module == "resman" and not _is_in_auto(r.scenario_time, resman_auto_intervals)],
         key=lambda r: r.scenario_time,
     )
 
@@ -581,13 +575,9 @@ def compute_summary(session: str, perf_rows: list[RawRow],
                     rt_list.append(float(v) / 1000)
 
     if a_in_tol:
-        summary.resman_a_proportion_in_tolerance = (
-            sum(a_in_tol) / len(a_in_tol)
-        )
+        summary.resman_a_proportion_in_tolerance = sum(a_in_tol) / len(a_in_tol)
     if b_in_tol:
-        summary.resman_b_proportion_in_tolerance = (
-            sum(b_in_tol) / len(b_in_tol)
-        )
+        summary.resman_b_proportion_in_tolerance = sum(b_in_tol) / len(b_in_tol)
 
     summary.resman_a_mean_deviation = _safe_mean(a_devs)
     summary.resman_b_mean_deviation = _safe_mean(b_devs)
@@ -599,10 +589,7 @@ def compute_summary(session: str, perf_rows: list[RawRow],
     summary.resman_b_mean_excursion_rt_sec = _safe_mean(b_excursion_rts)
 
     # Combined AB mean deviation (Avril et al.)
-    ab_means: list[float] = [
-        m for m in [_safe_mean(a_devs), _safe_mean(b_devs)]
-        if not math.isnan(m)
-    ]
+    ab_means: list[float] = [m for m in [_safe_mean(a_devs), _safe_mean(b_devs)] if not math.isnan(m)]
     if ab_means:
         summary.resman_mean_deviation_ab = statistics.mean(ab_means)
 
@@ -633,9 +620,7 @@ def compute_summary(session: str, perf_rows: list[RawRow],
                     n = title_counts[title]
                 col = f"scale_{title}_{n}"
                 v = parse_value(row.value)
-                summary.scales[col] = (
-                    float(v) if isinstance(v, (int, float)) else float("nan")
-                )
+                summary.scales[col] = float(v) if isinstance(v, (int, float)) else float("nan")
 
     return summary
 
@@ -643,9 +628,9 @@ def compute_summary(session: str, perf_rows: list[RawRow],
 # ── Time series ───────────────────────────────────────────────────────────────
 
 
-def build_timeseries(session: str, perf_rows: list[RawRow],
-                     event_rows: list[RawRow],
-                     interval: float) -> list[TimeSeriesRow]:
+def build_timeseries(
+    session: str, perf_rows: list[RawRow], event_rows: list[RawRow], interval: float
+) -> list[TimeSeriesRow]:
     """Resample continuous data (track + resman) at fixed intervals using LOCF."""
     # Collect raw observations sorted by scenario_time
     track_rows = sorted(
@@ -671,9 +656,7 @@ def build_timeseries(session: str, perf_rows: list[RawRow],
         resman_obs.append((group[0].scenario_time, data))
 
     # Time range
-    all_times: list[float] = (
-        [t for t, _ in track_obs] + [t for t, _ in resman_obs]
-    )
+    all_times: list[float] = [t for t, _ in track_obs] + [t for t, _ in resman_obs]
     t_max: float = max(all_times)
 
     # Automation state
@@ -718,18 +701,20 @@ def build_timeseries(session: str, perf_rows: list[RawRow],
                 last_res_b_dev = obs_data["b_deviation"]
             resman_idx += 1
 
-        series.append(TimeSeriesRow(
-            session=session,
-            time_sec=t,
-            track_in_target=last_track_in,
-            track_deviation=last_track_dev,
-            resman_a_in_tolerance=last_res_a_tol,
-            resman_b_in_tolerance=last_res_b_tol,
-            resman_a_deviation=last_res_a_dev,
-            resman_b_deviation=last_res_b_dev,
-            track_auto=1 if _is_in_auto(t, track_auto) else 0,
-            resman_auto=1 if _is_in_auto(t, resman_auto) else 0,
-        ))
+        series.append(
+            TimeSeriesRow(
+                session=session,
+                time_sec=t,
+                track_in_target=last_track_in,
+                track_deviation=last_track_dev,
+                resman_a_in_tolerance=last_res_a_tol,
+                resman_b_in_tolerance=last_res_b_tol,
+                resman_a_deviation=last_res_a_dev,
+                resman_b_deviation=last_res_b_dev,
+                track_auto=1 if _is_in_auto(t, track_auto) else 0,
+                resman_auto=1 if _is_in_auto(t, resman_auto) else 0,
+            )
+        )
 
     return series
 
@@ -764,84 +749,126 @@ def _fmt_val(raw: str) -> str:
 
 
 TRIALS_COLUMNS: list[str] = [
-    "session", "scenario_time", "task", "trial_number", "gauge_name",
-    "signal_detection", "sdt_value", "response_was_needed", "target_radio",
-    "responded_radio", "target_frequency", "responded_frequency",
-    "correct_radio", "response_deviation", "response_time_sec", "resolved_by",
+    "session",
+    "scenario_time",
+    "task",
+    "trial_number",
+    "gauge_name",
+    "signal_detection",
+    "sdt_value",
+    "response_was_needed",
+    "target_radio",
+    "responded_radio",
+    "target_frequency",
+    "responded_frequency",
+    "correct_radio",
+    "response_deviation",
+    "response_time_sec",
+    "resolved_by",
 ]
 
 
-def write_trials(sysmon_trials: list[SysmonTrial],
-                 comms_trials: list[CommsTrial],
-                 output_path: Path, sep: str) -> None:
+def write_trials(sysmon_trials: list[SysmonTrial], comms_trials: list[CommsTrial], output_path: Path, sep: str) -> None:
     """Write the combined trials.csv file."""
     with open(output_path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f, delimiter=sep)
         w.writerow(TRIALS_COLUMNS)
 
         for t in sysmon_trials:
-            rt_sec: str = (
-                "" if math.isnan(t.response_time_ms)
-                else f"{t.response_time_ms / 1000:g}"
+            rt_sec: str = "" if math.isnan(t.response_time_ms) else f"{t.response_time_ms / 1000:g}"
+            w.writerow(
+                [
+                    t.session,
+                    f"{t.scenario_time:g}",
+                    "sysmon",
+                    t.trial_number,
+                    t.gauge_name,
+                    t.signal_detection,
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",  # comms columns empty
+                    rt_sec,
+                    t.resolved_by,
+                ]
             )
-            w.writerow([
-                t.session, f"{t.scenario_time:g}", "sysmon", t.trial_number,
-                t.gauge_name, t.signal_detection,
-                "", "", "", "", "", "", "", "",  # comms columns empty
-                rt_sec, t.resolved_by,
-            ])
 
         for t in comms_trials:
-            rt_sec = (
-                "" if math.isnan(t.response_time_ms)
-                else f"{t.response_time_ms / 1000:g}"
+            rt_sec = "" if math.isnan(t.response_time_ms) else f"{t.response_time_ms / 1000:g}"
+            w.writerow(
+                [
+                    t.session,
+                    f"{t.scenario_time:g}",
+                    "communications",
+                    t.trial_number,
+                    "",  # gauge_name (sysmon only)
+                    "",  # signal_detection (sysmon only)
+                    t.sdt_value,
+                    _fmt_val(t.response_was_needed),
+                    _fmt_val(t.target_radio),
+                    _fmt_val(t.responded_radio),
+                    _fmt_val(t.target_frequency),
+                    _fmt_val(t.responded_frequency),
+                    _fmt_val(t.correct_radio),
+                    _fmt_val(t.response_deviation),
+                    rt_sec,
+                    t.resolved_by,
+                ]
             )
-            w.writerow([
-                t.session, f"{t.scenario_time:g}", "communications",
-                t.trial_number,
-                "",                              # gauge_name (sysmon only)
-                "",                              # signal_detection (sysmon only)
-                t.sdt_value,
-                _fmt_val(t.response_was_needed),
-                _fmt_val(t.target_radio),
-                _fmt_val(t.responded_radio),
-                _fmt_val(t.target_frequency),
-                _fmt_val(t.responded_frequency),
-                _fmt_val(t.correct_radio),
-                _fmt_val(t.response_deviation),
-                rt_sec, t.resolved_by,
-            ])
 
 
 # ── summary.csv ──────────────────────────────────────────────────────────────
 
 
 SUMMARY_FIXED_COLUMNS: list[str] = [
-    "session", "duration_sec",
+    "session",
+    "duration_sec",
     # Sysmon
-    "sysmon_n_trials", "sysmon_hit_count", "sysmon_miss_count",
-    "sysmon_fa_count", "sysmon_hit_rate", "sysmon_mean_rt_sec",
-    "sysmon_median_rt_sec", "sysmon_sd_rt_sec",
+    "sysmon_n_trials",
+    "sysmon_hit_count",
+    "sysmon_miss_count",
+    "sysmon_fa_count",
+    "sysmon_hit_rate",
+    "sysmon_mean_rt_sec",
+    "sysmon_median_rt_sec",
+    "sysmon_sd_rt_sec",
     # Track
-    "track_proportion_in_target", "track_mean_deviation", "track_sd_deviation",
-    "track_n_excursions", "track_mean_excursion_rt_sec",
+    "track_proportion_in_target",
+    "track_mean_deviation",
+    "track_sd_deviation",
+    "track_n_excursions",
+    "track_mean_excursion_rt_sec",
     # Communications
-    "comms_n_trials", "comms_hit_count", "comms_miss_count", "comms_fa_count",
-    "comms_bad_radio_count", "comms_bad_freq_count",
-    "comms_hit_rate", "comms_mean_rt_sec", "comms_median_rt_sec",
+    "comms_n_trials",
+    "comms_hit_count",
+    "comms_miss_count",
+    "comms_fa_count",
+    "comms_bad_radio_count",
+    "comms_bad_freq_count",
+    "comms_hit_rate",
+    "comms_mean_rt_sec",
+    "comms_median_rt_sec",
     "comms_mean_freq_deviation",
     # Resman
-    "resman_a_proportion_in_tolerance", "resman_b_proportion_in_tolerance",
-    "resman_a_mean_deviation", "resman_b_mean_deviation",
-    "resman_a_sd_deviation", "resman_b_sd_deviation",
-    "resman_a_n_excursions", "resman_b_n_excursions",
-    "resman_a_mean_excursion_rt_sec", "resman_b_mean_excursion_rt_sec",
+    "resman_a_proportion_in_tolerance",
+    "resman_b_proportion_in_tolerance",
+    "resman_a_mean_deviation",
+    "resman_b_mean_deviation",
+    "resman_a_sd_deviation",
+    "resman_b_sd_deviation",
+    "resman_a_n_excursions",
+    "resman_b_n_excursions",
+    "resman_a_mean_excursion_rt_sec",
+    "resman_b_mean_excursion_rt_sec",
     "resman_mean_deviation_ab",
 ]
 
 
-def write_summary(summaries: list[SessionSummary],
-                  output_path: Path, sep: str) -> None:
+def write_summary(summaries: list[SessionSummary], output_path: Path, sep: str) -> None:
     """Write summary.csv with one row per session."""
     # Collect all scale columns across sessions
     scale_cols: list[str] = []
@@ -872,34 +899,40 @@ def write_summary(summaries: list[SessionSummary],
 
 
 TIMESERIES_COLUMNS: list[str] = [
-    "session", "time_sec",
-    "track_in_target", "track_deviation",
-    "resman_a_in_tolerance", "resman_b_in_tolerance",
-    "resman_a_deviation", "resman_b_deviation",
-    "track_auto", "resman_auto",
+    "session",
+    "time_sec",
+    "track_in_target",
+    "track_deviation",
+    "resman_a_in_tolerance",
+    "resman_b_in_tolerance",
+    "resman_a_deviation",
+    "resman_b_deviation",
+    "track_auto",
+    "resman_auto",
 ]
 
 
-def write_timeseries(series: list[TimeSeriesRow],
-                     output_path: Path, sep: str) -> None:
+def write_timeseries(series: list[TimeSeriesRow], output_path: Path, sep: str) -> None:
     """Write timeseries.csv with resampled continuous data."""
     with open(output_path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f, delimiter=sep)
         w.writerow(TIMESERIES_COLUMNS)
 
         for row in series:
-            w.writerow([
-                row.session,
-                f"{row.time_sec:g}",
-                _fmt_val(row.track_in_target),
-                _fmt_val(row.track_deviation),
-                _fmt_val(row.resman_a_in_tolerance),
-                _fmt_val(row.resman_b_in_tolerance),
-                _fmt_val(row.resman_a_deviation),
-                _fmt_val(row.resman_b_deviation),
-                row.track_auto,
-                row.resman_auto,
-            ])
+            w.writerow(
+                [
+                    row.session,
+                    f"{row.time_sec:g}",
+                    _fmt_val(row.track_in_target),
+                    _fmt_val(row.track_deviation),
+                    _fmt_val(row.resman_a_in_tolerance),
+                    _fmt_val(row.resman_b_in_tolerance),
+                    _fmt_val(row.resman_a_deviation),
+                    _fmt_val(row.resman_b_deviation),
+                    row.track_auto,
+                    row.resman_auto,
+                ]
+            )
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
@@ -915,8 +948,7 @@ def _collect_csv_paths(inputs: list[str]) -> list[Path]:
         elif p.is_file() and p.suffix.lower() == ".csv":
             paths.append(p)
         else:
-            print(f"Warning: {inp} is not a CSV file or directory, skipping",
-                  file=sys.stderr)
+            print(f"Warning: {inp} is not a CSV file or directory, skipping", file=sys.stderr)
     return paths
 
 
@@ -925,19 +957,25 @@ def main() -> None:
         description="Export OpenMATB session CSVs into analysis-ready tables.",
     )
     parser.add_argument(
-        "inputs", nargs="+",
+        "inputs",
+        nargs="+",
         help="One or more session CSV files, or a directory containing them",
     )
     parser.add_argument(
-        "--output-dir", default=".",
+        "--output-dir",
+        default=".",
         help="Output directory (default: current directory)",
     )
     parser.add_argument(
-        "--interval", type=float, default=1.0,
+        "--interval",
+        type=float,
+        default=1.0,
         help="Time series sampling interval in seconds (default: 1.0)",
     )
     parser.add_argument(
-        "--sep", choices=["comma", "tab", "semicolon"], default="comma",
+        "--sep",
+        choices=["comma", "tab", "semicolon"],
+        default="comma",
         help="CSV separator for output files (default: comma)",
     )
 
@@ -968,24 +1006,34 @@ def main() -> None:
             continue
 
         if not perf_rows:
-            print(f"  Warning: no performance data, skipping", file=sys.stderr)
+            print("  Warning: no performance data, skipping", file=sys.stderr)
             continue
 
         sysmon_auto = _build_auto_intervals(event_rows, "sysmon")
         comms_auto = _build_auto_intervals(event_rows, "communications")
 
         sysmon_trials = extract_sysmon_trials(
-            session, perf_rows, input_rows, sysmon_auto,
+            session,
+            perf_rows,
+            input_rows,
+            sysmon_auto,
         )
         comms_trials = extract_comms_trials(
-            session, perf_rows, input_rows, comms_auto,
+            session,
+            perf_rows,
+            input_rows,
+            comms_auto,
         )
 
         all_sysmon.extend(sysmon_trials)
         all_comms.extend(comms_trials)
 
         summary = compute_summary(
-            session, perf_rows, sysmon_trials, comms_trials, event_rows,
+            session,
+            perf_rows,
+            sysmon_trials,
+            comms_trials,
+            event_rows,
         )
         all_summaries.append(summary)
 
@@ -998,16 +1046,13 @@ def main() -> None:
     ts_path: Path = output_dir / "timeseries.csv"
 
     write_trials(all_sysmon, all_comms, trials_path, sep)
-    print(f"Wrote {len(all_sysmon) + len(all_comms)} trials to {trials_path}",
-          file=sys.stderr)
+    print(f"Wrote {len(all_sysmon) + len(all_comms)} trials to {trials_path}", file=sys.stderr)
 
     write_summary(all_summaries, summary_path, sep)
-    print(f"Wrote {len(all_summaries)} session summaries to {summary_path}",
-          file=sys.stderr)
+    print(f"Wrote {len(all_summaries)} session summaries to {summary_path}", file=sys.stderr)
 
     write_timeseries(all_timeseries, ts_path, sep)
-    print(f"Wrote {len(all_timeseries)} time series rows to {ts_path}",
-          file=sys.stderr)
+    print(f"Wrote {len(all_timeseries)} time series rows to {ts_path}", file=sys.stderr)
 
 
 if __name__ == "__main__":

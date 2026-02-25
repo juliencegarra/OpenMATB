@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any
 
 from core import validation
 from plugins import Instructions
@@ -19,12 +19,14 @@ class Labstreaminglayer(Instructions):
     def __init__(self) -> None:
         super().__init__()
 
-        self.validation_dict.update({
-            "marker": validation.is_string,
-            "streamsession": validation.is_boolean,
-            "pauseatstart": validation.is_boolean,
-            "state": validation.is_string,
-        })
+        self.validation_dict.update(
+            {
+                "marker": validation.is_string,
+                "streamsession": validation.is_boolean,
+                "pauseatstart": validation.is_boolean,
+                "state": validation.is_string,
+            }
+        )
 
         self.parameters.update({"marker": "", "streamsession": False, "pauseatstart": False})
 

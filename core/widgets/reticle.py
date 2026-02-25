@@ -12,7 +12,6 @@ from pyglet.shapes import Arc, Circle, Line
 
 from core.constants import COLORS as C
 from core.constants import Group as G
-from core.container import Container
 from core.widgets import AbstractWidget
 
 
@@ -65,7 +64,10 @@ class Reticle(AbstractWidget):
             ax, ay = all_v[i * 4], all_v[i * 4 + 1]
             bx, by = all_v[i * 4 + 2], all_v[i * 4 + 3]
             self.vertex[f"axis_{i}"] = Line(
-                ax, ay, bx, by,
+                ax,
+                ay,
+                bx,
+                by,
                 color=C["BLACK"],
                 batch=None,
                 group=G(self.m_draw + 1),
@@ -76,7 +78,8 @@ class Reticle(AbstractWidget):
         self.target_radius: float = self.container.w / 2 * self.target_proportion
 
         self.vertex["target_area"] = Circle(
-            x=self.container.cx, y=self.container.cy,
+            x=self.container.cx,
+            y=self.container.cy,
             radius=self.target_radius,
             segments=500,
             color=(255, 255, 255, 255),
@@ -84,7 +87,8 @@ class Reticle(AbstractWidget):
             group=G(self.m_draw),
         )
         self.vertex["target_border"] = Arc(
-            x=self.container.cx, y=self.container.cy,
+            x=self.container.cx,
+            y=self.container.cy,
             radius=self.target_radius,
             segments=500,
             color=C["BLACK"],
@@ -102,20 +106,28 @@ class Reticle(AbstractWidget):
         r = self.cursor_radius
 
         self.vertex["cursor_circle"] = Arc(
-            x=ax, y=ay, radius=r,
+            x=ax,
+            y=ay,
+            radius=r,
             segments=100,
             color=self._cursorcolor,
             batch=None,
             group=G(self.m_draw + 2),
         )
         self.vertex["cursor_h"] = Line(
-            ax - r, ay, ax + r, ay,
+            ax - r,
+            ay,
+            ax + r,
+            ay,
             color=self._cursorcolor,
             batch=None,
             group=G(self.m_draw + 2),
         )
         self.vertex["cursor_v"] = Line(
-            ax, ay - r, ax, ay + r,
+            ax,
+            ay - r,
+            ax,
+            ay + r,
             color=self._cursorcolor,
             batch=None,
             group=G(self.m_draw + 2),

@@ -102,7 +102,7 @@ class TestEventsRetrocompatibility:
         """Deprecated events trigger a non-fatal warning via get_errors()."""
         events = [
             Event(1, 0, "sysmon", ["pumpstatus"]),  # deprecated command
-            Event(2, 0, "pumpstatus", ["start"]),    # deprecated plugin
+            Event(2, 0, "pumpstatus", ["start"]),  # deprecated plugin
         ]
         s = _make_scenario(events=events)
         s.events_retrocompatibility()

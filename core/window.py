@@ -17,9 +17,14 @@ from pyglet.window import Window
 from pyglet.window import key as winkey
 
 from core.constants import COLORS as C
-from core.constants import HEADLESS_MODE
+from core.constants import (
+    HEADLESS_MODE,
+    PLUGIN_TITLE_HEIGHT_PROPORTION,
+    REPLAY_MODE,
+    REPLAY_PERF_STRIP_PROPORTION,
+    REPLAY_STRIP_PROPORTION,
+)
 from core.constants import PATHS as P
-from core.constants import PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE, REPLAY_PERF_STRIP_PROPORTION, REPLAY_STRIP_PROPORTION
 from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
@@ -41,14 +46,22 @@ class Window(Window):
         self._fullscreen: bool = False if HEADLESS_MODE else get_conf_value("Openmatb", "fullscreen")
 
         # Enable 4x multisampling antialiasing (MSAA) for smooth edges
-        config: Any = screen.get_best_config(gl.Config(
-            sample_buffers=1, samples=4,
-            double_buffer=True,
-        ))
+        config: Any = screen.get_best_config(
+            gl.Config(
+                sample_buffers=1,
+                samples=4,
+                double_buffer=True,
+            )
+        )
 
         super().__init__(
-            fullscreen=self._fullscreen, width=self._width, height=self._height,
-            vsync=True, config=config, *args, **kwargs
+            fullscreen=self._fullscreen,
+            width=self._width,
+            height=self._height,
+            vsync=True,
+            config=config,
+            *args,
+            **kwargs,
         )
 
         img_path: Any = P["IMG"]
@@ -118,22 +131,19 @@ class Window(Window):
         container_title_h: float = PLUGIN_TITLE_HEIGHT_PROPORTION / 2
 
         # Main background
-        bg = Rectangle(x=l, y=b, width=w, height=h,
-                        color=C["BACKGROUND"][:3], batch=self.batch, group=G(-1))
+        bg = Rectangle(x=l, y=b, width=w, height=h, color=C["BACKGROUND"][:3], batch=self.batch, group=G(-1))
         bg.opacity = C["BACKGROUND"][3]
 
         # Upper band
         upper_h: float = h * container_title_h
         upper_y: float = b + h - upper_h
-        upper = Rectangle(x=l, y=upper_y, width=w, height=upper_h,
-                           color=C["BLACK"][:3], batch=self.batch, group=G(-1))
+        upper = Rectangle(x=l, y=upper_y, width=w, height=upper_h, color=C["BLACK"][:3], batch=self.batch, group=G(-1))
         upper.opacity = C["BLACK"][3]
 
         # Middle band
         mid_h: float = h * container_title_h
         mid_y: float = b + h * (0.5 - container_title_h)
-        mid = Rectangle(x=l, y=mid_y, width=w, height=mid_h,
-                         color=C["BLACK"][:3], batch=self.batch, group=G(0))
+        mid = Rectangle(x=l, y=mid_y, width=w, height=mid_h, color=C["BLACK"][:3], batch=self.batch, group=G(0))
         mid.opacity = C["BLACK"][3]
 
         self.bg_shapes: list[Rectangle] = [bg, upper, mid]

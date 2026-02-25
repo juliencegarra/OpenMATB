@@ -33,8 +33,7 @@ class Parallelport(AbstractPlugin):
 
         # 1. Check platform
         if platform == "darwin":
-            get_errors().add_error(
-                _("Parallel port is not supported on macOS. Skipping parallel plugin."))
+            get_errors().add_error(_("Parallel port is not supported on macOS. Skipping parallel plugin."))
             return
 
         # 2. Try importing pyparallel
@@ -42,15 +41,21 @@ class Parallelport(AbstractPlugin):
             import parallel
         except ImportError:
             if platform == "win32":
-                get_errors().add_error(_(
-                    "Python Parallel module is missing. "
-                    "On Windows, install pyparallel (pip install pyparallel) "
-                    "and the InpOut32 driver (provides simpleio.dll)."))
+                get_errors().add_error(
+                    _(
+                        "Python Parallel module is missing. "
+                        "On Windows, install pyparallel (pip install pyparallel) "
+                        "and the InpOut32 driver (provides simpleio.dll)."
+                    )
+                )
             else:
-                get_errors().add_error(_(
-                    "Python Parallel module is missing. "
-                    "On Linux, install pyparallel (pip install pyparallel) "
-                    "and ensure the ppdev kernel module is loaded."))
+                get_errors().add_error(
+                    _(
+                        "Python Parallel module is missing. "
+                        "On Linux, install pyparallel (pip install pyparallel) "
+                        "and ensure the ppdev kernel module is loaded."
+                    )
+                )
             return
 
         # 3. Try opening the port
@@ -58,19 +63,24 @@ class Parallelport(AbstractPlugin):
             self._port = parallel.Parallel()
         except FileNotFoundError:
             if platform == "win32":
-                get_errors().add_error(_(
-                    "Parallel port not found. "
-                    "Ensure the InpOut32 driver is installed (provides simpleio.dll) "
-                    "and that a physical parallel port is available."))
+                get_errors().add_error(
+                    _(
+                        "Parallel port not found. "
+                        "Ensure the InpOut32 driver is installed (provides simpleio.dll) "
+                        "and that a physical parallel port is available."
+                    )
+                )
             else:
-                get_errors().add_error(_(
-                    "Parallel port not found. "
-                    "Ensure /dev/parport0 exists and you have read/write permissions "
-                    "(try: sudo chmod 666 /dev/parport0)."))
+                get_errors().add_error(
+                    _(
+                        "Parallel port not found. "
+                        "Ensure /dev/parport0 exists and you have read/write permissions "
+                        "(try: sudo chmod 666 /dev/parport0)."
+                    )
+                )
             return
         except OSError as exc:
-            get_errors().add_error(
-                _("Parallel port error: {error}").format(error=str(exc)))
+            get_errors().add_error(_("Parallel port error: {error}").format(error=str(exc)))
             return
 
     def is_trigger_being_sent(self) -> bool:

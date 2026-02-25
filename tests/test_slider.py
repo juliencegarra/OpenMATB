@@ -300,7 +300,7 @@ class TestOnMouseFocusCallback:
         obj.visible = True
         obj.selected = False
         obj.hover = False
-    
+
         obj.logger = MagicMock()
         obj.name = "test_slider"
         obj.on_mouse_focus = callback

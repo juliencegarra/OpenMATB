@@ -58,9 +58,13 @@ def normalize(values: list[float], y_bottom: float, y_top: float) -> list[float]
 class PerfOverlay:
     MAX_POINTS: int = 600
 
-    def __init__(self, container: Container, batch: Any,
-                 perf_series: dict[str, list[tuple[float, dict[str, str]]]],
-                 duration_sec: float) -> None:
+    def __init__(
+        self,
+        container: Container,
+        batch: Any,
+        perf_series: dict[str, list[tuple[float, dict[str, str]]]],
+        duration_sec: float,
+    ) -> None:
         self._container: Container = container
         self._batch: Any = batch
         self._duration: float = max(duration_sec, 0.001)
@@ -82,8 +86,7 @@ class PerfOverlay:
             return
 
         # Background rectangle
-        bg = Rectangle(x=l, y=b, width=w, height=h,
-                        color=(30, 30, 40), batch=batch, group=G(96))
+        bg = Rectangle(x=l, y=b, width=w, height=h, color=(30, 30, 40), batch=batch, group=G(96))
         bg.opacity = 230
         self._shapes.append(bg)
 
@@ -99,17 +102,19 @@ class PerfOverlay:
             # Task label
             label = Label(
                 TASK_LABELS.get(task_name, task_name.upper()),
-                x=l + 4, y=row_mid,
-                font_size=9, color=(200, 200, 200, 255),
+                x=l + 4,
+                y=row_mid,
+                font_size=9,
+                color=(200, 200, 200, 255),
                 anchor_y="center",
-                batch=batch, group=G(98),
+                batch=batch,
+                group=G(98),
             )
             self._labels.append(label)
 
             # Separator line between rows (except at the bottom)
             if i < n_tasks - 1:
-                sep = Line(l, row_bottom, l + w, row_bottom,
-                           thickness=1, color=(80, 80, 80), batch=batch, group=G(97))
+                sep = Line(l, row_bottom, l + w, row_bottom, thickness=1, color=(80, 80, 80), batch=batch, group=G(97))
                 sep.opacity = 150
                 self._shapes.append(sep)
 
@@ -119,30 +124,48 @@ class PerfOverlay:
 
             if task_name == "track":
                 self._draw_continuous_sparkline(
-                    series, "center_deviation", COLOR_TRACK,
-                    row_bottom + margin, row_top - margin,
+                    series,
+                    "center_deviation",
+                    COLOR_TRACK,
+                    row_bottom + margin,
+                    row_top - margin,
                 )
             elif task_name == "resman":
                 # Two sub-lines: A in upper half, B in lower half
                 sub_mid: float = (row_bottom + row_top) / 2
                 self._draw_continuous_sparkline(
-                    series, "a_deviation", COLOR_RESMAN_A,
-                    sub_mid + margin / 2, row_top - margin,
+                    series,
+                    "a_deviation",
+                    COLOR_RESMAN_A,
+                    sub_mid + margin / 2,
+                    row_top - margin,
                 )
                 self._draw_continuous_sparkline(
-                    series, "b_deviation", COLOR_RESMAN_B,
-                    row_bottom + margin, sub_mid - margin / 2,
+                    series,
+                    "b_deviation",
+                    COLOR_RESMAN_B,
+                    row_bottom + margin,
+                    sub_mid - margin / 2,
                 )
             elif task_name in ("sysmon", "communications"):
                 sdt_key: str = "signal_detection" if task_name == "sysmon" else "sdt_value"
                 self._draw_event_markers(
-                    series, sdt_key, row_mid, margin,
+                    series,
+                    sdt_key,
+                    row_mid,
+                    margin,
                 )
 
         # Cursor line
         self._cursor = Line(
-            self._x_min, self._y_bottom, self._x_min, self._y_top,
-            thickness=2, color=(255, 255, 255), batch=batch, group=G(99),
+            self._x_min,
+            self._y_bottom,
+            self._x_min,
+            self._y_top,
+            thickness=2,
+            color=(255, 255, 255),
+            batch=batch,
+            group=G(99),
         )
         self._cursor.opacity = 200
         self._shapes.append(self._cursor)
@@ -182,8 +205,7 @@ class PerfOverlay:
 
         # Create line segments
         for j in range(len(xs) - 1):
-            line = Line(xs[j], ys[j], xs[j + 1], ys[j + 1],
-                        thickness=1, color=color, batch=self._batch, group=G(98))
+            line = Line(xs[j], ys[j], xs[j + 1], ys[j + 1], thickness=1, color=color, batch=self._batch, group=G(98))
             self._shapes.append(line)
 
     def _draw_event_markers(
@@ -207,8 +229,7 @@ class PerfOverlay:
                 continue
 
             x: float = self._time_to_x(t)
-            circle = Circle(x=x, y=y_mid, radius=4,
-                            color=color_map[sdt_val], batch=self._batch, group=G(98))
+            circle = Circle(x=x, y=y_mid, radius=4, color=color_map[sdt_val], batch=self._batch, group=G(98))
             self._shapes.append(circle)
 
     def update_cursor(self, scenario_time: float) -> None:

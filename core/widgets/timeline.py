@@ -30,7 +30,10 @@ class Timeline(AbstractWidget):
 
         # Main vertical line
         self.vertex["main_line"] = Line(
-            x2, y1, x2, y2,
+            x2,
+            y1,
+            x2,
+            y2,
             color=C["BLACK"],
             batch=None,
             group=G(self.m_draw + 1),
@@ -40,7 +43,10 @@ class Timeline(AbstractWidget):
         for i, this_y in enumerate([y1 + i * ((y2 - y1) / interval_n) for i in range(interval_n + 1)]):
             size: float = self.graduation_width / 2 if i % 2 != 0 else self.graduation_width
             self.vertex[f"grad_{i}"] = Line(
-                x2 - size, this_y, x2, this_y,
+                x2 - size,
+                this_y,
+                x2,
+                this_y,
                 color=C["BLACK"],
                 batch=None,
                 group=G(self.m_draw + 1),

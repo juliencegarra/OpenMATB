@@ -42,7 +42,8 @@ class Performancescale(AbstractWidget):
 
         # Background fill
         self.vertex["background"] = Rectangle(
-            x=x1, y=y2,
+            x=x1,
+            y=y2,
             width=self.container.w,
             height=self.container.h,
             color=C["WHITE"][:3],
@@ -70,7 +71,10 @@ class Performancescale(AbstractWidget):
             y: float = self.container.b + self.container.h - (self.container.h / (self.tick_number - 1)) * i
             w: float = self.tick_width
             self.vertex[f"tick_{tick_values[i]}"] = Line(
-                self.container.x2 - w, y, self.container.x2, y,
+                self.container.x2 - w,
+                y,
+                self.container.x2,
+                y,
                 color=C["BLACK"],
                 batch=None,
                 group=G(self.m_draw + 2),
@@ -88,12 +92,17 @@ class Performancescale(AbstractWidget):
             )
 
         # Border on top of everything
-        for name, coords in [("border_top", (x1, y1, x2, y1)),
-                              ("border_right", (x2, y1, x2, y2)),
-                              ("border_bottom", (x2, y2, x1, y2)),
-                              ("border_left", (x1, y2, x1, y1))]:
+        for name, coords in [
+            ("border_top", (x1, y1, x2, y1)),
+            ("border_right", (x2, y1, x2, y2)),
+            ("border_bottom", (x2, y2, x1, y2)),
+            ("border_left", (x1, y2, x1, y1)),
+        ]:
             self.vertex[name] = Line(
-                *coords, color=C["BLACK"], batch=None, group=G(self.m_draw + 3),
+                *coords,
+                color=C["BLACK"],
+                batch=None,
+                group=G(self.m_draw + 3),
             )
 
     def _rebuild(self) -> None:

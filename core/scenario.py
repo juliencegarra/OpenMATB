@@ -62,9 +62,7 @@ class Scenario:
         if get_errors().some_fatals:
             return
 
-        self.plugins = {
-            name: getattr(plugins, name.capitalize())() for name in self.get_plugins_name_list()
-        }
+        self.plugins = {name: getattr(plugins, name.capitalize())() for name in self.get_plugins_name_list()}
 
         self.events = self.events_retrocompatibility()  # Apply retrocompatiblity to events
         event_errors: list[str] = self.check_events()  # Check that events are properly expressed
@@ -101,10 +99,7 @@ class Scenario:
         for _n, e in enumerate(self.events):
             # If plugin or command is DEPRECATED, ignore the event
             if e.is_deprecated():
-                get_errors().add_error(
-                    _("Line %s: '%s' is deprecated and will be ignored") % (e.line, e),
-                    fatal=False
-                )
+                get_errors().add_error(_("Line %s: '%s' is deprecated and will be ignored") % (e.line, e), fatal=False)
 
             # For parameters
             # SYSMON now manages failures with two separated variables
@@ -174,8 +169,8 @@ class Scenario:
                         preceding = plug_events[:i]
                         if not any("filename" in pe.command for pe in preceding):
                             errors.append(
-                                _("The (%s) plugin has a start command without "
-                                  "a preceding filename command.") % plug_name
+                                _("The (%s) plugin has a start command without a preceding filename command.")
+                                % plug_name
                             )
 
         for e in self.events:

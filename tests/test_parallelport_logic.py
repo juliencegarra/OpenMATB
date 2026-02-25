@@ -213,8 +213,7 @@ class TestComputeWithoutPort:
 # ── __init__ platform and import error handling ───
 
 
-def _make_init_pp(mock_errors, platform, import_side_effect=None,
-                  parallel_side_effect=None):
+def _make_init_pp(mock_errors, platform, import_side_effect=None, parallel_side_effect=None):
     """Helper to create a Parallelport via __init__ with mocked platform/imports."""
     real_import = builtins.__import__
 
@@ -231,9 +230,11 @@ def _make_init_pp(mock_errors, platform, import_side_effect=None,
     def fake_super_init(self, *a, **k):
         self.parameters = {}
 
-    with patch("sys.platform", platform), \
-         patch("plugins.parallelport.get_errors", return_value=mock_errors), \
-         patch("builtins.__import__", side_effect=fake_import):
+    with (
+        patch("sys.platform", platform),
+        patch("plugins.parallelport.get_errors", return_value=mock_errors),
+        patch("builtins.__import__", side_effect=fake_import),
+    ):
         pp = Parallelport.__new__(Parallelport)
         with patch.object(AbstractPlugin, "__init__", fake_super_init):
             Parallelport.__init__(pp)
@@ -273,8 +274,7 @@ class TestParallelportInit:
     def test_windows_file_not_found(self):
         """On Windows, FileNotFoundError mentions InpOut32 driver."""
         errors = MagicMock()
-        pp = _make_init_pp(errors, "win32",
-                           parallel_side_effect=FileNotFoundError("no dll"))
+        pp = _make_init_pp(errors, "win32", parallel_side_effect=FileNotFoundError("no dll"))
         errors.add_error.assert_called_once()
         msg = errors.add_error.call_args[0][0]
         assert "InpOut32" in msg
@@ -284,8 +284,7 @@ class TestParallelportInit:
     def test_linux_file_not_found(self):
         """On Linux, FileNotFoundError mentions /dev/parport0."""
         errors = MagicMock()
-        pp = _make_init_pp(errors, "linux",
-                           parallel_side_effect=FileNotFoundError("/dev/parport0"))
+        pp = _make_init_pp(errors, "linux", parallel_side_effect=FileNotFoundError("/dev/parport0"))
         errors.add_error.assert_called_once()
         msg = errors.add_error.call_args[0][0]
         assert "/dev/parport0" in msg
@@ -294,8 +293,7 @@ class TestParallelportInit:
     def test_generic_os_error(self):
         """Generic OSError includes the error message."""
         errors = MagicMock()
-        pp = _make_init_pp(errors, "win32",
-                           parallel_side_effect=OSError("device busy"))
+        pp = _make_init_pp(errors, "win32", parallel_side_effect=OSError("device busy"))
         errors.add_error.assert_called_once()
         msg = errors.add_error.call_args[0][0]
         assert "device busy" in msg

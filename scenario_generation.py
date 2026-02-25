@@ -21,7 +21,6 @@ from typing import Any
 from core.constants import PATHS
 from core.event import Event
 
-
 # ── Dataclasses ──────────────────────────────────────────────────────────────
 
 
@@ -202,9 +201,7 @@ def add_scenario_phase(
         # ── SYSMON ──
         if plugin_name == "sysmon":
             print("System monitoring | computing events")
-            failure_duration_sec: float = (
-                plugin.parameters["alerttimeout"] / 1000 + config.events_refractory_duration
-            )
+            failure_duration_sec: float = plugin.parameters["alerttimeout"] / 1000 + config.events_refractory_duration
             single_failure_ratio: float = failure_duration_sec / block_duration_sec
             max_events_N: int = int(1 / single_failure_ratio)
             difficulty_events_N: int = int(difficulty / single_failure_ratio)
@@ -283,8 +280,7 @@ def add_scenario_phase(
             print("Scheduling | computing events")
             # Difficulty controls minduration: lower difficulty = higher minduration (easier)
             min_duration: int = int(5000 * (1 - difficulty) + 500)
-            scenario_lines.append(Event(start_line, start_sec, plugin_name,
-                                        ["minduration", min_duration]))
+            scenario_lines.append(Event(start_line, start_sec, plugin_name, ["minduration", min_duration]))
             start_line += 1
 
     return scenario_lines
@@ -304,9 +300,7 @@ def _insert_inter_block_events(
     Returns updated scenario_lines and the additional time consumed (pause duration).
     """
     extra_time: int = 0
-    inter_events: list[InterBlockEvent] = [
-        ie for ie in config.inter_block_events if ie.position == position
-    ]
+    inter_events: list[InterBlockEvent] = [ie for ie in config.inter_block_events if ie.position == position]
     if not inter_events:
         return scenario_lines, 0
 
@@ -349,7 +343,10 @@ def generate_scenario(config: ScenarioConfig, plugins: dict[str, Any]) -> list[s
         # Inter-block events at position i (before block i+1, i.e. after block i-1)
         if config.inter_block_events:
             scenario_lines, extra = _insert_inter_block_events(
-                scenario_lines, config, i, start_time_sec,
+                scenario_lines,
+                config,
+                i,
+                start_time_sec,
             )
             cumulative_extra_time += extra
 
@@ -358,9 +355,7 @@ def generate_scenario(config: ScenarioConfig, plugins: dict[str, Any]) -> list[s
         )
 
         # Compute average difficulty for the block label
-        avg_difficulty: float = (
-            sum(block.plugins.values()) / len(block.plugins) if block.plugins else 0
-        )
+        avg_difficulty: float = sum(block.plugins.values()) / len(block.plugins) if block.plugins else 0
         ch_str: str = f"Block #{i + 1}. Technical load = {round(avg_difficulty * 100, 1)} %"
         scenario_lines.append(ch_str)
         print("\nAdding " + ch_str)
@@ -373,21 +368,26 @@ def generate_scenario(config: ScenarioConfig, plugins: dict[str, Any]) -> list[s
             scenario_events = get_events_from_scenario(scenario_lines)
             line_num: int = scenario_events[-1].line + 1 if scenario_events else 1
             for plugin_name, param_name, param_value in block.extra_events:
-                scenario_lines.append(
-                    Event(line_num, start_time_sec, plugin_name, [param_name, param_value])
-                )
+                scenario_lines.append(Event(line_num, start_time_sec, plugin_name, [param_name, param_value]))
                 line_num += 1
 
         scenario_lines = add_scenario_phase(
-            scenario_lines, task_difficulty_tuples, start_time_sec,
-            plugins, config, block.duration_sec,
+            scenario_lines,
+            task_difficulty_tuples,
+            start_time_sec,
+            plugins,
+            config,
+            block.duration_sec,
         )
 
     # Insert inter-block events after the last block
     if config.blocks and config.inter_block_events:
         end_time: int = sum(b.duration_sec for b in config.blocks) + cumulative_extra_time
         scenario_lines, extra = _insert_inter_block_events(
-            scenario_lines, config, len(config.blocks), end_time,
+            scenario_lines,
+            config,
+            len(config.blocks),
+            end_time,
         )
 
     # Stop all tasks at the very end

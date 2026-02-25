@@ -18,11 +18,9 @@ from scenario_generation import (
     get_events_from_scenario,
     get_part_durations,
     get_task_current_state,
-    part_duration_sec,
     reduce,
     write_scenario_file,
 )
-
 
 # ── Dataclass tests ─────────────────────────────────────────────────────────
 
@@ -373,13 +371,18 @@ class TestGenerateScenario:
         resman = MagicMock()
         resman.parameters = {
             "pump": {
-                "1": {"flow": 800}, "2": {"flow": 600},
-                "3": {"flow": 800}, "4": {"flow": 600},
-                "5": {"flow": 400}, "6": {"flow": 400},
+                "1": {"flow": 800},
+                "2": {"flow": 600},
+                "3": {"flow": 800},
+                "4": {"flow": 600},
+                "5": {"flow": 400},
+                "6": {"flow": 400},
             },
             "tank": {
-                "a": {"target": 2500}, "b": {"target": 2500},
-                "c": {"target": None}, "d": {"target": None},
+                "a": {"target": 2500},
+                "b": {"target": 2500},
+                "c": {"target": None},
+                "d": {"target": None},
             },
         }
         return {"track": None, "sysmon": sysmon, "communications": comms, "resman": resman}
@@ -431,9 +434,7 @@ class TestGenerateScenario:
 
     def test_stop_events_at_end(self):
         """All active plugins receive a stop event at the end."""
-        config = ScenarioConfig(
-            blocks=[BlockConfig(60, {"track": 0.25})]
-        )
+        config = ScenarioConfig(blocks=[BlockConfig(60, {"track": 0.25})])
         result = generate_scenario(config, self._make_plugins())
         events = get_events_from_scenario(result)
         stop_events = [e for e in events if e.command == ["stop"]]
@@ -505,4 +506,3 @@ class TestWriteScenarioFile:
             path = write_scenario_file(lines, config)
         assert isinstance(path, Path)
         assert "test_output" in path.name
-

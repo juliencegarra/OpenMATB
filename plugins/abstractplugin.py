@@ -16,8 +16,10 @@ from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.container import Container
 from core.logger import get_logger
-from core.window import Window
 from core.widgets import Frame, SimpleHTML, Simpletext
+from core.window import Window
+
+
 class AbstractPlugin:
     """Any plugin (or task) depends on this meta-class"""
 
@@ -218,9 +220,7 @@ class AbstractPlugin:
 
     def update_can_receive_mouse(self) -> None:
         """Update the ability of the plugin to receive mouse inputs"""
-        if self.paused or not self.is_visible() or REPLAY_MODE:
-            self.can_receive_mouse = False
-        elif self.parameters.get("automaticsolver", False):
+        if self.paused or not self.is_visible() or REPLAY_MODE or self.parameters.get("automaticsolver", False):
             self.can_receive_mouse = False
         else:
             self.can_receive_mouse = True
@@ -307,9 +307,7 @@ class AbstractPlugin:
         fault_w = self.get_widget("fault_icon")
         if fault_w is not None:
             show_fault = (
-                self.agent is not None
-                and getattr(self.agent, "show_attention", False)
-                and self.has_active_fault()
+                self.agent is not None and getattr(self.agent, "show_attention", False) and self.has_active_fault()
             )
             fault_w.set_text("!" if show_fault else "")
 
@@ -431,9 +429,7 @@ class AbstractPlugin:
             )
 
             # Fault indicator — bold red "!" at bottom-right of task area
-            fault_cont = self.task_container.reduce_and_translate(
-                width=0.12, height=0.12, x=1, y=0
-            )
+            fault_cont = self.task_container.reduce_and_translate(width=0.12, height=0.12, x=1, y=0)
             self.add_widget(
                 "fault_icon",
                 Simpletext,

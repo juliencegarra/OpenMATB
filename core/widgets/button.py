@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-import math
 from typing import Any, Callable
 
 from pyglet.shapes import Line, Rectangle, Triangle
@@ -31,7 +30,8 @@ class Button(AbstractWidget):
         ax1, ay1, ax2, ay2 = aa.get_x1y1x2y2()
 
         self.vertex["background"] = Rectangle(
-            x=ax1, y=ay2,
+            x=ax1,
+            y=ay2,
             width=aa.w,
             height=aa.h,
             color=C["DARKGREY"][:3],
@@ -39,12 +39,16 @@ class Button(AbstractWidget):
             group=G(self.m_draw + self.m_draw + 1),
         )
 
-        for bname, coords in [("border_top", (ax1, ay1, ax2, ay1)),
-                               ("border_right", (ax2, ay1, ax2, ay2)),
-                               ("border_bottom", (ax2, ay2, ax1, ay2)),
-                               ("border_left", (ax1, ay2, ax1, ay1))]:
+        for bname, coords in [
+            ("border_top", (ax1, ay1, ax2, ay1)),
+            ("border_right", (ax2, ay1, ax2, ay2)),
+            ("border_bottom", (ax2, ay2, ax1, ay2)),
+            ("border_left", (ax1, ay2, ax1, ay1)),
+        ]:
             self.vertex[bname] = Line(
-                *coords, color=C["BLACK"], batch=None,
+                *coords,
+                color=C["BLACK"],
+                batch=None,
                 group=G(self.m_draw + self.m_draw + 2),
             )
 
@@ -82,9 +86,12 @@ class PlayPause(Button):
 
         # --- Play triangle (pointing right) ---
         self.vertex["play_tri"] = Triangle(
-            cx - 0.3 * s, cy + 0.5 * s,
-            cx - 0.3 * s, cy - 0.5 * s,
-            cx + 0.5 * s, cy,
+            cx - 0.3 * s,
+            cy + 0.5 * s,
+            cx - 0.3 * s,
+            cy - 0.5 * s,
+            cx + 0.5 * s,
+            cy,
             color=W,
             batch=None,
             group=g,
@@ -95,7 +102,10 @@ class PlayPause(Button):
         bw: float = 0.2 * s
         bh: float = 0.45 * s
         self.vertex["pause_left"] = Rectangle(
-            x=cx - gap - bw, y=cy - bh, width=bw, height=2 * bh,
+            x=cx - gap - bw,
+            y=cy - bh,
+            width=bw,
+            height=2 * bh,
             color=W,
             batch=None,
             group=g,
@@ -103,7 +113,10 @@ class PlayPause(Button):
         self.vertex["pause_left"].visible = False
 
         self.vertex["pause_right"] = Rectangle(
-            x=cx + gap, y=cy - bh, width=bw, height=2 * bh,
+            x=cx + gap,
+            y=cy - bh,
+            width=bw,
+            height=2 * bh,
             color=W,
             batch=None,
             group=g,
@@ -137,7 +150,10 @@ class MuteButton(Button):
         byt: float = cy + 0.25 * s
         byb: float = cy - 0.25 * s
         self.vertex["spk_body"] = Rectangle(
-            x=bx1, y=byb, width=bx2 - bx1, height=byt - byb,
+            x=bx1,
+            y=byb,
+            width=bx2 - bx1,
+            height=byt - byb,
             color=W,
             batch=None,
             group=g,
@@ -146,18 +162,24 @@ class MuteButton(Button):
         # --- Speaker cone (triangle / trapezoid approximation) ---
         tip_x: float = cx + 0.2 * s
         self.vertex["spk_cone"] = Triangle(
-            bx2, byt,
-            tip_x, cy + 0.55 * s,
-            tip_x, cy - 0.55 * s,
+            bx2,
+            byt,
+            tip_x,
+            cy + 0.55 * s,
+            tip_x,
+            cy - 0.55 * s,
             color=W,
             batch=None,
             group=g,
         )
         # Second triangle to fill the quad shape
         self.vertex["spk_cone2"] = Triangle(
-            bx2, byt,
-            tip_x, cy - 0.55 * s,
-            bx2, byb,
+            bx2,
+            byt,
+            tip_x,
+            cy - 0.55 * s,
+            bx2,
+            byb,
             color=W,
             batch=None,
             group=g,
@@ -169,13 +191,19 @@ class MuteButton(Button):
         xy1: float = cy + 0.45 * s
         xy2: float = cy - 0.45 * s
         self.vertex["mute_x1"] = Line(
-            xx1, xy1, xx2, xy2,
+            xx1,
+            xy1,
+            xx2,
+            xy2,
             color=W,
             batch=None,
             group=g,
         )
         self.vertex["mute_x2"] = Line(
-            xx1, xy2, xx2, xy1,
+            xx1,
+            xy2,
+            xx2,
+            xy1,
             color=W,
             batch=None,
             group=g,
@@ -186,8 +214,12 @@ class MuteButton(Button):
 
         arc_cx: float = tip_x
         self.vertex["wave1"] = Arc(
-            x=arc_cx, y=cy, radius=0.45 * s,
-            segments=10, angle=90.0, start_angle=-45.0,
+            x=arc_cx,
+            y=cy,
+            radius=0.45 * s,
+            segments=10,
+            angle=90.0,
+            start_angle=-45.0,
             color=W,
             batch=None,
             group=g,
@@ -195,8 +227,12 @@ class MuteButton(Button):
         self.vertex["wave1"].visible = False
 
         self.vertex["wave2"] = Arc(
-            x=arc_cx, y=cy, radius=0.70 * s,
-            segments=10, angle=90.0, start_angle=-45.0,
+            x=arc_cx,
+            y=cy,
+            radius=0.70 * s,
+            segments=10,
+            angle=90.0,
+            start_angle=-45.0,
             color=W,
             batch=None,
             group=g,

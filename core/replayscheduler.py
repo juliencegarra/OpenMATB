@@ -90,8 +90,10 @@ class ReplayScheduler(Scheduler):
             perfstrip_container: Container | None = Window.MainWindow.get_container("perfstrip")
             if perfstrip_container is not None and self.logreader.perf_series:
                 self._perf_overlay = PerfOverlay(
-                    perfstrip_container, Window.MainWindow.batch,
-                    self.logreader.perf_series, self.logreader.duration_sec,
+                    perfstrip_container,
+                    Window.MainWindow.batch,
+                    self.logreader.perf_series,
+                    self.logreader.duration_sec,
                 )
 
         self.sliding: bool = False
@@ -346,9 +348,7 @@ class ReplayScheduler(Scheduler):
                 active_blocking.stop()
                 if self.is_scenario_time_paused():
                     if len(self.paused_plugins) > 0:
-                        self.execute_plugins_methods(
-                            self.paused_plugins, methods=["show", "resume"]
-                        )
+                        self.execute_plugins_methods(self.paused_plugins, methods=["show", "resume"])
                         self.paused_plugins = list()
                     self.resume_scenario()
 
@@ -462,8 +462,12 @@ class ReplayScheduler(Scheduler):
                     if self._click_marker is not None:
                         self._click_marker.visible = False
                     self._click_marker = Circle(
-                        x=rx, y=ry, radius=12, color=(40, 180, 40),
-                        batch=Window.MainWindow.batch, group=G(99),
+                        x=rx,
+                        y=ry,
+                        radius=12,
+                        color=(40, 180, 40),
+                        batch=Window.MainWindow.batch,
+                        group=G(99),
                     )
                     self._click_marker.opacity = 180
                 else:

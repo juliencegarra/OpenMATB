@@ -12,10 +12,10 @@ from pyglet.media import Player, SourceGroup, load
 from pyglet.window import mouse as winmouse
 
 from core import validation
-from core.error import get_errors
 from core.constants import COLORS as C
 from core.constants import PATHS as P
 from core.container import Container
+from core.error import get_errors
 from core.pseudorandom import choice, randint, uniform, xeger
 from core.widgets import Radio, Simpletext
 from plugins.abstractplugin import AbstractPlugin
@@ -327,8 +327,11 @@ class Communications(AbstractPlugin):
         return self._filter_keys_by(self.parameters["radios"], k, v) or None
 
     def get_response_timers(self) -> list[float]:
-        return [self._response_elapsed_ms(r["_response_start"])
-                for _, r in self.parameters["radios"].items() if r["_response_start"] is not None]
+        return [
+            self._response_elapsed_ms(r["_response_start"])
+            for _, r in self.parameters["radios"].items()
+            if r["_response_start"] is not None
+        ]
 
     def has_active_fault(self) -> bool:
         return len(self.get_waiting_response_radios()) > 0
@@ -608,7 +611,11 @@ class Communications(AbstractPlugin):
             active_pos = active_radio["pos"]
             clicked_pos = clicked_radio["pos"]
             direction = 1 if clicked_pos > active_pos else -1
-            key = self.parameters["keys"]["selectradiodown"] if direction == 1 else self.parameters["keys"]["selectradioup"]
+            key = (
+                self.parameters["keys"]["selectradiodown"]
+                if direction == 1
+                else self.parameters["keys"]["selectradioup"]
+            )
             for _i in range(abs(clicked_pos - active_pos)):
                 self.logger.record_input("mouse_key", key, "press")
                 self.do_on_key(key, "press", False)

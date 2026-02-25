@@ -6,11 +6,11 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
+from pyglet.window import mouse as winmouse
+
 from core import validation
 from core.constants import COLORS as C
 from core.container import Container
-from pyglet.window import mouse as winmouse
-
 from core.pseudorandom import choice, sample
 from core.widgets import Light, Scale
 from plugins.abstractplugin import AbstractPlugin
@@ -35,22 +35,30 @@ class Sysmon(AbstractPlugin):
             "alerttimeout": validation.is_positive_integer,
             "automaticsolverdelay": validation.is_positive_integer,
             "allowanykey": validation.is_boolean,
-            **self._indexed_validators("lights", range(1, 3), {
-                "name": validation.is_string,
-                "failure": validation.is_boolean,
-                "on": validation.is_boolean,
-                "default": (validation.is_in_list, ["on", "off"]),
-                "oncolor": validation.is_color,
-                "key": validation.is_key,
-                "onfailure": validation.is_boolean,
-            }),
-            **self._indexed_validators("scales", range(1, 5), {
-                "name": validation.is_string,
-                "failure": validation.is_boolean,
-                "side": (validation.is_in_list, ["-1", "0", "1"]),
-                "key": validation.is_key,
-                "onfailure": validation.is_boolean,
-            }),
+            **self._indexed_validators(
+                "lights",
+                range(1, 3),
+                {
+                    "name": validation.is_string,
+                    "failure": validation.is_boolean,
+                    "on": validation.is_boolean,
+                    "default": (validation.is_in_list, ["on", "off"]),
+                    "oncolor": validation.is_color,
+                    "key": validation.is_key,
+                    "onfailure": validation.is_boolean,
+                },
+            ),
+            **self._indexed_validators(
+                "scales",
+                range(1, 5),
+                {
+                    "name": validation.is_string,
+                    "failure": validation.is_boolean,
+                    "side": (validation.is_in_list, ["-1", "0", "1"]),
+                    "key": validation.is_key,
+                    "onfailure": validation.is_boolean,
+                },
+            ),
         }
 
         self.keys: set[str] = {"F1", "F2", "F3", "F4", "F5", "F6"}
@@ -90,8 +98,9 @@ class Sysmon(AbstractPlugin):
 
         # and to scale only
         for gauge in self.get_scale_gauges():
-            gauge.update({"_pos": 5, "_zone": 0, "_feedbacktimer": None, "_feedbacktype": None,
-                          "_hint_arrow_color": None})
+            gauge.update(
+                {"_pos": 5, "_zone": 0, "_feedbacktimer": None, "_feedbacktype": None, "_hint_arrow_color": None}
+            )
 
         self.automode_position: tuple[float, float] = (0.5, 0.05)
         self.scale_zones: dict[int, list[int]] = {1: list(range(3)), 0: list(range(3, 8)), -1: list(range(8, 11))}

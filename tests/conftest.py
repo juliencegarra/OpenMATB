@@ -254,8 +254,9 @@ class _MockRectangle(_MockShapeBase):
 
 
 class _MockBorderedRectangle(_MockRectangle):
-    def __init__(self, x, y, width, height, border=1.0, color=(255, 255, 255, 255),
-                 border_color=(100, 100, 100, 255), **kw):
+    def __init__(
+        self, x, y, width, height, border=1.0, color=(255, 255, 255, 255), border_color=(100, 100, 100, 255), **kw
+    ):
         super().__init__(x=x, y=y, width=width, height=height, color=color, **kw)
         self._border = float(border)
         self._border_color = tuple(border_color) if len(border_color) == 4 else (*border_color, 255)
@@ -365,8 +366,19 @@ class _MockLine(_MockShapeBase):
 
 
 class _MockArc(_MockShapeBase):
-    def __init__(self, x, y, radius, segments=None, angle=360.0, start_angle=0.0,
-                 closed=False, thickness=1.0, color=(255, 255, 255, 255), **kw):
+    def __init__(
+        self,
+        x,
+        y,
+        radius,
+        segments=None,
+        angle=360.0,
+        start_angle=0.0,
+        closed=False,
+        thickness=1.0,
+        color=(255, 255, 255, 255),
+        **kw,
+    ):
         super().__init__(x=x, y=y, color=color, **kw)
         self._radius = float(radius)
         self._angle = float(angle)

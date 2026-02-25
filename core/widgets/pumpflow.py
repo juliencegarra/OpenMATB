@@ -52,7 +52,12 @@ class PumpFlow(AbstractWidget):
         # Pump arrow — compute triangle vertices using the parent helper
         v: list[float] = self.get_triangle_vertice(h_ratio=0.25, x_ratio=-0.05, angle=3 * math.pi / 2)
         self.vertex[f"{self.label}_arrow"] = Triangle(
-            v[0], v[1], v[2], v[3], v[4], v[5],
+            v[0],
+            v[1],
+            v[2],
+            v[3],
+            v[4],
+            v[5],
             color=C["BLACK"],
             batch=None,
             group=G(self.m_draw + 2),
