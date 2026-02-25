@@ -365,6 +365,22 @@ class TestOnMouseRelease:
         )
 
 
+class TestOpenModalWindow:
+    @patch("core.window.ModalDialog")
+    def test_passes_exit_key(self, MockDialog):
+        """exit_key parameter is forwarded to ModalDialog."""
+        w = _make_window()
+        w.open_modal_window(["msg"], title="T", continue_key="SPACE", exit_key="X")
+        MockDialog.assert_called_once_with(w, ["msg"], title="T", continue_key="SPACE", exit_key="X")
+
+    @patch("core.window.ModalDialog")
+    def test_default_q_key(self, MockDialog):
+        """Caller passing Q works as before."""
+        w = _make_window()
+        w.open_modal_window(["msg"], title="T", continue_key=None, exit_key="Q")
+        MockDialog.assert_called_once_with(w, ["msg"], title="T", continue_key=None, exit_key="Q")
+
+
 class TestSetSizeAndLocation:
     def test_computes_centered_position(self):
         """Centers window on matching-size screen."""

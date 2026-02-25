@@ -263,4 +263,4 @@ class Window(Window):
             print(_("Error. No placement found for the [%s] alias") % placement_name)
 
     def open_modal_window(self, pass_list: list[str], title: str, continue_key: str | None, exit_key: str) -> None:
-        self.modal_dialog = ModalDialog(self, pass_list, title=title, continue_key=continue_key, exit_key="Q")
+        self.modal_dialog = ModalDialog(self, pass_list, title=title, continue_key=continue_key, exit_key=exit_key)
