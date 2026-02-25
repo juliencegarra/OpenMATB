@@ -10,6 +10,19 @@ from pyglet import font
 from core.constants import CONFIG
 from core.constants import PATHS as P
 
+_CONFIG_DEFAULTS: dict[tuple[str, str], Any] = {
+    ("Openmatb", "fullscreen"): True,
+    ("Openmatb", "highlight_aoi"): False,
+    ("Openmatb", "hide_on_pause"): False,
+    ("Openmatb", "display_session_number"): True,
+    ("Openmatb", "screen_index"): 0,
+    ("Openmatb", "clock_speed"): 1.0,
+    ("Openmatb", "top_bounds"): [0.35, 0.85],
+    ("Openmatb", "bottom_bounds"): [0.30, 0.85],
+    ("Openmatb", "font_name"): "",
+    ("Openmatb", "language"): "en_EN",
+}
+
 
 def clamp(x: float, val_min: float, val_max: float) -> float:
     if x < val_min:
@@ -62,7 +75,12 @@ def has_conf_value(section: str, key: str) -> bool:
 
 
 def get_conf_value(section: str, key: str, val_type: Optional[type] = None) -> Any:
-    value: str = CONFIG[section][key]
+    try:
+        value: str = CONFIG[section][key]
+    except KeyError:
+        if (section, key) in _CONFIG_DEFAULTS:
+            return _CONFIG_DEFAULTS[(section, key)]
+        raise
 
     # Boolean boolean values
     if key in ["fullscreen", "highlight_aoi", "hide_on_pause", "display_session_number"]:
