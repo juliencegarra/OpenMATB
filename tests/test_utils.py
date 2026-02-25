@@ -194,6 +194,107 @@ class TestGetConfValue:
             assert get_conf_value("General", "some_key") == "hello"
 
 
+class TestGetConfValueDefaults:
+    """Tests for _CONFIG_DEFAULTS fallback in get_conf_value()."""
+
+    def _empty_config(self):
+        """Return a ConfigParser with no sections."""
+        return configparser.ConfigParser()
+
+    def test_missing_bool_returns_default(self):
+        """Missing 'fullscreen' key returns True."""
+        from core.utils import get_conf_value
+
+        with patch("core.utils.CONFIG", self._empty_config()):
+            assert get_conf_value("Openmatb", "fullscreen") is True
+
+    def test_missing_bool_false_default(self):
+        """Missing 'highlight_aoi' key returns False."""
+        from core.utils import get_conf_value
+
+        with patch("core.utils.CONFIG", self._empty_config()):
+            assert get_conf_value("Openmatb", "highlight_aoi") is False
+
+    def test_missing_int_returns_default(self):
+        """Missing 'screen_index' key returns 0."""
+        from core.utils import get_conf_value
+
+        with patch("core.utils.CONFIG", self._empty_config()):
+            result = get_conf_value("Openmatb", "screen_index")
+            assert result == 0
+            assert isinstance(result, int)
+
+    def test_missing_float_returns_default(self):
+        """Missing 'clock_speed' key returns 1.0."""
+        from core.utils import get_conf_value
+
+        with patch("core.utils.CONFIG", self._empty_config()):
+            result = get_conf_value("Openmatb", "clock_speed")
+            assert result == 1.0
+            assert isinstance(result, float)
+
+    def test_missing_list_returns_default(self):
+        """Missing 'top_bounds' key returns [0.35, 0.85]."""
+        from core.utils import get_conf_value
+
+        with patch("core.utils.CONFIG", self._empty_config()):
+            assert get_conf_value("Openmatb", "top_bounds") == [0.35, 0.85]
+
+    def test_missing_string_returns_default(self):
+        """Missing 'language' key returns 'en_EN'."""
+        from core.utils import get_conf_value
+
+        with patch("core.utils.CONFIG", self._empty_config()):
+            assert get_conf_value("Openmatb", "language") == "en_EN"
+
+    def test_missing_font_name_returns_empty(self):
+        """Missing 'font_name' key returns empty string."""
+        from core.utils import get_conf_value
+
+        with patch("core.utils.CONFIG", self._empty_config()):
+            assert get_conf_value("Openmatb", "font_name") == ""
+
+    def test_missing_section_returns_default(self):
+        """Missing entire section still returns default."""
+        from core.utils import get_conf_value
+
+        with patch("core.utils.CONFIG", self._empty_config()):
+            assert get_conf_value("Openmatb", "fullscreen") is True
+
+    def test_no_default_raises_keyerror(self):
+        """Key without a default raises KeyError."""
+        from core.utils import get_conf_value
+
+        with patch("core.utils.CONFIG", self._empty_config()), pytest.raises(KeyError):
+            get_conf_value("Openmatb", "scenario_path")
+
+    def test_unknown_key_raises_keyerror(self):
+        """Completely unknown key raises KeyError."""
+        from core.utils import get_conf_value
+
+        with patch("core.utils.CONFIG", self._empty_config()), pytest.raises(KeyError):
+            get_conf_value("NoSection", "no_key")
+
+    def test_present_key_overrides_default(self):
+        """Config value wins over default when present."""
+        from core.utils import get_conf_value
+
+        config = configparser.ConfigParser()
+        config.read_dict({"Openmatb": {"fullscreen": "false"}})
+        with patch("core.utils.CONFIG", config):
+            assert get_conf_value("Openmatb", "fullscreen") is False
+
+    def test_default_types_are_correct(self):
+        """All defaults are already the correct Python types (not strings)."""
+        from core.utils import _CONFIG_DEFAULTS
+
+        assert isinstance(_CONFIG_DEFAULTS[("Openmatb", "fullscreen")], bool)
+        assert isinstance(_CONFIG_DEFAULTS[("Openmatb", "screen_index")], int)
+        assert isinstance(_CONFIG_DEFAULTS[("Openmatb", "clock_speed")], float)
+        assert isinstance(_CONFIG_DEFAULTS[("Openmatb", "top_bounds")], list)
+        assert isinstance(_CONFIG_DEFAULTS[("Openmatb", "language")], str)
+
+
 class TestHasConfValue:
     def test_existing_option(self):
         """Return True when section and key both exist."""
