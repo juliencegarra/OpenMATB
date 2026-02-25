@@ -244,12 +244,13 @@ class TestVoiceSwitching:
         c = _make_comms_for_voice()
         nonexistent = tmp_path / "english" / "female"  # Does not exist
 
-        with patch.object(Communications, "get_sounds_path", return_value=nonexistent):
+        mock_errors = MagicMock()
+        with patch.object(Communications, "get_sounds_path", return_value=nonexistent), \
+             patch("plugins.communications.get_errors", return_value=mock_errors):
             c.set_sample_sounds()
 
         # sound_path should NOT be updated
         assert c.sound_path is None
-        c.logger.log_manual_entry.assert_called_once()
-        logged_msg = c.logger.log_manual_entry.call_args[0][0]
-        assert "Warning" in logged_msg
+        mock_errors.add_error.assert_called_once()
+        logged_msg = mock_errors.add_error.call_args[0][0]
         assert "does not exist" in logged_msg
