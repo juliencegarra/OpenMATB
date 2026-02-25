@@ -13,8 +13,8 @@ from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.constants import PLUGIN_TITLE_HEIGHT_PROPORTION
 from core.container import Container
-from core.widgets import Frame, Pump, PumpFlow, Simpletext, Tank
 from core.window import Window
+from core.widgets import Frame, Pump, PumpFlow, Simpletext, Tank
 from plugins.abstractplugin import AbstractPlugin
 
 

@@ -16,8 +16,8 @@ from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.container import Container
 from core.logger import get_logger
-from core.widgets import Frame, SimpleHTML, Simpletext
 from core.window import Window
+from core.widgets import Frame, SimpleHTML, Simpletext
 
 # Plugin steps later than this (seconds) are skipped instead of caught up (see compute_next_plugin_state)
 MAX_STEP_CATCH_UP: float = 0.25
@@ -98,8 +98,7 @@ class AbstractPlugin:
         if self.parameters["taskplacement"] == "fullscreen":
             for _name, widget in self.widgets.items():
                 widget.show()
-            if Window.MainWindow is not None:
-                Window.MainWindow.set_bg_bands_visible(False)
+            Window.MainWindow.set_bg_bands_visible(False)
 
         elif self.parameters["taskplacement"] != "invisible":
             for _name, widget in self.widgets.items():
@@ -129,8 +128,7 @@ class AbstractPlugin:
         if self.parameters["taskplacement"] == "fullscreen":
             for _name, widget in self.widgets.items():
                 widget.hide()
-            if Window.MainWindow is not None:
-                Window.MainWindow.set_bg_bands_visible(True)
+            Window.MainWindow.set_bg_bands_visible(True)
 
         elif self.parameters["taskplacement"] != "invisible":
             self.get_widget("task_title").hide()
