@@ -126,21 +126,13 @@ class Scenario:
             if current_level is not None and entry in current_level:
                 if isinstance(current_level[entry], dict):
                     current_level = current_level[entry]
-            else:  # Not entry found, try to resolve retrocompatiblity issue
+            else:  # Entry not found
                 current_level = None
 
         if current_level is None:
             return None, False
         else:
             return current_level[parameter_address[-1]], True
-
-    def try_retrocompatibility(self, plugin: str, command: list[str]) -> tuple[Any, bool | None]:
-        try:
-            command[0] = retro[command[0]]  # noqa: F821
-        except KeyError:
-            return None, None
-        else:
-            return self.get_parameters_value(plugin, command)
 
     def get_plugin_methods(self, plugin: str) -> list[str]:
         return [f for f in dir(self.plugins[plugin]) if callable(getattr(self.plugins[plugin], f))]
