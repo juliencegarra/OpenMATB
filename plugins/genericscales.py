@@ -36,12 +36,17 @@ class Genericscales(BlockingPlugin):
         self.keys.update({"UP", "DOWN", "LEFT", "RIGHT"})
         self.parameters.update(new_par)
 
+        self._presentation_count: int = 0
         self.ignore_empty_lines: bool = True
 
         self.regex_scale_pattern: str = r"(.*);(.*)/(.*);(\d*)/(\d*)/(\d*)"
         self.question_height_ratio: float = 0.1  # question + response slider
         self.question_interspace: float = 0.05  # Space to leave between two questions
         self.top_to_top: float = self.question_interspace + self.question_height_ratio
+
+    def start(self) -> None:
+        self._presentation_count += 1
+        super().start()
 
     def _measure_text_height(self, text: str, font_size: int, wrap_width_px: float, bold: bool = False) -> int:
         font_name: str = get_conf_value("Openmatb", "font_name")
@@ -208,6 +213,7 @@ class Genericscales(BlockingPlugin):
             slider.update()
 
     def stop(self) -> None:
+        self.log_performance("presentation_number", self._presentation_count)
         for _slider_name, slider_widget in self.sliders.items():
             self.log_performance(slider_widget.get_title(), slider_widget.get_value())
         super().stop()

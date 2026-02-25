@@ -159,7 +159,8 @@ class Sysmon(AbstractPlugin):
             # If the failure timer has ended by itself, stop failure and trigger a negative feedback
             # if possible (scale gauges)
             if gauge["_failuretimer"] <= 0:
-                self.stop_failure(gauge, success=False)
+                resolved = "auto" if self.parameters["automaticsolver"] else ""
+                self.stop_failure(gauge, success=False, resolved_by=resolved)
 
         for gauge in self.get_scale_gauges():
             if gauge["_feedbacktimer"] is not None:
@@ -252,7 +253,7 @@ class Sysmon(AbstractPlugin):
                 delay = overrides["delay"]
         gauge["_failuretimer"] = delay
 
-    def stop_failure(self, gauge: dict[str, Any], success: bool = False) -> None:
+    def stop_failure(self, gauge: dict[str, Any], success: bool = False, resolved_by: str = "") -> None:
         # Reset the gauge failure timer
         gauge["_onfailure"] = False
         gauge["_failuretimer"] = None
@@ -283,6 +284,7 @@ class Sysmon(AbstractPlugin):
         self.log_performance("name", gauge["name"])
         self.log_performance("signal_detection", sdt_string)
         self.log_performance("response_time", rt)
+        self.log_performance("resolved_by", resolved_by)
 
         # Reset gauge to its nominal (default) state
         if "default" in gauge:  # Light case
@@ -327,20 +329,23 @@ class Sysmon(AbstractPlugin):
             return
 
         if state == "press":
+            resolver: str = "agent" if emulate else "human"
+
             # allowanykey mode: SPACE resolves the first active failure
             if self.parameters["allowanykey"] and key == "SPACE":
                 failures = self.get_gauges_on_failure()
                 if failures:
-                    self.stop_failure(gauge=failures[0], success=True)
+                    self.stop_failure(gauge=failures[0], success=True, resolved_by=resolver)
                 return
 
             gauge: dict[str, Any] = self.get_gauge_by_key(key)
             if key in [g["key"] for g in self.get_gauges_on_failure()]:
-                self.stop_failure(gauge=gauge, success=True)
+                self.stop_failure(gauge=gauge, success=True, resolved_by=resolver)
             else:
                 self.log_performance("name", gauge["name"])
                 self.log_performance("signal_detection", "FA")
                 self.log_performance("response_time", float("nan"))
+                self.log_performance("resolved_by", resolver)
 
                 # Set a negative feedback if relevant
                 if self.parameters["feedbacks"]["negative"]["active"]:

@@ -125,7 +125,7 @@ class Logger:
     def round_row(self, row: Any) -> Any:
         new_list: list[Any] = list()
         for col in row:
-            new_value: Any = round(col, self.maxfloats) if isinstance(col, (float, int)) else col
+            new_value: Any = round(col, self.maxfloats) if isinstance(col, (float, int)) and not isinstance(col, bool) else col
             new_list.append(new_value)
         return self.slot(*new_list)
 
