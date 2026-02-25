@@ -114,6 +114,11 @@ msgstr "%s n'est pas disponible"
 msgid "Scenario error: %s is not a valid plugin name (l. %s)"
 msgstr "Erreur du scénario: %s n'est pas le nom d'un plugin (l. %s)"
 
+#: core/scenario.py:105
+#, python-format
+msgid "Line %s: '%s' is deprecated and will be ignored"
+msgstr "Ligne %s : '%s' est obsolète et sera ignoré"
+
 #: core/scenario.py:112
 msgid "No error"
 msgstr "Aucune erreur"
