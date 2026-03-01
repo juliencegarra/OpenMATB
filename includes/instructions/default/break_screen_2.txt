@@ -1,0 +1,17 @@
+<!-- Outer <center> keeps the container in the middle of the screen -->
+<center>
+  <!-- Create a container of fixed width, with centered text -->
+  <div style="width:600px; text-align:center;">
+
+    <!-- Title and paragraphs are now centered -->
+    <h1>Loading Next Task</h1>
+    <p>Please wait while the system prepares the next scenario.</p>
+    <p>This process may take up to two minutes. We appreciate your patience.</p>
+
+    <!-- Extra spacing before the image, if desired -->
+    <div style="margin-top:40px;">
+      <img src="images/dog_pilot.webp" alt="Loading illustration" width="1200" height="600">
+    </div>
+
+  </div>
+</center>

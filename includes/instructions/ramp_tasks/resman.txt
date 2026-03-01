@@ -1,0 +1,7 @@
+<h1>Presentation of tasks</h1>
+
+<p>In the resource management task, participants must control the leakage of the two main reservoirs (A and B) using a set of backup reservoirs and pumps, each with its own specific power.</p>
+
+<p>The participant's task is to turn on/off the numbered pumps to bring reservoirs A and B as close as possible to their normal levels.</p>
+
+<p>Pumps may occasionally malfunction.</p>

@@ -1,3 +1,11 @@
-<h1>Présentation des tâches</h1>
+<h1>Communications (Bottom Left)</h1>
 
-<p>Dans la tâche de communication, il s'agit pour le participant de répondre à des instructions sonores quant aux fréquences de ses radios. Certains messages s'adressent à lui (son indicatif), mais il doit ignorer les autres messages (autre indicatif).</p>
+<p>In this task, you must repeat the frequency of the channel when your call sign is signaled. </p>
+
+<p>If a message is directed to you: Press and hold the trigger button or the space key while repeating the message.</p>
+
+<p>If a message is directed to another call sign: Ignore it.</p>
+
+<p>Your call sign is displayed at the top of the communications task window. Always hold the trigger button or space key down while responding.</p>
+
+

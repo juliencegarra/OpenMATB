@@ -48,7 +48,7 @@ class AbstractWidget:
         self.visible: bool = False
         self.logger: Logger = get_logger()
         self.highlight_aoi: str = get_conf_value("Openmatb", "highlight_aoi")
-        glLineWidth(2)
+        glLineWidth(1)
 
         self.m_draw: int = 0
         self.verbose: bool = False

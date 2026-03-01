@@ -1,0 +1,3 @@
+<h1>This is the end of the experiemnt.</h1>
+
+<p>Please inform the experimenter that you have completed the task. Feel free to ask any questions.</p>

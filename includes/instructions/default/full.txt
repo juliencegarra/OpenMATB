@@ -1,3 +1,8 @@
-<h1>Présentation des tâches</h1>
 
-<p>Tout l'enjeu pour le participant consiste à parvenir à réaliser l'ensemble de ces tâches simultanément.</p>
+<center>
+<p>You will now complete all the tasks at the same time.</p>
+
+<p>This is a <strong>practice</strong> run.</p>
+
+<p>If you have any questions, please ask the experimenter.</p>
+</center>

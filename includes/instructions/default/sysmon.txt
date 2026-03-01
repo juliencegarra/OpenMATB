@@ -1,5 +1,7 @@
-<h1>Présentation des tâches</h1>
+<h1>System monitoring (Top Left)</h1>
 
-<p>Dans la tâche de surveillance, les participants contrôlent un ensemble de <strong>six jauges</strong>.</p>
+<p>In this task, you are incharge of monitoring a set of <strong>six gauges</strong>.</p>
 
-<p>Ils doivent corriger le système si nécessaire : lorsque la lumière verte s'éteint ; lorsque la lumière rouge s'allume, ou encore lorsque l'une des flèches mouvantes se déplace à l'extrémité de l'une des quatre échelles.</p>
+<p>You must correct the system if necessary: when the green light goes off (F5), when the red light turns on (F6), or when any of the moving arrows reaches the end of one of the four scales (F1 to F4).</p>
+
+<p>Please familiarise yourself with the location of the F1-F6 keys before you proceed.</p>

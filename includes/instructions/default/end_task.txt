@@ -1,0 +1,6 @@
+<center>
+<h1>You have completed this section.
+
+<p>Please take a short break</p>
+
+</center>

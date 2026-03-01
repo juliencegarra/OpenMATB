@@ -1,0 +1,3 @@
+<h1>Presentation of tasks</h1>
+
+<p>In the tracking task, the participant must correct the drift of a cursor using the joystick. The goal is to keep the cursor within a tolerance zone, symbolized by a circle.</p>

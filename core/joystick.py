@@ -7,8 +7,11 @@ import pyglet.input
 from core.constants import REPLAY_MODE
 from core.error import get_errors
 from core.logger import get_logger
+from core.utils import get_conf_value
+
 
 hat_sides: list[str] = ["LEFT", "UP", "RIGHT", "DOWN"]
+
 
 
 class Joystick:
@@ -17,14 +20,16 @@ class Joystick:
         self.keys: dict[str, bool] = dict()
         self.x: float = 0
         self.y: float = 0
-        try:  # Just in case Joystick is opened twice (?)
-            self.open()
-        except OSError:
-            pass
+        if self.device:
+            try:  # Just in case Joystick is opened twice (?)
+                self.open()
+            except OSError:
+                pass
 
         # Define joystick keys (BTN, HAT)
         # 1. Add buttons (the number of which can vary)
-        self.keys.update({f"JOY_BTN_{numb + 1}": False for numb in range(len(self.device.buttons))})
+        if self.device:
+            self.keys.update({f"JOY_BTN_{numb + 1}": False for numb in range(len(self.device.buttons))})
 
         # 2. Add HAT directions as buttons
         self.keys.update({f"JOY_HAT_{side}": False for side in hat_sides})
@@ -45,6 +50,8 @@ class Joystick:
         self.key_change[keystr] = None
 
     def update(self) -> None:
+        if not self.device:
+            return
         # Update x & y joystick values
         if self.device.x != self.x:
             self.x = self.device.x
@@ -93,8 +100,11 @@ joystick: Joystick | None = None
 joysticks: list[Any] = pyglet.input.get_joysticks()
 
 if not REPLAY_MODE:
-    if len(joysticks) > 0:
-        joystick_device: Any = joysticks[0]
+    if len(joysticks) > 0 or get_conf_value("Openmatb", "no_joystick"):
+        if get_conf_value("Openmatb", "no_joystick"):
+            joystick_device = None
+        else:
+            joystick_device: Any = joysticks[0]
         joystick = Joystick(joystick_device)
         joykey = joystick.keys
     else:

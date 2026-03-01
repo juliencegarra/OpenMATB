@@ -1,0 +1,5 @@
+<h1>Presentation of tasks</h1>
+
+<p>In the monitoring task, participants control a set of <strong>six gauges</strong>.</p>
+
+<p>They must correct the system if necessary: when the green light goes off, when the red light turns on, or when any of the moving arrows reaches the end of one of the four scales.</p>

@@ -1,3 +1,5 @@
-<h1>Présentation des tâches</h1>
+<h1>Tracking (Top Right)</h1>
 
-<p>Dans la tâche de poursuite, le participant doit corriger la dérive d'un curseur à l'aide du joystick. Son objectif est de maintenir l'appareil dans une zone de tolérance, symbolisée par une cercle.</p>
+<p>In this task, you must correct the drift of a cursor using the joystick. The goal is to keep the cursor within the white circle.</p>
+
+<p>Please familiarise yourself with the joystick movements before proceeding.</p>

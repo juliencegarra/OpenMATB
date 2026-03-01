@@ -1,7 +1,7 @@
-<h1>Présentation des tâches</h1>
+<h1>Resource Management</h1>
 
-<p>Dans la tâche de gestion des ressources, les participants doivent limiter la fuite des deux réservoirs principaux (A et B) en utilisant un jeu de réservoirs de secours et de pompes, dont chacune a une puissance particulière.</p>
+<p>In this task, you must control the leakage of the two main reservoirs (A and B) using a set of backup reservoirs and pumps, each with its own specific power.</p>
 
-<p>La tâche du participant est d'allumer/éteindre les pompes numérotées pour faire se rapprocher, du mieux que possible, les réservoirs A et B de leurs niveaux normaux.</p>
+<p>Your task is to turn on/off the numbered pumps to bring reservoirs A and B as close as possible to their normal levels (between the black markers on the reservoirs).</p>
 
-<p>Des pompes peuvent parfois tomber en panne.</p>
+<p>Please familiarise yourself with the location of keys 1 to 6 on the numpad. </p>

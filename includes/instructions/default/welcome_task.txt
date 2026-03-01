@@ -1,0 +1,6 @@
+<center>
+<h1>Thank you for your participation in the Multi-Attribute Task Battery (MATB).
+
+<p>Please wait for the experimenter to continue.</p>
+
+</center>
