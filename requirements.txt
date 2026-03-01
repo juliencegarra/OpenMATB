@@ -2,3 +2,4 @@ pyglet>=2.1.0,<3.0.0
 rstr==3.1.0
 pyparallel==0.2.2
 pylsl==1.16.1
+opencv-python>=4.10.0,<5.0.0

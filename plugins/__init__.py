@@ -4,6 +4,7 @@
 
 from .abstractplugin import AbstractPlugin  # noqa: F401
 from .communications import Communications  # noqa: F401
+from .facecamera import Facecamera  # noqa: F401
 from .genericscales import Genericscales  # noqa: F401
 from .generictrigger import Generictrigger  # noqa: F401
 from .instructions import Instructions  # noqa: F401

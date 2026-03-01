@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import configparser
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -29,7 +30,18 @@ PERMUTATIONS = [
 ]
 
 
-def load_openmatb_config() -> tuple[str, int, str, str, str]:
+def parse_bool(value: str, default: bool = False) -> bool:
+    if value is None:
+        return default
+    lowered = value.strip().lower()
+    if lowered in {"1", "true", "yes", "on"}:
+        return True
+    if lowered in {"0", "false", "no", "off"}:
+        return False
+    return default
+
+
+def load_openmatb_config() -> tuple[str, int, str, str, str, bool]:
     config = configparser.ConfigParser()
     config.read(CONFIG_PATH)
 
@@ -48,7 +60,71 @@ def load_openmatb_config() -> tuple[str, int, str, str, str]:
     current_scenario_path = section.get("scenario_path", "").strip()
     stream_b_order = section.get("stream_b_order", "auto").strip().lower()
     stream_c_condition = section.get("stream_c_condition", "auto").strip().lower()
-    return experiment, participant_id, current_scenario_path, stream_b_order, stream_c_condition
+    record_face = parse_bool(section.get("record_face", "true"), default=True)
+    return experiment, participant_id, current_scenario_path, stream_b_order, stream_c_condition, record_face
+
+
+def parse_hms_to_seconds(value: str) -> int | None:
+    match = re.match(r"^(\d+):(\d{2}):(\d{2})$", value.strip())
+    if match is None:
+        return None
+    h, m, s = match.groups()
+    return int(h) * 3600 + int(m) * 60 + int(s)
+
+
+def format_seconds_to_hms(value: int) -> str:
+    hh = value // 3600
+    rem = value % 3600
+    mm = rem // 60
+    ss = rem % 60
+    return f"{hh}:{mm:02d}:{ss:02d}"
+
+
+def build_runtime_facecamera_scenario(rel_scenario_path: str) -> str:
+    src_path = SCENARIOS_DIR / rel_scenario_path
+    lines = src_path.read_text(encoding="utf-8").splitlines()
+
+    if any(";facecamera;" in line for line in lines):
+        return rel_scenario_path
+
+    max_sec = 0
+    has_lsl = False
+    for line in lines:
+        stripped = line.strip()
+        if len(stripped) == 0 or stripped.startswith("#"):
+            continue
+
+        if ";labstreaminglayer;" in stripped:
+            has_lsl = True
+
+        pieces = stripped.split(";", 1)
+        if len(pieces) < 2:
+            continue
+
+        sec = parse_hms_to_seconds(pieces[0])
+        if sec is not None and sec > max_sec:
+            max_sec = sec
+
+    stop_ts = format_seconds_to_hms(max_sec)
+
+    injected_lines = list(lines)
+    injected_lines.append("")
+    injected_lines.append("# Runtime injected face camera controls")
+    injected_lines.append("0:00:00;facecamera;start")
+    if has_lsl:
+        injected_lines.append("0:00:00;labstreaminglayer;marker;FACECAM_START")
+    if has_lsl:
+        injected_lines.append(f"{stop_ts};labstreaminglayer;marker;FACECAM_STOP")
+    injected_lines.append(f"{stop_ts};facecamera;stop")
+
+    runtime_dir = SCENARIOS_DIR / "_runtime_facecamera"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+
+    runtime_name = rel_scenario_path.replace("/", "__").replace(".txt", "") + "__facecamera.txt"
+    runtime_rel_path = f"_runtime_facecamera/{runtime_name}"
+    runtime_path = SCENARIOS_DIR / runtime_rel_path
+    runtime_path.write_text("\n".join(injected_lines) + "\n", encoding="utf-8")
+    return runtime_rel_path
 
 
 def set_openmatb_value(key: str, value: str) -> None:
@@ -269,6 +345,10 @@ def get_session_csv_set() -> set[Path]:
     return set(SESSIONS_DIR.glob("**/*.csv"))
 
 
+def get_face_video_set() -> set[Path]:
+    return set(SESSIONS_DIR.glob("**/*_facecamera.mp4"))
+
+
 def is_primary_session_csv(path: Path) -> bool:
     stem = path.stem
     first = stem.split("_")[0] if "_" in stem else ""
@@ -302,6 +382,32 @@ def relocate_block_log(participant_id: int, rel_scenario_path: str, before_set: 
         suffix = 2
         while True:
             candidate = participant_dir / f"{participant_id}_{block_stem}_{suffix}.csv"
+            if not candidate.exists():
+                target = candidate
+                break
+            suffix += 1
+
+    return Path(shutil.move(str(source), str(target)))
+
+
+def relocate_block_face_video(participant_id: int, rel_scenario_path: str, before_set: set[Path]) -> Path | None:
+    after_set = get_face_video_set()
+    created = sorted(list(after_set - before_set), key=lambda p: p.stat().st_mtime)
+
+    if not created:
+        return None
+
+    source = created[-1]
+    participant_dir = SESSIONS_DIR / f"participant_{participant_id}"
+    participant_dir.mkdir(parents=True, exist_ok=True)
+
+    block_stem = Path(rel_scenario_path).stem
+    target = participant_dir / f"{participant_id}_{block_stem}_facecamera.mp4"
+
+    if target.exists():
+        suffix = 2
+        while True:
+            candidate = participant_dir / f"{participant_id}_{block_stem}_facecamera_{suffix}.mp4"
             if not candidate.exists():
                 target = candidate
                 break
@@ -428,7 +534,7 @@ def compute_instruction_accuracies(csv_path: Path) -> dict[str, float]:
 
 
 def main() -> None:
-    experiment, participant_id, original_scenario_path, stream_b_order, stream_c_condition = load_openmatb_config()
+    experiment, participant_id, original_scenario_path, stream_b_order, stream_c_condition, record_face = load_openmatb_config()
 
     if experiment == "A":
         blocks = build_exp_a_block_sequence(participant_id)
@@ -448,6 +554,7 @@ def main() -> None:
         print(f"Stream B order setting: {stream_b_order}")
     if experiment == "C":
         print(f"Stream C condition setting: {stream_c_condition}")
+    print(f"Face recording: {'enabled' if record_face else 'disabled'}")
     print(f"Total blocks: {len(blocks)}")
 
     try:
@@ -465,13 +572,20 @@ def main() -> None:
                     print("\nReminder: take an 8-10 minute break before the next experimental block.")
 
             before_set = get_session_csv_set()
-            ran = run_block(name, rel_path, idx, total)
+            before_video_set = get_face_video_set()
+            run_rel_path = build_runtime_facecamera_scenario(rel_path) if record_face else rel_path
+            ran = run_block(name, run_rel_path, idx, total)
             if not ran:
                 idx += 1
                 continue
 
             saved_log = relocate_block_log(participant_id, rel_path, before_set)
             print(f"Saved block results: {saved_log.relative_to(ROOT)}")
+
+            if record_face:
+                saved_video = relocate_block_face_video(participant_id, rel_path, before_video_set)
+                if saved_video is not None:
+                    print(f"Saved face video: {saved_video.relative_to(ROOT)}")
 
             if rel_path.endswith("_instructions_combined_L.txt"):
                 instr = compute_instruction_accuracies(saved_log)
