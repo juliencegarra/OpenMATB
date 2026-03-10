@@ -1,0 +1,39 @@
+# Experiment D baseline block 3 for participant 3195
+# level=L
+# participant_baseline_order=('M', 'H', 'L')
+# Date: 2026-03-10 13:45:01
+
+0:00:00;instructions;filename;default/full.txt
+0:00:00;instructions;start
+0:00:00;labstreaminglayer;pauseatstart;true
+0:00:00;labstreaminglayer;streamsession;true
+0:00:00;labstreaminglayer;start
+0:00:00;labstreaminglayer;marker;EXP_D_BASELINE_L
+0:00:00;track;start
+0:00:00;sysmon;start
+0:00:00;communications;start
+0:00:00;resman;start
+0:00:00;communications;voicegender;male
+0:00:00;communications;voiceidiom;english
+0:00:00;resman;tank-a-lossperminute;471
+0:00:00;resman;tank-b-lossperminute;489
+0:00:00;track;targetproportion;0.6
+0:00:07;communications;radioprompt;own
+0:00:08;sysmon;scales-3-failure;True
+0:00:21;communications;radioprompt;own
+0:00:39;sysmon;scales-2-failure;True
+0:00:44;sysmon;lights-1-failure;True
+0:00:54;sysmon;scales-4-failure;True
+0:00:57;communications;radioprompt;other
+0:01:13;communications;radioprompt;other
+0:01:22;sysmon;lights-2-failure;True
+0:01:33;sysmon;scales-1-failure;True
+0:01:35;sysmon;lights-1-failure;True
+0:01:49;sysmon;lights-2-failure;True
+0:02:00;track;stop
+0:02:00;sysmon;stop
+0:02:00;communications;stop
+0:02:00;resman;stop
+0:02:00;labstreaminglayer;stop
+0:02:00;instructions;filename;default/end_task.txt
+0:02:00;instructions;start

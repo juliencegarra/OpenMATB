@@ -1,4 +1,6 @@
-# OpenMATB — Tutorial + Experiment Reference
+# OpenMATB — Experimenter Run Order Guide
+
+This README is written for the experimenter.
 
 This guide is split into two parts:
 
@@ -7,32 +9,38 @@ This guide is split into two parts:
 
 ---
 
-## Part 1 — First run tutorial (step by step)
-
-## 1) What you are running
+## 1. What this repository currently supports
 
 OpenMATB in this repository supports five experiment streams:
 
 - **A**: replication stream (three 8-min experimental conditions — Low, Medium, High)
-- **B**: within-subject stream, fixed difficulty (two 20-min experimental conditions — Low & High)
-- **C**: between-subject stream, fixed difficulty (one 36-min experimental condition — Low or High)
-- **D**: within-subject stream, calibrated difficulty (two 20-min personalized conditions)
-- **E**: between-subject stream, calibrated difficulty (one 36-min personalized condition)
+- **B**: within-subject stream, fixed difficulty (two 25-min experimental conditions — Low & High)
+- **C**: between-subject stream, fixed difficulty (one 25-min experimental condition — Low or High)
+- **D**: staircase stream (one 36-min continuous block with embedded L/M/H segments)
+- **E**: calibration-driven stream (two 12-min personalized conditions — Low & High)
 
-Across all streams, participants begin with an instruction phase:
+Experiments **B**, **C**, **D**, and **E** share the same instruction pipeline:
 
-- subtask instruction trials (**1 minute per subtask**, 4 min total), then
-- a combined low-load instruction block (**2 minutes**).
+1. **Subtask instruction phase**: 4 blocks × 1 minute
+   - Track only
+   - SysMon only
+   - Communications only
+   - ResMan only
+2. **Combined instruction phase**: 1 block × 2 minutes at low load
+3. After the 2-minute combined instruction block, the runner:
+   - prints Track / ResMan / SysMon / Comms accuracies,
+   - prints average instruction accuracy,
+   - asks whether to continue or repeat **only the 2-minute combined instruction block**.
 
-After each combined instruction block, the runner prints subtask accuracies and asks if the instruction session should be repeated.
+The 4 separate 1-minute subtasks are **not** repeated.
 
 **B and C** use Experiment A's fixed difficulty: L (difficulty=0.4, comms=2), H (difficulty=0.7, comms=4). No calibration.
 
-**D and E** use the same practice structure as B and C respectively, then estimate capacity from practice performance to generate personalized experimental scenarios.
+**D** uses a staircase design with no calibration. **E** uses calibration blocks to estimate the participant-specific operating curve before generating personalized experimental scenarios.
 
 ---
 
-## 2) Setup
+## 2. Setup
 
 ### Python environment
 
@@ -62,32 +70,31 @@ python run_experiment.py --help   # should print without import errors
 
 ### Pre-generated scenarios
 
-Scenario files for 200 participants per experiment are already included under `includes/scenarios/`. You do **not** need to run the generators — just set your experiment and participant ID in config.ini and go.
+Scenario files for participants are already included under `includes/scenarios/`. You do **not** need to run the generators unless you need IDs beyond the pre-generated range — just set your experiment and participant ID in config.ini and go.
 
 ---
 
-## 3) Choose your experiment and participant ID
+## 3. Choose your experiment and participant ID
 
-Pick:
-
+You need:
 - one experiment: `A`, `B`, `C`, `D`, or `E`
 - one integer participant ID
 
-Use a **new** participant ID for each participant so outputs never overwrite each other.
-
-Participant ID ranges:
+### Participant ID ranges
 
 | Experiment | Pre-generated IDs | Full ID Range |
 |------------|-------------------|---------------|
 | A | 1001–1200 | 1001–1999 |
-| B | 2001–2200 | 2001–2999 |
-| C | 3001–3200 | 3001–3999 |
-| D | 4001–4200 | 4001–4999 |
-| E | 5001–5200 | 5001–5999 |
+| B | 1000–1199 | 1000–1999 |
+| C | 2000–2199 | 2000–2999 |
+| D | 3000–3199 | 3000–3999 |
+| E | 4000–4199 | 4000–4999 |
+
+The runner uses the participant ID to determine counterbalancing. Do **not** reuse a participant ID.
 
 ---
 
-## 4) (Optional) Generate additional scenarios
+## 4. (Optional) Generate additional scenarios
 
 Scenarios for IDs shown above are **already included**. Only run generators if you need IDs beyond the pre-generated range:
 
@@ -101,9 +108,11 @@ python -m scenario_generators.expE   # Experiment E
 
 Edit the `start_id` / `end_id` in each generator's `main()` to control the range.
 
+For B–E, the generators also create shared instruction files in [includes/scenarios/common/](includes/scenarios/common/).
+
 ---
 
-## 5) Edit config.ini
+## 5. Edit config.ini
 
 Open [config.ini](config.ini) and set at minimum:
 
@@ -116,20 +125,62 @@ Then set experiment-specific fields if needed:
 
 - For B: `stream_b_order=auto|low-high|high-low`
 - For C: `stream_c_condition=auto|low|high`
-- For D: `stream_d_order=auto|low-high|high-low`
-- For E: `stream_e_condition=auto|low|high`
+- For E: `stream_e_order=auto|low-high|high-low`
 
-Example for Experiment D:
+Experiment D does **not** need an extra stream parameter.
+
+| Field | Values | Applies to |
+|-------|--------|------------|
+| `experiment` | `A`, `B`, `C`, `D`, `E` | All |
+| `participant_id` | integer | All |
+| `stream_b_order` | `auto`, `low-high`, `high-low` | B |
+| `stream_c_condition` | `auto`, `low`, `high` | C |
+| `stream_e_order` | `auto`, `low-high`, `high-low` | E |
+| `record_face` | `True`, `False` | All |
+
+### Example configs
+
+#### Experiment A
+
+```ini
+experiment=A
+participant_id=1001
+```
+
+#### Experiment B
+
+```ini
+experiment=B
+participant_id=1000
+stream_b_order=auto
+```
+
+#### Experiment C
+
+```ini
+experiment=C
+participant_id=2000
+stream_c_condition=auto
+```
+
+#### Experiment D
 
 ```ini
 experiment=D
-participant_id=4001
-stream_d_order=auto
+participant_id=3000
+```
+
+#### Experiment E
+
+```ini
+experiment=E
+participant_id=4000
+stream_e_order=auto
 ```
 
 ---
 
-## 6) Start the run
+## 6. Start the run
 
 Launch:
 
@@ -140,37 +191,10 @@ During the run:
 1. Follow on-screen prompts.
 2. Complete instruction phase first.
 3. Decide whether to repeat instruction if prompted.
-4. Continue through baseline/practice and experimental blocks (depends on experiment).
+4. Continue through baseline and experimental blocks (depends on experiment).
 5. Administer NASA-TLX when prompted.
 
 ---
-
-## 7) Verify outputs after the run
-
-Check participant output folder:
-
-- `sessions/participant_<ID>/`
-
-You should see:
-
-- per-block session CSV logs
-- per-block face camera videos (if `record_face=True`)
-- for D/E: participant capacity fit JSON
-
-If output files exist and timestamps match your run, the session was captured correctly.
-
----
-
-## 8) Fast troubleshooting checklist
-
-- Wrong experiment running? Re-check `experiment` in [config.ini](config.ini).
-- Missing B/D order or C/E condition behavior? Re-check the stream-specific config fields.
-- No new outputs? Confirm `participant_id` and write access to [sessions/](sessions/).
-- Unexpected sequence? Make sure scenarios were generated for the selected experiment.
-
----
-
-## Part 2 — Experiment-specific details
 
 ## Experiment A (replication — L/M/H)
 
@@ -196,9 +220,17 @@ Experimental 3 (8 min) + NASA-TLX
   - `participant_id=<ID>` (1001–1999)
 - Run: `python run_experiment.py`
 
-### Outputs
+### Counterbalancing
 
-- Session/log files: `sessions/participant_<ID>/`
+- Baseline and experimental blocks use the same participant-specific L/M/H order.
+
+### NASA-TLX
+
+- NASA-TLX appears after each 8-minute experimental block.
+
+### Breaks
+
+- The runner prints a reminder for a **5-minute break** between baseline and experimental phases.
 
 ---
 
@@ -209,24 +241,36 @@ Experimental 3 (8 min) + NASA-TLX
 ```
 Instructions Subtasks (4 min)
 Instructions Combined Low (2 min) — accuracy assessment
-Baseline Pre 1 (2 min, L or H — same order as experimental)
-Baseline Pre 2 (2 min, H or L)
-—— 5-min break reminder ——
-Experimental Block 1 (20 min, L or H — counterbalanced) + NASA-TLX
-—— 5-min break reminder ——
-Experimental Block 2 (20 min, H or L) + NASA-TLX
+Baseline 1 (2 min, L/M/H counterbalanced)
+Baseline 2 (2 min)
+Baseline 3 (2 min)
+—— 8–10 min break reminder ——
+Experimental Block 1 (25 min, L or H — counterbalanced) + NASA-TLX
+—— 8–10 min break reminder ——
+Experimental Block 2 (25 min, H or L) + NASA-TLX
 ```
 
-Uses Experiment A's fixed difficulty levels. No calibration, no capacity estimation.
+Uses Experiment A's fixed difficulty levels. No calibration.
 
 ### Run settings
 
 - Generate scenarios: `python -m scenario_generators.expB`
 - In [config.ini](config.ini):
   - `experiment=B`
-  - `participant_id=<ID>` (2001–2999)
+  - `participant_id=<ID>` (1000–1999)
   - `stream_b_order=auto|low-high|high-low`
 - Run: `python run_experiment.py`
+
+### Counterbalancing
+
+- The three baseline blocks use participant-specific counterbalanced L/M/H order.
+- The two experimental blocks are Low then High or High then Low.
+- With `stream_b_order=auto`, order is determined from participant ID parity within the B range.
+
+### NASA-TLX
+
+- NASA-TLX appears only at the end of each 25-minute experimental block.
+- There is **no NASA-TLX** after the 2-minute baseline blocks.
 
 ### Outputs
 
@@ -241,26 +285,34 @@ Uses Experiment A's fixed difficulty levels. No calibration, no capacity estimat
 ```
 Instructions Subtasks (4 min)
 Instructions Combined Low (2 min) — accuracy assessment
-Baseline (4 min, same condition as experimental — L or H)
+Baseline 1 (2 min, L/M/H counterbalanced)
+Baseline 2 (2 min)
+Baseline 3 (2 min)
 —— 5-min break reminder ——
-Experimental Block (36 min, L or H — assigned) + NASA-TLX
+Experimental Block (25 min, L or H — assigned) + NASA-TLX
 ```
 
-Uses Experiment A's fixed difficulty levels. No calibration, no capacity estimation.
-
-Condition control:
-
-- `stream_c_condition=auto|low|high`
-- If `auto`, assignment is deterministic from participant ID.
+Uses Experiment A's fixed difficulty levels. No calibration.
 
 ### Run settings
 
 - Generate scenarios: `python -m scenario_generators.expC`
 - In [config.ini](config.ini):
   - `experiment=C`
-  - `participant_id=<ID>` (3001–3999)
+  - `participant_id=<ID>` (2000–2999)
   - `stream_c_condition=auto|low|high`
 - Run: `python run_experiment.py`
+
+### Condition assignment
+
+- Each participant receives one 25-minute experimental block only.
+- That block is either Low or High.
+- With `stream_c_condition=auto`, assignment is determined from participant ID parity within the C range.
+
+### NASA-TLX
+
+- NASA-TLX appears only at the end of the 25-minute experimental block.
+- There is **no NASA-TLX** after the 2-minute baseline blocks.
 
 ### Outputs
 
@@ -268,90 +320,112 @@ Condition control:
 
 ---
 
-## Experiment D (within-subject, calibrated)
+## Experiment D (staircase block)
 
 ### Sequence
 
 ```
 Instructions Subtasks (4 min)
 Instructions Combined Low (2 min) — accuracy assessment
-Practice 1 (4 min, L or H — same order as experimental)
-Practice 2 (4 min, H or L)
-→ Capacity estimation from practice performance
-→ Generate personalized experimental scenarios
+Baseline 1 (2 min, L/M/H counterbalanced)
+Baseline 2 (2 min)
+Baseline 3 (2 min)
 —— 5-min break reminder ——
-Experimental Block 1 (20 min, personalized low) + NASA-TLX
-—— 5-min break reminder ——
-Experimental Block 2 (20 min, personalized high) + NASA-TLX
+Experimental Staircase Block (36 min continuous) — no NASA-TLX
 ```
 
-Practice blocks use fixed L/H difficulty. After both practice blocks, the runner estimates participant capacity (m*) and generates personalized experimental scenarios at calibrated low and high difficulty levels.
+The 36-minute block is continuous to the participant. Internally it contains **9 segments × 4 minutes**, arranged as **3 groups of 12 minutes**, each containing one Low, one Moderate, and one High segment (order varies by participant). No calibration.
 
 ### Run settings
 
 - Generate scenarios: `python -m scenario_generators.expD`
 - In [config.ini](config.ini):
   - `experiment=D`
-  - `participant_id=<ID>` (4001–4999)
-  - `stream_d_order=auto|low-high|high-low`
+  - `participant_id=<ID>` (3000–3999)
 - Run: `python run_experiment.py`
+
+### NASA-TLX
+
+- There is **no NASA-TLX** in Experiment D.
 
 ### Outputs
 
 - Session/log files: `sessions/participant_<ID>/`
-- Capacity fit JSON: `sessions/participant_<ID>/<ID>_D_capacity_fit.json`
 
 ---
 
-## Experiment E (between-subject, calibrated)
+## Experiment E (calibration-driven low/high)
 
 ### Sequence
 
 ```
 Instructions Subtasks (4 min)
 Instructions Combined Low (2 min) — accuracy assessment
-Practice (4 min, assigned condition — L or H)
-→ Capacity estimation from practice performance
-→ Generate personalized experimental scenario
-—— 5-min break reminder ——
-Experimental Block (36 min, personalized low or high) + NASA-TLX
+Baseline 1 (2 min, L/M/H counterbalanced)
+Baseline 2 (2 min)
+Baseline 3 (2 min)
+Practice Block (6 min, ExpA moderate load)
+Calibration Block d1 (2 min)
+Calibration Block d2 (2 min)
+Calibration Block d3 (2 min)
+→ Capacity estimation + personalized scenario generation
+—— 8–10 min break reminder ——
+Experimental Block 1 (12 min, personalized low or high) + NASA-TLX
+—— 8–10 min break reminder ——
+Experimental Block 2 (12 min, personalized high or low) + NASA-TLX
 ```
 
-Practice block uses fixed L or H difficulty. After practice, the runner estimates participant capacity and generates a personalized experimental scenario.
-
-Condition control:
-
-- `stream_e_condition=auto|low|high`
-- If `auto`, assignment is deterministic from participant ID.
+The three calibration blocks use fixed difficulty scales (d1=0.85, d2=1.00, d3=1.25) to estimate the participant-specific operating curve. The runner then generates participant-specific experimental scenario files.
 
 ### Run settings
 
 - Generate scenarios: `python -m scenario_generators.expE`
 - In [config.ini](config.ini):
   - `experiment=E`
-  - `participant_id=<ID>` (5001–5999)
-  - `stream_e_condition=auto|low|high`
+  - `participant_id=<ID>` (4000–4999)
+  - `stream_e_order=auto|low-high|high-low`
 - Run: `python run_experiment.py`
+
+### Counterbalancing
+
+- The two 12-minute experimental blocks are Low then High or High then Low.
+- With `stream_e_order=auto`, order is determined from participant ID parity within the E range.
+
+### NASA-TLX
+
+- There is **no NASA-TLX** after the calibration blocks.
+- NASA-TLX appears only at the end of each 12-minute experimental block.
 
 ### Outputs
 
 - Session/log files: `sessions/participant_<ID>/`
-- Capacity fit JSON: `sessions/participant_<ID>/<ID>_E_capacity_fit.json`
+- Calibration fit JSON: `sessions/participant_<ID>/<ID>_E_calibration_fit.json`
 
 ---
 
-## Configuration quick reference
+## 7. Verify outputs after the run
 
-In [config.ini](config.ini):
+Check participant output folder:
 
-| Field | Values | Applies to |
-|-------|--------|------------|
-| `experiment` | `A`, `B`, `C`, `D`, `E` | All |
-| `participant_id` | integer | All |
-| `stream_b_order` | `auto`, `low-high`, `high-low` | B |
-| `stream_c_condition` | `auto`, `low`, `high` | C |
-| `stream_d_order` | `auto`, `low-high`, `high-low` | D |
-| `stream_e_condition` | `auto`, `low`, `high` | E |
-| `record_face` | `True`, `False` | All |
+- `sessions/participant_<ID>/`
 
-Capacity calibration settings (D/E only) are in the calibration section of config.ini.
+Expected files:
+
+- per-block session CSV logs
+- per-block face camera videos (if `record_face=True`)
+- for E: calibration fit JSON (`<ID>_E_calibration_fit.json`)
+
+---
+
+## Minimal experimenter workflow summary
+
+1. Generate the experiment scenarios.
+2. Pick the correct participant ID range.
+3. Edit [config.ini](config.ini).
+4. Run `python run_experiment.py`.
+5. Press **Enter** at each block to launch it.
+6. After the 2-minute combined instruction block, either:
+   - press **Enter** to continue, or
+   - type **r** to repeat the combined 2-minute block.
+7. Complete all remaining blocks in the order shown by the runner.
+8. Confirm outputs in `sessions/participant_<ID>/`.

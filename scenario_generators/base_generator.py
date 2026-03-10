@@ -7,11 +7,10 @@ from datetime import datetime
 from pathlib import Path
 from random import randint, shuffle
 from time import time
+from types import SimpleNamespace
 
 from core.constants import PATHS
-from core.scenario import Event
-from core.window import Window
-from plugins import Communications, Resman, Sysmon, Track
+from core.event import Event
 
 # ----------------------------------------------------------------------
 # Load config for language & install _() for translations
@@ -42,16 +41,66 @@ class BaseGenerator:
     EVENTS_REFRACTORY_DURATION = 1
     AVERAGE_AUDITORY_PROMPT_DURATION = 10
 
-    def __init__(self, silent_track=True):
-        win = Window()
-        win.set_visible(False)
-
-        self.plugins = {
-            "track": Track(win, silent=silent_track),
-            "sysmon": Sysmon(win),
-            "communications": Communications(win),
-            "resman": Resman(win),
+    @staticmethod
+    def _build_fallback_plugins():
+        return {
+            "track": SimpleNamespace(parameters={"targetproportion": 0.25}),
+            "sysmon": SimpleNamespace(
+                parameters={
+                    "alerttimeout": 10000,
+                    "lights": {
+                        "1": {"name": "F5"},
+                        "2": {"name": "F6"},
+                    },
+                    "scales": {
+                        "1": {"name": "F1"},
+                        "2": {"name": "F2"},
+                        "3": {"name": "F3"},
+                        "4": {"name": "F4"},
+                    },
+                }
+            ),
+            "communications": SimpleNamespace(parameters={"maxresponsedelay": 20000}),
+            "resman": SimpleNamespace(
+                parameters={
+                    "tank": {
+                        "a": {"target": 2500},
+                        "b": {"target": 2500},
+                        "c": {"target": None},
+                        "d": {"target": None},
+                        "e": {"target": None},
+                        "f": {"target": None},
+                    },
+                    "pump": {
+                        "1": {"flow": 800},
+                        "2": {"flow": 600},
+                        "3": {"flow": 800},
+                        "4": {"flow": 600},
+                        "5": {"flow": 600},
+                        "6": {"flow": 600},
+                        "7": {"flow": 400},
+                        "8": {"flow": 400},
+                    },
+                }
+            ),
         }
+
+    def __init__(self, silent_track=True):
+        try:
+            from core.window import Window
+            from plugins import Communications, Resman, Sysmon, Track
+
+            win = Window()
+            win.set_visible(False)
+
+            self.plugins = {
+                "track": Track(win, silent=silent_track),
+                "sysmon": Sysmon(win),
+                "communications": Communications(win),
+                "resman": Resman(win),
+            }
+        except ModuleNotFoundError:
+            self.plugins = self._build_fallback_plugins()
 
     def format_time(self, sec):
         """Format 'sec' into 'H:MM:SS' (hours always 0)."""

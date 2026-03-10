@@ -4,11 +4,17 @@
 
 from .clock import Clock  # noqa: F401
 from .constants import COLORS, FONT_SIZES, Group  # noqa: F401
-from .error import get_errors  # noqa: F401
-from .logger import get_logger  # noqa: F401
-from .logreader import LogReader  # noqa: F401
-from .modaldialog import ModalDialog  # noqa: F401
-from .replayscheduler import ReplayScheduler  # noqa: F401
-from .scenario import Scenario  # noqa: F401
-from .scheduler import Scheduler  # noqa: F401
-from .window import Window  # noqa: F401
+
+try:
+	from .error import get_errors  # noqa: F401
+	from .logger import get_logger  # noqa: F401
+	from .logreader import LogReader  # noqa: F401
+	from .modaldialog import ModalDialog  # noqa: F401
+	from .replayscheduler import ReplayScheduler  # noqa: F401
+	from .scenario import Scenario  # noqa: F401
+	from .scheduler import Scheduler  # noqa: F401
+	from .window import Window  # noqa: F401
+except ModuleNotFoundError:
+	# Allow lightweight imports (e.g., scenario generation utilities) even when
+	# optional GUI/rendering dependencies are unavailable in the active env.
+	pass

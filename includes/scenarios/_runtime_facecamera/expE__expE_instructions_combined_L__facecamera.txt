@@ -1,0 +1,38 @@
+# Experiment E instruction combined low
+# Date: 2026-03-08 14:19:27
+
+0:00:00;instructions;filename;default/full.txt
+0:00:00;instructions;start
+0:00:00;labstreaminglayer;pauseatstart;true
+0:00:00;labstreaminglayer;streamsession;true
+0:00:00;labstreaminglayer;start
+0:00:00;track;start
+0:00:00;sysmon;start
+0:00:00;communications;start
+0:00:00;resman;start
+0:00:00;communications;voicegender;male
+0:00:00;communications;voiceidiom;english
+0:00:10;track;targetproportion;0.7
+0:00:10;resman;tank-a-lossperminute;339
+0:00:10;resman;tank-b-lossperminute;362
+0:00:23;sysmon;scales-3-failure;True
+0:00:29;sysmon;lights-2-failure;True
+0:00:34;communications;radioprompt;own
+0:00:40;sysmon;lights-1-failure;True
+0:00:49;communications;radioprompt;own
+0:00:53;sysmon;scales-1-failure;True
+0:01:00;communications;radioprompt;other
+0:01:11;communications;radioprompt;other
+0:02:00;track;stop
+0:02:00;sysmon;stop
+0:02:00;communications;stop
+0:02:00;resman;stop
+0:02:00;labstreaminglayer;stop
+0:02:00;instructions;filename;default/end_task.txt
+0:02:00;instructions;start
+
+# Runtime injected face camera controls
+0:00:00;facecamera;start
+0:00:00;labstreaminglayer;marker;FACECAM_START
+0:02:00;labstreaminglayer;marker;FACECAM_STOP
+0:02:00;facecamera;stop

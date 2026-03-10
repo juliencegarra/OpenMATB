@@ -7,7 +7,10 @@ from __future__ import annotations
 from typing import Any
 
 from pyglet import image
-from pyglet.display import get_display
+try:
+    from pyglet.display import get_display
+except ModuleNotFoundError:
+    from pyglet.canvas import get_display
 from pyglet.gl import GL_TRIANGLES, glClearColor
 from pyglet.graphics import Batch
 from pyglet.window import Window

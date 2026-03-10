@@ -1,6 +1,5 @@
 import time
 import wave
-import pyaudio
 import pyglet
 import os
 import random
@@ -19,6 +18,11 @@ from core import validation
 import csv
 from datetime import datetime
 
+try:
+    import pyaudio
+except ImportError:
+    pyaudio = None
+
 class JoystickRecordingTest:
     """
     Handles joystick button press/release to start/stop recording audio via PyAudio.
@@ -27,10 +31,17 @@ class JoystickRecordingTest:
     """
 
     def __init__(self):
+        self.enabled = pyaudio is not None
         self.is_recording = False
         self.audio_stream = None
         self.audio_frames = []
         self.record_button_index = 0  # Joystick button to trigger recording
+
+        if not self.enabled:
+            self.joystick = None
+            self.p = None
+            self.ack_sound = None
+            return
 
         # Try to get the first joystick
         joysticks = pyglet.input.get_joysticks()
@@ -57,6 +68,9 @@ class JoystickRecordingTest:
             self.stop_recording()
 
     def start_recording(self):
+        if not self.enabled:
+            return
+
         if self.is_recording:
             return
 
@@ -81,6 +95,9 @@ class JoystickRecordingTest:
         self.audio_stream.start_stream()
 
     def stop_recording(self):
+        if not self.enabled:
+            return
+
         if not self.is_recording:
             return
 

@@ -1,0 +1,49 @@
+# Experiment C baseline block 3 for participant 2062
+# level=H
+# participant_baseline_order=('M', 'L', 'H')
+# Date: 2026-03-10 13:44:58
+
+0:00:00;instructions;filename;default/full.txt
+0:00:00;instructions;start
+0:00:00;labstreaminglayer;pauseatstart;true
+0:00:00;labstreaminglayer;streamsession;true
+0:00:00;labstreaminglayer;start
+0:00:00;labstreaminglayer;marker;EXP_C_BASELINE_H
+0:00:00;track;start
+0:00:00;sysmon;start
+0:00:00;communications;start
+0:00:00;resman;start
+0:00:00;communications;voicegender;male
+0:00:00;communications;voiceidiom;english
+0:00:00;sysmon;scales-3-failure;True
+0:00:00;resman;tank-a-lossperminute;855
+0:00:00;resman;tank-b-lossperminute;833
+0:00:00;track;targetproportion;0.30000000000000004
+0:00:05;communications;radioprompt;other
+0:00:11;sysmon;scales-2-failure;True
+0:00:16;communications;radioprompt;own
+0:00:22;sysmon;scales-1-failure;True
+0:00:27;communications;radioprompt;own
+0:00:33;sysmon;scales-2-failure;True
+0:00:37;sysmon;lights-1-failure;True
+0:00:38;communications;radioprompt;own
+0:00:44;sysmon;scales-4-failure;True
+0:00:48;sysmon;lights-2-failure;True
+0:00:54;communications;radioprompt;other
+0:00:57;sysmon;scales-1-failure;True
+0:01:01;sysmon;lights-1-failure;True
+0:01:05;communications;radioprompt;other
+0:01:12;sysmon;lights-2-failure;True
+0:01:17;communications;radioprompt;other
+0:01:23;sysmon;lights-1-failure;True
+0:01:34;sysmon;lights-2-failure;True
+0:01:39;communications;radioprompt;own
+0:01:45;sysmon;lights-1-failure;True
+0:01:47;sysmon;scales-3-failure;True
+0:02:00;track;stop
+0:02:00;sysmon;stop
+0:02:00;communications;stop
+0:02:00;resman;stop
+0:02:00;labstreaminglayer;stop
+0:02:00;instructions;filename;default/end_task.txt
+0:02:00;instructions;start
