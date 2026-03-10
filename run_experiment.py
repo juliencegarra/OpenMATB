@@ -41,7 +41,7 @@ def parse_bool(value: str, default: bool = False) -> bool:
     return default
 
 
-def load_openmatb_config() -> tuple[str, int, str, str, str, bool]:
+def load_openmatb_config() -> dict:
     config = configparser.ConfigParser()
     config.read(CONFIG_PATH)
 
@@ -51,17 +51,22 @@ def load_openmatb_config() -> tuple[str, int, str, str, str, bool]:
     section = config["Openmatb"]
     experiment = section.get("experiment", "A").strip().upper()
 
-    participant_raw = section.get("participant_id", "401").strip()
+    participant_raw = section.get("participant_id", "1001").strip()
     try:
         participant_id = int(participant_raw)
     except ValueError as exc:
         raise RuntimeError(f"participant_id must be an integer, got: {participant_raw}") from exc
 
-    current_scenario_path = section.get("scenario_path", "").strip()
-    stream_b_order = section.get("stream_b_order", "auto").strip().lower()
-    stream_c_condition = section.get("stream_c_condition", "auto").strip().lower()
-    record_face = parse_bool(section.get("record_face", "true"), default=True)
-    return experiment, participant_id, current_scenario_path, stream_b_order, stream_c_condition, record_face
+    return {
+        "experiment": experiment,
+        "participant_id": participant_id,
+        "scenario_path": section.get("scenario_path", "").strip(),
+        "stream_b_order": section.get("stream_b_order", "auto").strip().lower(),
+        "stream_c_condition": section.get("stream_c_condition", "auto").strip().lower(),
+        "stream_d_order": section.get("stream_d_order", "auto").strip().lower(),
+        "stream_e_condition": section.get("stream_e_condition", "auto").strip().lower(),
+        "record_face": parse_bool(section.get("record_face", "true"), default=True),
+    }
 
 
 def parse_hms_to_seconds(value: str) -> int | None:
@@ -163,8 +168,12 @@ def set_openmatb_value(key: str, value: str) -> None:
     CONFIG_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+# ---------------------------------------------------------------------------
+# Block sequence builders
+# ---------------------------------------------------------------------------
+
 def build_exp_a_block_sequence(participant_id: int) -> list[tuple[str, str]]:
-    offset = participant_id - 401
+    offset = participant_id - 1001
     perm_index = offset % 6
     block_order = PERMUTATIONS[perm_index]
 
@@ -183,14 +192,6 @@ def build_exp_a_block_sequence(participant_id: int) -> list[tuple[str, str]]:
 
 
 def build_exp_b_block_sequence(participant_id: int, stream_b_order: str) -> list[tuple[str, str]]:
-    blocks: list[tuple[str, str]] = [
-        ("Instruction Subtasks", "expB/expB_instructions_subtasks.txt"),
-        ("Instruction Combined (Low)", "expB/expB_instructions_combined_L.txt"),
-        ("Practice Block (10 min, m=0.85)", f"expB/participant_{participant_id}/expB_practice_M_10min.txt"),
-        ("Integrated Calibration (8 min)", f"expB/participant_{participant_id}/expB_calibration_integrated_8min.txt"),
-        ("Baseline Anchor (2 min, m=0.60)", f"expB/participant_{participant_id}/expB_baseline_anchor_2min.txt"),
-    ]
-
     if stream_b_order not in {"auto", "low-high", "high-low"}:
         raise ValueError("stream_b_order must be one of: auto, low-high, high-low")
 
@@ -199,32 +200,39 @@ def build_exp_b_block_sequence(participant_id: int, stream_b_order: str) -> list
     else:
         low_first = stream_b_order == "low-high"
 
+    blocks: list[tuple[str, str]] = [
+        ("Instruction Subtasks", "expB/expB_instructions_subtasks.txt"),
+        ("Instruction Combined (Low)", "expB/expB_instructions_combined_L.txt"),
+    ]
+
+    # Baseline pre-blocks in same order as experimental
     if low_first:
-        blocks.extend(
-            [
-                ("Experimental Block 1 (Low, 25 min)", f"expB/participant_{participant_id}/expB_experimental_low_25min.txt"),
-                ("Experimental Block 2 (High, 25 min)", f"expB/participant_{participant_id}/expB_experimental_high_25min.txt"),
-            ]
-        )
+        blocks.extend([
+            ("Baseline Pre 1 (L)", f"expB/participant_{participant_id}/expB_pre_L_2min.txt"),
+            ("Baseline Pre 2 (H)", f"expB/participant_{participant_id}/expB_pre_H_2min.txt"),
+        ])
     else:
-        blocks.extend(
-            [
-                ("Experimental Block 1 (High, 25 min)", f"expB/participant_{participant_id}/expB_experimental_high_25min.txt"),
-                ("Experimental Block 2 (Low, 25 min)", f"expB/participant_{participant_id}/expB_experimental_low_25min.txt"),
-            ]
-        )
+        blocks.extend([
+            ("Baseline Pre 1 (H)", f"expB/participant_{participant_id}/expB_pre_H_2min.txt"),
+            ("Baseline Pre 2 (L)", f"expB/participant_{participant_id}/expB_pre_L_2min.txt"),
+        ])
+
+    # Experimental blocks (counterbalanced)
+    if low_first:
+        blocks.extend([
+            ("Experimental Block 1 (L, 20 min)", f"expB/participant_{participant_id}/expB_main_L_20min.txt"),
+            ("Experimental Block 2 (H, 20 min)", f"expB/participant_{participant_id}/expB_main_H_20min.txt"),
+        ])
+    else:
+        blocks.extend([
+            ("Experimental Block 1 (H, 20 min)", f"expB/participant_{participant_id}/expB_main_H_20min.txt"),
+            ("Experimental Block 2 (L, 20 min)", f"expB/participant_{participant_id}/expB_main_L_20min.txt"),
+        ])
+
     return blocks
 
 
 def build_exp_c_block_sequence(participant_id: int, stream_c_condition: str) -> list[tuple[str, str]]:
-    blocks: list[tuple[str, str]] = [
-        ("Instruction Subtasks", "expC/expC_instructions_subtasks.txt"),
-        ("Instruction Combined (Low)", "expC/expC_instructions_combined_L.txt"),
-        ("Practice Block (10 min, m=0.85)", f"expC/participant_{participant_id}/expC_practice_M_10min.txt"),
-        ("Integrated Calibration (8 min)", f"expC/participant_{participant_id}/expC_calibration_integrated_8min.txt"),
-        ("Baseline Anchor (2 min, m=0.60)", f"expC/participant_{participant_id}/expC_baseline_anchor_2min.txt"),
-    ]
-
     if stream_c_condition not in {"auto", "low", "high"}:
         raise ValueError("stream_c_condition must be one of: auto, low, high")
 
@@ -233,19 +241,89 @@ def build_exp_c_block_sequence(participant_id: int, stream_c_condition: str) -> 
     else:
         condition = stream_c_condition
 
-    if condition == "low":
-        blocks.append(("Experimental Block (Low, 30 min)", f"expC/participant_{participant_id}/expC_experimental_low_30min.txt"))
-    else:
-        blocks.append(("Experimental Block (High, 30 min)", f"expC/participant_{participant_id}/expC_experimental_high_30min.txt"))
+    key = "L" if condition == "low" else "H"
+
+    blocks: list[tuple[str, str]] = [
+        ("Instruction Subtasks", "expC/expC_instructions_subtasks.txt"),
+        ("Instruction Combined (Low)", "expC/expC_instructions_combined_L.txt"),
+        (f"Baseline ({key}, 4 min)", f"expC/participant_{participant_id}/expC_pre_{key}_4min.txt"),
+        (f"Experimental Block ({key}, 36 min)", f"expC/participant_{participant_id}/expC_main_{key}_36min.txt"),
+    ]
+
     return blocks
 
+
+def build_exp_d_block_sequence(participant_id: int, stream_d_order: str) -> list[tuple[str, str]]:
+    if stream_d_order not in {"auto", "low-high", "high-low"}:
+        raise ValueError("stream_d_order must be one of: auto, low-high, high-low")
+
+    if stream_d_order == "auto":
+        low_first = (participant_id % 2 == 0)
+    else:
+        low_first = stream_d_order == "low-high"
+
+    blocks: list[tuple[str, str]] = [
+        ("Instruction Subtasks", "expD/expD_instructions_subtasks.txt"),
+        ("Instruction Combined (Low)", "expD/expD_instructions_combined_L.txt"),
+    ]
+
+    # Practice blocks in same order as experimental
+    if low_first:
+        blocks.extend([
+            ("Practice 1 (L, 4 min)", f"expD/participant_{participant_id}/expD_pre_L_4min.txt"),
+            ("Practice 2 (H, 4 min)", f"expD/participant_{participant_id}/expD_pre_H_4min.txt"),
+        ])
+    else:
+        blocks.extend([
+            ("Practice 1 (H, 4 min)", f"expD/participant_{participant_id}/expD_pre_H_4min.txt"),
+            ("Practice 2 (L, 4 min)", f"expD/participant_{participant_id}/expD_pre_L_4min.txt"),
+        ])
+
+    # Experimental blocks (personalized at runtime)
+    if low_first:
+        blocks.extend([
+            ("Experimental Block 1 (Low, 20 min)", f"expD/participant_{participant_id}/expD_main_L_20min.txt"),
+            ("Experimental Block 2 (High, 20 min)", f"expD/participant_{participant_id}/expD_main_H_20min.txt"),
+        ])
+    else:
+        blocks.extend([
+            ("Experimental Block 1 (High, 20 min)", f"expD/participant_{participant_id}/expD_main_H_20min.txt"),
+            ("Experimental Block 2 (Low, 20 min)", f"expD/participant_{participant_id}/expD_main_L_20min.txt"),
+        ])
+
+    return blocks
+
+
+def build_exp_e_block_sequence(participant_id: int, stream_e_condition: str) -> list[tuple[str, str]]:
+    if stream_e_condition not in {"auto", "low", "high"}:
+        raise ValueError("stream_e_condition must be one of: auto, low, high")
+
+    if stream_e_condition == "auto":
+        condition = "low" if participant_id % 2 == 0 else "high"
+    else:
+        condition = stream_e_condition
+
+    key = "L" if condition == "low" else "H"
+
+    blocks: list[tuple[str, str]] = [
+        ("Instruction Subtasks", "expE/expE_instructions_subtasks.txt"),
+        ("Instruction Combined (Low)", "expE/expE_instructions_combined_L.txt"),
+        (f"Practice ({key}, 4 min)", f"expE/participant_{participant_id}/expE_pre_{key}_4min.txt"),
+        (f"Experimental Block ({key}, 36 min)", f"expE/participant_{participant_id}/expE_main_{key}_36min.txt"),
+    ]
+
+    return blocks
+
+
+# ---------------------------------------------------------------------------
+# Capacity estimation (Experiments D/E only)
+# ---------------------------------------------------------------------------
 
 def clamp(value: float, lo: float, hi: float) -> float:
     return max(lo, min(hi, value))
 
 
 def estimate_capacity_from_practice(practice_score: float, target_score: float = CAPACITY_TARGET_SCORE) -> tuple[float, float, float]:
-    # If participant scores above target at m=0.85, capacity should be > 0.85, and vice-versa.
     if target_score <= 0:
         target_score = CAPACITY_TARGET_SCORE
     m_star = PRACTICE_REFERENCE_M * (practice_score / target_score)
@@ -276,43 +354,43 @@ def write_capacity_fit(participant_id: int, experiment: str, metrics: dict[str, 
 def generate_personalized_experimental_scenarios(experiment: str, participant_id: int, m_low: float, m_high: float) -> dict[str, str]:
     now = "auto-capacity"
 
-    if experiment == "B":
-        from scenario_generators.expB import ExpBGenerator
+    if experiment == "D":
+        from scenario_generators.expD import ExpDGenerator
 
-        gen = ExpBGenerator()
-        p_dir = (SCENARIOS_DIR / "expB" / f"participant_{participant_id}")
-        low_rel = f"expB/participant_{participant_id}/expB_experimental_low_auto_25min.txt"
-        high_rel = f"expB/participant_{participant_id}/expB_experimental_high_auto_25min.txt"
+        gen = ExpDGenerator()
+        p_dir = SCENARIOS_DIR / "expD" / f"participant_{participant_id}"
+        low_rel = f"expD/participant_{participant_id}/expD_main_L_auto_20min.txt"
+        high_rel = f"expD/participant_{participant_id}/expD_main_H_auto_20min.txt"
 
         gen.write_scenario_file(
-            p_dir / "expB_experimental_low_auto_25min.txt",
-            gen._build_full_block(duration_sec=1500, m=m_low, instruction_file="default/full.txt", include_nasa_tlx=True),
-            [f"# Stream B low block participant {participant_id}", f"# auto m_low={m_low}", f"# source={now}"],
+            p_dir / "expD_main_L_auto_20min.txt",
+            gen._build_full_block(duration_sec=1200, m=m_low, instruction_file="default/full.txt", include_nasa_tlx=True),
+            [f"# Exp D low block participant {participant_id}", f"# auto m_low={m_low}", f"# source={now}"],
         )
         gen.write_scenario_file(
-            p_dir / "expB_experimental_high_auto_25min.txt",
-            gen._build_full_block(duration_sec=1500, m=m_high, instruction_file="default/full.txt", include_nasa_tlx=True),
-            [f"# Stream B high block participant {participant_id}", f"# auto m_high={m_high}", f"# source={now}"],
+            p_dir / "expD_main_H_auto_20min.txt",
+            gen._build_full_block(duration_sec=1200, m=m_high, instruction_file="default/full.txt", include_nasa_tlx=True),
+            [f"# Exp D high block participant {participant_id}", f"# auto m_high={m_high}", f"# source={now}"],
         )
         return {"low": low_rel, "high": high_rel}
 
-    if experiment == "C":
-        from scenario_generators.expC import ExpCGenerator
+    if experiment == "E":
+        from scenario_generators.expE import ExpEGenerator
 
-        gen = ExpCGenerator()
-        p_dir = (SCENARIOS_DIR / "expC" / f"participant_{participant_id}")
-        low_rel = f"expC/participant_{participant_id}/expC_experimental_low_auto_30min.txt"
-        high_rel = f"expC/participant_{participant_id}/expC_experimental_high_auto_30min.txt"
+        gen = ExpEGenerator()
+        p_dir = SCENARIOS_DIR / "expE" / f"participant_{participant_id}"
+        low_rel = f"expE/participant_{participant_id}/expE_main_L_auto_36min.txt"
+        high_rel = f"expE/participant_{participant_id}/expE_main_H_auto_36min.txt"
 
         gen.write_scenario_file(
-            p_dir / "expC_experimental_low_auto_30min.txt",
-            gen._build_full_block(duration_sec=1800, m=m_low, instruction_file="default/full.txt", include_nasa_tlx=True),
-            [f"# Stream C low block participant {participant_id}", f"# auto m_low={m_low}", f"# source={now}"],
+            p_dir / "expE_main_L_auto_36min.txt",
+            gen._build_full_block(duration_sec=2160, m=m_low, instruction_file="default/full.txt", include_nasa_tlx=True),
+            [f"# Exp E low block participant {participant_id}", f"# auto m_low={m_low}", f"# source={now}"],
         )
         gen.write_scenario_file(
-            p_dir / "expC_experimental_high_auto_30min.txt",
-            gen._build_full_block(duration_sec=1800, m=m_high, instruction_file="default/full.txt", include_nasa_tlx=True),
-            [f"# Stream C high block participant {participant_id}", f"# auto m_high={m_high}", f"# source={now}"],
+            p_dir / "expE_main_H_auto_36min.txt",
+            gen._build_full_block(duration_sec=2160, m=m_high, instruction_file="default/full.txt", include_nasa_tlx=True),
+            [f"# Exp E high block participant {participant_id}", f"# auto m_high={m_high}", f"# source={now}"],
         )
         return {"low": low_rel, "high": high_rel}
 
@@ -323,9 +401,9 @@ def apply_personalized_paths(blocks: list[tuple[str, str]], personalized: dict[s
     out: list[tuple[str, str]] = []
     for name, rel in blocks:
         new_rel = rel
-        if "_experimental_low_" in rel and "low" in personalized:
+        if "_main_L_" in rel and "low" in personalized:
             new_rel = personalized["low"]
-        elif "_experimental_high_" in rel and "high" in personalized:
+        elif "_main_H_" in rel and "high" in personalized:
             new_rel = personalized["high"]
         out.append((name, new_rel))
     return out
@@ -362,7 +440,6 @@ def relocate_block_log(participant_id: int, rel_scenario_path: str, before_set: 
         key=lambda p: p.stat().st_mtime,
     )
 
-    # Fallback: if no brand-new file is detected (edge case), choose the most recently modified csv
     if not created:
         all_csv = sorted([p for p in after_set if is_primary_session_csv(p)], key=lambda p: p.stat().st_mtime)
         if not all_csv:
@@ -377,7 +454,6 @@ def relocate_block_log(participant_id: int, rel_scenario_path: str, before_set: 
     block_stem = Path(rel_scenario_path).stem
     target = participant_dir / f"{participant_id}_{block_stem}.csv"
 
-    # Avoid overwrite if same participant reruns a block
     if target.exists():
         suffix = 2
         while True:
@@ -424,10 +500,8 @@ def run_block(block_name: str, rel_scenario_path: str, idx: int, total: int) -> 
         print(f"Skipped: {block_name}")
         return False
 
-    # Keep config.ini in sync with what is being launched
     set_openmatb_value("scenario_path", rel_scenario_path)
 
-    # main.py handles one block and saves that block's results when it ends
     subprocess.run([sys.executable, "main.py"], cwd=ROOT, check=True)
     print(f"Completed: {block_name}")
     return True
@@ -533,17 +607,43 @@ def compute_instruction_accuracies(csv_path: Path) -> dict[str, float]:
     }
 
 
+# ---------------------------------------------------------------------------
+# Helper: detect if a block is the last practice/baseline block for D/E
+# ---------------------------------------------------------------------------
+
+def _is_last_practice_block(experiment: str, rel_path: str, blocks: list[tuple[str, str]], idx: int) -> bool:
+    """Return True if this is the last practice block before experimental blocks (D/E).
+    Uses path content rather than fixed indices to handle instruction repeats."""
+    if experiment not in {"D", "E"}:
+        return False
+    if "_pre_" not in rel_path:
+        return False
+    # Check if the next block is an experimental (main) block
+    if idx + 1 < len(blocks):
+        next_rel = blocks[idx + 1][1]
+        return "_main_" in next_rel
+    return False
+
+
 def main() -> None:
-    experiment, participant_id, original_scenario_path, stream_b_order, stream_c_condition, record_face = load_openmatb_config()
+    cfg = load_openmatb_config()
+    experiment = cfg["experiment"]
+    participant_id = cfg["participant_id"]
+    original_scenario_path = cfg["scenario_path"]
+    record_face = cfg["record_face"]
 
     if experiment == "A":
         blocks = build_exp_a_block_sequence(participant_id)
     elif experiment == "B":
-        blocks = build_exp_b_block_sequence(participant_id, stream_b_order)
+        blocks = build_exp_b_block_sequence(participant_id, cfg["stream_b_order"])
     elif experiment == "C":
-        blocks = build_exp_c_block_sequence(participant_id, stream_c_condition)
+        blocks = build_exp_c_block_sequence(participant_id, cfg["stream_c_condition"])
+    elif experiment == "D":
+        blocks = build_exp_d_block_sequence(participant_id, cfg["stream_d_order"])
+    elif experiment == "E":
+        blocks = build_exp_e_block_sequence(participant_id, cfg["stream_e_condition"])
     else:
-        raise NotImplementedError(f"Experiment '{experiment}' is not supported. Use A, B, or C.")
+        raise NotImplementedError(f"Experiment '{experiment}' is not supported. Use A, B, C, D, or E.")
 
     validate_block_files(blocks)
 
@@ -551,9 +651,13 @@ def main() -> None:
     print(f"Experiment: {experiment}")
     print(f"Participant ID: {participant_id}")
     if experiment == "B":
-        print(f"Stream B order setting: {stream_b_order}")
+        print(f"Stream B order setting: {cfg['stream_b_order']}")
     if experiment == "C":
-        print(f"Stream C condition setting: {stream_c_condition}")
+        print(f"Stream C condition setting: {cfg['stream_c_condition']}")
+    if experiment == "D":
+        print(f"Stream D order setting: {cfg['stream_d_order']}")
+    if experiment == "E":
+        print(f"Stream E condition setting: {cfg['stream_e_condition']}")
     print(f"Face recording: {'enabled' if record_face else 'disabled'}")
     print(f"Total blocks: {len(blocks)}")
 
@@ -563,13 +667,38 @@ def main() -> None:
         while idx <= total:
             name, rel_path = blocks[idx - 1]
 
-            # Reminder only (non-blocking) between baseline and experimental phases
+            # ---- Break reminders ----
             if idx > 1:
-                prev_rel_path = blocks[idx - 2][1]
-                if prev_rel_path.startswith("expA/participant_") and "/expA_pre_" in prev_rel_path and rel_path.startswith("expA/participant_") and "/expA_main_" in rel_path:
-                    print("\nReminder: baseline phase is complete. Please take a 5-minute break before experimental blocks.")
-                if experiment == "B" and "expB_experimental_" in rel_path and "expB_experimental_" in prev_rel_path:
-                    print("\nReminder: take an 8-10 minute break before the next experimental block.")
+                prev_name, prev_rel_path = blocks[idx - 2]
+
+                # Exp A: between last baseline and first experimental
+                if experiment == "A":
+                    if "_pre_" in prev_rel_path and "_main_" in rel_path:
+                        print("\nReminder: baseline phase is complete. Please take a 5-minute break before experimental blocks.")
+
+                # Exp B: between last baseline and first experimental; between the two experimental blocks
+                if experiment == "B":
+                    if "_pre_" in prev_rel_path and "_main_" in rel_path:
+                        print("\nReminder: baseline phase is complete. Please take a 5-minute break before experimental blocks.")
+                    if "_main_" in prev_rel_path and "_main_" in rel_path:
+                        print("\nReminder: take a 5-minute break before the next experimental block.")
+
+                # Exp C: between baseline and experimental
+                if experiment == "C":
+                    if "_pre_" in prev_rel_path and "_main_" in rel_path:
+                        print("\nReminder: baseline is complete. Please take a 5-minute break before the experimental block.")
+
+                # Exp D: between last practice and first experimental; between the two experimental blocks
+                if experiment == "D":
+                    if "_pre_" in prev_rel_path and "_main_" in rel_path:
+                        print("\nReminder: practice phase is complete. Please take a 5-minute break before experimental blocks.")
+                    if "_main_" in prev_rel_path and "_main_" in rel_path:
+                        print("\nReminder: take a 5-minute break before the next experimental block.")
+
+                # Exp E: between practice and experimental
+                if experiment == "E":
+                    if "_pre_" in prev_rel_path and "_main_" in rel_path:
+                        print("\nReminder: practice is complete. Please take a 5-minute break before the experimental block.")
 
             before_set = get_session_csv_set()
             before_video_set = get_face_video_set()
@@ -602,17 +731,14 @@ def main() -> None:
                     exp_folder = rel_path.split("/")[0]
                     subtasks_rel = f"{exp_folder}/{exp_folder}_instructions_subtasks.txt"
                     combined_rel = f"{exp_folder}/{exp_folder}_instructions_combined_L.txt"
-                    # Insert repeated instruction subtasks + combined immediately after current combined block
                     blocks[idx:idx] = [
                         ("Instruction Subtasks (Repeat)", subtasks_rel),
                         ("Instruction Combined (Low Repeat)", combined_rel),
                     ]
                     total = len(blocks)
 
-            # Streams B/C: estimate capacity from practice and regenerate personalized experimental scenarios.
-            if experiment in {"B", "C"} and (
-                rel_path.endswith("_practice_M_10min.txt")
-            ):
+            # Exp D/E: estimate capacity after last practice block
+            if experiment in {"D", "E"} and _is_last_practice_block(experiment, rel_path, blocks, idx - 1):
                 practice = compute_instruction_accuracies(saved_log)
                 m_star, m_low, m_high = estimate_capacity_from_practice(practice["overall"])
                 fit_path = write_capacity_fit(participant_id, experiment, practice, m_star, m_low, m_high)
@@ -631,7 +757,6 @@ def main() -> None:
 
             idx += 1
     finally:
-        # Restore original value to avoid side effects if desired
         set_openmatb_value("scenario_path", original_scenario_path)
 
     print("\nExperiment session completed.")

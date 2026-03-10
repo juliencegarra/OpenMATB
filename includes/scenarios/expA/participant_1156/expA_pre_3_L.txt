@@ -1,0 +1,34 @@
+# Pre-block 3 (L) for participant 1156
+# Date: 2026-03-09 15:04:24
+
+0:00:00;instructions;filename;default/welcome_task.txt
+0:00:00;instructions;start
+0:00:00;labstreaminglayer;pauseatstart;true
+0:00:00;labstreaminglayer;streamsession;true
+0:00:00;labstreaminglayer;start
+0:00:00;track;start
+0:00:00;sysmon;start
+0:00:00;communications;start
+0:00:00;resman;start
+0:00:00;resman;tank-a-lossperminute;486
+0:00:00;resman;tank-b-lossperminute;473
+0:00:00;track;targetproportion;0.6
+0:00:01;sysmon;lights-2-failure;True
+0:00:05;communications;radioprompt;own
+0:00:13;sysmon;lights-1-failure;True
+0:00:18;communications;radioprompt;own
+0:00:44;sysmon;scales-3-failure;True
+0:00:46;communications;radioprompt;other
+0:01:12;sysmon;scales-4-failure;True
+0:01:17;sysmon;lights-1-failure;True
+0:01:23;sysmon;scales-1-failure;True
+0:01:29;sysmon;lights-2-failure;True
+0:01:35;sysmon;scales-2-failure;True
+0:01:38;communications;radioprompt;other
+0:02:00;track;stop
+0:02:00;sysmon;stop
+0:02:00;communications;stop
+0:02:00;resman;stop
+0:02:00;labstreaminglayer;stop
+0:02:00;instructions;filename;default/end_task.txt
+0:02:00;instructions;start

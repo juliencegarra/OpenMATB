@@ -224,13 +224,12 @@ def main():
 
     # --- Generate participant-specific blocks ---
     # Define the range of participant IDs to generate files for
-    start_id = 500
-    end_id = 600  # Generate up to 600, exclusive, so last ID will be 599
+    start_id = 1001
+    end_id = 1201
 
     for participant_id in range(start_id, end_id):
         print(f"\n--- Generating files for Participant {participant_id} ---")
-        # This logic is from your exp4 scripts
-        offset = participant_id - 401
+        offset = participant_id - 1001
         perm_index = offset % 6
         block_order = generator.PERMUTATIONS[perm_index]
 

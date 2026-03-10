@@ -1,7 +1,10 @@
 sessions
 last_scenario_errors.log
 .venv
+venv
 __pycache__
 capture.sublime-workspace
 audio_matb
 *.odt
+includes/scenarios/_runtime_facecamera/
+recordings/
