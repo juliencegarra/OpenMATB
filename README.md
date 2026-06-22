@@ -109,27 +109,27 @@ Through the scenario file, you can command the various tasks or modules, modify 
 Once the scenario has ended, information about what happended is stored as comma-separated values (.csv) into the `sessions` directory. This log file contains all that is needed to understand what happened during the scenario and undertake performance calculations. It has the following form:
 
 ```
-logtime,totaltime,scenario_time,type,module,address,value
-13869.194646,0,0,input,keyboard,ENTER,release
-13869.210557,0.018296,0,state,sysmon,"task_title, text",SURVEILLANCE
-13869.210933,0.018296,0,state,sysmon,"automode, text",
-13869.232539,0.018296,0,event,sysmon,self,start
-13869.238017,0.058883,0.018296,state,track,"task_title, text",POURSUITE
-13869.238209,0.058883,0.018296,state,track,"automode, text",
-13869.24057,0.058883,0.018296,event,track,self,start
-13869.240641,0.058883,0.018296,performance,track,cursor_in_target,1
-13869.240664,0.058883,0.018296,performance,track,center_deviation,0.0
+logtime,scenario_time,type,module,address,value
+13869.194646,0,input,keyboard,ENTER,release
+13869.210557,0,state,sysmon,"task_title, text",SURVEILLANCE
+13869.210933,0,state,sysmon,"automode, text",
+13869.232539,0,event,sysmon,self,start
+13869.238017,0.018296,state,track,"task_title, text",POURSUITE
+13869.238209,0.018296,state,track,"automode, text",
+13869.24057,0.018296,event,track,self,start
+13869.240641,0.018296,performance,track,cursor_in_target,1
+13869.240664,0.018296,performance,track,center_deviation,0.0
 ...
-14307.553591,150.022335,150.008259,state,track,"reticle, cursor_relative","(-98.86763793277942, 149.15892483599305)"
-14307.553667,150.022335,150.008259,state,track,"reticle, cursor_color","(241, 100, 100, 255)"
-14307.566581,150.038228,150.022335,event,track,self,stop
-14307.586672,150.054776,150.038228,event,communications,self,stop
-14307.610734,150.071739,150.054776,event,resman,self,stop
-14307.620835,150.088269,150.071739,event,scheduling,self,stop
-14307.620911,150.088269,150.071739,manual,,,end
+14307.553591,150.008259,state,track,"reticle, cursor_relative","(-98.86763793277942, 149.15892483599305)"
+14307.553667,150.008259,state,track,"reticle, cursor_color","(241, 100, 100, 255)"
+14307.566581,150.022335,event,track,self,stop
+14307.586672,150.038228,event,communications,self,stop
+14307.610734,150.054776,event,resman,self,stop
+14307.620835,150.071739,event,scheduling,self,stop
+14307.620911,150.071739,manual,,,end
 ```
 
-Details about how each module log information are available [here](the log file).
+Details about how each module logs information are available [here](https://github.com/juliencegarra/OpenMATB/wiki/The-session-log-file).
 
 ## Tutorials
 
