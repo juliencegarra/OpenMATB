@@ -86,7 +86,8 @@ Differences with the desktop version:
 
 - **Session files** are downloaded at the end of the session. They are also kept in the browser storage (IndexedDB), so they can be replayed later from the same browser. A session file can also be imported from the start page to be replayed.
 - **The scenario is paused** when the page is hidden (tab change, minimized window), because browsers slow down hidden pages. The `visibility` entries of the session file record when it happened.
-- **Joysticks**, the **parallel port** and **Lab Streaming Layer** are not available.
+- **Joysticks** (e.g. flight joysticks) are read with the browser Gamepad API: the main stick axes control the tracking task and buttons are available as `JOY_BTN_n`. Browsers reveal a joystick only once one of its buttons has been pressed: the start page shows the detected joystick.
+- The **parallel port** and **Lab Streaming Layer** are not available.
 - **Sound** starts after the first click (the "Start" button), as required by browsers.
 - **Timing**: response times are measured with the browser clock (`performance.now`), whose resolution browsers reduce (to about 0.1 ms in Chrome, 1 ms in Firefox), and the display is refreshed by the browser (`requestAnimationFrame`). Take it into account for time-critical experiments.
 - The web version is tested with Chrome/Chromium; pyglet's browser backend is recent and other browsers may still have issues.

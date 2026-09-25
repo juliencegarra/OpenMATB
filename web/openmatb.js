@@ -32,6 +32,8 @@ const TEXTS = {
         log_file: "The log file",
         log_downloaded: "has been downloaded. It is also kept in this browser for replay.",
         back_to_menu: "Back to menu",
+        joystick_hint: "Joystick: press one of its buttons to detect it.",
+        joystick_detected: "Joystick detected:",
         loading_python: "Loading Python…",
         loading_pyglet: "Loading pyglet…",
         loading_openmatb: "Loading OpenMATB…",
@@ -52,6 +54,8 @@ const TEXTS = {
         log_file: "Le fichier de log",
         log_downloaded: "a été téléchargé. Il est aussi conservé dans ce navigateur pour le rejouer.",
         back_to_menu: "Retour au menu",
+        joystick_hint: "Joystick : appuyez sur l'un de ses boutons pour le détecter.",
+        joystick_detected: "Joystick détecté :",
         loading_python: "Chargement de Python…",
         loading_pyglet: "Chargement de pyglet…",
         loading_openmatb: "Chargement d'OpenMATB…",
@@ -95,9 +99,20 @@ function translatePage() {
     }
 }
 
+// Browsers reveal a joystick only after one of its buttons is pressed (core/joystick.py reads it)
+function showJoystick() {
+    const gamepad = [...(navigator.getGamepads ? navigator.getGamepads() : [])].find((g) => g && g.connected);
+    $("joystick-status").dataset.i18n = gamepad ? "joystick_detected" : "joystick_hint";
+    $("joystick-status").textContent = t($("joystick-status").dataset.i18n);
+    $("joystick-name").textContent = gamepad ? gamepad.id : "";
+}
+window.addEventListener("gamepadconnected", showJoystick);
+window.addEventListener("gamepaddisconnected", showJoystick);
+
 $("lang").value = detectLanguage();
 translatePage();
 $("lang").addEventListener("change", translatePage);
+showJoystick();
 
 async function loadFonts() {
     // pyglet measures and renders text with the fonts known by the document
