@@ -307,6 +307,34 @@ msgstr "Python Parallel module is missing. Skipping parallel plugin"
 msgid "The physical parallel port was not found."
 msgstr "The physical parallel port was not found."
 
+#: core/selector.py
+msgid "Select a scenario"
+msgstr "Select a scenario"
+
+#: core/selector.py
+msgid "Select a session"
+msgstr "Select a session"
+
+#: core/selector.py
+msgid "UP/DOWN: Navigate"
+msgstr "UP/DOWN: Navigate"
+
+#: core/selector.py
+msgid "Enter: Select"
+msgstr "Enter: Select"
+
+#: core/selector.py
+msgid "Esc: Quit"
+msgstr "Esc: Quit"
+
+#: core/selector.py
+msgid "No files found"
+msgstr "No files found"
+
+#: core/selector.py
+msgid "(empty)"
+msgstr "(empty)"
+
 msgid "The parallel port is not available in the browser. Skipping parallel plugin"
 msgstr "The parallel port is not available in the browser. Skipping parallel plugin"
 

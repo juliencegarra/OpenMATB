@@ -51,7 +51,7 @@ class FileSelector:
             if f.stat().st_size < EMPTY_THRESHOLD
         }
         for i in self._empty_indices:
-            self._display_texts[i] += "  (vide)"
+            self._display_texts[i] += "  " + _("(empty)")
 
         # Selection / scroll state
         self._selected_index: int = 0 if self._files else -1

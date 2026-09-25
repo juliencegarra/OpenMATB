@@ -298,6 +298,34 @@ msgstr ""
 msgid "The physical parallel port was not found."
 msgstr ""
 
+#: core/selector.py
+msgid "Select a scenario"
+msgstr ""
+
+#: core/selector.py
+msgid "Select a session"
+msgstr ""
+
+#: core/selector.py
+msgid "UP/DOWN: Navigate"
+msgstr ""
+
+#: core/selector.py
+msgid "Enter: Select"
+msgstr ""
+
+#: core/selector.py
+msgid "Esc: Quit"
+msgstr ""
+
+#: core/selector.py
+msgid "No files found"
+msgstr ""
+
+#: core/selector.py
+msgid "(empty)"
+msgstr ""
+
 msgid "The parallel port is not available in the browser. Skipping parallel plugin"
 msgstr ""
 

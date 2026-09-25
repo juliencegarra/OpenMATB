@@ -324,6 +324,34 @@ msgstr "La librairie Parallel de python est manquante. Plugin ignoré"
 msgid "The physical parallel port was not found."
 msgstr "Le port parallèle (physique) n'a pas été trouvé."
 
+#: core/selector.py
+msgid "Select a scenario"
+msgstr "Choisissez un scénario"
+
+#: core/selector.py
+msgid "Select a session"
+msgstr "Choisissez une session"
+
+#: core/selector.py
+msgid "UP/DOWN: Navigate"
+msgstr "HAUT/BAS : naviguer"
+
+#: core/selector.py
+msgid "Enter: Select"
+msgstr "Entrée : choisir"
+
+#: core/selector.py
+msgid "Esc: Quit"
+msgstr "Échap : quitter"
+
+#: core/selector.py
+msgid "No files found"
+msgstr "Aucun fichier trouvé"
+
+#: core/selector.py
+msgid "(empty)"
+msgstr "(vide)"
+
 msgid "The parallel port is not available in the browser. Skipping parallel plugin"
 msgstr "Le port parallèle n'est pas disponible dans le navigateur. Plugin ignoré"
 

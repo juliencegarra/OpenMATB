@@ -42,39 +42,39 @@
     <main id="menu" class="screen">
         <div class="panel">
             <h1>OpenMATB</h1>
-            <p class="subtitle">Multi-Attribute Task Battery, in the browser</p>
+            <p class="subtitle" data-i18n="subtitle">Multi-Attribute Task Battery, in the browser</p>
 
-            <label for="lang">Language</label>
+            <label for="lang" data-i18n="language">Language</label>
             <select id="lang">
                 <option value="en_EN">English</option>
                 <option value="fr_FR">Français</option>
             </select>
 
-            <label for="mode">Mode</label>
+            <label for="mode" data-i18n="mode">Mode</label>
             <select id="mode">
-                <option value="scenario">Run a scenario</option>
-                <option value="replay">Replay a session</option>
+                <option value="scenario" data-i18n="run_scenario">Run a scenario</option>
+                <option value="replay" data-i18n="replay_session">Replay a session</option>
             </select>
-            <p class="hint">The scenario (or session) is chosen in the next screen.</p>
+            <p class="hint" data-i18n="choose_next">The scenario (or session) is chosen in the next screen.</p>
 
             <div id="replay-options" hidden>
-                <label for="session-file">Import a session file (optional)</label>
+                <label for="session-file" data-i18n="import_session">Import a session file (optional)</label>
                 <input id="session-file" type="file" accept=".csv">
-                <p class="hint">Sessions run in this browser are kept and listed automatically.</p>
+                <p class="hint" data-i18n="sessions_kept">Sessions run in this browser are kept and listed automatically.</p>
             </div>
 
-            <label class="inline"><input id="fullscreen" type="checkbox" checked> Fullscreen</label>
+            <label class="inline"><input id="fullscreen" type="checkbox" checked> <span data-i18n="fullscreen">Fullscreen</span></label>
 
-            <button id="start" disabled>Start</button>
+            <button id="start" disabled data-i18n="start">Start</button>
         </div>
     </main>
 
     <main id="end" class="screen" hidden>
         <div class="panel">
-            <h1>Session ended</h1>
-            <p class="subtitle">The log file <strong id="end-file"></strong> has been downloaded.
-                It is also kept in this browser for replay.</p>
-            <button onclick="location.href = location.pathname">Back to menu</button>
+            <h1 data-i18n="session_ended">Session ended</h1>
+            <p class="subtitle"><span data-i18n="log_file">The log file</span> <strong id="end-file"></strong>
+                <span data-i18n="log_downloaded">has been downloaded. It is also kept in this browser for replay.</span></p>
+            <button id="back" data-i18n="back_to_menu">Back to menu</button>
         </div>
     </main>
 
