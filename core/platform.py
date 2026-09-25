@@ -8,11 +8,35 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any, Callable
 from urllib.parse import parse_qs
 
 IS_WEB: bool = sys.platform == "emscripten"
 
 STORAGE_NAME: str = "openmatb"
+WEB_FONT_NAME: str = "Noto Sans"  # Loaded by the page (web/openmatb.js)
+
+
+def setup_web_font() -> None:
+    """Use the font shipped with the page as default font (pyglet's browser default is a serif font)."""
+    if not IS_WEB:
+        return
+    import pyglet.font  # noqa: PLC0415
+
+    pyglet.font.manager.default_emscripten_font = WEB_FONT_NAME
+
+
+def on_visibility_change(callback: Callable[[bool], None]) -> None:
+    """Call callback(hidden) when the page is hidden or shown again (tab switch...). No-op on desktop."""
+    if not IS_WEB:
+        return
+    import js  # noqa: PLC0415
+    from pyodide.ffi import create_proxy  # noqa: PLC0415
+
+    def listener(event: Any) -> None:
+        callback(str(js.document.visibilityState) == "hidden")
+
+    js.document.addEventListener("visibilitychange", create_proxy(listener))
 
 
 def web_sessions_path() -> Path:

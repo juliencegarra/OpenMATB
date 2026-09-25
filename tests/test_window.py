@@ -392,3 +392,38 @@ class TestSetSizeAndLocation:
         w.set_size_and_location(mock_screen)
         # target_x = (1920 + 960) - 960 = 1920
         w.set_location.assert_called_once_with(1920, 0)
+
+
+class TestVisibilityChange:
+    """In the browser, hiding the page pauses the scenario."""
+
+    def test_hidden_opens_pause_prompt(self):
+        w = _make_window(modal_dialog=None)
+        w.pause_prompt = MagicMock()
+        with patch("core.window.get_logger"):
+            w.on_visibility_change(True)
+        w.pause_prompt.assert_called_once()
+
+    def test_visible_does_not_pause(self):
+        w = _make_window(modal_dialog=None)
+        w.pause_prompt = MagicMock()
+        with patch("core.window.get_logger"):
+            w.on_visibility_change(False)
+        w.pause_prompt.assert_not_called()
+
+    def test_no_pause_over_selector_or_dialog(self):
+        w = _make_window(modal_dialog=MagicMock())
+        w.pause_prompt = MagicMock()
+        with patch("core.window.get_logger"):
+            w.on_visibility_change(True)
+            w.modal_dialog = None
+            w.selector_visible = True
+            w.on_visibility_change(True)
+        w.pause_prompt.assert_not_called()
+
+    def test_visibility_is_logged(self):
+        w = _make_window(modal_dialog=None)
+        w.pause_prompt = MagicMock()
+        with patch("core.window.get_logger") as get_logger:
+            w.on_visibility_change(True)
+        get_logger.return_value.log_manual_entry.assert_called_once_with("hidden", key="visibility")

@@ -20,6 +20,7 @@ import http.server
 import shutil
 import subprocess
 import sys
+import urllib.request
 import zipfile
 from pathlib import Path
 
@@ -29,6 +30,10 @@ DIST: Path = WEB / "dist"
 
 # Keep in sync with requirements.txt
 WHEELS: list[str] = ["pyglet==3.0.dev10", "rstr==3.1.0"]
+
+# Browsers have no common sans-serif font name that pyglet can use: ship one (SIL Open Font License)
+FONT_URL: str = "https://cdn.jsdelivr.net/npm/@fontsource/noto-sans@5.3.0/files/noto-sans-latin-{weight}-normal.woff2"
+FONT_WEIGHTS: tuple[int, ...] = (400, 700)
 
 # Application files packed into app.zip, then extracted into the Pyodide file system
 APP_FILES: list[str] = ["main.py", "config.ini", "VERSION"]
@@ -83,6 +88,14 @@ def copy_pyglet_bridge() -> None:
         (DIST / "pyglet_emscripten.js").write_bytes(wheel.read("pyglet/libs/emscripten/pyglet_emscripten.js"))
 
 
+def download_fonts() -> None:
+    fonts_dir: Path = DIST / "fonts"
+    fonts_dir.mkdir(parents=True, exist_ok=True)
+    for weight in FONT_WEIGHTS:
+        with urllib.request.urlopen(FONT_URL.format(weight=weight)) as response:
+            (fonts_dir / f"noto-sans-{weight}.woff2").write_bytes(response.read())
+
+
 def build() -> None:
     # Empty the folder rather than deleting it (it may be the working directory of a running server)
     DIST.mkdir(parents=True, exist_ok=True)
@@ -91,6 +104,7 @@ def build() -> None:
 
     wheels: list[str] = download_wheels()
     copy_pyglet_bridge()
+    download_fonts()
     for name in ("index.html", "openmatb.js"):
         shutil.copy(WEB / name, DIST / name)
     shutil.copy(ROOT / "includes" / "img" / "logo32.png", DIST / "favicon.png")

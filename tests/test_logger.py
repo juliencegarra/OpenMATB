@@ -415,3 +415,21 @@ class TestEndSession:
         sync.assert_called_once()
         download.assert_called_once_with(lg.path)
         notify.assert_called_once()
+
+
+class TestCheckpoint:
+    @patch.object(_logger_module, "REPLAY_MODE", False)
+    def test_flushes_and_syncs(self):
+        lg = _make_logger(file=MagicMock())
+        with patch.object(_logger_module, "sync_storage") as sync:
+            lg.checkpoint()
+        lg.file.flush.assert_called_once()
+        sync.assert_called_once()
+
+    @patch.object(_logger_module, "REPLAY_MODE", False)
+    def test_nothing_after_end(self):
+        lg = _make_logger(file=MagicMock())
+        lg.end_session()
+        with patch.object(_logger_module, "sync_storage") as sync:
+            lg.checkpoint()
+        sync.assert_not_called()

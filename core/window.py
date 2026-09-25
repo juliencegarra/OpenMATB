@@ -21,7 +21,7 @@ from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
 from core.modaldialog import ModalDialog
-from core.platform import IS_WEB, viewport_size
+from core.platform import IS_WEB, on_visibility_change, viewport_size
 from core.utils import get_conf_value
 
 
@@ -78,6 +78,14 @@ class Window(Window):
         self.selector_visible: bool = False
 
         self.on_key_press_replay: Any | None = None  # used by the replay
+
+        # In the browser, timers are throttled in hidden tabs: pause the scenario
+        on_visibility_change(self.on_visibility_change)
+
+    def on_visibility_change(self, hidden: bool) -> None:
+        get_logger().log_manual_entry("hidden" if hidden else "visible", key="visibility")
+        if hidden and not REPLAY_MODE and not self.selector_visible and self.modal_dialog is None:
+            self.pause_prompt()
 
     def display_session_id(self) -> None:
         # Display the session ID if needed at window instanciation

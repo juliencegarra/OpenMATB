@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import pyglet.app
+import pyglet.clock
 
 from core.clock import Clock
 from core.constants import REPLAY_MODE, SYSTEM_PSEUDO_PLUGIN
@@ -15,9 +16,13 @@ from core.error import get_errors
 from core.event import Event
 from core.joystick import joystick
 from core.logger import get_logger
-from core.platform import notify_page
+from core.platform import IS_WEB, notify_page
 from core.scenario import Scenario
 from core.window import Window
+
+
+# Browser: how often the session file is saved to persistent storage (seconds)
+WEB_CHECKPOINT_INTERVAL: float = 10
 
 
 class Scheduler:
@@ -37,6 +42,8 @@ class Scheduler:
 
         self._exited: bool = False
         self.clock.schedule(self.update)
+        if IS_WEB:
+            pyglet.clock.schedule_interval(get_logger().checkpoint, WEB_CHECKPOINT_INTERVAL)
 
         self.joystick: Any = joystick
         self.set_scenario()
@@ -270,6 +277,7 @@ class Scheduler:
             return
         self._exited = True
         self.clock.unschedule(self.update)
+        pyglet.clock.unschedule(get_logger().checkpoint)
         get_logger().log_manual_entry("end")
         get_logger().end_session()
         Window.MainWindow.close()  # needed for windows clean exit

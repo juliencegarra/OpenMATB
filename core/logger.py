@@ -120,6 +120,13 @@ class Logger:
     def close(self) -> None:
         self.file.close()
 
+    def checkpoint(self, dt: float = 0) -> None:
+        """Browser: persist the session file written so far (in case the tab is closed)."""
+        if REPLAY_MODE or self._ended or self.file is None:
+            return
+        self.file.flush()
+        sync_storage()
+
     def end_session(self) -> None:
         """Close the session file. In the browser, persist it and hand it to the page / user."""
         if REPLAY_MODE or self._ended or self.file is None:

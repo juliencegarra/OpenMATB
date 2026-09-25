@@ -11,12 +11,23 @@ import { installPygletEmscripten } from "./pyglet_emscripten.js";
 const PYODIDE_VERSION = "0.29.4";
 const APP_DIR = "/app";
 const SESSIONS_DIR = "/data/openmatb/sessions"; // pyglet.storage.get("openmatb").data / "sessions"
+const FONT_FAMILY = "Noto Sans"; // core.platform.WEB_FONT_NAME, files downloaded by web/build.py
+const FONT_WEIGHTS = [400, 700];
 
 const $ = (id) => document.getElementById(id);
 const status = (text) => { $("pygletStatus").textContent = text; };
 
+async function loadFonts() {
+    // pyglet measures and renders text with the fonts known by the document
+    for (const weight of FONT_WEIGHTS) {
+        const face = new FontFace(FONT_FAMILY, `url(fonts/noto-sans-${weight}.woff2)`, { weight: String(weight) });
+        document.fonts.add(await face.load());
+    }
+}
+
 async function boot() {
     status("Loading Python…");
+    await loadFonts();
     const { loadPyodide } = await import(`https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/pyodide.mjs`);
     const pyodide = await loadPyodide();
     await installPygletEmscripten(pyodide); // mounts /data (IndexedDB) and /cache
@@ -51,6 +62,14 @@ const ready = boot().catch((error) => {
     status(`Loading failed: ${error}`);
     throw error;
 });
+
+// OpenMATB uses function keys (F1-F6 in sysmon...): don't let the browser reload the page,
+// open its help or move the focus. preventDefault() still lets pyglet receive the key.
+window.addEventListener("keydown", (event) => {
+    if (!$("pygletCanvas").hidden && /^F([1-9]|1[0-2])$/.test(event.key) && event.key !== "F11") {
+        event.preventDefault();
+    }
+}, { capture: true });
 
 $("mode").addEventListener("change", () => {
     $("replay-options").hidden = $("mode").value !== "replay";
