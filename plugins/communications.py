@@ -9,13 +9,13 @@ from pathlib import Path
 from string import ascii_lowercase, ascii_uppercase, digits
 from typing import Any, Callable
 
-from pyglet.media import AudioPlayer, SourceGroup, load_audio
-
 from core import validation
+from core.audio import SequencePlayer, load_sound
 from core.constants import COLORS as C
 from core.constants import PATHS as P
 from core.constants import REPLAY_MODE
 from core.container import Container
+from core.platform import IS_WEB
 from core.pseudorandom import choice, randint, uniform, xeger
 from core.widgets import Radio, Simpletext
 from plugins.abstractplugin import AbstractPlugin
@@ -143,6 +143,9 @@ class Communications(AbstractPlugin):
         for sample_needed in self.samples_path:
             if not sample_needed.exists():
                 self.logger.log_manual_entry(f"{sample_needed}" + _(" does not exist"))
+            elif IS_WEB and not REPLAY_MODE:
+                # Browser audio decoding is asynchronous: decode the voice samples in advance
+                load_sound(sample_needed)
 
     def regenerate_callsigns(self) -> None:
         self.parameters["owncallsign"] = self.get_callsign()
@@ -214,7 +217,7 @@ class Communications(AbstractPlugin):
                     li = li.replace(s, "")
         return callsign
 
-    def group_audio_files(self, callsign: str, radio_name: str, freq: float) -> Any:
+    def group_audio_files(self, callsign: str, radio_name: str, freq: float) -> list[Any]:
         list_of_sounds: list[str] = (
             ["empty"] * 20
             + [c.lower() for c in callsign]
@@ -230,18 +233,10 @@ class Communications(AbstractPlugin):
         for f in list_of_sounds:
             wav_path = self.sound_path.joinpath(f"{f}.wav")
             try:
-                source: Any = load_audio(str(wav_path), streaming=False)
-                sources.append(source)
+                sources.append(load_sound(wav_path))
             except Exception:
                 self.logger.log_manual_entry(f"Audio file missing or unreadable: {wav_path}")
-
-        if not sources:
-            return SourceGroup()
-
-        group: Any = SourceGroup()
-        for source in sources:
-            group.add(source)
-        return group
+        return sources
 
     def prompt_for_a_new_target(self, destination: str, radio_name: str) -> None:
         self.parameters["radioprompt"] = ""
@@ -264,11 +259,10 @@ class Communications(AbstractPlugin):
             radio["targetfreq"] = random_frequency
             radio["is_prompting"] = True
 
-        sound_group: Any = self.group_audio_files(callsign, radio_name, random_frequency)
+        sounds: list[Any] = self.group_audio_files(callsign, radio_name, random_frequency)
 
         try:
-            self.player: Any = AudioPlayer()
-            self.player.queue(sound_group)
+            self.player: SequencePlayer = SequencePlayer(sounds)
             self.player.play()
         except Exception:
             self.logger.log_manual_entry("Audio prompt playback failed")
@@ -366,7 +360,7 @@ class Communications(AbstractPlugin):
                 # Pause and stop this prompt
                 prompting_radio_list: list[dict[str, Any]] | None = self.get_radios_by_key_value("is_prompting", True)
                 if prompting_radio_list is not None and len(prompting_radio_list) > 0:
-                    self.player.pause()
+                    self.player.delete()
                     del self.player
                     prompting_radio: dict[str, Any] = prompting_radio_list[0]
                     prompting_radio["is_prompting"] = False
