@@ -21,6 +21,8 @@ from core.window import Window
 
 # Plugin steps later than this (seconds) are skipped instead of caught up (see compute_next_plugin_state)
 MAX_STEP_CATCH_UP: float = 0.25
+# Safety limit of the steps run by one update (see update)
+MAX_STEPS_PER_UPDATE: int = 50
 
 
 class AbstractPlugin:
@@ -70,6 +72,13 @@ class AbstractPlugin:
     def update(self, scenario_time: float) -> None:
         self.scenario_time = scenario_time
         self.compute_next_plugin_state()
+        # Run every step due since the last update: several when updates are slower than taskupdatetime
+        # (e.g. 20 ms tracking steps with ~30 ms browser timers). taskupdatetime <= 0: one step per update.
+        if self.parameters["taskupdatetime"] > 0:
+            for _ in range(MAX_STEPS_PER_UPDATE - 1):
+                if self.scenario_time < self.next_refresh_time or self.is_paused():
+                    break
+                self.compute_next_plugin_state()
         self.refresh_widgets()
         self.update_can_receive_key()
 
@@ -238,7 +247,7 @@ class AbstractPlugin:
         # Plugins count taskupdatetime per step (response times, failure timers, flows...): schedule the next
         # step from the previous deadline, not from now, so that the lateness of the update (up to one
         # clock tick, ~10 ms in the browser) does not accumulate and slow the task down. Missed steps are
-        # caught up (one per update); when too late (start, resume, long stall), restart from now instead.
+        # caught up (by update()); when too late (start, resume, long stall), restart from now instead.
         period: float = self.parameters["taskupdatetime"] / 1000
         if self.next_refresh_time == 0:  # First step: the deadlines start now, not at the scenario start
             self.next_refresh_time = self.scenario_time
