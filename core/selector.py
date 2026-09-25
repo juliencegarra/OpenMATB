@@ -46,10 +46,7 @@ class FileSelector:
 
         # Identify empty/near-empty files (crash, immediate close, etc.)
         EMPTY_THRESHOLD = 500  # bytes
-        self._empty_indices: set[int] = {
-            i for i, f in enumerate(self._files)
-            if f.stat().st_size < EMPTY_THRESHOLD
-        }
+        self._empty_indices: set[int] = {i for i, f in enumerate(self._files) if f.stat().st_size < EMPTY_THRESHOLD}
         for i in self._empty_indices:
             self._display_texts[i] += "  " + _("(empty)")
 
@@ -114,8 +111,9 @@ class FileSelector:
         h: int = self.win.height
 
         # Full-screen background
-        bg = Rectangle(x=0, y=0, width=w, height=h,
-                        color=C["BACKGROUND"][:3], batch=self.win.batch, group=self._BG_GROUP)
+        bg = Rectangle(
+            x=0, y=0, width=w, height=h, color=C["BACKGROUND"][:3], batch=self.win.batch, group=self._BG_GROUP
+        )
         bg.opacity = C["BACKGROUND"][3]
         self._vertices.append(bg)
 
@@ -151,8 +149,13 @@ class FileSelector:
 
         # Highlight bar (dynamic rectangle)
         self._highlight: Any = Rectangle(
-            x=0, y=0, width=0, height=0,
-            color=C["BLUE"][:3], batch=self.win.batch, group=self._HIGHLIGHT_GROUP,
+            x=0,
+            y=0,
+            width=0,
+            height=0,
+            color=C["BLUE"][:3],
+            batch=self.win.batch,
+            group=self._HIGHLIGHT_GROUP,
         )
         self._highlight.opacity = C["BLUE"][3]
         self._highlight.visible = False

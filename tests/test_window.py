@@ -338,9 +338,7 @@ class TestOnMousePress:
         """Mouse press logs click with position and button."""
         w = _make_window()
         w.on_mouse_press(512, 384, 1, 0)
-        mock_get_logger.return_value.record_input.assert_called_once_with(
-            "mouse", "click", "press;512;384;1"
-        )
+        mock_get_logger.return_value.record_input.assert_called_once_with("mouse", "click", "press;512;384;1")
 
     @patch("core.window.REPLAY_MODE", True)
     @patch("core.window.get_logger")
@@ -358,9 +356,7 @@ class TestOnMouseRelease:
         """Mouse release logs click with position and button."""
         w = _make_window()
         w.on_mouse_release(512, 384, 1, 0)
-        mock_get_logger.return_value.record_input.assert_called_once_with(
-            "mouse", "click", "release;512;384;1"
-        )
+        mock_get_logger.return_value.record_input.assert_called_once_with("mouse", "click", "release;512;384;1")
 
 
 class TestSetSizeAndLocation:

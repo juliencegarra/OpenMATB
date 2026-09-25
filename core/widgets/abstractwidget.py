@@ -101,15 +101,15 @@ class AbstractWidget:
             x1, y1, x2, y2 = self.container.get_x1y1x2y2()
             g = G(self.m_draw + 8)
             red = C["RED"][:3]
-            for lname, coords in [("highlight_top", (x1, y1, x2, y1)),
-                                   ("highlight_right", (x2, y1, x2, y2)),
-                                   ("highlight_bottom", (x2, y2, x1, y2)),
-                                   ("highlight_left", (x1, y2, x1, y1))]:
+            for lname, coords in [
+                ("highlight_top", (x1, y1, x2, y1)),
+                ("highlight_right", (x2, y1, x2, y2)),
+                ("highlight_bottom", (x2, y2, x1, y2)),
+                ("highlight_left", (x1, y2, x1, y1)),
+            ]:
                 self.vertex[lname] = Line(*coords, color=red, group=g)
 
-            self.vertex[self.name] = Label(
-                self.name, x=x1 + 5, y=y1 - 15, color=C["RED"], group=G(self.m_draw + 8)
-            )
+            self.vertex[self.name] = Label(self.name, x=x1 + 5, y=y1 - 15, color=C["RED"], group=G(self.m_draw + 8))
 
     def assign_vertices_to_batch(self) -> None:
         batch = Window.MainWindow.batch

@@ -122,7 +122,10 @@ class Slider(AbstractWidget):
 
         tc = self.containers["thumb"]
         self.vertex["thumb"] = Rectangle(
-            x=tc.x1, y=tc.y2, width=tc.w, height=tc.h,
+            x=tc.x1,
+            y=tc.y2,
+            width=tc.w,
+            height=tc.h,
             color=C["GREY"],
             batch=None,
             group=G(self.draw_order + self.rank),
@@ -131,14 +134,18 @@ class Slider(AbstractWidget):
         self._groove_radius: float = self.containers["allgroove"].h
         gx, gy = self._get_groove_center()
         self.vertex["groove_b"] = Circle(
-            x=gx, y=gy, radius=self._groove_radius,
+            x=gx,
+            y=gy,
+            radius=self._groove_radius,
             segments=30,
             color=C["BLUE"],
             batch=None,
             group=G(self.draw_order + self.rank),
         )
         self.vertex["groove"] = Arc(
-            x=gx, y=gy, radius=self._groove_radius,
+            x=gx,
+            y=gy,
+            radius=self._groove_radius,
             segments=30,
             color=C["BLACK"],
             batch=None,

@@ -12,9 +12,6 @@ from pyglet.text import Label
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.constants import Group as G
-from core.container import Container
-from core.logger import Logger, get_logger
-from core.utils import get_conf_value
 from core.widgets.abstractwidget import AbstractWidget
 from core.window import Window
 
@@ -41,9 +38,12 @@ class Schedule(AbstractWidget):
 
         # Vertical line
         self.vertex["line"] = Line(
-            self.container.cx, self.container.y1,
-            self.container.cx, self.container.y2,
-            color=C["GREY"][:3], group=G(self.m_draw + 1),
+            self.container.cx,
+            self.container.y1,
+            self.container.cx,
+            self.container.y2,
+            color=C["GREY"][:3],
+            group=G(self.m_draw + 1),
         )
 
         # Top bound marker
@@ -53,7 +53,8 @@ class Schedule(AbstractWidget):
             y=self.container.y1,
             width=2 * r,
             height=2 * r,
-            color=C["GREY"][:3], group=G(self.m_draw + 3),
+            color=C["GREY"][:3],
+            group=G(self.m_draw + 3),
         )
         self.vertex["top_bound"].opacity = C["GREY"][3]
 
@@ -63,7 +64,8 @@ class Schedule(AbstractWidget):
             y=self.container.y2 - 2 * r,
             width=2 * r,
             height=2 * r,
-            color=C["GREY"][:3], group=G(self.m_draw + 3),
+            color=C["GREY"][:3],
+            group=G(self.m_draw + 3),
         )
         self.vertex["bottom_bound"].opacity = C["GREY"][3]
 

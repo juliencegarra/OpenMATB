@@ -204,7 +204,9 @@ class TestWithoutPort:
         with (
             patch("plugins.parallelport.IS_WEB", True),
             patch("plugins.parallelport.get_errors", return_value=errors),
-            patch("plugins.abstractplugin.AbstractPlugin.__init__", lambda self, *a, **k: setattr(self, "parameters", {})),
+            patch(
+                "plugins.abstractplugin.AbstractPlugin.__init__", lambda self, *a, **k: setattr(self, "parameters", {})
+            ),
         ):
             pp = Parallelport()
         errors.add_error.assert_called_once()

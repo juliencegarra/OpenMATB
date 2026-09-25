@@ -21,8 +21,8 @@ def setup_web() -> None:
     """Browser specific setup, to call before creating the window. No-op on desktop."""
     if not IS_WEB:
         return
-    import pyglet.font  # noqa: PLC0415
-    from pyodide.webloop import WebLoop  # noqa: PLC0415
+    import pyglet.font
+    from pyodide.webloop import WebLoop
 
     # Use the font shipped with the page as default font (pyglet's browser default is a serif font)
     pyglet.font.manager.default_emscripten_font = WEB_FONT_NAME
@@ -44,7 +44,7 @@ def setup_web() -> None:
 def _patch_pyglet_numpad_keys() -> None:
     """pyglet maps browser keys with event.key, which gives "1" or "End" for the numpad 1 key (depending
     on NumLock), never NUM_1: resman pump keys did not work. Use event.code for numpad keys, as on desktop."""
-    from pyglet.window import emscripten as web_window  # noqa: PLC0415
+    from pyglet.window import emscripten as web_window
 
     js_key_to_pyglet = web_window.js_key_to_pyglet
 
@@ -60,8 +60,8 @@ def _patch_pyglet_numpad_keys() -> None:
 
 def _patch_pyglet_webgl() -> None:
     """Work around two pyglet 3.0.dev10 WebGL bugs that stop the drawing (and the event loop)."""
-    from pyglet.graphics.api.webgl import vertexdomain  # noqa: PLC0415
-    from pyglet.libs.emscripten import PersistentBufferView  # noqa: PLC0415
+    from pyglet.graphics.api.webgl import vertexdomain
+    from pyglet.libs.emscripten import PersistentBufferView
 
     # 1. Vertex buffers keep a zero-copy JavaScript view of the WebAssembly memory. When the memory grows
     # (e.g. while sounds are loaded) the view is detached ("Cannot perform Construct on a detached
@@ -88,8 +88,8 @@ def on_visibility_change(callback: Callable[[bool], None]) -> None:
     """Call callback(hidden) when the page is hidden or shown again (tab switch...). No-op on desktop."""
     if not IS_WEB:
         return
-    import js  # noqa: PLC0415
-    from pyodide.ffi import create_proxy  # noqa: PLC0415
+    import js
+    from pyodide.ffi import create_proxy
 
     def listener(event: Any) -> None:
         callback(str(js.document.visibilityState) == "hidden")
@@ -99,7 +99,7 @@ def on_visibility_change(callback: Callable[[bool], None]) -> None:
 
 def web_sessions_path() -> Path:
     """Sessions folder in the browser persistent storage (IndexedDB backed /data mount)."""
-    import pyglet.storage  # noqa: PLC0415
+    import pyglet.storage
 
     return pyglet.storage.get(STORAGE_NAME).data / "sessions"
 
@@ -108,7 +108,7 @@ def sync_storage() -> None:
     """Commit pending writes of the browser persistent storage. No-op on desktop."""
     if not IS_WEB:
         return
-    import pyglet.storage  # noqa: PLC0415
+    import pyglet.storage
 
     pyglet.storage.get(STORAGE_NAME).sync()
 
@@ -117,7 +117,7 @@ def url_params() -> dict[str, str]:
     """Return the page query parameters (?scenario=...&lang=...). Empty on desktop."""
     if not IS_WEB:
         return {}
-    import js  # noqa: PLC0415
+    import js
 
     query: str = str(js.window.location.search).lstrip("?")
     return {k: v[-1] for k, v in parse_qs(query).items()}
@@ -127,7 +127,7 @@ def viewport_size() -> tuple[int, int] | None:
     """Size of the browser viewport, or None on desktop."""
     if not IS_WEB:
         return None
-    import js  # noqa: PLC0415
+    import js
 
     return int(js.window.innerWidth), int(js.window.innerHeight)
 
@@ -136,8 +136,8 @@ def download_file(path: Path, mime: str = "text/csv") -> None:
     """Make the browser download a file from the virtual file system. No-op on desktop."""
     if not IS_WEB:
         return
-    import js  # noqa: PLC0415
-    from pyodide.ffi import to_js  # noqa: PLC0415
+    import js
+    from pyodide.ffi import to_js
 
     data: bytes = Path(path).read_bytes()
     blob = js.Blob.new(to_js([data.decode("utf-8")]), to_js({"type": mime}, dict_converter=js.Object.fromEntries))
@@ -155,8 +155,8 @@ def notify_page(event_name: str, detail: str = "") -> None:
     """Dispatch a DOM CustomEvent on the page (e.g. 'openmatb-end'). No-op on desktop."""
     if not IS_WEB:
         return
-    import js  # noqa: PLC0415
-    from pyodide.ffi import to_js  # noqa: PLC0415
+    import js
+    from pyodide.ffi import to_js
 
     init = to_js({"detail": detail}, dict_converter=js.Object.fromEntries)
     js.document.dispatchEvent(js.CustomEvent.new(event_name, init))

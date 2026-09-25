@@ -40,7 +40,10 @@ def _snap_text_to_pixels() -> None:
     if getattr(TextLayout, "_openmatb_snapped", False):
         return
     init, set_x, set_y, set_position = (
-        TextLayout.__init__, TextLayout._set_x, TextLayout._set_y, TextLayout._set_position
+        TextLayout.__init__,
+        TextLayout._set_x,
+        TextLayout._set_y,
+        TextLayout._set_position,
     )
 
     def snapped_init(self: TextLayout, *args: Any, **kwargs: Any) -> None:
@@ -87,8 +90,13 @@ class Window(Window):
             self._fullscreen = get_conf_value("Openmatb", "fullscreen")
 
         super().__init__(
-            fullscreen=self._fullscreen, width=self._width, height=self._height,
-            vsync=True, config=_antialiased_configs(), *args, **kwargs
+            fullscreen=self._fullscreen,
+            width=self._width,
+            height=self._height,
+            vsync=True,
+            config=_antialiased_configs(),
+            *args,
+            **kwargs,
         )
         self.context.set_clear_color(0, 0, 0, 1)
 
@@ -164,22 +172,19 @@ class Window(Window):
         container_title_h: float = PLUGIN_TITLE_HEIGHT_PROPORTION / 2
 
         # Main background
-        bg = Rectangle(x=l, y=b, width=w, height=h,
-                        color=C["BACKGROUND"][:3], batch=self.batch, group=G(-1))
+        bg = Rectangle(x=l, y=b, width=w, height=h, color=C["BACKGROUND"][:3], batch=self.batch, group=G(-1))
         bg.opacity = C["BACKGROUND"][3]
 
         # Upper band
         upper_h: float = h * container_title_h
         upper_y: float = b + h - upper_h
-        upper = Rectangle(x=l, y=upper_y, width=w, height=upper_h,
-                           color=C["BLACK"][:3], batch=self.batch, group=G(-1))
+        upper = Rectangle(x=l, y=upper_y, width=w, height=upper_h, color=C["BLACK"][:3], batch=self.batch, group=G(-1))
         upper.opacity = C["BLACK"][3]
 
         # Middle band
         mid_h: float = h * container_title_h
         mid_y: float = b + h * (0.5 - container_title_h)
-        mid = Rectangle(x=l, y=mid_y, width=w, height=mid_h,
-                         color=C["BLACK"][:3], batch=self.batch, group=G(0))
+        mid = Rectangle(x=l, y=mid_y, width=w, height=mid_h, color=C["BLACK"][:3], batch=self.batch, group=G(0))
         mid.opacity = C["BLACK"][3]
 
         self.bg_shapes: list[Rectangle] = [bg, upper, mid]

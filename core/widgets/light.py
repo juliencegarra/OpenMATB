@@ -21,7 +21,8 @@ class Light(AbstractWidget):
         x1, y1, x2, y2 = self.container.get_x1y1x2y2()
 
         self.vertex["background"] = Rectangle(
-            x=x1, y=y2,
+            x=x1,
+            y=y2,
             width=self.container.w,
             height=self.container.h,
             color=color[:3],
@@ -31,12 +32,17 @@ class Light(AbstractWidget):
         self.vertex["background"].opacity = color[3]
 
         # Border on top
-        for bname, coords in [("border_top", (x1, y1, x2, y1)),
-                               ("border_right", (x2, y1, x2, y2)),
-                               ("border_bottom", (x2, y2, x1, y2)),
-                               ("border_left", (x1, y2, x1, y1))]:
+        for bname, coords in [
+            ("border_top", (x1, y1, x2, y1)),
+            ("border_right", (x2, y1, x2, y2)),
+            ("border_bottom", (x2, y2, x1, y2)),
+            ("border_left", (x1, y2, x1, y1)),
+        ]:
             self.vertex[bname] = Line(
-                *coords, color=C["BLACK"], batch=None, group=G(self.m_draw + 1),
+                *coords,
+                color=C["BLACK"],
+                batch=None,
+                group=G(self.m_draw + 1),
             )
 
         self.vertex["label"] = Label(

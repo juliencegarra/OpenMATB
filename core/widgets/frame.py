@@ -47,7 +47,10 @@ class Frame(AbstractWidget):
         # Four border rectangles (top, bottom, left, right)
         for part in ("top", "bottom", "left", "right"):
             self.vertex[f"border_{part}"] = Rectangle(
-                x=0, y=0, width=0, height=0,
+                x=0,
+                y=0,
+                width=0,
+                height=0,
                 color=border_color[:3],
                 batch=None,
                 group=G(draw_order + 1),
@@ -72,8 +75,7 @@ class Frame(AbstractWidget):
         # Right: full height, sits at right
         rig_cont = c.reduce_and_translate(lr_w_ratio, 1, 1, 0)
 
-        for part, cont in [("top", top_cont), ("bottom", bot_cont),
-                           ("left", lef_cont), ("right", rig_cont)]:
+        for part, cont in [("top", top_cont), ("bottom", bot_cont), ("left", lef_cont), ("right", rig_cont)]:
             shape = self.vertex[f"border_{part}"]
             shape.x = cont.x1
             shape.y = cont.y2

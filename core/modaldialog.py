@@ -37,8 +37,13 @@ class ModalDialog:
             MATB_container: Container = self.win.get_container("fullscreen")
             l, b, w, h = MATB_container.get_lbwh()
             self.back_vertice: Any | None = Rectangle(
-                x=l, y=b, width=w, height=h,
-                color=C["BACKGROUND"][:3], batch=self.win.batch, group=G(20),
+                x=l,
+                y=b,
+                width=w,
+                height=h,
+                color=C["BACKGROUND"][:3],
+                batch=self.win.batch,
+                group=G(20),
             )
             self.back_vertice.opacity = C["BACKGROUND"][3]
         else:
@@ -95,18 +100,23 @@ class ModalDialog:
 
         # Container background
         self.back_dialog: Any = Rectangle(
-            x=l, y=b, width=w, height=h,
-            color=C["WHITE_TRANSLUCENT"][:3], batch=self.win.batch, group=G(21),
+            x=l,
+            y=b,
+            width=w,
+            height=h,
+            color=C["WHITE_TRANSLUCENT"][:3],
+            batch=self.win.batch,
+            group=G(21),
         )
         self.back_dialog.opacity = C["WHITE_TRANSLUCENT"][3]
 
         # Container border (4 lines)
         grey: tuple[int, ...] = C["GREY"][:3]
         self.border_lines: list[Line] = [
-            Line(l, b + h, l + w, b + h, color=grey, batch=self.win.batch, group=G(21)),      # top
-            Line(l + w, b + h, l + w, b, color=grey, batch=self.win.batch, group=G(21)),       # right
-            Line(l + w, b, l, b, color=grey, batch=self.win.batch, group=G(21)),               # bottom
-            Line(l, b, l, b + h, color=grey, batch=self.win.batch, group=G(21)),               # left
+            Line(l, b + h, l + w, b + h, color=grey, batch=self.win.batch, group=G(21)),  # top
+            Line(l + w, b + h, l + w, b, color=grey, batch=self.win.batch, group=G(21)),  # right
+            Line(l + w, b, l, b, color=grey, batch=self.win.batch, group=G(21)),  # bottom
+            Line(l, b, l, b + h, color=grey, batch=self.win.batch, group=G(21)),  # left
         ]
 
         # HTMLLabel placement #

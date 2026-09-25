@@ -50,7 +50,12 @@ class Radio(AbstractWidget):
         for arrow_name, info in self.arrows.items():
             v: list[float] = self.get_triangle_vertice(x_ratio=info["x_ratio"], angle=info["angle"])
             self.vertex[arrow_name] = Triangle(
-                v[0], v[1], v[2], v[3], v[4], v[5],
+                v[0],
+                v[1],
+                v[2],
+                v[3],
+                v[4],
+                v[5],
                 color=C["BLACK"],
                 batch=None,
                 group=G(self.m_draw + 2),
@@ -67,7 +72,10 @@ class Radio(AbstractWidget):
         ]
         for i, (lx1, ly1, lx2, ly2) in enumerate(segments):
             self.vertex[f"feedback_line_{i}"] = Line(
-                lx1, ly1, lx2, ly2,
+                lx1,
+                ly1,
+                lx2,
+                ly2,
                 color=C["BACKGROUND"],
                 batch=None,
                 group=G(self.m_draw + 3),

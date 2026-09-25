@@ -40,7 +40,8 @@ class Tank(AbstractWidget):
 
         # Background fill
         self.vertex["background"] = Rectangle(
-            x=x1, y=y2,
+            x=x1,
+            y=y2,
             width=self.container.w,
             height=self.container.h,
             color=C["WHITE"][:3],
@@ -49,20 +50,26 @@ class Tank(AbstractWidget):
         )
 
         # Border on top of fluid (m_draw + 3)
-        for name, coords in [("border_top", (x1, y1, x2, y1)),
-                              ("border_right", (x2, y1, x2, y2)),
-                              ("border_bottom", (x2, y2, x1, y2)),
-                              ("border_left", (x1, y2, x1, y1))]:
+        for name, coords in [
+            ("border_top", (x1, y1, x2, y1)),
+            ("border_right", (x2, y1, x2, y2)),
+            ("border_bottom", (x2, y2, x1, y2)),
+            ("border_left", (x1, y2, x1, y1)),
+        ]:
             self.vertex[name] = Line(
-                *coords, color=C["BLACK"], batch=None, group=G(self.m_draw + 3),
+                *coords,
+                color=C["BLACK"],
+                batch=None,
+                group=G(self.m_draw + 3),
             )
 
         if target is not None:
-            t_left, t_bottom, t_width, t_height = self._get_tolerance_lbwh(
-                self.tolerance_radius, target, level_max
-            )
+            t_left, t_bottom, t_width, t_height = self._get_tolerance_lbwh(self.tolerance_radius, target, level_max)
             self.vertex["tolerance"] = Rectangle(
-                x=t_left, y=t_bottom, width=t_width, height=t_height,
+                x=t_left,
+                y=t_bottom,
+                width=t_width,
+                height=t_height,
                 color=C["BLACK"],
                 batch=None,
                 group=G(self.m_draw + 1),

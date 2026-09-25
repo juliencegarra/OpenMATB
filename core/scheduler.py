@@ -20,7 +20,6 @@ from core.platform import IS_WEB, notify_page
 from core.scenario import Scenario
 from core.window import Window
 
-
 # Browser: how often the session file is saved to persistent storage (seconds)
 WEB_CHECKPOINT_INTERVAL: float = 10
 

@@ -57,7 +57,7 @@ class TestSequentialMode:
             patcher.stop()
 
     def test_next_after_pause_is_ignored(self):
-        sp, players, patcher = self._make(["s1", "s2"])
+        sp, _players, patcher = self._make(["s1", "s2"])
         try:
             sp.play()
             sp.pause()

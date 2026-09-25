@@ -38,6 +38,7 @@ ignore = [
 "tests/conftest.py" = ["F811", "E501", "F401", "E402"]
 "main.py" = ["E402"]
 "scenario_generator.py" = ["E402", "E702"]
+"scenario_generator_ui.py" = ["E402"]
 
 [lint.isort]
 known-first-party = ["core", "plugins"]

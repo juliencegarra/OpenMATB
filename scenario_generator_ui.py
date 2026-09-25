@@ -15,13 +15,14 @@ import gettext
 import json
 import time as _time
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, ClassVar
 
 import pyglet
 from pyglet import shapes
 from pyglet.gl import GL_SCISSOR_TEST, glClearColor, glDisable, glEnable, glScissor
 from pyglet.text import Label
-from pyglet.window import key as winkey, mouse
+from pyglet.window import key as winkey
+from pyglet.window import mouse
 
 # ── i18n bootstrap (same as scenario_generator.py) ──────────────────────────
 
@@ -32,8 +33,12 @@ _lang = gettext.translation("openmatb", _locale_path, [_cfg["Openmatb"]["languag
 _lang.install()
 
 from scenario_generation import (
-    BlockConfig, InterBlockEvent, ScenarioConfig,
-    format_scenario_lines, generate_scenario, write_scenario_file,
+    BlockConfig,
+    InterBlockEvent,
+    ScenarioConfig,
+    format_scenario_lines,
+    generate_scenario,
+    write_scenario_file,
 )
 
 # ── Colour palette ───────────────────────────────────────────────────────────
@@ -75,10 +80,21 @@ FONT_FALLBACK = ""  # pyglet default
 class UISlider:
     """Horizontal slider with track, thumb, and value label."""
 
-    def __init__(self, x: int, y: int, width: int, label_text: str,
-                 min_val: float, max_val: float, step: float, value: float,
-                 batch: pyglet.graphics.Batch, fmt: str = "{:.0f}",
-                 suffix: str = "", on_change: Callable | None = None):
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        width: int,
+        label_text: str,
+        min_val: float,
+        max_val: float,
+        step: float,
+        value: float,
+        batch: pyglet.graphics.Batch,
+        fmt: str = "{:.0f}",
+        suffix: str = "",
+        on_change: Callable | None = None,
+    ):
         self.x, self.y, self.width = x, y, width
         self.min_val, self.max_val, self.step = min_val, max_val, step
         self._value = self._snap(value)
@@ -87,15 +103,12 @@ class UISlider:
         self._dragging = False
 
         track_y = y + 8
-        self.label = Label(label_text, x=x, y=y + 28, font_name=FONT,
-                           font_size=11, color=COL_TEXT, batch=batch)
-        self.track = shapes.Rectangle(x, track_y, width, 4,
-                                      color=COL_SLIDER_TRACK, batch=batch)
-        self.thumb = shapes.Circle(self._thumb_x(), track_y + 2, 8,
-                                   color=COL_SLIDER_THUMB, batch=batch)
-        self.val_label = Label(self._format(), x=x + width + 8, y=y + 6,
-                               font_name=FONT, font_size=11, color=COL_TEXT,
-                               batch=batch)
+        self.label = Label(label_text, x=x, y=y + 28, font_name=FONT, font_size=11, color=COL_TEXT, batch=batch)
+        self.track = shapes.Rectangle(x, track_y, width, 4, color=COL_SLIDER_TRACK, batch=batch)
+        self.thumb = shapes.Circle(self._thumb_x(), track_y + 2, 8, color=COL_SLIDER_THUMB, batch=batch)
+        self.val_label = Label(
+            self._format(), x=x + width + 8, y=y + 6, font_name=FONT, font_size=11, color=COL_TEXT, batch=batch
+        )
         self._shapes = [self.label, self.track, self.thumb, self.val_label]
 
     def _snap(self, v: float) -> float:
@@ -126,8 +139,7 @@ class UISlider:
             self.on_change(self._value)
 
     def _hit(self, mx: int, my: int) -> bool:
-        return (self.x - 5 <= mx <= self.x + self.width + 5
-                and self.y - 5 <= my <= self.y + 40)
+        return self.x - 5 <= mx <= self.x + self.width + 5 and self.y - 5 <= my <= self.y + 40
 
     def on_mouse_press(self, mx: int, my: int, button: int, mod: int) -> bool:
         if button == mouse.LEFT and self._hit(mx, my):
@@ -178,19 +190,25 @@ class UISlider:
 class UIToggle:
     """On/off toggle with coloured background and label."""
 
-    def __init__(self, x: int, y: int, label_text: str, value: bool,
-                 batch: pyglet.graphics.Batch, on_change: Callable | None = None):
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        label_text: str,
+        value: bool,
+        batch: pyglet.graphics.Batch,
+        on_change: Callable | None = None,
+    ):
         self.x, self.y = x, y
         self._value = value
         self.on_change = on_change
-        self.bg = shapes.Rectangle(x, y, 20, 20,
-                                   color=COL_TOGGLE_ON if value else COL_TOGGLE_OFF,
-                                   batch=batch)
-        self.check_label = Label("\u2713" if value else "", x=x + 4, y=y + 2,
-                                 font_name=FONT, font_size=12, color=COL_WHITE,
-                                 batch=batch)
-        self.text_label = Label(label_text, x=x + 28, y=y + 2, font_name=FONT,
-                                font_size=11, color=COL_TEXT, batch=batch)
+        self.bg = shapes.Rectangle(x, y, 20, 20, color=COL_TOGGLE_ON if value else COL_TOGGLE_OFF, batch=batch)
+        self.check_label = Label(
+            "\u2713" if value else "", x=x + 4, y=y + 2, font_name=FONT, font_size=12, color=COL_WHITE, batch=batch
+        )
+        self.text_label = Label(
+            label_text, x=x + 28, y=y + 2, font_name=FONT, font_size=11, color=COL_TEXT, batch=batch
+        )
         self._shapes = [self.bg, self.check_label, self.text_label]
 
     @property
@@ -237,18 +255,34 @@ class UIToggle:
 class UIButton:
     """Clickable button with hover effect."""
 
-    def __init__(self, x: int, y: int, width: int, height: int, text: str,
-                 batch: pyglet.graphics.Batch, color: tuple = COL_ACCENT,
-                 hover_color: tuple = COL_ACCENT_HOVER,
-                 text_color: tuple = COL_WHITE, on_click: Callable | None = None):
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        text: str,
+        batch: pyglet.graphics.Batch,
+        color: tuple = COL_ACCENT,
+        hover_color: tuple = COL_ACCENT_HOVER,
+        text_color: tuple = COL_WHITE,
+        on_click: Callable | None = None,
+    ):
         self.x, self.y, self.width, self.height = x, y, width, height
         self.color, self.hover_color = color, hover_color
         self.on_click = on_click
         self.bg = shapes.Rectangle(x, y, width, height, color=color, batch=batch)
-        self.lbl = Label(text, x=x + width // 2, y=y + height // 2,
-                         anchor_x="center", anchor_y="center",
-                         font_name=FONT, font_size=12, color=text_color,
-                         batch=batch)
+        self.lbl = Label(
+            text,
+            x=x + width // 2,
+            y=y + height // 2,
+            anchor_x="center",
+            anchor_y="center",
+            font_name=FONT,
+            font_size=12,
+            color=text_color,
+            batch=batch,
+        )
         self._shapes = [self.bg, self.lbl]
 
     def _hit(self, mx: int, my: int) -> bool:
@@ -289,26 +323,22 @@ class UITextInput:
 
     _BLINK_INTERVAL = 0.53  # seconds
 
-    def __init__(self, x: int, y: int, width: int, label_text: str, value: str,
-                 batch: pyglet.graphics.Batch):
+    def __init__(self, x: int, y: int, width: int, label_text: str, value: str, batch: pyglet.graphics.Batch):
         self.x, self.y, self.width = x, y, width
         self._value = value
         self._focused = False
         self._cursor_visible = True
 
-        self.label = Label(label_text, x=x, y=y + 30, font_name=FONT,
-                           font_size=11, color=COL_TEXT, batch=batch)
+        self.label = Label(label_text, x=x, y=y + 30, font_name=FONT, font_size=11, color=COL_TEXT, batch=batch)
         self.bg = shapes.Rectangle(x, y, width, 26, color=COL_INPUT_BG, batch=batch)
         self.border = shapes.Box(x, y, width, 26, color=COL_INPUT_BORDER, batch=batch)
-        self.text_label = Label(value, x=x + 6, y=y + 5, font_name=FONT,
-                                font_size=11, color=COL_TEXT, batch=batch,
-                                width=width - 12)
+        self.text_label = Label(
+            value, x=x + 6, y=y + 5, font_name=FONT, font_size=11, color=COL_TEXT, batch=batch, width=width - 12
+        )
         # Caret (thin vertical line after text)
-        self._caret = shapes.Line(0, y + 4, 0, y + 22, thickness=1,
-                                  color=COL_TEXT[:3], batch=batch)
+        self._caret = shapes.Line(0, y + 4, 0, y + 22, thickness=1, color=COL_TEXT[:3], batch=batch)
         self._caret.visible = False
-        self._shapes = [self.label, self.bg, self.border, self.text_label,
-                        self._caret]
+        self._shapes = [self.label, self.bg, self.border, self.text_label, self._caret]
         self._update_caret_x()
         pyglet.clock.schedule_interval(self._blink, self._BLINK_INTERVAL)
 
@@ -400,18 +430,29 @@ class BlockWidgetGroup:
     """A group of widgets representing one scenario block."""
 
     CARD_H = 238
-    PLUGIN_NAMES = ["track", "sysmon", "communications", "resman", "scheduling"]
-    PLUGIN_LABELS = {"track": "Track", "sysmon": "Sysmon",
-                     "communications": "Comms", "resman": "Resman",
-                     "scheduling": "Sched."}
+    PLUGIN_NAMES: ClassVar[list[str]] = ["track", "sysmon", "communications", "resman", "scheduling"]
+    PLUGIN_LABELS: ClassVar[dict[str, str]] = {
+        "track": "Track",
+        "sysmon": "Sysmon",
+        "communications": "Comms",
+        "resman": "Resman",
+        "scheduling": "Sched.",
+    }
 
-    def __init__(self, index: int, x: int, y: int, width: int,
-                 batch: pyglet.graphics.Batch, difficulty: float = 0.50,
-                 on_remove: Callable | None = None,
-                 on_duplicate: Callable | None = None,
-                 on_move_up: Callable | None = None,
-                 on_move_down: Callable | None = None,
-                 on_advanced: Callable | None = None):
+    def __init__(
+        self,
+        index: int,
+        x: int,
+        y: int,
+        width: int,
+        batch: pyglet.graphics.Batch,
+        difficulty: float = 0.50,
+        on_remove: Callable | None = None,
+        on_duplicate: Callable | None = None,
+        on_move_up: Callable | None = None,
+        on_move_down: Callable | None = None,
+        on_advanced: Callable | None = None,
+    ):
         self.index = index
         self.x, self.y, self.width = x, y, width
         self.batch = batch
@@ -423,42 +464,83 @@ class BlockWidgetGroup:
         self.advanced_params: dict[str, dict] = {}
 
         # Card background
-        self.bg = shapes.Rectangle(x, y, width, self.CARD_H,
-                                   color=COL_BLOCK_BG, batch=batch)
-        self.border = shapes.Box(x, y, width, self.CARD_H,
-                                 color=COL_BLOCK_BORDER, batch=batch)
-        self.title = Label(f"Block {index + 1}", x=x + 10, y=y + self.CARD_H - 22,
-                           font_name=FONT, font_size=12, weight='bold',
-                           color=COL_TEXT, batch=batch)
+        self.bg = shapes.Rectangle(x, y, width, self.CARD_H, color=COL_BLOCK_BG, batch=batch)
+        self.border = shapes.Box(x, y, width, self.CARD_H, color=COL_BLOCK_BORDER, batch=batch)
+        self.title = Label(
+            f"Block {index + 1}",
+            x=x + 10,
+            y=y + self.CARD_H - 22,
+            font_name=FONT,
+            font_size=12,
+            weight="bold",
+            color=COL_TEXT,
+            batch=batch,
+        )
 
         # Top-right buttons row
         btn_right = x + width - 10
         self.remove_btn = UIButton(
-            btn_right - 90, y + self.CARD_H - 30, 90, 26, "\u2715 Remove", batch,
-            color=COL_RED_BTN, hover_color=COL_RED_HOVER,
-            text_color=COL_WHITE, on_click=self._do_remove,
+            btn_right - 90,
+            y + self.CARD_H - 30,
+            90,
+            26,
+            "\u2715 Remove",
+            batch,
+            color=COL_RED_BTN,
+            hover_color=COL_RED_HOVER,
+            text_color=COL_WHITE,
+            on_click=self._do_remove,
         )
         self.dup_btn = UIButton(
-            btn_right - 165, y + self.CARD_H - 30, 70, 26, "\u2295 Clone", batch,
-            color=COL_ACCENT, hover_color=COL_ACCENT_HOVER,
-            text_color=COL_WHITE, on_click=self._do_duplicate,
+            btn_right - 165,
+            y + self.CARD_H - 30,
+            70,
+            26,
+            "\u2295 Clone",
+            batch,
+            color=COL_ACCENT,
+            hover_color=COL_ACCENT_HOVER,
+            text_color=COL_WHITE,
+            on_click=self._do_duplicate,
         )
         self.move_up_btn = UIButton(
-            btn_right - 205, y + self.CARD_H - 30, 32, 26, "\u25b2", batch,
-            color=COL_ACCENT, hover_color=COL_ACCENT_HOVER,
-            text_color=COL_WHITE, on_click=self._do_move_up,
+            btn_right - 205,
+            y + self.CARD_H - 30,
+            32,
+            26,
+            "\u25b2",
+            batch,
+            color=COL_ACCENT,
+            hover_color=COL_ACCENT_HOVER,
+            text_color=COL_WHITE,
+            on_click=self._do_move_up,
         )
         self.move_down_btn = UIButton(
-            btn_right - 242, y + self.CARD_H - 30, 32, 26, "\u25bc", batch,
-            color=COL_ACCENT, hover_color=COL_ACCENT_HOVER,
-            text_color=COL_WHITE, on_click=self._do_move_down,
+            btn_right - 242,
+            y + self.CARD_H - 30,
+            32,
+            26,
+            "\u25bc",
+            batch,
+            color=COL_ACCENT,
+            hover_color=COL_ACCENT_HOVER,
+            text_color=COL_WHITE,
+            on_click=self._do_move_down,
         )
 
         # Duration slider
         self.duration_slider = UISlider(
-            x + 10, y + self.CARD_H - 72, width - 120,
-            "Duration", 30, 300, 5, 60, batch,
-            fmt="{:.0f}", suffix=" s",
+            x + 10,
+            y + self.CARD_H - 72,
+            width - 120,
+            "Duration",
+            30,
+            300,
+            5,
+            60,
+            batch,
+            fmt="{:.0f}",
+            suffix=" s",
         )
 
         # Plugin toggles + difficulty sliders + gear buttons
@@ -467,16 +549,29 @@ class BlockWidgetGroup:
         self.gear_btns: dict[str, UIButton] = {}
         row_y = y + self.CARD_H - 110
         for name in self.PLUGIN_NAMES:
-            self.toggles[name] = UIToggle(x + 10, row_y,
-                                          self.PLUGIN_LABELS[name], True, batch)
+            self.toggles[name] = UIToggle(x + 10, row_y, self.PLUGIN_LABELS[name], True, batch)
             self.sliders[name] = UISlider(
-                x + 135, row_y - 8, width - 240,
-                "", 0, 100, 1, difficulty * 100, batch,
-                fmt="{:.0f}", suffix=" %",
+                x + 135,
+                row_y - 8,
+                width - 240,
+                "",
+                0,
+                100,
+                1,
+                difficulty * 100,
+                batch,
+                fmt="{:.0f}",
+                suffix=" %",
             )
             self.gear_btns[name] = UIButton(
-                x + width - 40, row_y - 3, 26, 22, "\u2699", batch,
-                color=(160, 160, 170), hover_color=(120, 120, 140),
+                x + width - 40,
+                row_y - 3,
+                26,
+                22,
+                "\u2699",
+                batch,
+                color=(160, 160, 170),
+                hover_color=(120, 120, 140),
                 text_color=COL_WHITE,
                 on_click=lambda n=name: self._do_advanced(n),
             )
@@ -613,11 +708,19 @@ class InterBlockWidget:
 
     CARD_H = 40
 
-    TYPE_LABELS = {"instructions": "\u2709 Instructions", "genericscales": "\u2611 NASA-TLX"}
+    TYPE_LABELS: ClassVar[dict[str, str]] = {"instructions": "\u2709 Instructions", "genericscales": "\u2611 NASA-TLX"}
 
-    def __init__(self, position: int, event_type: str, filename: str,
-                 x: int, y: int, width: int, batch: pyglet.graphics.Batch,
-                 on_remove: Callable | None = None):
+    def __init__(
+        self,
+        position: int,
+        event_type: str,
+        filename: str,
+        x: int,
+        y: int,
+        width: int,
+        batch: pyglet.graphics.Batch,
+        on_remove: Callable | None = None,
+    ):
         self.position = position
         self.event_type = event_type
         self.filename = filename
@@ -625,18 +728,29 @@ class InterBlockWidget:
         self.batch = batch
         self.on_remove_cb = on_remove
 
-        self.bg = shapes.Rectangle(x, y, width, self.CARD_H,
-                                   color=COL_INTERBLOCK_BG, batch=batch)
-        self.border = shapes.Box(x, y, width, self.CARD_H,
-                                 color=COL_INTERBLOCK_BORDER, batch=batch)
+        self.bg = shapes.Rectangle(x, y, width, self.CARD_H, color=COL_INTERBLOCK_BG, batch=batch)
+        self.border = shapes.Box(x, y, width, self.CARD_H, color=COL_INTERBLOCK_BORDER, batch=batch)
         type_str = self.TYPE_LABELS.get(event_type, event_type)
-        self.label = Label(f"{type_str} : {Path(filename).stem}",
-                           x=x + 10, y=y + 12, font_name=FONT, font_size=10,
-                           color=COL_TEXT, batch=batch)
+        self.label = Label(
+            f"{type_str} : {Path(filename).stem}",
+            x=x + 10,
+            y=y + 12,
+            font_name=FONT,
+            font_size=10,
+            color=COL_TEXT,
+            batch=batch,
+        )
         self.remove_btn = UIButton(
-            x + width - 35, y + 8, 26, 24, "\u2715", batch,
-            color=COL_RED_BTN, hover_color=COL_RED_HOVER,
-            text_color=COL_WHITE, on_click=self._do_remove,
+            x + width - 35,
+            y + 8,
+            26,
+            24,
+            "\u2715",
+            batch,
+            color=COL_RED_BTN,
+            hover_color=COL_RED_HOVER,
+            text_color=COL_WHITE,
+            on_click=self._do_remove,
         )
         self._shapes = [self.bg, self.border, self.label]
 
@@ -674,8 +788,7 @@ class InterBlockWidget:
         self.remove_btn.delete()
 
     def to_inter_block_event(self) -> InterBlockEvent:
-        return InterBlockEvent(type=self.event_type, filename=self.filename,
-                               position=self.position)
+        return InterBlockEvent(type=self.event_type, filename=self.filename, position=self.position)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -688,22 +801,41 @@ class InsertZone:
 
     ZONE_H = 24
 
-    def __init__(self, position: int, x: int, y: int, width: int,
-                 batch: pyglet.graphics.Batch,
-                 on_instructions: Callable, on_questionnaire: Callable) -> None:
+    def __init__(
+        self,
+        position: int,
+        x: int,
+        y: int,
+        width: int,
+        batch: pyglet.graphics.Batch,
+        on_instructions: Callable,
+        on_questionnaire: Callable,
+    ) -> None:
         self.position = position
         self.x, self.y, self.width = x, y, width
         self.instr_btn = UIButton(
-            x, y, width // 2 - 5, self.ZONE_H,
-            "+ Instructions", batch,
-            color=(200, 215, 240), hover_color=(170, 195, 230),
-            text_color=COL_TEXT, on_click=lambda: on_instructions(position),
+            x,
+            y,
+            width // 2 - 5,
+            self.ZONE_H,
+            "+ Instructions",
+            batch,
+            color=(200, 215, 240),
+            hover_color=(170, 195, 230),
+            text_color=COL_TEXT,
+            on_click=lambda: on_instructions(position),
         )
         self.quest_btn = UIButton(
-            x + width // 2 + 5, y, width // 2 - 5, self.ZONE_H,
-            "+ Questionnaire", batch,
-            color=(200, 215, 240), hover_color=(170, 195, 230),
-            text_color=COL_TEXT, on_click=lambda: on_questionnaire(position),
+            x + width // 2 + 5,
+            y,
+            width // 2 - 5,
+            self.ZONE_H,
+            "+ Questionnaire",
+            batch,
+            color=(200, 215, 240),
+            hover_color=(170, 195, 230),
+            text_color=COL_TEXT,
+            on_click=lambda: on_questionnaire(position),
         )
 
     def set_y(self, new_y: int) -> None:
@@ -724,9 +856,7 @@ class InsertZone:
     def on_mouse_press(self, mx: int, my: int, button: int, mod: int) -> bool:
         if self.instr_btn.on_mouse_press(mx, my, button, mod):
             return True
-        if self.quest_btn.on_mouse_press(mx, my, button, mod):
-            return True
-        return False
+        return self.quest_btn.on_mouse_press(mx, my, button, mod)
 
     def on_mouse_motion(self, mx: int, my: int, dx: int, dy: int) -> None:
         self.instr_btn.on_mouse_motion(mx, my, dx, dy)
@@ -745,8 +875,15 @@ class InsertZone:
 class UIPreviewOverlay:
     """Modal overlay showing the generated scenario content."""
 
-    def __init__(self, win_w: int, win_h: int, batch: pyglet.graphics.Batch,
-                 lines: list[str], file_path: Path | None, on_close: Callable) -> None:
+    def __init__(
+        self,
+        win_w: int,
+        win_h: int,
+        batch: pyglet.graphics.Batch,
+        lines: list[str],
+        file_path: Path | None,
+        on_close: Callable,
+    ) -> None:
         self.batch = batch
         self.on_close = on_close
         self.file_path = file_path
@@ -754,8 +891,7 @@ class UIPreviewOverlay:
         self._lines = lines
 
         # Dim background
-        self.dim_bg = shapes.Rectangle(0, 0, win_w, win_h, color=(0, 0, 0),
-                                       batch=batch)
+        self.dim_bg = shapes.Rectangle(0, 0, win_w, win_h, color=(0, 0, 0), batch=batch)
         self.dim_bg.opacity = 120
 
         # White panel
@@ -766,20 +902,40 @@ class UIPreviewOverlay:
         self.panel_border = shapes.Box(px, py, pw, ph, color=COL_BLOCK_BORDER, batch=batch)
 
         # Title
-        self.title = Label("Preview", x=px + 15, y=py + ph - 25,
-                           font_name=FONT, font_size=13, weight='bold',
-                           color=COL_TEXT, batch=batch)
+        self.title = Label(
+            "Preview",
+            x=px + 15,
+            y=py + ph - 25,
+            font_name=FONT,
+            font_size=13,
+            weight="bold",
+            color=COL_TEXT,
+            batch=batch,
+        )
 
         # Path label
-        self.path_label = Label(str(file_path) if file_path else "Preview",
-                                x=px + 15, y=py + ph - 48,
-                                font_name=FONT, font_size=9, color=COL_TEXT_LIGHT,
-                                batch=batch)
+        self.path_label = Label(
+            str(file_path) if file_path else "Preview",
+            x=px + 15,
+            y=py + ph - 48,
+            font_name=FONT,
+            font_size=9,
+            color=COL_TEXT_LIGHT,
+            batch=batch,
+        )
 
         # Close button (× cross)
-        self.close_btn = UIButton(px + pw - 35, py + ph - 33, 24, 24, "\u00d7", batch,
-                                  color=(180, 180, 180), hover_color=(120, 120, 120),
-                                  on_click=self._do_close)
+        self.close_btn = UIButton(
+            px + pw - 35,
+            py + ph - 33,
+            24,
+            24,
+            "\u00d7",
+            batch,
+            color=(180, 180, 180),
+            hover_color=(120, 120, 120),
+            on_click=self._do_close,
+        )
 
         # Scrollable text area — label pool
         self._sb_w = 14
@@ -790,8 +946,15 @@ class UIPreviewOverlay:
         self._visible_rows = (self._text_top - self._text_bottom) // self._row_height
         self._label_pool: list[Label] = []
         for i in range(self._visible_rows):
-            lbl = Label("", x=self._text_left, y=self._text_top - i * self._row_height,
-                        font_name="Consolas", font_size=9, color=COL_TEXT, batch=batch)
+            lbl = Label(
+                "",
+                x=self._text_left,
+                y=self._text_top - i * self._row_height,
+                font_name="Consolas",
+                font_size=9,
+                color=COL_TEXT,
+                batch=batch,
+            )
             self._label_pool.append(lbl)
 
         # Scrollbar with ▲/▼ buttons
@@ -799,28 +962,34 @@ class UIPreviewOverlay:
         self._sb_btn_h = 20
         sb_full_top = self._text_top + self._row_height
         sb_full_bottom = self._text_bottom
-        self._sb_up_btn = UIButton(sb_x, sb_full_top - self._sb_btn_h,
-                                   self._sb_w, self._sb_btn_h, "\u25b2", batch,
-                                   on_click=self._scroll_up)
-        self._sb_down_btn = UIButton(sb_x, sb_full_bottom,
-                                     self._sb_w, self._sb_btn_h, "\u25bc", batch,
-                                     on_click=self._scroll_down)
+        self._sb_up_btn = UIButton(
+            sb_x, sb_full_top - self._sb_btn_h, self._sb_w, self._sb_btn_h, "\u25b2", batch, on_click=self._scroll_up
+        )
+        self._sb_down_btn = UIButton(
+            sb_x, sb_full_bottom, self._sb_w, self._sb_btn_h, "\u25bc", batch, on_click=self._scroll_down
+        )
         sb_track_bottom = sb_full_bottom + self._sb_btn_h
         sb_track_h = sb_full_top - self._sb_btn_h - sb_track_bottom
-        self._sb_track = shapes.Rectangle(sb_x, sb_track_bottom,
-                                          self._sb_w, sb_track_h,
-                                          color=(230, 230, 230), batch=batch)
-        self._sb_thumb = shapes.Rectangle(sb_x, sb_track_bottom + sb_track_h - 40,
-                                          self._sb_w, 40,
-                                          color=(170, 170, 180), batch=batch)
+        self._sb_track = shapes.Rectangle(
+            sb_x, sb_track_bottom, self._sb_w, sb_track_h, color=(230, 230, 230), batch=batch
+        )
+        self._sb_thumb = shapes.Rectangle(
+            sb_x, sb_track_bottom + sb_track_h - 40, self._sb_w, 40, color=(170, 170, 180), batch=batch
+        )
         self._sb_x = sb_x
         self._sb_track_bottom = sb_track_bottom
         self._sb_track_h = sb_track_h
         self._sb_dragging = False
 
-        self._all_shapes = [self.dim_bg, self.panel, self.panel_border,
-                            self.title, self.path_label,
-                            self._sb_track, self._sb_thumb] + self._label_pool
+        self._all_shapes = [
+            self.dim_bg,
+            self.panel,
+            self.panel_border,
+            self.title,
+            self.path_label,
+            self._sb_track,
+            self._sb_thumb,
+        ] + self._label_pool
         self._refresh()
 
     def _refresh(self) -> None:
@@ -870,9 +1039,11 @@ class UIPreviewOverlay:
         self._sb_up_btn.on_mouse_press(mx, my, button, mod)
         self._sb_down_btn.on_mouse_press(mx, my, button, mod)
         # Scrollbar track click
-        if (self._sb_thumb.visible
-                and self._sb_x <= mx <= self._sb_x + self._sb_w
-                and self._sb_track_bottom <= my <= self._sb_track_bottom + self._sb_track_h):
+        if (
+            self._sb_thumb.visible
+            and self._sb_x <= mx <= self._sb_x + self._sb_w
+            and self._sb_track_bottom <= my <= self._sb_track_bottom + self._sb_track_h
+        ):
             self._sb_dragging = True
             self._sb_click_to_scroll(my)
         return True  # consume all clicks when overlay is open
@@ -893,8 +1064,7 @@ class UIPreviewOverlay:
 
     def on_mouse_scroll(self, mx: int, my: int, scroll_x: float, scroll_y: float) -> bool:
         max_offset = max(0, len(self._lines) - self._visible_rows)
-        self._scroll_offset = max(0, min(max_offset,
-                                         self._scroll_offset - int(scroll_y)))
+        self._scroll_offset = max(0, min(max_offset, self._scroll_offset - int(scroll_y)))
         self._refresh()
         return True
 
@@ -914,9 +1084,16 @@ class UIPreviewOverlay:
 class UIFileSelector:
     """Modal overlay for selecting a file from a directory."""
 
-    def __init__(self, win_w: int, win_h: int, batch: pyglet.graphics.Batch,
-                 files: list[Path], title: str, on_select: Callable,
-                 on_cancel: Callable) -> None:
+    def __init__(
+        self,
+        win_w: int,
+        win_h: int,
+        batch: pyglet.graphics.Batch,
+        files: list[Path],
+        title: str,
+        on_select: Callable,
+        on_cancel: Callable,
+    ) -> None:
         self.batch = batch
         self.on_select = on_select
         self.on_cancel = on_cancel
@@ -938,20 +1115,35 @@ class UIFileSelector:
         self.panel = shapes.Rectangle(px, py, pw, ph, color=COL_OVERLAY_BG, batch=batch)
         self.panel_border = shapes.Box(px, py, pw, ph, color=COL_BLOCK_BORDER, batch=batch)
 
-        self.title_lbl = Label(title, x=px + 15, y=py + ph - 25,
-                               font_name=FONT, font_size=13, weight='bold',
-                               color=COL_TEXT, batch=batch)
+        self.title_lbl = Label(
+            title, x=px + 15, y=py + ph - 25, font_name=FONT, font_size=13, weight="bold", color=COL_TEXT, batch=batch
+        )
 
         # Close button (× cross)
-        self.cancel_btn = UIButton(px + pw - 35, py + ph - 33, 24, 24, "\u00d7", batch,
-                                   color=(180, 180, 180), hover_color=(120, 120, 120),
-                                   on_click=self._do_cancel)
+        self.cancel_btn = UIButton(
+            px + pw - 35,
+            py + ph - 33,
+            24,
+            24,
+            "\u00d7",
+            batch,
+            color=(180, 180, 180),
+            hover_color=(120, 120, 120),
+            on_click=self._do_cancel,
+        )
 
         # Select button
-        self.select_btn = UIButton(px + pw - 90, py + ph - 35, 75, 26,
-                                   "Select", batch,
-                                   color=COL_GREEN_BTN, hover_color=COL_GREEN_HOVER,
-                                   on_click=self._do_select)
+        self.select_btn = UIButton(
+            px + pw - 90,
+            py + ph - 35,
+            75,
+            26,
+            "Select",
+            batch,
+            color=COL_GREEN_BTN,
+            hover_color=COL_GREEN_HOVER,
+            on_click=self._do_select,
+        )
 
         # File list — label pool
         self._list_top = py + ph - 55
@@ -959,18 +1151,28 @@ class UIFileSelector:
         self._visible_rows = (ph - 80) // self._row_height
         self._label_pool: list[Label] = []
         for i in range(self._visible_rows):
-            lbl = Label("", x=px + 20,
-                        y=self._list_top - i * self._row_height,
-                        font_name=FONT, font_size=10, color=COL_TEXT, batch=batch)
+            lbl = Label(
+                "",
+                x=px + 20,
+                y=self._list_top - i * self._row_height,
+                font_name=FONT,
+                font_size=10,
+                color=COL_TEXT,
+                batch=batch,
+            )
             self._label_pool.append(lbl)
 
         # Highlight bar
-        self._highlight = shapes.Rectangle(px + 5, 0, pw - 10, self._row_height,
-                                           color=COL_ACCENT, batch=batch)
+        self._highlight = shapes.Rectangle(px + 5, 0, pw - 10, self._row_height, color=COL_ACCENT, batch=batch)
         self._highlight.opacity = 60
 
-        self._all_shapes = [self.dim_bg, self.panel, self.panel_border,
-                            self.title_lbl, self._highlight] + self._label_pool
+        self._all_shapes = [
+            self.dim_bg,
+            self.panel,
+            self.panel_border,
+            self.title_lbl,
+            self._highlight,
+        ] + self._label_pool
         self._refresh()
 
     def _refresh(self) -> None:
@@ -1026,8 +1228,7 @@ class UIFileSelector:
         if not self._files:
             return True
         max_offset = max(0, len(self._files) - self._visible_rows)
-        self._scroll_offset = max(0, min(max_offset,
-                                         self._scroll_offset - int(scroll_y)))
+        self._scroll_offset = max(0, min(max_offset, self._scroll_offset - int(scroll_y)))
         self._refresh()
         return True
 
@@ -1058,45 +1259,76 @@ class UIFileSelector:
 class UIAdvancedPanel:
     """Modal overlay for advanced plugin parameters."""
 
-    PLUGIN_PARAMS: dict[str, list[tuple[str, str, str, dict]]] = {
+    PLUGIN_PARAMS: ClassVar[dict[str, list[tuple[str, str, str, dict]]]] = {
         "sysmon": [
-            ("alerttimeout", "Alert timeout (ms)", "slider",
-             {"min_val": 1000, "max_val": 30000, "step": 500, "default": 10000,
-              "fmt": "{:.0f}", "suffix": " ms"}),
+            (
+                "alerttimeout",
+                "Alert timeout (ms)",
+                "slider",
+                {"min_val": 1000, "max_val": 30000, "step": 500, "default": 10000, "fmt": "{:.0f}", "suffix": " ms"},
+            ),
             ("allowanykey", "Allow any key", "toggle", {"default": False}),
         ],
         "communications": [
-            ("voiceidiom", "Voice language", "radio",
-             {"options": ["fr", "en"], "labels": ["French", "English"],
-              "default": "fr"}),
-            ("voicegender", "Voice gender", "radio",
-             {"options": ["female", "male"], "labels": ["Female", "Male"],
-              "default": "female"}),
+            (
+                "voiceidiom",
+                "Voice language",
+                "radio",
+                {"options": ["fr", "en"], "labels": ["French", "English"], "default": "fr"},
+            ),
+            (
+                "voicegender",
+                "Voice gender",
+                "radio",
+                {"options": ["female", "male"], "labels": ["Female", "Male"], "default": "female"},
+            ),
         ],
         "resman": [
-            ("toleranceradius", "Tolerance radius", "slider",
-             {"min_val": 50, "max_val": 500, "step": 10, "default": 250,
-              "fmt": "{:.0f}", "suffix": ""}),
+            (
+                "toleranceradius",
+                "Tolerance radius",
+                "slider",
+                {"min_val": 50, "max_val": 500, "step": 10, "default": 250, "fmt": "{:.0f}", "suffix": ""},
+            ),
         ],
         "track": [
-            ("joystickforce", "Joystick force", "slider",
-             {"min_val": 1, "max_val": 10, "step": 1, "default": 5,
-              "fmt": "{:.0f}", "suffix": ""}),
-            ("cursorcolor", "Cursor color", "radio",
-             {"options": ["#ff0000", "#00ff00", "#0000ff", "#ffff00"],
-              "labels": ["Red", "Green", "Blue", "Yellow"],
-              "default": "#ff0000"}),
+            (
+                "joystickforce",
+                "Joystick force",
+                "slider",
+                {"min_val": 1, "max_val": 10, "step": 1, "default": 5, "fmt": "{:.0f}", "suffix": ""},
+            ),
+            (
+                "cursorcolor",
+                "Cursor color",
+                "radio",
+                {
+                    "options": ["#ff0000", "#00ff00", "#0000ff", "#ffff00"],
+                    "labels": ["Red", "Green", "Blue", "Yellow"],
+                    "default": "#ff0000",
+                },
+            ),
         ],
         "scheduling": [
-            ("minduration", "Min duration (ms)", "slider",
-             {"min_val": 500, "max_val": 10000, "step": 500, "default": 2000,
-              "fmt": "{:.0f}", "suffix": " ms"}),
+            (
+                "minduration",
+                "Min duration (ms)",
+                "slider",
+                {"min_val": 500, "max_val": 10000, "step": 500, "default": 2000, "fmt": "{:.0f}", "suffix": " ms"},
+            ),
         ],
     }
 
-    def __init__(self, win_w: int, win_h: int, batch: pyglet.graphics.Batch,
-                 plugin_name: str, current_params: dict,
-                 on_save: Callable, on_cancel: Callable) -> None:
+    def __init__(
+        self,
+        win_w: int,
+        win_h: int,
+        batch: pyglet.graphics.Batch,
+        plugin_name: str,
+        current_params: dict,
+        on_save: Callable,
+        on_cancel: Callable,
+    ) -> None:
         self.batch = batch
         self.plugin_name = plugin_name
         self.on_save_cb = on_save
@@ -1115,17 +1347,39 @@ class UIAdvancedPanel:
         self.panel_border = shapes.Box(px, py, pw, ph, color=COL_BLOCK_BORDER, batch=batch)
 
         plugin_label = BlockWidgetGroup.PLUGIN_LABELS.get(plugin_name, plugin_name.capitalize())
-        self.title = Label(f"Advanced settings \u2014 {plugin_label}",
-                           x=px + 15, y=py + ph - 25,
-                           font_name=FONT, font_size=13, weight='bold',
-                           color=COL_TEXT, batch=batch)
+        self.title = Label(
+            f"Advanced settings \u2014 {plugin_label}",
+            x=px + 15,
+            y=py + ph - 25,
+            font_name=FONT,
+            font_size=13,
+            weight="bold",
+            color=COL_TEXT,
+            batch=batch,
+        )
 
-        self.save_btn = UIButton(px + pw - 85, py + 10, 70, 28, "Apply", batch,
-                                 color=COL_GREEN_BTN, hover_color=COL_GREEN_HOVER,
-                                 on_click=self._do_save)
-        self.cancel_btn = UIButton(px + pw - 35, py + ph - 33, 24, 24, "\u00d7", batch,
-                                   color=(180, 180, 180), hover_color=(120, 120, 120),
-                                   on_click=self._do_cancel)
+        self.save_btn = UIButton(
+            px + pw - 85,
+            py + 10,
+            70,
+            28,
+            "Apply",
+            batch,
+            color=COL_GREEN_BTN,
+            hover_color=COL_GREEN_HOVER,
+            on_click=self._do_save,
+        )
+        self.cancel_btn = UIButton(
+            px + pw - 35,
+            py + ph - 33,
+            24,
+            24,
+            "\u00d7",
+            batch,
+            color=(180, 180, 180),
+            hover_color=(120, 120, 120),
+            on_click=self._do_cancel,
+        )
 
         self._all_shapes = [self.dim_bg, self.panel, self.panel_border, self.title]
 
@@ -1135,32 +1389,44 @@ class UIAdvancedPanel:
         for param_name, label_text, widget_type, opts in params_def:
             current_val = current_params.get(param_name, opts.get("default"))
             if widget_type == "slider":
-                slider = UISlider(px + 20, row_y, pw - 120, label_text,
-                                  opts["min_val"], opts["max_val"], opts["step"],
-                                  current_val if current_val is not None else opts["default"],
-                                  batch, fmt=opts.get("fmt", "{:.0f}"),
-                                  suffix=opts.get("suffix", ""))
+                slider = UISlider(
+                    px + 20,
+                    row_y,
+                    pw - 120,
+                    label_text,
+                    opts["min_val"],
+                    opts["max_val"],
+                    opts["step"],
+                    current_val if current_val is not None else opts["default"],
+                    batch,
+                    fmt=opts.get("fmt", "{:.0f}"),
+                    suffix=opts.get("suffix", ""),
+                )
                 self._param_widgets[param_name] = ("slider", slider)
                 self._widgets.append(slider)
                 row_y -= 60
             elif widget_type == "toggle":
-                toggle = UIToggle(px + 20, row_y, label_text,
-                                  current_val if current_val is not None else opts["default"],
-                                  batch)
+                toggle = UIToggle(
+                    px + 20, row_y, label_text, current_val if current_val is not None else opts["default"], batch
+                )
                 self._param_widgets[param_name] = ("toggle", toggle)
                 self._widgets.append(toggle)
                 row_y -= 35
             elif widget_type == "radio":
-                lbl = Label(label_text, x=px + 20, y=row_y,
-                            font_name=FONT, font_size=11, color=COL_TEXT, batch=batch)
+                lbl = Label(label_text, x=px + 20, y=row_y, font_name=FONT, font_size=11, color=COL_TEXT, batch=batch)
                 self._all_shapes.append(lbl)
                 row_y -= 28
                 buttons: list[UIButton] = []
                 selected = current_val if current_val is not None else opts["default"]
                 for j, (opt, opt_label) in enumerate(zip(opts["options"], opts["labels"])):
-                    is_sel = (opt == selected)
+                    is_sel = opt == selected
                     btn = UIButton(
-                        px + 20 + j * 110, row_y, 100, 26, opt_label, batch,
+                        px + 20 + j * 110,
+                        row_y,
+                        100,
+                        26,
+                        opt_label,
+                        batch,
                         color=COL_ACCENT if is_sel else COL_TOGGLE_OFF,
                         hover_color=COL_ACCENT_HOVER if is_sel else (160, 160, 160),
                         text_color=COL_WHITE,
@@ -1174,9 +1440,7 @@ class UIAdvancedPanel:
         result = {}
         for param_name, widget_info in self._param_widgets.items():
             wtype = widget_info[0]
-            if wtype == "slider":
-                result[param_name] = widget_info[1].value
-            elif wtype == "toggle":
+            if wtype == "slider" or wtype == "toggle":
                 result[param_name] = widget_info[1].value
             elif wtype == "radio":
                 buttons = widget_info[1]
@@ -1199,18 +1463,14 @@ class UIAdvancedPanel:
         if self.cancel_btn.on_mouse_press(mx, my, button, mod):
             return True
         # Handle radio button clicks
-        for param_name, widget_info in self._param_widgets.items():
+        for widget_info in self._param_widgets.values():
             wtype = widget_info[0]
-            if wtype == "slider":
-                if widget_info[1].on_mouse_press(mx, my, button, mod):
-                    return True
-            elif wtype == "toggle":
+            if wtype == "slider" or wtype == "toggle":
                 if widget_info[1].on_mouse_press(mx, my, button, mod):
                     return True
             elif wtype == "radio":
                 buttons = widget_info[1]
-                options = widget_info[2]
-                for i, btn in enumerate(buttons):
+                for btn in buttons:
                     if btn._hit(mx, my) and button == mouse.LEFT:
                         # Deselect all, select this one
                         for b in buttons:
@@ -1224,14 +1484,14 @@ class UIAdvancedPanel:
         return True
 
     def on_mouse_drag(self, mx: int, my: int, dx: int, dy: int, buttons: int, mod: int) -> bool:
-        for param_name, widget_info in self._param_widgets.items():
+        for widget_info in self._param_widgets.values():
             if widget_info[0] == "slider":
                 if widget_info[1].on_mouse_drag(mx, my, dx, dy, buttons, mod):
                     return True
         return True
 
     def on_mouse_release(self, mx: int, my: int, button: int, mod: int) -> bool:
-        for param_name, widget_info in self._param_widgets.items():
+        for widget_info in self._param_widgets.values():
             if widget_info[0] == "slider":
                 if widget_info[1].on_mouse_release(mx, my, button, mod):
                     return True
@@ -1269,7 +1529,8 @@ class ScenarioGeneratorUI:
 
     def __init__(self) -> None:
         self.window = pyglet.window.Window(
-            self.WIN_W, self.WIN_H,
+            self.WIN_W,
+            self.WIN_H,
             caption="OpenMATB \u2014 Scenario Generator",
             resizable=False,
         )
@@ -1293,9 +1554,15 @@ class ScenarioGeneratorUI:
         bw = self.WIN_W - self.LEFT_W - self.SB_W - 20
         self._insert_zones: list[InsertZone] = []
         for pos in range(self.MAX_BLOCKS + 1):
-            zone = InsertZone(pos, bx, 0, bw, self._blocks_batch,
-                              on_instructions=self._insert_instructions_at,
-                              on_questionnaire=self._insert_questionnaire_at)
+            zone = InsertZone(
+                pos,
+                bx,
+                0,
+                bw,
+                self._blocks_batch,
+                on_instructions=self._insert_instructions_at,
+                on_questionnaire=self._insert_questionnaire_at,
+            )
             zone.visible = False
             self._insert_zones.append(zone)
 
@@ -1315,75 +1582,128 @@ class ScenarioGeneratorUI:
         self.title_bg = shapes.Rectangle(0, H - 45, W, 45, color=COL_ACCENT, batch=self.batch)
         self.title_label = Label(
             "OpenMATB \u2014 Scenario Generator",
-            x=15, y=H - 30, font_name=FONT, font_size=14,
-            color=COL_WHITE, batch=self.batch,
+            x=15,
+            y=H - 30,
+            font_name=FONT,
+            font_size=14,
+            color=COL_WHITE,
+            batch=self.batch,
         )
 
         # Left panel background
-        self.left_bg = shapes.Rectangle(0, 50, self.LEFT_W, H - 95,
-                                        color=COL_PANEL, batch=self.batch)
+        self.left_bg = shapes.Rectangle(0, 50, self.LEFT_W, H - 95, color=COL_PANEL, batch=self.batch)
 
         # Section label
         self.left_title = Label(
-            "GLOBAL SETTINGS", x=15, y=H - 70,
-            font_name=FONT, font_size=11, weight='bold', color=COL_TEXT,
+            "GLOBAL SETTINGS",
+            x=15,
+            y=H - 70,
+            font_name=FONT,
+            font_size=11,
+            weight="bold",
+            color=COL_TEXT,
             batch=self.batch,
         )
 
         # Scenario name
-        self.name_input = UITextInput(15, H - 130, self.LEFT_W - 30,
-                                      "Scenario name:", "three_load_levels",
-                                      self.batch)
+        self.name_input = UITextInput(15, H - 130, self.LEFT_W - 30, "Scenario name:", "three_load_levels", self.batch)
         self._all_widgets.append(self.name_input)
 
         # Comm ratio slider
         self.comm_slider = UISlider(
-            15, H - 200, self.LEFT_W - 80,
-            "Communications ratio:", 0, 100, 1, 50,
-            self.batch, fmt="{:.0f}", suffix=" %",
+            15,
+            H - 200,
+            self.LEFT_W - 80,
+            "Communications ratio:",
+            0,
+            100,
+            1,
+            50,
+            self.batch,
+            fmt="{:.0f}",
+            suffix=" %",
         )
         self._all_widgets.append(self.comm_slider)
 
         # Refractory duration slider
         self.refract_slider = UISlider(
-            15, H - 260, self.LEFT_W - 80,
-            "Refractory duration:", 0, 5, 0.5, 1,
-            self.batch, fmt="{:.1f}", suffix=" s",
+            15,
+            H - 260,
+            self.LEFT_W - 80,
+            "Refractory duration:",
+            0,
+            5,
+            0.5,
+            1,
+            self.batch,
+            fmt="{:.1f}",
+            suffix=" s",
         )
         self._all_widgets.append(self.refract_slider)
 
         # Prompt duration slider
         self.prompt_slider = UISlider(
-            15, H - 320, self.LEFT_W - 80,
-            "Audio prompt duration:", 5, 30, 1, 13,
-            self.batch, fmt="{:.0f}", suffix=" s",
+            15,
+            H - 320,
+            self.LEFT_W - 80,
+            "Audio prompt duration:",
+            5,
+            30,
+            1,
+            13,
+            self.batch,
+            fmt="{:.0f}",
+            suffix=" s",
         )
         self._all_widgets.append(self.prompt_slider)
 
         # Right panel title
         self.right_title = Label(
-            "BLOCK CONFIGURATION", x=self.LEFT_W + 15, y=H - 70,
-            font_name=FONT, font_size=11, weight='bold', color=COL_TEXT,
+            "BLOCK CONFIGURATION",
+            x=self.LEFT_W + 15,
+            y=H - 70,
+            font_name=FONT,
+            font_size=11,
+            weight="bold",
+            color=COL_TEXT,
             batch=self.batch,
         )
 
         # Block management buttons — below the title, above the blocks area
         btn_y = H - 105
         self.add_btn = UIButton(
-            self.LEFT_W + 15, btn_y, 100, 28, "+ Add", self.batch,
-            color=COL_ACCENT, hover_color=COL_ACCENT_HOVER,
+            self.LEFT_W + 15,
+            btn_y,
+            100,
+            28,
+            "+ Add",
+            self.batch,
+            color=COL_ACCENT,
+            hover_color=COL_ACCENT_HOVER,
             on_click=lambda: self._add_block(0.50),
         )
         # Preset buttons — same row, right-aligned
         right_edge = self.WIN_W - 15
         self.load_preset_btn = UIButton(
-            right_edge - 130, btn_y, 130, 28, "\U0001f4c2 Load config", self.batch,
-            color=COL_ACCENT, hover_color=COL_ACCENT_HOVER,
+            right_edge - 130,
+            btn_y,
+            130,
+            28,
+            "\U0001f4c2 Load config",
+            self.batch,
+            color=COL_ACCENT,
+            hover_color=COL_ACCENT_HOVER,
             on_click=self._open_preset_selector,
         )
         self.save_preset_btn = UIButton(
-            right_edge - 270, btn_y, 130, 28, "\U0001f4be Save config", self.batch,
-            color=COL_ACCENT, hover_color=COL_ACCENT_HOVER,
+            right_edge - 270,
+            btn_y,
+            130,
+            28,
+            "\U0001f4be Save config",
+            self.batch,
+            color=COL_ACCENT,
+            hover_color=COL_ACCENT_HOVER,
             on_click=self._save_preset,
         )
 
@@ -1392,22 +1712,40 @@ class ScenarioGeneratorUI:
         self._sb_btn_h = 24
         sb_x = self.WIN_W - self._sb_width - 2
         self.scroll_up_btn = UIButton(
-            sb_x, self._blocks_area_top - self._sb_btn_h, self._sb_width,
-            self._sb_btn_h, "\u25b2", self.batch, on_click=self._scroll_up,
+            sb_x,
+            self._blocks_area_top - self._sb_btn_h,
+            self._sb_width,
+            self._sb_btn_h,
+            "\u25b2",
+            self.batch,
+            on_click=self._scroll_up,
         )
         self.scroll_down_btn = UIButton(
-            sb_x, self._blocks_area_bottom, self._sb_width,
-            self._sb_btn_h, "\u25bc", self.batch, on_click=self._scroll_down,
+            sb_x,
+            self._blocks_area_bottom,
+            self._sb_width,
+            self._sb_btn_h,
+            "\u25bc",
+            self.batch,
+            on_click=self._scroll_down,
         )
         sb_track_bottom = self._blocks_area_bottom + self._sb_btn_h
         sb_track_h = self._blocks_area_height - 2 * self._sb_btn_h
         self._sb_track = shapes.Rectangle(
-            sb_x, sb_track_bottom, self._sb_width,
-            sb_track_h, color=(220, 220, 220), batch=self.batch,
+            sb_x,
+            sb_track_bottom,
+            self._sb_width,
+            sb_track_h,
+            color=(220, 220, 220),
+            batch=self.batch,
         )
         self._sb_thumb = shapes.Rectangle(
-            sb_x, sb_track_bottom + sb_track_h - 40, self._sb_width, 40,
-            color=(160, 160, 170), batch=self.batch,
+            sb_x,
+            sb_track_bottom + sb_track_h - 40,
+            self._sb_width,
+            40,
+            color=(160, 160, 170),
+            batch=self.batch,
         )
         self._sb_track_bottom = sb_track_bottom
         self._sb_track_h = sb_track_h
@@ -1417,18 +1755,35 @@ class ScenarioGeneratorUI:
         # Bottom bar (full width)
         self.bottom_bg = shapes.Rectangle(0, 0, self.WIN_W, 50, color=COL_PANEL, batch=self.batch)
         self.preview_btn = UIButton(
-            15, 10, 110, 32, "PREVIEW", self.batch,
-            color=COL_ACCENT, hover_color=COL_ACCENT_HOVER,
+            15,
+            10,
+            110,
+            32,
+            "PREVIEW",
+            self.batch,
+            color=COL_ACCENT,
+            hover_color=COL_ACCENT_HOVER,
             on_click=self._on_preview,
         )
         self.generate_btn = UIButton(
-            135, 10, 80, 32, "SAVE", self.batch,
-            color=COL_GREEN_BTN, hover_color=COL_GREEN_HOVER,
+            135,
+            10,
+            80,
+            32,
+            "SAVE",
+            self.batch,
+            color=COL_GREEN_BTN,
+            hover_color=COL_GREEN_HOVER,
             on_click=self._on_generate,
         )
         self.status_label = Label(
-            "Status: Ready", x=230, y=20, font_name=FONT,
-            font_size=11, color=COL_TEXT_LIGHT, batch=self.batch,
+            "Status: Ready",
+            x=230,
+            y=20,
+            font_name=FONT,
+            font_size=11,
+            color=COL_TEXT_LIGHT,
+            batch=self.batch,
         )
 
     # ── Block management ─────────────────────────────────────────────────
@@ -1445,15 +1800,21 @@ class ScenarioGeneratorUI:
     def _blocks_area_height(self) -> int:
         return self._blocks_area_top - self._blocks_area_bottom
 
-    def _add_block(self, difficulty: float = 0.50, insert_at: int | None = None,
-                   config: BlockConfig | None = None) -> None:
+    def _add_block(
+        self, difficulty: float = 0.50, insert_at: int | None = None, config: BlockConfig | None = None
+    ) -> None:
         if len(self.blocks) >= self.MAX_BLOCKS:
             return
         idx = len(self.blocks) if insert_at is None else insert_at
         bx = self.LEFT_W + 15
         bw = self.WIN_W - self.LEFT_W - self.SB_W - 20
         block = BlockWidgetGroup(
-            idx, bx, 0, bw, self._blocks_batch, difficulty,
+            idx,
+            bx,
+            0,
+            bw,
+            self._blocks_batch,
+            difficulty,
             on_remove=self._remove_block_at,
             on_duplicate=self._duplicate_block_at,
             on_move_up=lambda i: self._move_block(i, -1),
@@ -1537,8 +1898,7 @@ class ScenarioGeneratorUI:
                 zone.position = i
                 cursor_y -= iz_h
                 zone.set_y(cursor_y)
-                in_view = (cursor_y + iz_h > self._blocks_area_bottom
-                           and cursor_y < area_top)
+                in_view = cursor_y + iz_h > self._blocks_area_bottom and cursor_y < area_top
                 zone.visible = in_view
 
             # Inter-block widgets at this position
@@ -1546,8 +1906,7 @@ class ScenarioGeneratorUI:
                 if iw.position == i:
                     cursor_y -= ib_h
                     iw.set_y(cursor_y)
-                    in_view = (cursor_y + ib_h > self._blocks_area_bottom
-                               and cursor_y < area_top)
+                    in_view = cursor_y + ib_h > self._blocks_area_bottom and cursor_y < area_top
                     iw.visible = in_view
 
             # The block card itself
@@ -1555,8 +1914,7 @@ class ScenarioGeneratorUI:
             block.set_y(card_y)
             cursor_y = card_y - self.BLOCK_GAP
 
-            in_view = (card_y + BlockWidgetGroup.CARD_H > self._blocks_area_bottom
-                       and card_y < area_top)
+            in_view = card_y + BlockWidgetGroup.CARD_H > self._blocks_area_bottom and card_y < area_top
             block.visible = in_view
             block.index = i
             block.title.text = f"Block {i + 1}"
@@ -1567,8 +1925,7 @@ class ScenarioGeneratorUI:
             zone.position = n_blocks
             cursor_y -= iz_h
             zone.set_y(cursor_y)
-            in_view = (cursor_y + iz_h > self._blocks_area_bottom
-                       and cursor_y < area_top)
+            in_view = cursor_y + iz_h > self._blocks_area_bottom and cursor_y < area_top
             zone.visible = in_view
 
         # Inter-block widgets after the last block
@@ -1576,8 +1933,7 @@ class ScenarioGeneratorUI:
             if iw.position == n_blocks:
                 cursor_y -= ib_h
                 iw.set_y(cursor_y)
-                in_view = (cursor_y + ib_h > self._blocks_area_bottom
-                           and cursor_y < area_top)
+                in_view = cursor_y + ib_h > self._blocks_area_bottom and cursor_y < area_top
                 iw.visible = in_view
 
         # Hide unused insert zones
@@ -1591,25 +1947,21 @@ class ScenarioGeneratorUI:
         else:
             self._sb_thumb.visible = True
             track_h = self._sb_track_h
-            thumb_h = max(20, int(track_h * track_h /
-                          (track_h + max_off * card_h)))
+            thumb_h = max(20, int(track_h * track_h / (track_h + max_off * card_h)))
             ratio = self.scroll_offset / max_off
-            thumb_y = self._sb_track_bottom + track_h - thumb_h - int(
-                ratio * (track_h - thumb_h))
+            thumb_y = self._sb_track_bottom + track_h - thumb_h - int(ratio * (track_h - thumb_h))
             self._sb_thumb.y = thumb_y
             self._sb_thumb.height = thumb_h
 
     # ── Config building & generation ─────────────────────────────────────
 
     def _build_config(self) -> ScenarioConfig:
-        inter_block_events = [
-            w.to_inter_block_event() for w in self._inter_block_widgets
-        ]
+        inter_block_events = [w.to_inter_block_event() for w in self._inter_block_widgets]
         return ScenarioConfig(
             scenario_name=self.name_input.value,
             events_refractory_duration=int(self.refract_slider.value)
-                if self.refract_slider.value == int(self.refract_slider.value)
-                else self.refract_slider.value,
+            if self.refract_slider.value == int(self.refract_slider.value)
+            else self.refract_slider.value,
             communications_target_ratio=self.comm_slider.value / 100.0,
             average_auditory_prompt_duration=int(self.prompt_slider.value),
             blocks=[b.get_block_config() for b in self.blocks],
@@ -1629,16 +1981,16 @@ class ScenarioGeneratorUI:
         for i, block in enumerate(self.blocks):
             cfg = block.get_block_config()
             if cfg.duration_sec <= 0:
-                errors.append(f"Block {i+1}: zero duration")
+                errors.append(f"Block {i + 1}: zero duration")
             if not cfg.plugins:
-                warnings.append(f"Block {i+1}: no active plugin")
+                warnings.append(f"Block {i + 1}: no active plugin")
             # Check if communications events fit in duration
             if "communications" in cfg.plugins:
                 comm_diff = cfg.plugins["communications"]
                 avg_dur = self.prompt_slider.value + self.refract_slider.value
                 est_events = int(comm_diff / (avg_dur / cfg.duration_sec)) if cfg.duration_sec > 0 else 0
                 if est_events > 0 and est_events * avg_dur > cfg.duration_sec:
-                    warnings.append(f"Block {i+1}: duration too short for comms")
+                    warnings.append(f"Block {i + 1}: duration too short for comms")
 
         return errors, warnings
 
@@ -1670,16 +2022,12 @@ class ScenarioGeneratorUI:
                 {
                     "duration_sec": b.duration_sec,
                     "plugins": b.plugins,
-                    "extra_events": [
-                        {"plugin": p, "param": n, "value": v}
-                        for p, n, v in b.extra_events
-                    ],
+                    "extra_events": [{"plugin": p, "param": n, "value": v} for p, n, v in b.extra_events],
                 }
                 for b in config.blocks
             ],
             "inter_block_events": [
-                {"type": ie.type, "filename": ie.filename, "position": ie.position}
-                for ie in config.inter_block_events
+                {"type": ie.type, "filename": ie.filename, "position": ie.position} for ie in config.inter_block_events
             ],
         }
         preset_dir = Path("includes", "scenarios", "presets")
@@ -1695,7 +2043,10 @@ class ScenarioGeneratorUI:
         preset_dir.mkdir(parents=True, exist_ok=True)
         files = sorted(preset_dir.glob("*.json"))
         self._overlay = UIFileSelector(
-            self.WIN_W, self.WIN_H, self._overlay_batch, files,
+            self.WIN_W,
+            self.WIN_H,
+            self._overlay_batch,
+            files,
             "Load a config",
             on_select=self._on_preset_selected,
             on_cancel=self._close_overlay,
@@ -1731,10 +2082,7 @@ class ScenarioGeneratorUI:
             cfg = BlockConfig(
                 duration_sec=block_data.get("duration_sec", 60),
                 plugins=block_data.get("plugins", {}),
-                extra_events=[
-                    (ev["plugin"], ev["param"], ev["value"])
-                    for ev in block_data.get("extra_events", [])
-                ],
+                extra_events=[(ev["plugin"], ev["param"], ev["value"]) for ev in block_data.get("extra_events", [])],
             )
             self._add_block(config=cfg)
 
@@ -1743,9 +2091,7 @@ class ScenarioGeneratorUI:
             w.delete()
         self._inter_block_widgets.clear()
         for ie_data in data.get("inter_block_events", []):
-            self._add_inter_block_widget(
-                ie_data["position"], ie_data["type"], ie_data["filename"]
-            )
+            self._add_inter_block_widget(ie_data["position"], ie_data["type"], ie_data["filename"])
 
     # ── Advanced parameters panel ────────────────────────────────────
 
@@ -1755,7 +2101,11 @@ class ScenarioGeneratorUI:
         self._adv_block_index = block_index
         self._adv_plugin_name = plugin_name
         self._overlay = UIAdvancedPanel(
-            self.WIN_W, self.WIN_H, self._overlay_batch, plugin_name, current_params,
+            self.WIN_W,
+            self.WIN_H,
+            self._overlay_batch,
+            plugin_name,
+            current_params,
             on_save=self._on_advanced_save,
             on_cancel=self._close_overlay,
         )
@@ -1767,12 +2117,17 @@ class ScenarioGeneratorUI:
 
     # ── Inter-block events ───────────────────────────────────────────
 
-    def _add_inter_block_widget(self, position: int, event_type: str,
-                                filename: str) -> None:
+    def _add_inter_block_widget(self, position: int, event_type: str, filename: str) -> None:
         bx = self.LEFT_W + 15
         bw = self.WIN_W - self.LEFT_W - self.SB_W - 20
         widget = InterBlockWidget(
-            position, event_type, filename, bx, 0, bw, self._blocks_batch,
+            position,
+            event_type,
+            filename,
+            bx,
+            0,
+            bw,
+            self._blocks_batch,
             on_remove=self._remove_inter_block_widget,
         )
         self._inter_block_widgets.append(widget)
@@ -1792,13 +2147,15 @@ class ScenarioGeneratorUI:
 
     def _insert_instructions_at(self, position: int) -> None:
         """Open file selector for instructions file at given position."""
-        from core.constants import PATHS
         include_dir = Path("includes")
         files = sorted(include_dir.glob("**/*.txt")) + sorted(include_dir.glob("**/*.html"))
         self._pending_insert_position = position
         self._pending_insert_type = "instructions"
         self._overlay = UIFileSelector(
-            self.WIN_W, self.WIN_H, self._overlay_batch, files,
+            self.WIN_W,
+            self.WIN_H,
+            self._overlay_batch,
+            files,
             "Select an instructions file",
             on_select=self._on_interblock_file_selected,
             on_cancel=self._close_overlay,
@@ -1811,7 +2168,10 @@ class ScenarioGeneratorUI:
         self._pending_insert_position = position
         self._pending_insert_type = "genericscales"
         self._overlay = UIFileSelector(
-            self.WIN_W, self.WIN_H, self._overlay_batch, files,
+            self.WIN_W,
+            self.WIN_H,
+            self._overlay_batch,
+            files,
             "Select a questionnaire",
             on_select=self._on_interblock_file_selected,
             on_cancel=self._close_overlay,
@@ -1835,7 +2195,7 @@ class ScenarioGeneratorUI:
     # ── Preview & Generation ────────────────────────────────────────
 
     def _on_preview(self) -> None:
-        errors, warnings = self._validate()
+        errors, _warnings = self._validate()
         if errors:
             self.status_label.text = f"Error: {errors[0]}"
             self.status_label.color = (200, 50, 50, 255)
@@ -1871,8 +2231,12 @@ class ScenarioGeneratorUI:
 
             preview_lines = format_scenario_lines(lines, config)
             self._overlay = UIPreviewOverlay(
-                self.WIN_W, self.WIN_H, self._overlay_batch,
-                preview_lines, None, self._close_overlay,
+                self.WIN_W,
+                self.WIN_H,
+                self._overlay_batch,
+                preview_lines,
+                None,
+                self._close_overlay,
             )
             self.status_label.text = "Status: Ready"
             self.status_label.color = COL_TEXT_LIGHT
@@ -1883,7 +2247,7 @@ class ScenarioGeneratorUI:
 
     def _on_generate(self) -> None:
         # Validate first
-        errors, warnings = self._validate()
+        errors, _warnings = self._validate()
         if errors:
             self.status_label.text = f"Error: {errors[0]}"
             self.status_label.color = (200, 50, 50, 255)
@@ -1899,9 +2263,7 @@ class ScenarioGeneratorUI:
             config = self._build_config()
 
             # Reuse preview if config unchanged
-            if (self._preview_lines is not None
-                    and self._preview_config is not None
-                    and self._preview_config == config):
+            if self._preview_lines is not None and self._preview_config is not None and self._preview_config == config:
                 lines = self._preview_lines
             else:
                 from core.window import Window
@@ -1938,8 +2300,7 @@ class ScenarioGeneratorUI:
         self.batch.draw()
         # Draw scrollable blocks area with scissor clipping
         glEnable(GL_SCISSOR_TEST)
-        glScissor(self.LEFT_W, self._blocks_area_bottom,
-                  self.WIN_W - self.LEFT_W, self._blocks_area_height)
+        glScissor(self.LEFT_W, self._blocks_area_bottom, self.WIN_W - self.LEFT_W, self._blocks_area_height)
         self._blocks_batch.draw()
         glDisable(GL_SCISSOR_TEST)
         if self._overlay is not None:
@@ -1954,15 +2315,23 @@ class ScenarioGeneratorUI:
         if self.name_input.on_mouse_press(mx, my, button, mod):
             return True
         # Left panel buttons
-        for btn in (self.preview_btn, self.generate_btn, self.add_btn,
-                    self.scroll_up_btn, self.scroll_down_btn,
-                    self.save_preset_btn, self.load_preset_btn):
+        for btn in (
+            self.preview_btn,
+            self.generate_btn,
+            self.add_btn,
+            self.scroll_up_btn,
+            self.scroll_down_btn,
+            self.save_preset_btn,
+            self.load_preset_btn,
+        ):
             if btn.on_mouse_press(mx, my, button, mod):
                 return True
         # Scrollbar track click
-        if (self._sb_thumb.visible
-                and self.WIN_W - self._sb_width - 4 <= mx <= self.WIN_W
-                and self._sb_track_bottom <= my <= self._sb_track_bottom + self._sb_track_h):
+        if (
+            self._sb_thumb.visible
+            and self.WIN_W - self._sb_width - 4 <= mx <= self.WIN_W
+            and self._sb_track_bottom <= my <= self._sb_track_bottom + self._sb_track_h
+        ):
             self._sb_dragging = True
             self._sb_click_to_scroll(my)
             return True
@@ -1997,7 +2366,7 @@ class ScenarioGeneratorUI:
 
     def on_mouse_drag(self, mx: int, my: int, dx: int, dy: int, buttons: int, mod: int) -> bool:
         if self._overlay is not None:
-            if hasattr(self._overlay, 'on_mouse_drag'):
+            if hasattr(self._overlay, "on_mouse_drag"):
                 return self._overlay.on_mouse_drag(mx, my, dx, dy, buttons, mod)
             return True
         if self._sb_dragging:
@@ -2013,7 +2382,7 @@ class ScenarioGeneratorUI:
 
     def on_mouse_release(self, mx: int, my: int, button: int, mod: int) -> bool:
         if self._overlay is not None:
-            if hasattr(self._overlay, 'on_mouse_release'):
+            if hasattr(self._overlay, "on_mouse_release"):
                 return self._overlay.on_mouse_release(mx, my, button, mod)
             return True
         if self._sb_dragging:
@@ -2031,9 +2400,15 @@ class ScenarioGeneratorUI:
         if self._overlay is not None:
             self._overlay.on_mouse_motion(mx, my, dx, dy)
             return
-        for btn in (self.preview_btn, self.generate_btn, self.add_btn,
-                    self.scroll_up_btn, self.scroll_down_btn,
-                    self.save_preset_btn, self.load_preset_btn):
+        for btn in (
+            self.preview_btn,
+            self.generate_btn,
+            self.add_btn,
+            self.scroll_up_btn,
+            self.scroll_down_btn,
+            self.save_preset_btn,
+            self.load_preset_btn,
+        ):
             btn.on_mouse_motion(mx, my, dx, dy)
         for zone in self._insert_zones:
             if zone.visible:
