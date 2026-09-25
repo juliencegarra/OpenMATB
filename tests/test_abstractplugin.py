@@ -181,6 +181,27 @@ class TestComputeNextPluginState:
         assert p.next_refresh_time == pytest.approx(2.1)
         assert p.compute_next_plugin_state() is False
 
+    @pytest.mark.parametrize("tick", [0.009, 0.031, 0.1])
+    def test_update_runs_every_due_step(self, tick):
+        """Updates slower than the steps (20 ms tracking, ~31 ms WebKit timers): 50 steps per second."""
+        p = _make_plugin(paused=False, visible=False)
+        p.parameters["taskupdatetime"] = 20
+        steps = []
+        compute = p.compute_next_plugin_state
+        p.compute_next_plugin_state = lambda: steps.append(p.scenario_time) if compute() else None
+        for i in range(1, int(60 / tick) + 1):
+            p.update(i * tick)
+        last = int(60 / tick) * tick
+        assert len(steps) == pytest.approx((last - tick) / 0.020 + 1, abs=1)  # From the first update to the last
+
+    def test_update_without_taskupdatetime_runs_one_step(self):
+        """taskupdatetime <= 0 (e.g. labstreaminglayer): one step per update, no loop."""
+        p = _make_plugin(paused=False, visible=False)
+        p.parameters["taskupdatetime"] = -1
+        p.compute_next_plugin_state = MagicMock(return_value=True)
+        p.update(1.0)
+        p.compute_next_plugin_state.assert_called_once()
+
     @pytest.mark.parametrize("tick", [0.00002, 0.009, 0.017])
     def test_step_rate_is_exact_whatever_the_tick(self, tick):
         """Desktop ticks every ~0.02 ms, the browser every ~9-17 ms: 10 steps per second in both cases."""
