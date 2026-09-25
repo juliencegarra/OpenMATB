@@ -6,11 +6,13 @@ from __future__ import annotations
 
 from typing import Any
 
+import pyglet.font
 from pyglet import image
 from pyglet.config import Config
 from pyglet.display import get_display
 from pyglet.graphics import Batch
 from pyglet.shapes import Rectangle
+from pyglet.text.formats.html import HTMLDecoder
 from pyglet.window import Window
 from pyglet.window import key as winkey
 
@@ -23,6 +25,12 @@ from core.logger import get_logger
 from core.modaldialog import ModalDialog
 from core.platform import IS_WEB, on_visibility_change, viewport_size
 from core.utils import get_conf_value
+
+
+def _set_html_default_font() -> None:
+    # HTML labels default to "Times New Roman": use the configured font, or the platform default one
+    font_name: str = get_conf_value("Openmatb", "font_name") or pyglet.font.manager.get_platform_default_name()
+    HTMLDecoder.default_style["font_name"] = font_name
 
 
 def _antialiased_configs() -> list[Config]:
@@ -41,6 +49,7 @@ class Window(Window):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         Window.MainWindow = self  # correct way to set it as a static
+        _set_html_default_font()
 
         if IS_WEB:
             # In the browser, the canvas fills the viewport; fullscreen requires a user gesture
