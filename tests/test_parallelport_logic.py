@@ -184,3 +184,29 @@ class TestFullLifecycle:
         pp.compute_next_plugin_state()
         pp._port.setData.assert_called_with(0)  # reset
         assert pp._last_trigger == 0
+
+
+# ── Missing parallel port ────────────────────────
+
+
+class TestWithoutPort:
+    def test_trigger_is_ignored_without_port(self):
+        """Without a port (module missing, browser...), triggers do nothing instead of crashing."""
+        pp = _make_pp(_port=None)
+        pp.parameters["trigger"] = 10
+        with patch("plugins.abstractplugin.AbstractPlugin.compute_next_plugin_state", return_value=True):
+            pp.compute_next_plugin_state()
+        assert pp._last_trigger == 0
+
+    def test_browser_reports_unavailable_port(self):
+        """In the browser, the plugin reports that the parallel port is not available."""
+        errors = MagicMock()
+        with (
+            patch("plugins.parallelport.IS_WEB", True),
+            patch("plugins.parallelport.get_errors", return_value=errors),
+            patch("plugins.abstractplugin.AbstractPlugin.__init__", lambda self, *a, **k: setattr(self, "parameters", {})),
+        ):
+            pp = Parallelport()
+        errors.add_error.assert_called_once()
+        assert pp._port is None
+        assert pp.parameters["trigger"] == 0

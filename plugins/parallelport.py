@@ -9,6 +9,7 @@ from typing import Any, Callable
 from core import validation
 from core.error import get_errors
 from core.logger import get_logger
+from core.platform import IS_WEB
 from plugins.abstractplugin import AbstractPlugin
 
 
@@ -21,6 +22,19 @@ class Parallelport(AbstractPlugin):
             "delayms": validation.is_positive_integer,
         }
 
+        # Without a parallel port, the plugin accepts its parameters but sends nothing
+        self._port: Any | None = None
+        self._downvalue: int = 0
+        self.parameters.update({"trigger": self._downvalue, "delayms": 5})
+
+        self._triggertimerms: int = 0
+        self._last_trigger: int = self._downvalue
+        self._awaiting_triggers: list[int] = []
+
+        if IS_WEB:
+            get_errors().add_error(_("The parallel port is not available in the browser. Skipping parallel plugin"))
+            return
+
         try:
             import parallel
         except ImportError:
@@ -28,16 +42,9 @@ class Parallelport(AbstractPlugin):
             return
 
         try:
-            self._port: Any = parallel.Parallel()
+            self._port = parallel.Parallel()
         except OSError:  # Exception under Linux platforms : FileNotFoundError (/dev/parport0)
             get_errors().add_error(_("The physical parallel port was not found."))
-        else:
-            self._downvalue: int = 0
-            self.parameters.update({"trigger": self._downvalue, "delayms": 5})
-
-            self._triggertimerms: int = 0
-            self._last_trigger: int = self._downvalue
-            self._awaiting_triggers: list[int] = []
 
     def is_trigger_being_sent(self) -> bool:
         """Return if the last trigger value is not the down value (trigger being sent)"""
@@ -51,7 +58,7 @@ class Parallelport(AbstractPlugin):
 
     def compute_next_plugin_state(self) -> None:
         """Send the trigger value defined in upvalue, lasting for delayms"""
-        if not super().compute_next_plugin_state():
+        if not super().compute_next_plugin_state() or self._port is None:
             return
 
         # If the trigger value is not null...

@@ -7,6 +7,8 @@ from __future__ import annotations
 from typing import Any, Callable
 
 from core import validation
+from core.error import get_errors
+from core.platform import IS_WEB
 from plugins import Instructions
 
 try:
@@ -39,6 +41,13 @@ class Labstreaminglayer(Instructions):
         # If pylsl is not available this part should fail.
         # Create a LSL marker outlet.
         super().start()
+        if pylsl is None:
+            if IS_WEB:
+                get_errors().add_error(_("Lab streaming layer is not available in the browser. No marker will be sent"))
+            else:
+                get_errors().add_error(_("Python pylsl module is missing. No marker will be sent"))
+            return
+
         self.stream_info = pylsl.StreamInfo(
             "OpenMATB",
             type="Markers",
