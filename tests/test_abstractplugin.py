@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from plugins.abstractplugin import AbstractPlugin
 
 
@@ -151,6 +153,44 @@ class TestComputeNextPluginState:
         p.compute_next_plugin_state()
         expected = 10 + 100 / 1000  # scenario_time + taskupdatetime/1000
         assert p.next_refresh_time == expected
+
+    def test_late_update_keeps_the_step_deadlines(self):
+        """An update 8 ms late does not delay the next step: the next deadline is the previous + 100 ms."""
+        p = _make_plugin(paused=False, scenario_time=1.008, next_refresh_time=1.0)
+        p.compute_next_plugin_state()
+        assert p.next_refresh_time == pytest.approx(1.1)
+
+    def test_missed_steps_are_caught_up(self):
+        """150 ms late with 100 ms steps: the next step is still due, it runs at the next update."""
+        p = _make_plugin(paused=False, scenario_time=1.25, next_refresh_time=1.0)
+        p.compute_next_plugin_state()
+        assert p.next_refresh_time == pytest.approx(1.1)
+        assert p.compute_next_plugin_state() is True
+
+    def test_first_step_starts_the_deadlines(self):
+        """A plugin started 128 ms after the scenario start does not catch up steps from 0."""
+        p = _make_plugin(paused=False, scenario_time=0.128, next_refresh_time=0)
+        p.compute_next_plugin_state()
+        assert p.next_refresh_time == pytest.approx(0.228)
+        p.scenario_time = 0.130
+        assert p.compute_next_plugin_state() is False
+
+    def test_too_late_restarts_from_now(self):
+        """After a start, a pause or a long stall, no burst of catch-up steps."""
+        p = _make_plugin(paused=False, scenario_time=2.0, next_refresh_time=1.0)
+        p.compute_next_plugin_state()
+        assert p.next_refresh_time == pytest.approx(2.1)
+        assert p.compute_next_plugin_state() is False
+
+    @pytest.mark.parametrize("tick", [0.00002, 0.009, 0.017])
+    def test_step_rate_is_exact_whatever_the_tick(self, tick):
+        """Desktop ticks every ~0.02 ms, the browser every ~9-17 ms: 10 steps per second in both cases."""
+        p = _make_plugin(paused=False, scenario_time=0, next_refresh_time=0)
+        steps = 0
+        for i in range(1, int(60 / tick) + 1):
+            p.scenario_time = i * tick
+            steps += p.compute_next_plugin_state()
+        assert steps == pytest.approx(600, abs=1)
 
 
 class TestUpdateCanReceiveKey:
