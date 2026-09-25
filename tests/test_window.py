@@ -427,3 +427,57 @@ class TestVisibilityChange:
         with patch("core.window.get_logger") as get_logger:
             w.on_visibility_change(True)
         get_logger.return_value.log_manual_entry.assert_called_once_with("hidden", key="visibility")
+
+
+class TestSnapTextToPixels:
+    """Text positions are rounded so that glyphs are not drawn between two pixels (jagged text)."""
+
+    def _fake_layout_class(self):
+        class FakeLayout:
+            def __init__(self, x=0, y=0, z=0):
+                self._x, self._y, self._z = x, y, z
+                self.translations = []
+
+            def _update_translation(self):
+                self.translations.append((self._x, self._y, self._z))
+
+            def _set_x(self, x):
+                self._x = x
+                self._update_translation()
+
+            def _set_y(self, y):
+                self._y = y
+                self._update_translation()
+
+            def _set_position(self, position):
+                self._x, self._y, self._z = position
+                self._update_translation()
+
+        return FakeLayout
+
+    def test_positions_are_rounded(self):
+        import core.window as window_module
+
+        layout_class = self._fake_layout_class()
+        with patch.object(window_module, "TextLayout", layout_class):
+            window_module._snap_text_to_pixels()
+            layout = layout_class(x=464.5, y=458.4)
+            assert (layout._x, layout._y) == (464, 458)
+            assert layout.translations[-1][:2] == (464, 458)
+
+            layout._set_x(10.6)
+            layout._set_y(20.2)
+            assert (layout._x, layout._y) == (11, 20)
+
+            layout._set_position((1.4, 2.6, 3))
+            assert (layout._x, layout._y, layout._z) == (1, 3, 3)
+
+    def test_patch_is_applied_once(self):
+        import core.window as window_module
+
+        layout_class = self._fake_layout_class()
+        with patch.object(window_module, "TextLayout", layout_class):
+            window_module._snap_text_to_pixels()
+            init = layout_class.__init__
+            window_module._snap_text_to_pixels()
+            assert layout_class.__init__ is init

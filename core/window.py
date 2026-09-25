@@ -13,6 +13,7 @@ from pyglet.display import get_display
 from pyglet.graphics import Batch
 from pyglet.shapes import Rectangle
 from pyglet.text.formats.html import HTMLDecoder
+from pyglet.text.layout import TextLayout
 from pyglet.window import Window
 from pyglet.window import key as winkey
 
@@ -33,6 +34,28 @@ def _set_html_default_font() -> None:
     HTMLDecoder.default_style["font_name"] = font_name
 
 
+def _snap_text_to_pixels() -> None:
+    # Text drawn at a fractional position (e.g. centered in a container) falls between two pixels:
+    # glyphs are sampled unevenly and look jagged with GPU rendering. Round the text positions.
+    if getattr(TextLayout, "_openmatb_snapped", False):
+        return
+    init, set_x, set_y, set_position = (
+        TextLayout.__init__, TextLayout._set_x, TextLayout._set_y, TextLayout._set_position
+    )
+
+    def snapped_init(self: TextLayout, *args: Any, **kwargs: Any) -> None:
+        init(self, *args, **kwargs)
+        if (self._x, self._y) != (round(self._x), round(self._y)):
+            self._x, self._y = round(self._x), round(self._y)
+            self._update_translation()
+
+    TextLayout.__init__ = snapped_init
+    TextLayout._set_x = lambda self, x: set_x(self, round(x))
+    TextLayout._set_y = lambda self, y: set_y(self, round(y))
+    TextLayout._set_position = lambda self, p: set_position(self, (round(p[0]), round(p[1]), p[2]))
+    TextLayout._openmatb_snapped = True
+
+
 def _antialiased_configs() -> list[Config]:
     # Preferred config: 4x multisampling antialiasing (MSAA) for smooth edges, then a plain fallback
     msaa: Config = Config()
@@ -50,6 +73,7 @@ class Window(Window):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         Window.MainWindow = self  # correct way to set it as a static
         _set_html_default_font()
+        _snap_text_to_pixels()
 
         if IS_WEB:
             # In the browser, the canvas fills the viewport; fullscreen requires a user gesture

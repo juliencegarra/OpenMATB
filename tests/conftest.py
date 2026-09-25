@@ -145,6 +145,7 @@ _pyglet_modules = [
     "pyglet.font",
     "pyglet.text.formats",
     "pyglet.text.formats.html",
+    "pyglet.text.layout",
     "pyglet.resource",
     "pyglet.display",
 ]
