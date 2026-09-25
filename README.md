@@ -1,3 +1,7 @@
+> [!NOTE]
+> **Experimental web version.** OpenMATB can also run in a web browser (Chrome/Chromium), with no installation, thanks to [Pyodide](https://pyodide.org) and pyglet 3. It is still experimental: joysticks, the parallel port and Lab Streaming Layer are not available, and timing relies on the browser clock. See the [README](https://github.com/juliencegarra/OpenMATB#web-version-browser) for how to build and host it.
+ 
+
 # OpenMATB: An open-source version of the Multi-Attribute Task Battery (MATB)
 
 First presented at a NASA Technical memorandum (Comstock & Arnegard, 1992), the Multi-Attribute Task Battery (MATB) contained a set of interactive tasks that were representative of those performed in aircraft piloting. The MATB requires participants to engage in four tasks presented simultaneously on a computer screen. They consist of (1) a monitoring task, (2) a tracking task, (3) an auditory communication task, and (4) a resources management task. The display screen also encompasses a scheduling view (5) for displaying a chart of incoming task events
