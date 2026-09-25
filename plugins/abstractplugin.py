@@ -18,6 +18,9 @@ from core.logger import get_logger
 from core.widgets import Frame, SimpleHTML, Simpletext
 from core.window import Window
 
+# Plugin steps later than this (seconds) are skipped instead of caught up (see compute_next_plugin_state)
+MAX_STEP_CATCH_UP: float = 0.25
+
 
 class AbstractPlugin:
     """Any plugin (or task) depends on this meta-class"""
@@ -198,7 +201,16 @@ class AbstractPlugin:
         if self.verbose:
             print(self.alias, "Compute next state")
 
-        self.next_refresh_time = self.scenario_time + self.parameters["taskupdatetime"] / 1000
+        # Plugins count taskupdatetime per step (response times, failure timers, flows...): schedule the next
+        # step from the previous deadline, not from now, so that the lateness of the update (up to one
+        # clock tick, ~10 ms in the browser) does not accumulate and slow the task down. Missed steps are
+        # caught up (one per update); when too late (start, resume, long stall), restart from now instead.
+        period: float = self.parameters["taskupdatetime"] / 1000
+        if self.next_refresh_time == 0:  # First step: the deadlines start now, not at the scenario start
+            self.next_refresh_time = self.scenario_time
+        self.next_refresh_time += period
+        if self.next_refresh_time < self.scenario_time - MAX_STEP_CATCH_UP:
+            self.next_refresh_time = self.scenario_time + period
 
         # Should an automation state (string) be displayed ?
         if self.parameters.get("displayautomationstate"):
