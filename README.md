@@ -1,3 +1,8 @@
+> [!NOTE]
+> **Experimental web version.** OpenMATB can also run in a web browser (Chrome/Chromium), with no installation, thanks to [Pyodide](https://pyodide.org) and pyglet 3. Flight joysticks are supported through the browser Gamepad API (press one of the joystick buttons on the start page to detect it). It is still experimental: the parallel port and Lab Streaming Layer are not available, and timing relies on the browser clock.
+> It is developed on the [`pyglet3-pyodide-web`](https://github.com/juliencegarra/OpenMATB/tree/pyglet3-pyodide-web) branch. See [Web version](https://github.com/juliencegarra/OpenMATB/blob/pyglet3-pyodide-web/README.md#web-version-browser) in its README to build and host it.
+ 
+
 # OpenMATB: An open-source version of the Multi-Attribute Task Battery (MATB)
 
 First presented at a NASA Technical memorandum (Comstock & Arnegard, 1992), the Multi-Attribute Task Battery (MATB) contained a set of interactive tasks that were representative of those performed in aircraft piloting. The MATB requires participants to engage in four tasks presented simultaneously on a computer screen. They consist of (1) a monitoring task, (2) a tracking task, (3) an auditory communication task, and (4) a resources management task. The display screen also encompasses a scheduling view (5) for displaying a chart of incoming task events
