@@ -180,12 +180,6 @@ class Track(AbstractPlugin):
                     if compy != 0 and diff / compy > 0:  # Same sign
                         moffy -= diff + compy * self.parameters["joystickforce"]
 
-                if compx != 0 or compy != 0 or clamp_x or clamp_y:
-                    print(f"[TRACK-GEN] sin=({sin_x:+7.1f},{sin_y:+7.1f})  "
-                          f"moff=({moffx:+7.1f},{moffy:+7.1f})  "
-                          f"comp=({compx:+5.2f},{compy:+5.2f})  "
-                          f"cursor=({cursorx:+7.1f},{cursory:+7.1f})  "
-                          f"clamp={'X' if clamp_x else '.'}{'Y' if clamp_y else '.'}")
                 yield (cursorx, cursory)
             else:
                 yield (0, 0)

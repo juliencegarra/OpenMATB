@@ -2,7 +2,14 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 
+import pyglet.app
 import pyglet.clock
+
+from core.platform import IS_WEB
+
+# In the browser, pyglet.clock.schedule() (every loop iteration) makes pyglet's asyncio loop spin
+# without yielding and crashes Pyodide (pyglet 3.0.dev10): use a short fixed interval instead
+WEB_UPDATE_INTERVAL: float = 1 / 120
 
 
 class Clock(pyglet.clock.Clock):
@@ -17,7 +24,12 @@ class Clock(pyglet.clock.Clock):
         self.name: str = name
 
         pyglet.clock.Clock.__init__(self, time_function=self.get_time)
-        pyglet.clock.schedule(self.advance)
+        if IS_WEB:
+            pyglet.clock.schedule_interval(self.advance, WEB_UPDATE_INTERVAL)
+            # The browser loop sleeps while nothing is scheduled: wake it up
+            pyglet.app.platform_event_loop.notify()
+        else:
+            pyglet.clock.schedule(self.advance)
 
         # necessary variable as an unschedule then schedule seems to produce unexpected crashes
         self.isFastForward: bool = False

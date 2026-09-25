@@ -35,7 +35,7 @@ language.install()
 # Only after language installation, import core modules (they must be translated)
 from core import ReplayScheduler, Scheduler
 from core.constants import PATHS, REPLAY_MODE
-from core.platform import url_params
+from core.platform import notify_page, url_params
 from core.selector import FileSelector
 from core.utils import get_conf_value
 from core.window import Window
@@ -70,6 +70,7 @@ class OpenMATB:
         if selected is None:  # Selection cancelled
             Window.MainWindow.close()
             pyglet.app.exit()
+            notify_page("openmatb-exit")
         else:
             self.start(selected)
 

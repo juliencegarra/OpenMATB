@@ -15,6 +15,7 @@ from core.error import get_errors
 from core.event import Event
 from core.joystick import joystick
 from core.logger import get_logger
+from core.platform import notify_page
 from core.scenario import Scenario
 from core.window import Window
 
@@ -273,3 +274,4 @@ class Scheduler:
         get_logger().end_session()
         Window.MainWindow.close()  # needed for windows clean exit
         pyglet.app.exit()
+        notify_page("openmatb-exit")

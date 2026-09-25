@@ -6,3 +6,4 @@ capture.sublime-workspace
 audio_matb
 *.odt
 .venv*/
+web/dist/

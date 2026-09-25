@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OpenMATB</title>
+    <link rel="icon" href="favicon.png">
+    <style>
+        :root {
+            --bg: #f0f0f0;
+            --panel: #ffffff;
+            --text: #323232;
+            --muted: #6b6b6b;
+            --accent: #3d8f64;
+            --accent-text: #ffffff;
+            --border: #d6d6d6;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+        #pygletCanvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+        #pygletCanvas[hidden] { display: none; }
+        .screen { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .screen[hidden] { display: none; }
+        .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+            padding: 28px 32px; width: 100%; max-width: 440px; }
+        h1 { margin: 0 0 4px; font-size: 1.6rem; }
+        .subtitle { margin: 0 0 24px; color: var(--muted); }
+        label { display: block; margin: 16px 0 6px; font-weight: 600; }
+        label.inline { display: flex; gap: 8px; align-items: center; font-weight: 400; }
+        select, input[type=file] { width: 100%; padding: 8px; font: inherit; border: 1px solid var(--border);
+            border-radius: 4px; background: var(--panel); color: var(--text); }
+        .hint { margin: 6px 0 0; font-size: 0.85rem; color: var(--muted); }
+        button { margin-top: 24px; width: 100%; padding: 12px; font: inherit; font-weight: 600; border: 0;
+            border-radius: 4px; background: var(--accent); color: var(--accent-text); cursor: pointer; }
+        button:disabled { opacity: 0.5; cursor: progress; }
+        #pygletStatus { position: fixed; left: 16px; bottom: 12px; margin: 0; color: var(--muted);
+            font-size: 0.85rem; white-space: pre-wrap; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <main id="menu" class="screen">
+        <div class="panel">
+            <h1>OpenMATB</h1>
+            <p class="subtitle">Multi-Attribute Task Battery, in the browser</p>
+
+            <label for="lang">Language</label>
+            <select id="lang">
+                <option value="en_EN">English</option>
+                <option value="fr_FR">Français</option>
+            </select>
+
+            <label for="mode">Mode</label>
+            <select id="mode">
+                <option value="scenario">Run a scenario</option>
+                <option value="replay">Replay a session</option>
+            </select>
+            <p class="hint">The scenario (or session) is chosen in the next screen.</p>
+
+            <div id="replay-options" hidden>
+                <label for="session-file">Import a session file (optional)</label>
+                <input id="session-file" type="file" accept=".csv">
+                <p class="hint">Sessions run in this browser are kept and listed automatically.</p>
+            </div>
+
+            <label class="inline"><input id="fullscreen" type="checkbox" checked> Fullscreen</label>
+
+            <button id="start" disabled>Start</button>
+        </div>
+    </main>
+
+    <main id="end" class="screen" hidden>
+        <div class="panel">
+            <h1>Session ended</h1>
+            <p class="subtitle">The log file <strong id="end-file"></strong> has been downloaded.
+                It is also kept in this browser for replay.</p>
+            <button onclick="location.href = location.pathname">Back to menu</button>
+        </div>
+    </main>
+
+    <canvas id="pygletCanvas" hidden></canvas>
+    <pre id="pygletStatus"></pre>
+
+    <script type="module" src="openmatb.js"></script>
+</body>
+</html>
