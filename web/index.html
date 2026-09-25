@@ -25,6 +25,7 @@
         .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
             padding: 28px 32px; width: 100%; max-width: 440px; }
         h1 { margin: 0 0 4px; font-size: 1.6rem; }
+        h1 .version { font-size: 0.55em; font-weight: 600; color: var(--muted); }
         .subtitle { margin: 0 0 24px; color: var(--muted); }
         label { display: block; margin: 16px 0 6px; font-weight: 600; }
         label.inline { display: flex; gap: 8px; align-items: center; font-weight: 400; }
@@ -41,8 +42,8 @@
 <body>
     <main id="menu" class="screen">
         <div class="panel">
-            <h1>OpenMATB</h1>
-            <p class="subtitle">v{{VERSION}} - Julien.Cegarra@univ-jfc.fr</p>
+            <h1>OpenMATB <span class="version">v{{VERSION}}</span></h1>
+            <p class="subtitle">Julien.Cegarra@univ-jfc.fr</p>
 
             <label for="lang" data-i18n="language">Language</label>
             <select id="lang">
