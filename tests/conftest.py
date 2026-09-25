@@ -120,6 +120,11 @@ _KEY_NAMES = {
     0xFF8D: "ENTER",
 }
 
+# Pre-import pure-Python pyglet submodules BEFORE mocking replaces pyglet
+import importlib as _importlib
+
+_real_pyglet_math = _importlib.import_module("pyglet.math")
+
 # Create mock pyglet modules
 _pyglet_modules = [
     "pyglet",
@@ -146,6 +151,250 @@ _pyglet_modules = [
 for mod_name in _pyglet_modules:
     if mod_name not in sys.modules:
         sys.modules[mod_name] = _MockModule(mod_name)
+
+# Restore pure-Python pyglet.math (no OpenGL dependency)
+sys.modules["pyglet.math"] = _real_pyglet_math
+sys.modules["pyglet"].math = _real_pyglet_math
+
+
+# pyglet.shapes — lightweight mocks (real shapes need GL at construction time)
+class _MockShapeBase:
+    """Mock for pyglet.shapes.ShapeBase with common properties."""
+
+    def __init__(self, x=0, y=0, color=(255, 255, 255, 255), batch=None, group=None, **kw):
+        self._x = float(x)
+        self._y = float(y)
+        self._color = tuple(color) if len(color) == 4 else (*color, 255)
+        self._batch = batch
+        self._group = group
+        self._visible = True
+        self._opacity = self._color[3] if len(color) == 4 else 255
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = float(value)
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        self._y = float(value)
+
+    @property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, value):
+        self._color = tuple(value) if len(value) == 4 else (*value, self._opacity)
+
+    @property
+    def opacity(self):
+        return self._opacity
+
+    @opacity.setter
+    def opacity(self, value):
+        self._opacity = value
+
+    @property
+    def visible(self):
+        return self._visible
+
+    @visible.setter
+    def visible(self, value):
+        self._visible = bool(value)
+
+    @property
+    def batch(self):
+        return self._batch
+
+    @batch.setter
+    def batch(self, value):
+        self._batch = value
+
+    @property
+    def group(self):
+        return self._group
+
+    @group.setter
+    def group(self, value):
+        self._group = value
+
+    def delete(self):
+        self._batch = None
+
+
+class _MockRectangle(_MockShapeBase):
+    def __init__(self, x, y, width, height, color=(255, 255, 255, 255), **kw):
+        super().__init__(x=x, y=y, color=color, **kw)
+        self._width = float(width)
+        self._height = float(height)
+
+    @property
+    def width(self):
+        return self._width
+
+    @width.setter
+    def width(self, value):
+        self._width = float(value)
+
+    @property
+    def height(self):
+        return self._height
+
+    @height.setter
+    def height(self, value):
+        self._height = float(value)
+
+
+class _MockBorderedRectangle(_MockRectangle):
+    def __init__(
+        self, x, y, width, height, border=1.0, color=(255, 255, 255, 255), border_color=(100, 100, 100, 255), **kw
+    ):
+        super().__init__(x=x, y=y, width=width, height=height, color=color, **kw)
+        self._border = float(border)
+        self._border_color = tuple(border_color) if len(border_color) == 4 else (*border_color, 255)
+
+    @property
+    def border(self):
+        return self._border
+
+    @border.setter
+    def border(self, value):
+        self._border = float(value)
+
+    @property
+    def border_color(self):
+        return self._border_color
+
+    @border_color.setter
+    def border_color(self, value):
+        self._border_color = tuple(value) if len(value) == 4 else (*value, self._opacity)
+
+
+class _MockTriangle(_MockShapeBase):
+    def __init__(self, x, y, x2, y2, x3, y3, color=(255, 255, 255, 255), **kw):
+        super().__init__(x=x, y=y, color=color, **kw)
+        self._x2 = float(x2)
+        self._y2 = float(y2)
+        self._x3 = float(x3)
+        self._y3 = float(y3)
+
+    @property
+    def x2(self):
+        return self._x2
+
+    @x2.setter
+    def x2(self, value):
+        self._x2 = float(value)
+
+    @property
+    def y2(self):
+        return self._y2
+
+    @y2.setter
+    def y2(self, value):
+        self._y2 = float(value)
+
+    @property
+    def x3(self):
+        return self._x3
+
+    @x3.setter
+    def x3(self, value):
+        self._x3 = float(value)
+
+    @property
+    def y3(self):
+        return self._y3
+
+    @y3.setter
+    def y3(self, value):
+        self._y3 = float(value)
+
+    @property
+    def position(self):
+        return (self._x, self._y, self._x2, self._y2, self._x3, self._y3)
+
+    @position.setter
+    def position(self, value):
+        self._x, self._y, self._x2, self._y2, self._x3, self._y3 = (float(v) for v in value)
+
+
+class _MockCircle(_MockShapeBase):
+    def __init__(self, x, y, radius, segments=None, color=(255, 255, 255, 255), **kw):
+        super().__init__(x=x, y=y, color=color, **kw)
+        self._radius = float(radius)
+
+    @property
+    def radius(self):
+        return self._radius
+
+    @radius.setter
+    def radius(self, value):
+        self._radius = float(value)
+
+
+class _MockLine(_MockShapeBase):
+    def __init__(self, x, y, x2, y2, thickness=1.0, color=(255, 255, 255, 255), **kw):
+        super().__init__(x=x, y=y, color=color, **kw)
+        self._x2 = float(x2)
+        self._y2 = float(y2)
+        self._thickness = float(thickness)
+
+    @property
+    def x2(self):
+        return self._x2
+
+    @x2.setter
+    def x2(self, value):
+        self._x2 = float(value)
+
+    @property
+    def y2(self):
+        return self._y2
+
+    @y2.setter
+    def y2(self, value):
+        self._y2 = float(value)
+
+
+class _MockArc(_MockShapeBase):
+    def __init__(
+        self,
+        x,
+        y,
+        radius,
+        segments=None,
+        angle=360.0,
+        start_angle=0.0,
+        closed=False,
+        thickness=1.0,
+        color=(255, 255, 255, 255),
+        **kw,
+    ):
+        super().__init__(x=x, y=y, color=color, **kw)
+        self._radius = float(radius)
+        self._angle = float(angle)
+        self._start_angle = float(start_angle)
+
+
+_shapes_mod = _MockModule("pyglet.shapes")
+_shapes_mod.ShapeBase = _MockShapeBase
+_shapes_mod.Rectangle = _MockRectangle
+_shapes_mod.BorderedRectangle = _MockBorderedRectangle
+_shapes_mod.Triangle = _MockTriangle
+_shapes_mod.Circle = _MockCircle
+_shapes_mod.Line = _MockLine
+_shapes_mod.Arc = _MockArc
+sys.modules["pyglet.shapes"] = _shapes_mod
+sys.modules["pyglet"].shapes = _shapes_mod
 
 # Configure specific pyglet mock attributes
 
@@ -189,7 +438,7 @@ sys.modules["pyglet.window"].key = key_mod
 
 
 class _MockGroup:
-    """Mock Group with order/parent attributes for rendering layer compatibility."""
+    """Mock Group with order/parent attributes for draw-order compatibility."""
 
     def __init__(self, order=0, parent=None):
         self.order = order
@@ -306,6 +555,7 @@ def mock_window(monkeypatch):
     mock = MagicMock()
     mock.keyboard = {}
     mock.modal_dialog = None
+    mock.set_bg_bands_visible = MagicMock()
     mock.batch = MagicMock()
     mock.width = 1920
     mock.height = 1080
