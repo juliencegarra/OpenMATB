@@ -225,6 +225,64 @@ class TestDesktopFallbacks:
         platform.on_visibility_change(MagicMock())
 
 
+class TestBrowserEnvironment:
+    @pytest.mark.parametrize(
+        "user_agent,browser,system",
+        [
+            (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:156.0) Gecko/20100101 Firefox/156.0",
+                "Firefox 156.0",
+                "Windows",
+            ),
+            (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/141.0.0.0 Safari/537.36",
+                "Chrome 141.0.0.0",
+                "Windows",
+            ),
+            (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/141.0.0.0 Safari/537.36 Edg/141.0.3537.57",
+                "Edge 141.0.3537.57",
+                "Windows",
+            ),
+            (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) "
+                "Version/26.0 Safari/605.1.15",
+                "Safari 26.0",
+                "macOS",
+            ),
+            (
+                "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) "
+                "Version/18.6 Mobile/15E148 Safari/604.1",
+                "Safari 18.6",
+                "iOS",
+            ),
+            (
+                "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/141.0.0.0 Mobile Safari/537.36",
+                "Chrome 141.0.0.0",
+                "Android",
+            ),
+            ("Mozilla/5.0 (X11; Linux x86_64; rv:156.0) Gecko/20100101 Firefox/156.0", "Firefox 156.0", "Linux"),
+            ("curl/8.0", "unknown", "unknown"),
+        ],
+    )
+    def test_describe_browser(self, user_agent, browser, system):
+        assert platform.describe_browser(user_agent) == (browser, system)
+
+    def test_environment_entries(self, js):
+        js.navigator.userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:156.0) Gecko/20100101 Firefox/156.0"
+        assert platform.browser_environment() == [
+            ("browser", "Firefox 156.0"),
+            ("os", "Linux"),
+            ("useragent", js.navigator.userAgent),
+        ]
+
+    def test_nothing_on_desktop(self):
+        assert platform.browser_environment() == []
+
+
 class TestPageHelpers:
     @pytest.mark.parametrize(
         "search,expected",
@@ -299,6 +357,16 @@ class TestBrowserGamepads:
         from core.joystick import _browser_gamepads
 
         assert _browser_gamepads() == [None, None, None, None]
+
+    def test_no_gamepad_api(self, js, mock_logger):
+        """Regression: without the Gamepad API (http page, some browsers) poll() crashed the loop."""
+        from core.joystick import WebGamepadDevice, _browser_gamepads
+
+        js.navigator = SimpleNamespace()
+        assert _browser_gamepads() == []
+        device = WebGamepadDevice()
+        device.poll()
+        assert device.name is None
 
     def test_poll_with_real_browser_slots(self, js, mock_logger):
         from core.joystick import WebGamepadDevice

@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 from typing import Any, Callable
@@ -121,6 +122,43 @@ def url_params() -> dict[str, str]:
 
     query: str = str(js.window.location.search).lstrip("?")
     return {k: v[-1] for k, v in parse_qs(query).items()}
+
+
+_BROWSERS: tuple[tuple[str, str], ...] = (  # Order matters: Edge and Opera user agents also contain "Chrome"
+    ("Edge", r"Edg(?:e|A|iOS)?/([\d.]+)"),
+    ("Opera", r"OPR/([\d.]+)"),
+    ("Firefox", r"(?:Firefox|FxiOS)/([\d.]+)"),
+    ("Chrome", r"(?:Chrome|CriOS)/([\d.]+)"),
+    ("Safari", r"Version/([\d.]+).*Safari/"),
+)
+_SYSTEMS: tuple[tuple[str, str], ...] = (  # Order matters: Android user agents also contain "Linux"
+    ("Windows", r"Windows"),
+    ("Android", r"Android"),
+    ("iOS", r"iPhone|iPad|iPod"),
+    ("macOS", r"Mac OS X|Macintosh"),
+    ("ChromeOS", r"CrOS"),
+    ("Linux", r"Linux"),
+)
+
+
+def describe_browser(user_agent: str) -> tuple[str, str]:
+    """Return the browser and its system from a user agent, e.g. ("Firefox 156.0", "Windows")."""
+    browser: str = next(
+        (f"{name} {m.group(1)}" for name, pattern in _BROWSERS if (m := re.search(pattern, user_agent))), "unknown"
+    )
+    system: str = next((name for name, pattern in _SYSTEMS if re.search(pattern, user_agent)), "unknown")
+    return browser, system
+
+
+def browser_environment() -> list[tuple[str, str]]:
+    """(key, value) entries describing the browser, for the session file. Empty on desktop."""
+    if not IS_WEB:
+        return []
+    import js
+
+    user_agent: str = str(js.navigator.userAgent)
+    browser, system = describe_browser(user_agent)
+    return [("browser", browser), ("os", system), ("useragent", user_agent)]
 
 
 def viewport_size() -> tuple[int, int] | None:

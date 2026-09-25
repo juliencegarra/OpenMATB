@@ -90,7 +90,8 @@ Differences with the desktop version:
 - The **parallel port** and **Lab Streaming Layer** are not available.
 - **Sound** starts after the first click (the "Start" button), as required by browsers.
 - **Timing**: response times are measured with the browser clock (`performance.now`), whose resolution browsers reduce (to about 0.1 ms in Chrome, 1 ms in Firefox), and the display is refreshed by the browser (`requestAnimationFrame`). Take it into account for time-critical experiments.
-- The web version is tested with Chrome/Chromium; pyglet's browser backend is recent and other browsers may still have issues.
+- **Browsers**: use **Chrome or Edge** for experiments. They are tested with Firefox and Safari's engine (WebKit) too, but **Firefox pauses the page for 0.1 to 1 s every few seconds** (garbage collection, notably when the user has not interacted for a few seconds), which delays updates and responses. Timing studies of online experiment platforms also found Firefox the most variable browser ([Anwyl-Irvine et al., 2021](https://doi.org/10.3758/s13428-020-01501-5)). The start page displays a notice in Firefox; `web_browser_check` in `config.ini` sets this check: `warn` (default), `block` (Firefox cannot start) or `off`. It can also be set in the URL: `?browsercheck=block`.
+- **Session file**: it records the browser, its version and the system (`browser`, `os` and `useragent` entries), and every pause of the page longer than 100 ms (`freeze` entries: the duration in ms, at the scenario time when the page stopped), so that the affected periods can be excluded from the analysis.
 
 ### Use of compiled source (coming soon)
 

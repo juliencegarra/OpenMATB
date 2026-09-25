@@ -20,6 +20,9 @@ STANDARD_DPAD: dict[str, int] = {"UP": 12, "DOWN": 13, "LEFT": 14, "RIGHT": 15}
 def _browser_gamepads() -> list[Any]:
     import js
 
+    # The Gamepad API only exists in secure contexts (https or localhost) and not in every browser
+    if not hasattr(js.navigator, "getGamepads"):
+        return []
     # Empty slots are JavaScript null, which Pyodide converts to (falsy) jsnull, not None
     gamepads = js.navigator.getGamepads()
     return [gamepads[i] or None for i in range(gamepads.length)]

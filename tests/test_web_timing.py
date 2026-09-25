@@ -334,6 +334,44 @@ class TestEventTiming:
         assert scheduler.scenario_time == pytest.approx(frozen + 0.1, abs=1e-6)
 
 
+class TestFreezeLog:
+    """Pauses of the page (e.g. Firefox garbage collection) are written to the session file."""
+
+    def test_a_stall_is_logged_with_its_duration(self, browser, scheduler, mock_logger):
+        with patch("core.scheduler.IS_WEB", True):
+            browser.run([0.01] * 50)
+            browser.run([0.25])
+            browser.run([0.01] * 10)
+        assert [c.args[0] for c in mock_logger.log_manual_entry.call_args_list if c.kwargs.get("key") == "freeze"] == [
+            "250"
+        ]
+
+    def test_logged_at_the_scenario_time_when_the_page_stopped(self, browser, scheduler, mock_logger):
+        logged_at: list[float] = []
+        mock_logger.log_manual_entry.side_effect = lambda value, key: logged_at.append(scheduler.scenario_time)
+        with patch("core.scheduler.IS_WEB", True):
+            browser.run([0.01] * 50)
+            before = scheduler.scenario_time
+            browser.run([0.25])
+        assert logged_at == [before]
+
+    def test_normal_updates_are_not_logged(self, browser, scheduler, mock_logger):
+        with patch("core.scheduler.IS_WEB", True):
+            browser.run(_jittered_gaps(3000, 0.004, 0.017, seed=5) + [0.1])  # 100 ms: at the threshold
+        mock_logger.log_manual_entry.assert_not_called()
+
+    def test_not_logged_while_the_pause_dialog_is_shown(self, browser, scheduler, mock_logger):
+        """A hidden tab is throttled to ~1 Hz, but the scenario is paused: not a freeze."""
+        with patch("core.scheduler.IS_WEB", True), patch("core.scheduler.Window") as window:
+            window.MainWindow.modal_dialog = object()
+            browser.run([1.0] * 5)
+        mock_logger.log_manual_entry.assert_not_called()
+
+    def test_not_logged_on_desktop(self, browser, scheduler, mock_logger):
+        browser.run([0.01] * 10 + [0.5])
+        mock_logger.log_manual_entry.assert_not_called()
+
+
 # ── Plugin pace (taskupdatetime) ────────────────────────────────────────────
 
 
@@ -350,6 +388,7 @@ class TestPluginPace:
         [
             pytest.param(_jittered_gaps(6000, 0.004, 0.017, seed=4), id="browser-jittered"),
             pytest.param([0.0095] * 6300, id="browser-steady-9.5ms"),
+            pytest.param([0.031] * 2000, id="webkit-31ms"),
         ],
     )
     def test_steps_follow_real_time(self, browser, scheduler, taskupdatetime, gaps):
@@ -375,4 +414,4 @@ class TestPluginPace:
         assert abs(len(steps) - scheduler.scenario_time / period) <= 1
         lateness = [t - i * period for i, t in enumerate(steps)]
         assert min(lateness) >= -1e-9  # Never early
-        assert max(lateness) <= 0.030  # About one update (~8-25 ms), including after catching up a step
+        assert max(lateness) <= max(gaps) + 0.020  # About one update, including after catching up steps

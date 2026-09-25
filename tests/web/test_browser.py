@@ -12,11 +12,16 @@ from __future__ import annotations
 
 import csv
 import io
+import os
 import statistics
+import sys
 
 import pytest
 
+from tests.web.conftest import OpenMATBPage
+
 TIMING_SCENARIO_DURATION: int = 12
+ENGINE: str = os.environ.get("OPENMATB_BROWSER", "chromium")
 SIMULTANEOUS_AT: int = 5
 SIMULTANEOUS_COUNT: int = 10
 
@@ -38,6 +43,17 @@ def timing_run(page_factory):
     app.page.wait_for_selector("#end:not([hidden])", timeout=(TIMING_SCENARIO_DURATION + 30) * 1000)
     final = app.state()
     return app, middle, final
+
+
+@pytest.fixture(scope="module")
+def fine_timers() -> None:
+    """Skip the tests bound to the timer cadence in Playwright's WebKit build for Windows.
+
+    It rounds setTimeout to the Windows timer resolution (15.6 ms): the loop wakes every ~31 ms, where
+    Safari, Chrome and Firefox wake every ~8-10 ms. Plugin pace and the rest are still tested.
+    """
+    if ENGINE == "webkit" and sys.platform == "win32":
+        pytest.skip("Playwright WebKit on Windows rounds its timers to 15.6 ms (not representative of Safari)")
 
 
 def _intervals_ms(updates: list) -> list[float]:
@@ -73,7 +89,7 @@ class TestEventLoop:
 
 
 class TestUpdateTiming:
-    def test_update_rate(self, timing_run, tolerance):
+    def test_update_rate(self, timing_run, tolerance, fine_timers):
         _, _, final = timing_run
         intervals = _intervals_ms(final["updates"])
         median, p95 = statistics.median(intervals), _percentile(intervals, 0.95)
@@ -84,6 +100,9 @@ class TestUpdateTiming:
 
     def test_no_long_freeze(self, timing_run, tolerance):
         _, _, final = timing_run
+        intervals = _intervals_ms(final["updates"])
+        worst = max(range(len(intervals)), key=intervals.__getitem__)
+        print(f"\nlongest gap: {intervals[worst]:.1f} ms at scenario time {final['updates'][worst][2]:.3f} s")
         assert max(_intervals_ms(final["updates"])) <= 100 * tolerance
 
     def test_dt_is_the_real_elapsed_time(self, timing_run):
@@ -123,14 +142,14 @@ class TestEventTiming:
         _, _, final = timing_run
         assert all(e["scenario_time"] >= e["time_sec"] for e in final["events"])
 
-    def test_event_lateness(self, timing_run, tolerance):
+    def test_event_lateness(self, timing_run, tolerance, fine_timers):
         """Lateness of an event = scenario time when executed - planned time: at most one update."""
         _, _, final = timing_run
         lateness = [(e["scenario_time"] - e["time_sec"]) * 1000 for e in self._single_events(final)]
         print(f"\nevent lateness: max={max(lateness):.2f} mean={statistics.mean(lateness):.2f} ms")
         assert max(lateness) <= 20 * tolerance
 
-    def test_events_follow_the_wall_clock(self, timing_run, tolerance):
+    def test_events_follow_the_wall_clock(self, timing_run, tolerance, fine_timers):
         """Planned time vs browser clock: the spacing of events 1 s apart is kept within one update."""
         _, _, final = timing_run
         events = self._single_events(final)
@@ -140,7 +159,7 @@ class TestEventTiming:
             planned = event["time_sec"] - first["time_sec"]
             assert abs(wall - planned) <= 0.020 * tolerance
 
-    def test_simultaneous_events_one_per_update_in_order(self, timing_run, tolerance):
+    def test_simultaneous_events_one_per_update_in_order(self, timing_run, tolerance, fine_timers):
         _, _, final = timing_run
         batch = [e for e in final["events"] if e["time_sec"] == SIMULTANEOUS_AT and e["line"] >= 11]
         assert [e["line"] for e in batch] == sorted(e["line"] for e in batch)
@@ -199,6 +218,57 @@ class TestSessionFile:
         events = [r for r in rows if r["type"] == "event"]
         assert len(events) == 2 + 9 + SIMULTANEOUS_COUNT + 2
 
+    def test_browser_is_logged(self, session_csv):
+        _, content = session_csv
+        rows = {r["type"]: r["value"] for r in csv.DictReader(io.StringIO(content))}
+        expected = {"chromium": ("Chrome", "Edge"), "firefox": ("Firefox",), "webkit": ("Safari",)}[ENGINE]
+        assert rows["browser"].startswith(expected)
+        assert rows["os"] != "unknown"
+        assert "Mozilla/5.0" in rows["useragent"]
+
+    def test_freezes_are_logged(self, timing_run, session_csv):
+        """Every pause of the page longer than 100 ms is in the session file, with its duration."""
+        _, _, final = timing_run
+        _, content = session_csv
+        logged = [float(r["value"]) for r in csv.DictReader(io.StringIO(content)) if r["type"] == "freeze"]
+        measured = [gap for gap in _intervals_ms(final["updates"]) if gap > 110]  # Away from the threshold
+        print(f"\nfreezes logged: {logged} ms (measured by the probe: {[round(g) for g in measured]})")
+        assert all(value > 100 for value in logged)
+        for gap in measured:
+            assert any(abs(value - gap) <= 5 for value in logged)
+
+
+class TestBrowserCheck:
+    """Start page notice for browsers with timing issues (Firefox), set by web_browser_check / ?browsercheck=."""
+
+    def _menu(self, page_factory, params: str = "") -> OpenMATBPage:
+        app = page_factory()
+        app.open_menu(params)
+        return app
+
+    def test_default_warns_only_on_firefox(self, page_factory):
+        app = self._menu(page_factory)
+        assert app.page.is_visible("#browser-warning") == (ENGINE == "firefox")
+        assert app.page.is_enabled("#start")
+
+    def test_block_mode(self, page_factory):
+        app = self._menu(page_factory, "&browsercheck=block")
+        assert app.page.is_enabled("#start") == (ENGINE != "firefox")
+        if ENGINE == "firefox":
+            assert "Chrome or Edge" in app.page.text_content("#browser-warning")
+
+    def test_off_mode(self, page_factory):
+        app = self._menu(page_factory, "&browsercheck=off")
+        assert not app.page.is_visible("#browser-warning")
+        assert app.page.is_enabled("#start")
+
+    def test_notice_is_translated(self, page_factory):
+        if ENGINE != "firefox":
+            pytest.skip("the notice is only displayed in Firefox")
+        app = self._menu(page_factory)
+        app.page.select_option("#lang", "fr_FR")
+        assert "Utilisez Chrome ou Edge" in app.page.text_content("#browser-warning")
+
 
 # ── Browser specific behaviour ──────────────────────────────────────────────
 
@@ -253,6 +323,8 @@ class TestAudio:
         """Browser SequencePlayer chains one player per sound: the sequence lasts the sum of the sounds."""
         app = page_factory()
         app.start(LONG_SCENARIO)
+        if not app.has_web_audio:
+            pytest.skip("this browser build has no Web Audio (Playwright WebKit on Windows)")
         sounds = ["0", "1", "2"]
         expected = app.python(
             "import wave\n"
@@ -284,3 +356,26 @@ class TestAudio:
         assert duration >= expected - 0.05
         # Each sound starts on the update after the end of the previous one (+ decoding of the first)
         assert duration <= expected + (0.3 + 0.05 * len(sounds)) * tolerance
+
+
+class TestFreezeLog:
+    def test_a_blocked_page_is_logged(self, page_factory):
+        """Block the page for 300 ms (like a Firefox garbage collection): a "freeze" row is written."""
+        app = page_factory()
+        app.start(LONG_SCENARIO)
+        app.wait_until(lambda s: s["scenario_time"] >= 1, timeout=20)
+        app.page.evaluate("() => { const end = performance.now() + 300; while (performance.now() < end) {} }")
+        app.wait_until(lambda s: s["scenario_time"] >= 2, timeout=20)
+        content = app.python(
+            "from core.logger import get_logger\n"
+            "logger = get_logger()\n"
+            "logger.file.flush()\n"
+            "logger.path.read_text(encoding='utf-8')"
+        )
+        freezes = [
+            (float(r["scenario_time"]), float(r["value"]))
+            for r in csv.DictReader(io.StringIO(content))
+            if r["type"] == "freeze"
+        ]
+        print(f"\nfreeze rows (scenario time s, ms): {freezes}")
+        assert any(1 <= time < 2 and 295 <= duration <= 400 for time, duration in freezes)

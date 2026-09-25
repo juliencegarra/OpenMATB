@@ -7,7 +7,8 @@ Pyodide itself is loaded from its CDN, as in production.
 
 Environment variables:
     OPENMATB_BROWSER_TESTS=1         run them
-    OPENMATB_BROWSER_CHANNEL=chrome  browser channel ("chrome", "msedge"...); "" for Playwright's Chromium
+    OPENMATB_BROWSER=chromium        browser engine: chromium (default), firefox or webkit (Safari)
+    OPENMATB_BROWSER_CHANNEL=chrome  chromium channel ("chrome", "msedge"...); "" for Playwright's Chromium
     OPENMATB_BROWSER_HEADED=1        show the browser
     OPENMATB_TIMING_TOLERANCE=2      multiply the timing thresholds (slow CI machines)
 """
@@ -29,6 +30,7 @@ import pytest
 ROOT: Path = Path(__file__).resolve().parents[2]
 DIST: Path = ROOT / "web" / "dist"
 PROBE: Path = Path(__file__).with_name("probe.py")
+FAKE_AUDIO: Path = Path(__file__).with_name("fake_audio.js")
 ENABLED: bool = os.environ.get("OPENMATB_BROWSER_TESTS") == "1"
 BOOT_TIMEOUT_MS: int = 180_000
 
@@ -65,16 +67,20 @@ def server_url():
 @pytest.fixture(scope="session")
 def browser():
     sync_api = pytest.importorskip("playwright.sync_api")
-    channel = os.environ.get("OPENMATB_BROWSER_CHANNEL", "chrome")
-    options = dict(
-        headless=os.environ.get("OPENMATB_BROWSER_HEADED") != "1",
-        args=["--autoplay-policy=no-user-gesture-required"],
-    )
+    engine = os.environ.get("OPENMATB_BROWSER", "chromium")
+    options: dict[str, Any] = dict(headless=os.environ.get("OPENMATB_BROWSER_HEADED") != "1")
     with sync_api.sync_playwright() as playwright:
-        try:
-            instance = playwright.chromium.launch(channel=channel or None, **options)
-        except Exception:
-            instance = playwright.chromium.launch(**options)  # Playwright's own Chromium
+        if engine == "chromium":
+            options["args"] = ["--autoplay-policy=no-user-gesture-required"]
+            channel = os.environ.get("OPENMATB_BROWSER_CHANNEL", "chrome")
+            try:
+                instance = playwright.chromium.launch(channel=channel or None, **options)
+            except Exception:
+                instance = playwright.chromium.launch(**options)  # Playwright's own Chromium
+        elif engine == "firefox":
+            instance = playwright.firefox.launch(firefox_user_prefs={"media.autoplay.default": 0}, **options)
+        else:
+            instance = getattr(playwright, engine).launch(**options)
         yield instance
         instance.close()
 
@@ -101,6 +107,10 @@ class OpenMATBPage:
         page.on("pageerror", lambda e: self.errors.append(str(e)))
         page.on("download", lambda d: self.downloads.append(d))
 
+    @property
+    def has_web_audio(self) -> bool:
+        return not self.page.evaluate("() => window.__openmatbFakeAudio === true")
+
     def python(self, code: str) -> Any:
         return self.page.evaluate("(code) => window.openmatb.pyodide.runPython(code)", code)
 
@@ -109,6 +119,11 @@ class OpenMATBPage:
             "([path, content]) => window.openmatb.pyodide.FS.writeFile(path, content)",
             [path, content],
         )
+
+    def open_menu(self, params: str = "") -> None:
+        """Open the start page and wait until OpenMATB is loaded (without starting it)."""
+        self.page.goto(f"{self.url}/index.html?lang=en_EN{params}")
+        self.page.wait_for_function("() => window.openmatb !== undefined", timeout=BOOT_TIMEOUT_MS)
 
     def start(self, scenario: str, config: dict[str, str] | None = None) -> None:
         self.page.goto(f"{self.url}/index.html?lang=en_EN&mode=scenario&scenario={self.SCENARIO}")
@@ -150,6 +165,7 @@ def page_factory(browser, server_url):
 
     def new_page() -> OpenMATBPage:
         context = browser.new_context(viewport={"width": 1280, "height": 800}, accept_downloads=True)
+        context.add_init_script(path=str(FAKE_AUDIO))  # Only used by browsers without Web Audio
         contexts.append(context)
         return OpenMATBPage(context.new_page(), server_url)
 

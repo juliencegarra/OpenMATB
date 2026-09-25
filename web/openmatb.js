@@ -39,6 +39,10 @@ const TEXTS = {
         loading_openmatb: "Loading OpenMATB…",
         ready: "Ready",
         loading_failed: "Loading failed:",
+        browser_warn: "Firefox pauses for 0.1 to 1 s every few seconds: timing is not reliable. "
+            + "Use Chrome or Edge for experiments.",
+        browser_block: "This experiment requires Chrome or Edge: Firefox pauses for 0.1 to 1 s every few seconds, "
+            + "which makes timing unreliable.",
     },
     fr_FR: {
         language: "Langue",
@@ -61,6 +65,10 @@ const TEXTS = {
         loading_openmatb: "Chargement d'OpenMATB…",
         ready: "Prêt",
         loading_failed: "Échec du chargement :",
+        browser_warn: "Firefox s'interrompt 0,1 à 1 s toutes les quelques secondes : la précision temporelle "
+            + "n'est pas garantie. Utilisez Chrome ou Edge pour les expériences.",
+        browser_block: "Cette expérience nécessite Chrome ou Edge : Firefox s'interrompt 0,1 à 1 s toutes les "
+            + "quelques secondes, ce qui rend la mesure du temps peu fiable.",
     },
 };
 
@@ -114,6 +122,41 @@ translatePage();
 $("lang").addEventListener("change", translatePage);
 showJoystick();
 
+// Browsers with known timing issues. Firefox pauses the page for 0.1 to 1 s every few seconds (garbage
+// collection when the user is considered inactive, and others): measured by tests/web, see the README.
+const TIMING_ISSUE_BROWSERS = [/Firefox\/|FxiOS\//];
+const BROWSER_CHECK_MODES = ["warn", "block", "off"];
+
+// ?browsercheck= in the URL, otherwise web_browser_check in config.ini, otherwise "warn"
+function browserCheckMode(pyodide) {
+    const requested = new URLSearchParams(location.search).get("browsercheck");
+    if (BROWSER_CHECK_MODES.includes(requested)) {
+        return requested;
+    }
+    try {
+        const config = pyodide.FS.readFile(`${APP_DIR}/config.ini`, { encoding: "utf8" });
+        const mode = (config.match(/^\s*web_browser_check\s*=\s*(\w+)/m) || [])[1]?.toLowerCase();
+        if (BROWSER_CHECK_MODES.includes(mode)) {
+            return mode;
+        }
+    } catch (error) {
+        console.warn("config.ini not readable:", error);
+    }
+    return "warn";
+}
+
+// Show the notice for browsers with timing issues. Returns false when starting is not allowed.
+function checkBrowser(pyodide) {
+    const mode = browserCheckMode(pyodide);
+    if (mode === "off" || !TIMING_ISSUE_BROWSERS.some((pattern) => pattern.test(navigator.userAgent))) {
+        return true;
+    }
+    $("browser-warning").dataset.i18n = `browser_${mode}`;
+    $("browser-warning").textContent = t(`browser_${mode}`);
+    $("browser-warning").hidden = false;
+    return mode !== "block";
+}
+
 async function loadFonts() {
     // pyglet measures and renders text with the fonts known by the document
     for (const weight of FONT_WEIGHTS) {
@@ -127,7 +170,15 @@ async function boot() {
     await loadFonts();
     const { loadPyodide } = await import(`https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/pyodide.mjs`);
     const pyodide = await loadPyodide();
-    await installPygletEmscripten(pyodide); // mounts /data (IndexedDB) and /cache
+    // Mounts /data (IndexedDB, where sessions are kept). The /cache mount (OPFS) is optional: Safari refuses
+    // OPFS in private browsing, which made the loading fail. OpenMATB does not use it: keep /cache in memory then.
+    const bridge = await installPygletEmscripten(pyodide, { cachePath: null });
+    try {
+        await bridge.mount_opfs("/cache");
+    } catch (error) {
+        console.warn("OPFS unavailable, /cache kept in memory:", error);
+        pyodide.FS.mkdirTree("/cache");
+    }
 
     status("loading_pyglet");
     await pyodide.loadPackage("micropip");
@@ -144,7 +195,7 @@ async function boot() {
 
     window.openmatb = { pyodide }; // for debugging from the browser console
     status("ready");
-    $("start").disabled = false;
+    $("start").disabled = !checkBrowser(pyodide);
     return pyodide;
 }
 

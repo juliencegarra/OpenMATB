@@ -16,12 +16,14 @@ from core.error import get_errors
 from core.event import Event
 from core.joystick import joystick
 from core.logger import get_logger
-from core.platform import IS_WEB, notify_page
+from core.platform import IS_WEB, browser_environment, notify_page
 from core.scenario import Scenario
 from core.window import Window
 
 # Browser: how often the session file is saved to persistent storage (seconds)
 WEB_CHECKPOINT_INTERVAL: float = 10
+# Browser: updates later than this (seconds) are logged as "freeze" (the browser paused the page, e.g. Firefox GC)
+WEB_FREEZE_THRESHOLD: float = 0.1
 
 
 class Scheduler:
@@ -34,6 +36,8 @@ class Scheduler:
     def __init__(self, scenario_path: Path | None = None) -> None:
         with open("VERSION", "r") as f:
             get_logger().log_manual_entry(f.read().strip(), key="version")
+        for key, value in browser_environment():  # Browser, version and system (timing differs between them)
+            get_logger().log_manual_entry(value, key=key)
 
         self.clock: Clock = Clock("main")
         self.scenario_time: float = 0
@@ -91,6 +95,10 @@ class Scheduler:
 
         if not get_errors().is_empty():
             get_errors().show_errors()
+
+        # Logged before the timers are updated: the row gets the scenario time when the page stopped
+        if IS_WEB and dt > WEB_FREEZE_THRESHOLD:
+            get_logger().log_manual_entry(f"{dt * 1000:.0f}", key="freeze")
 
         self.update_timers(dt)
         self.update_joystick()
