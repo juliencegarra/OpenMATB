@@ -19,7 +19,6 @@ const $ = (id) => document.getElementById(id);
 // Start page texts (OpenMATB itself is translated with gettext, see locales/)
 const TEXTS = {
     en_EN: {
-        subtitle: "Multi-Attribute Task Battery, in the browser",
         language: "Language",
         mode: "Mode",
         run_scenario: "Run a scenario",
@@ -40,7 +39,6 @@ const TEXTS = {
         loading_failed: "Loading failed:",
     },
     fr_FR: {
-        subtitle: "Multi-Attribute Task Battery, dans le navigateur",
         language: "Langue",
         mode: "Mode",
         run_scenario: "Lancer un scénario",

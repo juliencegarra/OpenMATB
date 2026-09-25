@@ -105,8 +105,10 @@ def build() -> None:
     wheels: list[str] = download_wheels()
     copy_pyglet_bridge()
     download_fonts()
-    for name in ("index.html", "openmatb.js"):
-        shutil.copy(WEB / name, DIST / name)
+    shutil.copy(WEB / "openmatb.js", DIST / "openmatb.js")
+    version: str = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    index: str = (WEB / "index.html").read_text(encoding="utf-8").replace("{{VERSION}}", version)
+    (DIST / "index.html").write_text(index, encoding="utf-8")
     shutil.copy(ROOT / "includes" / "img" / "logo32.png", DIST / "favicon.png")
     (DIST / "wheels.txt").write_text("\n".join(wheels) + "\n", encoding="utf-8")
     count: int = build_app_zip()
