@@ -27,7 +27,7 @@ class Simpletext(AbstractWidget):
 
         x_pos: float = self.container.l + x * self.container.w
         y_pos: float = self.container.b + y * self.container.h
-        wrap_width_px: float = self.container.w * wrap_width
+        wrap_width_px: float = max(self.container.w * wrap_width, 1)
 
         label_kwargs: dict = dict(
             font_size=font_size,

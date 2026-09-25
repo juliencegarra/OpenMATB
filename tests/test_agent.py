@@ -4,11 +4,11 @@ Tests AbstractAgent interface, DefaultAgent behavior, agent registry,
 and integration with plugins.
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, call
 
 from agents import AGENT_REGISTRY, AbstractAgent, DefaultAgent, HumanLikeAgent, create_agent
-from agents.abstract_agent import AbstractAgent as AbstractAgentDirect
 
 
 # ──────────────────────────────────────────────
@@ -55,7 +55,7 @@ class TestAbstractAgentInjection:
             mock_get_logger.return_value = mock_logger
             agent.send_key(plugin, "F1", "press")
             plugin.do_on_key.assert_called_once_with("F1", "press", emulate=True)
-            mock_logger.record_input.assert_called_once_with("keyboard", "F1", "press")
+            mock_logger.record_input.assert_called_once_with("agent", "F1", "press")
 
     def test_send_key_default_state_is_press(self):
         """send_key() defaults to state='press'."""
@@ -136,7 +136,6 @@ class TestAgentRegistry:
 class TestDefaultAgentResman:
     def _make_resman_plugin(self):
         """Create a minimal resman-like plugin for testing agent logic."""
-        from core.constants import COLORS as C
 
         p = MagicMock()
         p.alias = "resman"
@@ -259,13 +258,15 @@ class TestDefaultAgentComms:
         """Create a comms plugin mock with proper key mappings."""
         p = MagicMock()
         p.alias = "communications"
-        p.parameters = dict(keys=dict(
-            selectradioup="UP",
-            selectradiodown="DOWN",
-            tunefrequencyup="RIGHT",
-            tunefrequencydown="LEFT",
-            validateresponse="ENTER",
-        ))
+        p.parameters = dict(
+            keys=dict(
+                selectradioup="UP",
+                selectradiodown="DOWN",
+                tunefrequencyup="RIGHT",
+                tunefrequencydown="LEFT",
+                validateresponse="ENTER",
+            )
+        )
         p.get_waiting_response_radios.return_value = waiting_radios if waiting_radios is not None else []
         p.get_active_radio_dict.return_value = active_radio
         return p
@@ -393,7 +394,7 @@ class TestDefaultAgentSysmon:
         plugin.alias = "sysmon"
         plugin.scenario_time = 2.0
         plugin.parameters = {"automaticsolverdelay": 1000}
-        ready = {"name": "F1", "_response_start": 0.8, "key": "F1"}    # 1.2s elapsed = 1200ms >= 1000
+        ready = {"name": "F1", "_response_start": 0.8, "key": "F1"}  # 1.2s elapsed = 1200ms >= 1000
         not_ready = {"name": "F2", "_response_start": 1.5, "key": "F2"}  # 0.5s elapsed = 500ms < 1000
         plugin.get_gauges_on_failure.return_value = [ready, not_ready]
         with patch("agents.abstract_agent.get_logger") as mock_gl:
@@ -491,9 +492,12 @@ class TestAgentPluginIntegration:
             displayautomationstate=True,
             taskfeedback=dict(
                 overdue=dict(
-                    active=False, color=(241, 100, 100, 255),
-                    delayms=2000, blinkdurationms=1000,
-                    _nexttoggletime=0, _is_visible=False,
+                    active=False,
+                    color=(241, 100, 100, 255),
+                    delayms=2000,
+                    blinkdurationms=1000,
+                    _nexttoggletime=0,
+                    _is_visible=False,
                 )
             ),
         )
@@ -518,9 +522,12 @@ class TestAgentPluginIntegration:
             displayautomationstate=True,
             taskfeedback=dict(
                 overdue=dict(
-                    active=False, color=(241, 100, 100, 255),
-                    delayms=2000, blinkdurationms=1000,
-                    _nexttoggletime=0, _is_visible=False,
+                    active=False,
+                    color=(241, 100, 100, 255),
+                    delayms=2000,
+                    blinkdurationms=1000,
+                    _nexttoggletime=0,
+                    _is_visible=False,
                 )
             ),
         )
@@ -1022,8 +1029,8 @@ class TestHumanLikeTrack:
         plugin.alias = "track"
         plugin.reticle = MagicMock()
         plugin.reticle.cursor_relative = (-5, -5)
-        plugin.reticle.container.w = 20  # half_w=10 → jx = 5/10 = 0.5
-        plugin.reticle.container.h = 20  # half_h=10 → jy = -5/10 = -0.5
+        plugin.reticle.container.w = 80  # half_w=40 → jx = 5/40*4.0 = 0.5
+        plugin.reticle.container.h = 80  # half_h=40 → jy = -5/40*4.0 = -0.5
         plugin.reticle.is_cursor_in_target.return_value = False
 
         agent._track_react_start = 0.0  # Already reacted
@@ -1056,8 +1063,8 @@ class TestHumanLikeTrack:
         plugin.alias = "track"
         plugin.reticle = MagicMock()
         plugin.reticle.cursor_relative = (-5, -5)
-        plugin.reticle.container.w = 20
-        plugin.reticle.container.h = 20
+        plugin.reticle.container.w = 80
+        plugin.reticle.container.h = 80
         plugin.reticle.is_cursor_in_target.return_value = False
 
         with patch("agents.abstract_agent.get_logger") as mock_gl:
@@ -1112,19 +1119,102 @@ class TestHumanLikeTrack:
 
 
 # ──────────────────────────────────────────────
+# Track settling behavior
+# ──────────────────────────────────────────────
+class TestHumanLikeTrackSettling:
+    def _make_track_plugin(self, cx, cy, w=80, h=80, in_target=True):
+        """Create a track plugin mock with given cursor position."""
+        plugin = MagicMock()
+        plugin.alias = "track"
+        plugin.reticle = MagicMock()
+        plugin.reticle.cursor_relative = (cx, cy)
+        plugin.reticle.container.w = w
+        plugin.reticle.container.h = h
+        plugin.reticle.is_cursor_in_target.return_value = in_target
+        return plugin
+
+    def test_track_settle_force_applied(self):
+        """Cursor just inside target, recently exited → jy >= settle_force."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "track"
+        agent.track_reaction_ms = 0
+        agent.track_noise_prob = 0
+        agent.track_settle_ms = 2000
+        agent.track_settle_force = 0.3
+
+        # Cursor inside target, small offset (proportional jy would be tiny)
+        # cy=2.0, half_h=40 → raw_jy = 2/40*4.0 = 0.2 < 0.3
+        plugin = self._make_track_plugin(cx=0.0, cy=2.0, in_target=True)
+        agent._track_react_start = 0.0
+        # Recently outside (0.5s ago, within 2000ms settle window)
+        agent._track_last_outside = 9.5
+
+        with patch("agents.abstract_agent.get_logger") as mock_gl:
+            mock_gl.return_value = MagicMock()
+            agent._update_track(plugin, 10.0)
+
+        # Settling should boost jy to at least settle_force
+        call_args = plugin.get_joystick_inputs.call_args[0]
+        jy = call_args[1]
+        assert abs(jy) >= 0.3, f"Expected |jy| >= 0.3 during settling, got {jy}"
+
+    def test_track_settle_expired(self):
+        """Cursor inside target, last outside > settle_ms ago → proportional (no floor)."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "track"
+        agent.track_reaction_ms = 0
+        agent.track_noise_prob = 0
+        agent.track_settle_ms = 2000
+        agent.track_settle_force = 0.3
+
+        # Cursor inside target, small offset → raw_jy = 2/40*4.0 = 0.2
+        plugin = self._make_track_plugin(cx=0.0, cy=2.0, in_target=True)
+        agent._track_react_start = 0.0
+        # Last outside 3s ago → settling expired (3000ms > 2000ms)
+        agent._track_last_outside = 7.0
+
+        with patch("agents.abstract_agent.get_logger") as mock_gl:
+            mock_gl.return_value = MagicMock()
+            agent._update_track(plugin, 10.0)
+
+        call_args = plugin.get_joystick_inputs.call_args[0]
+        jy = call_args[1]
+        assert abs(jy) < 0.3, f"Expected |jy| < 0.3 after settling expired, got {jy}"
+
+    def test_track_settle_resets_on_exit(self):
+        """Cursor exits target → _track_last_outside updated to current time."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "track"
+        agent.track_reaction_ms = 0
+        agent.track_noise_prob = 0
+
+        plugin = self._make_track_plugin(cx=-10.0, cy=-10.0, in_target=False)
+        agent._track_react_start = 0.0
+        agent._track_last_outside = None
+
+        with patch("agents.abstract_agent.get_logger") as mock_gl:
+            mock_gl.return_value = MagicMock()
+            agent._update_track(plugin, 5.0)
+
+        assert agent._track_last_outside == 5.0
+
+
+# ──────────────────────────────────────────────
 # Communications behavior
 # ──────────────────────────────────────────────
 class TestHumanLikeComms:
     def _make_comms_plugin(self, active_radio, waiting_radios=None):
         p = MagicMock()
         p.alias = "communications"
-        p.parameters = dict(keys=dict(
-            selectradioup="UP",
-            selectradiodown="DOWN",
-            tunefrequencyup="RIGHT",
-            tunefrequencydown="LEFT",
-            validateresponse="ENTER",
-        ))
+        p.parameters = dict(
+            keys=dict(
+                selectradioup="UP",
+                selectradiodown="DOWN",
+                tunefrequencyup="RIGHT",
+                tunefrequencydown="LEFT",
+                validateresponse="ENTER",
+            )
+        )
         p.get_waiting_response_radios.return_value = waiting_radios if waiting_radios is not None else []
         p.get_active_radio_dict.return_value = active_radio
         return p
@@ -1137,8 +1227,7 @@ class TestHumanLikeComms:
         agent.comms_tune_interval_ms = 0
         agent.comms_overshoot_prob = 0
 
-        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": 115.0,
-                 "pos": 0, "is_active": True}
+        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": 115.0, "pos": 0, "is_active": True}
         plugin = self._make_comms_plugin(radio, waiting_radios=[radio])
 
         agent._comms_react_start = 0.0
@@ -1152,8 +1241,7 @@ class TestHumanLikeComms:
         agent = HumanLikeAgent(seed=42)
         agent._attended_task = "track"
 
-        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": 115.0,
-                 "pos": 0, "is_active": True}
+        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": 115.0, "pos": 0, "is_active": True}
         plugin = self._make_comms_plugin(radio, waiting_radios=[radio])
 
         with patch("agents.abstract_agent.get_logger") as mock_gl:
@@ -1168,8 +1256,7 @@ class TestHumanLikeComms:
         agent.comms_reaction_ms = 1000
         agent.comms_tune_interval_ms = 0
 
-        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": 115.0,
-                 "pos": 0, "is_active": True}
+        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": 115.0, "pos": 0, "is_active": True}
         plugin = self._make_comms_plugin(radio, waiting_radios=[radio])
 
         with patch("agents.abstract_agent.get_logger") as mock_gl:
@@ -1194,8 +1281,7 @@ class TestHumanLikeComms:
         agent.comms_tune_interval_ms = 500
         agent.comms_overshoot_prob = 0
 
-        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": 115.0,
-                 "pos": 0, "is_active": True}
+        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": 115.0, "pos": 0, "is_active": True}
         plugin = self._make_comms_plugin(radio, waiting_radios=[radio])
 
         agent._comms_react_start = 0.0
@@ -1219,8 +1305,7 @@ class TestHumanLikeComms:
         agent.comms_tune_interval_ms = 0
         agent.comms_overshoot_prob = 0
 
-        radio = {"name": "NAV_1", "currentfreq": 115.0, "targetfreq": 115.0,
-                 "pos": 0, "is_active": True}
+        radio = {"name": "NAV_1", "currentfreq": 115.0, "targetfreq": 115.0, "pos": 0, "is_active": True}
         plugin = self._make_comms_plugin(radio, waiting_radios=[radio])
 
         agent._comms_react_start = 0.0
@@ -1234,8 +1319,7 @@ class TestHumanLikeComms:
         agent = HumanLikeAgent(seed=42)
         agent._attended_task = "communications"
 
-        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": None,
-                 "pos": 0, "is_active": True}
+        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": None, "pos": 0, "is_active": True}
         plugin = self._make_comms_plugin(radio)
 
         with patch("agents.abstract_agent.get_logger") as mock_gl:
@@ -1251,8 +1335,7 @@ class TestHumanLikeComms:
         agent.comms_tune_interval_ms = 0
         agent.comms_overshoot_prob = 1.0  # Always overshoot
 
-        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": 115.0,
-                 "pos": 0, "is_active": True}
+        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": 115.0, "pos": 0, "is_active": True}
         plugin = self._make_comms_plugin(radio, waiting_radios=[radio])
 
         agent._comms_react_start = 0.0
@@ -1271,13 +1354,15 @@ class TestHumanLikeCommsTimingFixes:
     def _make_comms_plugin(self, active_radio, waiting_radios=None):
         p = MagicMock()
         p.alias = "communications"
-        p.parameters = dict(keys=dict(
-            selectradioup="UP",
-            selectradiodown="DOWN",
-            tunefrequencyup="RIGHT",
-            tunefrequencydown="LEFT",
-            validateresponse="ENTER",
-        ))
+        p.parameters = dict(
+            keys=dict(
+                selectradioup="UP",
+                selectradiodown="DOWN",
+                tunefrequencyup="RIGHT",
+                tunefrequencydown="LEFT",
+                validateresponse="ENTER",
+            )
+        )
         p.get_waiting_response_radios.return_value = waiting_radios if waiting_radios is not None else []
         p.get_active_radio_dict.return_value = active_radio
         return p
@@ -1301,8 +1386,7 @@ class TestHumanLikeCommsTimingFixes:
         agent.comms_tune_interval_ms = 0
         agent.comms_overshoot_prob = 0
 
-        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": 115.0,
-                 "pos": 0, "is_active": True}
+        radio = {"name": "NAV_1", "currentfreq": 110.0, "targetfreq": 115.0, "pos": 0, "is_active": True}
         plugin = self._make_comms_plugin(radio, waiting_radios=[radio])
 
         with patch("agents.abstract_agent.get_logger") as mock_gl:
@@ -1337,8 +1421,7 @@ class TestHumanLikeCommsTimingFixes:
         agent.comms_reaction_ms = 500
         agent._comms_react_start = 0.5  # Was tuning
 
-        radio = {"name": "NAV_1", "currentfreq": 115.0, "targetfreq": None,
-                 "pos": 0, "is_active": True}
+        radio = {"name": "NAV_1", "currentfreq": 115.0, "targetfreq": None, "pos": 0, "is_active": True}
         plugin = self._make_comms_plugin(radio)  # No waiting radios
 
         with patch("agents.abstract_agent.get_logger") as mock_gl:
@@ -1379,6 +1462,141 @@ class TestHumanLikeCommsTimingFixes:
         # At t=1.5: dwell expired, no comms prompt → should advance
         agent._update_attention(1.5)
         assert agent._attended_task != "communications"
+
+
+# ──────────────────────────────────────────────
+# Task persistence (task-completion bias)
+# ──────────────────────────────────────────────
+class TestHumanLikeTaskPersistence:
+    def test_stays_on_track_while_compensating(self):
+        """Dwell expired + cursor out of target + past reaction → agent stays on track."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "track"
+        agent._attend_start = 0.0
+        agent._current_dwell = 1000
+        agent.track_reaction_ms = 400
+        # Cursor left target at t=0.5, now compensating
+        agent._track_react_start = 0.5
+
+        # At t=2.0: dwell expired (2000ms > 1000ms), past reaction
+        # (2.0 - 0.5)*1000 = 1500ms >= 400ms → actively compensating
+        agent._update_attention(2.0)
+        assert agent._attended_task == "track"
+
+    def test_leaves_track_when_cursor_returns(self):
+        """Cursor returns to target → _track_react_start=None → scan advances."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "track"
+        agent._scan_index = 1  # track is at index 1
+        agent._attend_start = 0.0
+        agent._current_dwell = 1000
+        agent.track_reaction_ms = 400
+        agent._track_react_start = None  # Cursor is back in target
+
+        # At t=2.0: dwell expired, not actively working → should advance
+        agent._update_attention(2.0)
+        assert agent._attended_task != "track"
+
+    def test_does_not_stay_during_track_reaction(self):
+        """During reaction delay (not yet compensating) → scan advances normally."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "track"
+        agent._scan_index = 1  # track is at index 1
+        agent._attend_start = 0.0
+        agent._current_dwell = 1000
+        agent.track_reaction_ms = 2000
+        # Cursor just left target at t=1.0
+        agent._track_react_start = 1.0
+
+        # At t=1.5: dwell expired (1500ms > 1000ms) but still in reaction
+        # (1.5 - 1.0)*1000 = 500ms < 2000ms → not yet compensating
+        agent._update_attention(1.5)
+        assert agent._attended_task != "track"
+
+    def test_stays_on_sysmon_while_failure_pending(self):
+        """Dwell expired + failures active → agent stays on sysmon."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "sysmon"
+        agent._attend_start = 0.0
+        agent._current_dwell = 1000
+        agent._sysmon_pending = True  # Failures active
+
+        # At t=2.0: dwell expired but failure still pending
+        agent._update_attention(2.0)
+        assert agent._attended_task == "sysmon"
+
+    def test_leaves_sysmon_after_failure_resolved(self):
+        """Failures resolved → _sysmon_pending=False → scan advances."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "sysmon"
+        agent._attend_start = 0.0
+        agent._current_dwell = 1000
+        agent._sysmon_pending = False  # No failures
+
+        # At t=2.0: dwell expired, no active work → should advance
+        agent._update_attention(2.0)
+        assert agent._attended_task != "sysmon"
+
+    def test_persist_max_forces_advance(self):
+        """Dwell + persist_max exceeded → advances even with active work."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "sysmon"
+        agent._attend_start = 0.0
+        agent._current_dwell = 1000
+        agent.persist_max_ms = 2000
+        agent._sysmon_pending = True  # Still active work
+
+        # At t=3.5: elapsed=3500ms >= dwell(1000)+persist_max(2000)=3000ms
+        agent._update_attention(3.5)
+        assert agent._attended_task != "sysmon"
+
+    def test_sysmon_pending_set_by_update_sysmon(self):
+        """_update_sysmon sets _sysmon_pending when failures exist."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "sysmon"
+        agent.sysmon_rt_mean = 100
+        agent.sysmon_rt_std = 10
+
+        plugin = MagicMock()
+        plugin.alias = "sysmon"
+        plugin.scenario_time = 6.0
+        gauge = {"name": "F1", "_response_start": 1.0, "key": "F1"}
+        plugin.get_gauges_on_failure.return_value = [gauge]
+
+        with patch("agents.abstract_agent.get_logger") as mock_gl:
+            mock_gl.return_value = MagicMock()
+            agent._update_sysmon(plugin, 6.0)
+        assert agent._sysmon_pending is True
+
+    def test_sysmon_pending_cleared_when_no_failures(self):
+        """_update_sysmon clears _sysmon_pending when no failures."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "sysmon"
+        agent._sysmon_pending = True
+
+        plugin = MagicMock()
+        plugin.alias = "sysmon"
+        plugin.scenario_time = 6.0
+        plugin.get_gauges_on_failure.return_value = []
+
+        with patch("agents.abstract_agent.get_logger") as mock_gl:
+            mock_gl.return_value = MagicMock()
+            agent._update_sysmon(plugin, 6.0)
+        assert agent._sysmon_pending is False
+
+    def test_sysmon_pending_persists_on_advance(self):
+        """_advance_scan does NOT reset _sysmon_pending (cross-task state)."""
+        agent = HumanLikeAgent(seed=42)
+        agent._sysmon_pending = True
+        agent._advance_scan(5.0)
+        assert agent._sysmon_pending is True
+
+    def test_sysmon_pending_persists_on_switch(self):
+        """_switch_to does NOT reset _sysmon_pending (cross-task state)."""
+        agent = HumanLikeAgent(seed=42)
+        agent._sysmon_pending = True
+        agent._switch_to("track")
+        assert agent._sysmon_pending is True
 
 
 # ──────────────────────────────────────────────
@@ -1528,8 +1746,8 @@ class TestHumanLikeDispatch:
         plugin.alias = "track"
         plugin.reticle = MagicMock()
         plugin.reticle.cursor_relative = (-1, -1)
-        plugin.reticle.container.w = 20  # half_w=10 → jx = 1/10 = 0.1
-        plugin.reticle.container.h = 20  # half_h=10 → jy = -1/10 = -0.1
+        plugin.reticle.container.w = 80  # half_w=40 → jx = 1/40*4.0 = 0.1
+        plugin.reticle.container.h = 80  # half_h=40 → jy = -1/40*4.0 = -0.1
         plugin.reticle.is_cursor_in_target.return_value = False
         agent._track_react_start = 0.0
 
@@ -1612,10 +1830,10 @@ class TestReplayCompatibility:
             mock_logger = MagicMock()
             mock_gl.return_value = mock_logger
             agent.send_key(plugin, "F3", "press")
-        mock_logger.record_input.assert_called_once_with("keyboard", "F3", "press")
+        mock_logger.record_input.assert_called_once_with("agent", "F3", "press")
 
-    def test_send_joystick_does_not_log(self):
-        """send_joystick() does not log (track replay is state-based)."""
+    def test_send_joystick_logs_input(self):
+        """send_joystick() logs an input row for traceability."""
         agent = DefaultAgent()
         plugin = MagicMock()
         plugin.get_joystick_inputs = MagicMock()
@@ -1623,7 +1841,7 @@ class TestReplayCompatibility:
             mock_logger = MagicMock()
             mock_gl.return_value = mock_logger
             agent.send_joystick(plugin, 0.5, -0.3)
-        mock_logger.record_input.assert_not_called()
+        mock_logger.record_input.assert_called_once_with("agent", "joystick", "0.5,-0.3")
 
 
 # ──────────────────────────────────────────────
@@ -1666,9 +1884,12 @@ class TestAttentionFocusVisualization:
             taskplacement="topleft",
             taskfeedback=dict(
                 overdue=dict(
-                    active=False, color=(241, 100, 100, 255),
-                    delayms=2000, blinkdurationms=1000,
-                    _nexttoggletime=0, _is_visible=False,
+                    active=False,
+                    color=(241, 100, 100, 255),
+                    delayms=2000,
+                    blinkdurationms=1000,
+                    _nexttoggletime=0,
+                    _is_visible=False,
                 )
             ),
         )
@@ -1682,3 +1903,279 @@ class TestAttentionFocusVisualization:
         agent._attended_task = "track"
         p.refresh_widgets()
         attention_widget.set_visibility.assert_called_with(False)
+
+
+# ──────────────────────────────────────────────
+# Idle-switch: switch to salient task when idle
+# ──────────────────────────────────────────────
+class TestHumanLikeIdleSwitch:
+    def test_idle_switches_to_salient_sysmon(self):
+        """On track (idle) + sysmon pending + past delay → switch to sysmon."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "track"
+        agent._scan_index = 1  # track
+        agent._attend_start = 0.0
+        agent._current_dwell = 5000  # Long dwell — won't expire naturally
+        agent._track_react_start = None  # Idle on track
+        agent._sysmon_pending = True  # Salient sysmon event
+        agent.idle_switch_delay_ms = 500
+
+        # At t=1.0: elapsed=1000ms >= 500ms delay, idle, sysmon salient
+        agent._update_attention(1.0)
+        assert agent._attended_task == "sysmon"
+
+    def test_idle_does_not_switch_to_comms(self):
+        """Comms is not salient — agent stays on current task even when idle."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "sysmon"
+        agent._scan_index = 0  # sysmon
+        agent._attend_start = 0.0
+        agent._current_dwell = 5000
+        agent._sysmon_pending = False  # Idle on sysmon
+        agent._comms_react_start = 0.5  # Has seen a prompt, but not salient
+        agent.idle_switch_delay_ms = 500
+
+        agent._update_attention(1.0)
+        assert agent._attended_task == "sysmon"
+
+    def test_sysmon_salient_comms_ignored(self):
+        """On track (idle) + sysmon salient + comms present → only sysmon triggers switch."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "track"
+        agent._scan_index = 1
+        agent._attend_start = 0.0
+        agent._current_dwell = 5000
+        agent._track_react_start = None  # Idle
+        agent._sysmon_pending = True  # Salient
+        agent._comms_react_start = 0.5  # Present but not salient
+        agent.idle_switch_delay_ms = 500
+
+        agent._update_attention(1.0)
+        assert agent._attended_task == "sysmon"
+
+    def test_no_idle_switch_before_delay(self):
+        """On track (idle) + sysmon salient but elapsed < delay → stays."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "track"
+        agent._scan_index = 1
+        agent._attend_start = 0.0
+        agent._current_dwell = 5000
+        agent._track_react_start = None  # Idle
+        agent._sysmon_pending = True  # Salient
+        agent.idle_switch_delay_ms = 500
+
+        # At t=0.3: elapsed=300ms < 500ms delay
+        agent._update_attention(0.3)
+        assert agent._attended_task == "track"
+
+    def test_no_idle_switch_when_working(self):
+        """On sysmon (pending=True, non-idle) + comms salient → no idle-switch."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "sysmon"
+        agent._scan_index = 0
+        agent._attend_start = 0.0
+        agent._current_dwell = 5000
+        agent._sysmon_pending = True  # Not idle — active work on sysmon
+        agent._comms_react_start = 0.5  # Salient comms
+        agent.idle_switch_delay_ms = 500
+
+        agent._update_attention(1.0)
+        assert agent._attended_task == "sysmon"
+
+    def test_no_idle_switch_without_salient(self):
+        """On track (idle) but nothing salient → waits for normal dwell."""
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "track"
+        agent._scan_index = 1
+        agent._attend_start = 0.0
+        agent._current_dwell = 5000
+        agent._track_react_start = None  # Idle
+        agent._sysmon_pending = False  # Nothing salient
+        agent._comms_react_start = None  # Nothing salient
+        agent.idle_switch_delay_ms = 500
+
+        agent._update_attention(1.0)
+        assert agent._attended_task == "track"
+
+    def test_on_failure_started_sets_sysmon_pending(self):
+        """on_failure_started sets _sysmon_pending=True even if interrupt doesn't fire."""
+        agent = HumanLikeAgent(seed=42)
+        agent.interrupt_prob = 0.0  # Never interrupt
+        agent._attended_task = "track"
+        agent._sysmon_pending = False
+
+        plugin = MagicMock()
+        plugin.parameters = {"alerttimeout": 10000}
+
+        agent.on_failure_started(plugin, gauge={})
+        assert agent._sysmon_pending is True
+        assert agent._attended_task == "track"  # Did NOT switch
+
+
+# ══════════════════════════════════════════════
+# Fault icon ("!") indicator tests
+# ══════════════════════════════════════════════
+
+
+class TestHasActiveFaultBase:
+    def test_default_returns_false(self):
+        """AbstractPlugin.has_active_fault() returns False by default."""
+        from plugins.abstractplugin import AbstractPlugin
+
+        p = object.__new__(AbstractPlugin)
+        assert p.has_active_fault() is False
+
+
+class TestFaultIconVisibility:
+    def test_fault_icon_shown_when_fault_active(self):
+        """refresh_widgets sets fault_icon text to '!' when agent has show_attention and has_active_fault."""
+        from plugins.abstractplugin import AbstractPlugin
+
+        p = object.__new__(AbstractPlugin)
+        p.alias = "sysmon"
+        p.paused = False
+        p.visible = True
+        p.verbose = False
+        p.display_title = False
+        p.automode_string = ""
+        p.scenario_time = 1.0
+
+        agent = HumanLikeAgent(seed=42)
+        agent._attended_task = "track"  # Not attending sysmon
+        p.agent = agent
+
+        fault_widget = MagicMock()
+        p.widgets = {
+            "sysmon_fault_icon": fault_widget,
+        }
+        p.parameters = dict(
+            taskplacement="topleft",
+            taskfeedback=dict(
+                overdue=dict(
+                    active=False,
+                    color=(241, 100, 100, 255),
+                    delayms=2000,
+                    blinkdurationms=1000,
+                    _nexttoggletime=0,
+                    _is_visible=False,
+                )
+            ),
+        )
+
+        # Override has_active_fault to return True
+        p.has_active_fault = lambda: True
+        p.refresh_widgets()
+        fault_widget.set_text.assert_called_with("!")
+
+    def test_fault_icon_hidden_when_no_fault(self):
+        """refresh_widgets sets fault_icon text to '' when has_active_fault is False."""
+        from plugins.abstractplugin import AbstractPlugin
+
+        p = object.__new__(AbstractPlugin)
+        p.alias = "sysmon"
+        p.paused = False
+        p.visible = True
+        p.verbose = False
+        p.display_title = False
+        p.automode_string = ""
+        p.scenario_time = 1.0
+
+        agent = HumanLikeAgent(seed=42)
+        p.agent = agent
+
+        fault_widget = MagicMock()
+        p.widgets = {
+            "sysmon_fault_icon": fault_widget,
+        }
+        p.parameters = dict(
+            taskplacement="topleft",
+            taskfeedback=dict(
+                overdue=dict(
+                    active=False,
+                    color=(241, 100, 100, 255),
+                    delayms=2000,
+                    blinkdurationms=1000,
+                    _nexttoggletime=0,
+                    _is_visible=False,
+                )
+            ),
+        )
+
+        # has_active_fault returns False
+        p.has_active_fault = lambda: False
+        p.refresh_widgets()
+        fault_widget.set_text.assert_called_with("")
+
+    def test_fault_icon_hidden_without_agent(self):
+        """refresh_widgets sets fault_icon text to '' when agent is None."""
+        from plugins.abstractplugin import AbstractPlugin
+
+        p = object.__new__(AbstractPlugin)
+        p.alias = "sysmon"
+        p.paused = False
+        p.visible = True
+        p.verbose = False
+        p.display_title = False
+        p.automode_string = ""
+        p.scenario_time = 1.0
+        p.agent = None
+
+        fault_widget = MagicMock()
+        p.widgets = {
+            "sysmon_fault_icon": fault_widget,
+        }
+        p.parameters = dict(
+            taskplacement="topleft",
+            taskfeedback=dict(
+                overdue=dict(
+                    active=False,
+                    color=(241, 100, 100, 255),
+                    delayms=2000,
+                    blinkdurationms=1000,
+                    _nexttoggletime=0,
+                    _is_visible=False,
+                )
+            ),
+        )
+
+        p.has_active_fault = lambda: True
+        p.refresh_widgets()
+        fault_widget.set_text.assert_called_with("")
+
+    def test_fault_icon_hidden_without_show_attention(self):
+        """refresh_widgets sets fault_icon text to '' when agent has no show_attention."""
+        from plugins.abstractplugin import AbstractPlugin
+
+        p = object.__new__(AbstractPlugin)
+        p.alias = "sysmon"
+        p.paused = False
+        p.visible = True
+        p.verbose = False
+        p.display_title = False
+        p.automode_string = ""
+        p.scenario_time = 1.0
+
+        agent = DefaultAgent()  # No show_attention attribute
+        p.agent = agent
+
+        fault_widget = MagicMock()
+        p.widgets = {
+            "sysmon_fault_icon": fault_widget,
+        }
+        p.parameters = dict(
+            taskplacement="topleft",
+            taskfeedback=dict(
+                overdue=dict(
+                    active=False,
+                    color=(241, 100, 100, 255),
+                    delayms=2000,
+                    blinkdurationms=1000,
+                    _nexttoggletime=0,
+                    _is_visible=False,
+                )
+            ),
+        )
+
+        p.has_active_fault = lambda: True
+        p.refresh_widgets()
+        fault_widget.set_text.assert_called_with("")

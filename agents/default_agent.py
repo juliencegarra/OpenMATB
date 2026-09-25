@@ -32,7 +32,10 @@ class DefaultAgent(AbstractAgent):
     def _update_sysmon(self, plugin: Any) -> None:
         delay = plugin.parameters["automaticsolverdelay"]
         for gauge in plugin.get_gauges_on_failure():
-            if gauge["_response_start"] is not None and (plugin.scenario_time - gauge["_response_start"]) * 1000 >= delay:
+            if (
+                gauge["_response_start"] is not None
+                and (plugin.scenario_time - gauge["_response_start"]) * 1000 >= delay
+            ):
                 self.send_key(plugin, gauge["key"])
 
     def _update_resman(self, plugin: Any) -> None:
@@ -52,7 +55,9 @@ class DefaultAgent(AbstractAgent):
 
     @staticmethod
     def _compute_desired_pump_state(
-        pump: dict[str, Any], from_tank: dict[str, Any], to_tank: dict[str, Any],
+        pump: dict[str, Any],
+        from_tank: dict[str, Any],
+        to_tank: dict[str, Any],
         threshold_noise: float = 0,
     ) -> str | None:
         """Decide the desired pump state given tank levels and heuristics.
@@ -94,17 +99,5 @@ class DefaultAgent(AbstractAgent):
         autoradio = waiting_radios[0]
         active = plugin.get_active_radio_dict()
 
-        if active != autoradio:
-            # Switch radio via UP/DOWN key
-            direction_key = ("selectradioup" if autoradio["pos"] < active["pos"]
-                             else "selectradiodown")
-            self.send_key(plugin, plugin.parameters["keys"][direction_key])
-
-        elif active["targetfreq"] != active["currentfreq"]:
-            # Tune frequency via LEFT/RIGHT key
-            direction_key = ("tunefrequencyup" if active["targetfreq"] > active["currentfreq"]
-                             else "tunefrequencydown")
-            self.send_key(plugin, plugin.parameters["keys"][direction_key])
-
-        else:
-            self.send_key(plugin, plugin.parameters["keys"]["validateresponse"])
+        key = self.compute_comms_action(active, autoradio, plugin.parameters["keys"])
+        self.send_key(plugin, key)

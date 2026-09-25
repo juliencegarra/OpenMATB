@@ -28,7 +28,7 @@ class SimpleHTML(AbstractWidget):
 
         x_pos: int = int(self.container.l + x * self.container.w)
         y_pos: int = int(self.container.b + y * self.container.h)
-        wrap_width_px: int = int(self.container.w * wrap_width)
+        wrap_width_px: int = max(int(self.container.w * wrap_width), 1)
 
         self.vertex["text"] = HTMLLabel(
             text,
