@@ -35,7 +35,7 @@ language.install()
 # Only after language installation, import core modules (they must be translated)
 from core import ReplayScheduler, Scheduler
 from core.constants import PATHS, REPLAY_MODE
-from core.platform import notify_page, setup_web_font, url_params
+from core.platform import notify_page, setup_web, url_params
 from core.selector import FileSelector
 from core.utils import get_conf_value
 from core.window import Window
@@ -43,7 +43,7 @@ from core.window import Window
 
 class OpenMATB:
     def __init__(self) -> None:
-        setup_web_font()
+        setup_web()
         # The MATB window must be borderless (for non-fullscreen mode)
         Window(style=Window.WINDOW_STYLE_DIALOG, resizable=True)
         # Keep references: pyglet only holds weak references to event handlers

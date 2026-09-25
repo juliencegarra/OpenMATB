@@ -17,13 +17,53 @@ STORAGE_NAME: str = "openmatb"
 WEB_FONT_NAME: str = "Noto Sans"  # Loaded by the page (web/openmatb.js)
 
 
-def setup_web_font() -> None:
-    """Use the font shipped with the page as default font (pyglet's browser default is a serif font)."""
+def setup_web() -> None:
+    """Browser specific setup, to call before creating the window. No-op on desktop."""
     if not IS_WEB:
         return
     import pyglet.font  # noqa: PLC0415
+    from pyodide.webloop import WebLoop  # noqa: PLC0415
 
+    # Use the font shipped with the page as default font (pyglet's browser default is a serif font)
     pyglet.font.manager.default_emscripten_font = WEB_FONT_NAME
+
+    # pyglet waits with asyncio.wait_for(..., very short timeout): by the time Pyodide's loop computes
+    # the delay it can be slightly negative, and WebLoop raises "Can't schedule in the past", which
+    # kills pyglet's event loop. CPython's asyncio runs such callbacks as soon as possible instead.
+    call_later = WebLoop.call_later
+
+    def call_later_not_in_past(self: Any, delay: float, callback: Any, *args: Any, **kwargs: Any) -> Any:
+        return call_later(self, max(delay, 0), callback, *args, **kwargs)
+
+    WebLoop.call_later = call_later_not_in_past
+
+    _patch_pyglet_webgl()
+
+
+def _patch_pyglet_webgl() -> None:
+    """Work around two pyglet 3.0.dev10 WebGL bugs that stop the drawing (and the event loop)."""
+    from pyglet.graphics.api.webgl import vertexdomain  # noqa: PLC0415
+    from pyglet.libs.emscripten import PersistentBufferView  # noqa: PLC0415
+
+    # 1. Vertex buffers keep a zero-copy JavaScript view of the WebAssembly memory. When the memory grows
+    # (e.g. while sounds are loaded) the view is detached ("Cannot perform Construct on a detached
+    # ArrayBuffer"). The Python buffer itself does not move: take a new view when needed.
+    def fresh_data(self: Any) -> Any:
+        if self._openmatb_data.byteLength == 0 and self._openmatb_data.buffer.byteLength == 0:  # Detached
+            self._buffer.release()
+            self._buffer = self._proxy.getBuffer("u8")
+            self._openmatb_data = self._buffer.data
+        return self._openmatb_data
+
+    def set_data(self: Any, value: Any) -> None:
+        self._openmatb_data = value
+
+    PersistentBufferView.data = property(fresh_data, set_data)
+
+    # 2. The WEBGL_multi_draw path passes ctypes pointers instead of offsets ("countsOffset out of bounds"):
+    # draw each range with drawElements/drawArrays instead
+    for domain in (vertexdomain.WebGLVertexDomain, vertexdomain.WebGLIndexedVertexDomain):
+        domain._has_multi_draw_extension = lambda self, ctx: False
 
 
 def on_visibility_change(callback: Callable[[bool], None]) -> None:
