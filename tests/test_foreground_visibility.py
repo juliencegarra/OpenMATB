@@ -7,11 +7,9 @@ geometry, draw order, color, and visibility without a real GL context.
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
+from core.constants import BFLIM
+from core.constants import COLORS as C
 from plugins.abstractplugin import AbstractPlugin
-from core.constants import COLORS as C, BFLIM
-
 
 # ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -95,10 +93,11 @@ def _make_plugin_with_widgets(mock_window, mock_logger, placement="topleft"):
 
     # Fix: Label = MagicMock means Label("TEST", ...) creates a mock with
     # spec=str (first positional arg), so .text is restricted.  Replace the
-    # label vertex with a plain MagicMock that allows arbitrary attributes.
-    tt = p.get_widget("task_title")
-    if tt is not None:
-        tt.vertex["text"] = MagicMock()
+    # label vertices with plain MagicMocks that allow arbitrary attributes.
+    for name in ("task_title", "fault_icon"):
+        w = p.get_widget(name)
+        if w is not None:
+            w.vertex["text"] = MagicMock()
 
     return p
 
@@ -411,9 +410,7 @@ class TestDrawOrderGuarantees:
         # Overdue border rects have a group; check them
         for vname, v in overdue.vertex.items():
             if hasattr(v, "group") and v.group is not None:
-                assert v.group.order < fg_order, (
-                    f"Overdue {vname} at G({v.group.order}) >= foreground G({fg_order})"
-                )
+                assert v.group.order < fg_order, f"Overdue {vname} at G({v.group.order}) >= foreground G({fg_order})"
 
     def test_task_title_exists_after_create(self, mock_window, mock_logger):
         p = _make_plugin_with_widgets(mock_window, mock_logger, "topleft")
