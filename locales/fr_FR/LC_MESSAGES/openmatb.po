@@ -324,6 +324,15 @@ msgstr "La librairie Parallel de python est manquante. Plugin ignoré"
 msgid "The physical parallel port was not found."
 msgstr "Le port parallèle (physique) n'a pas été trouvé."
 
+msgid "The parallel port is not available in the browser. Skipping parallel plugin"
+msgstr "Le port parallèle n'est pas disponible dans le navigateur. Plugin ignoré"
+
+msgid "Lab streaming layer is not available in the browser. No marker will be sent"
+msgstr "Lab Streaming Layer n'est pas disponible dans le navigateur. Aucun marqueur ne sera envoyé"
+
+msgid "Python pylsl module is missing. No marker will be sent"
+msgstr "La librairie pylsl de python est manquante. Aucun marqueur ne sera envoyé"
+
 #: plugins/resman.py:114
 msgid "Pump status"
 msgstr "État des pompes"

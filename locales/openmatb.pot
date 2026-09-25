@@ -298,6 +298,15 @@ msgstr ""
 msgid "The physical parallel port was not found."
 msgstr ""
 
+msgid "The parallel port is not available in the browser. Skipping parallel plugin"
+msgstr ""
+
+msgid "Lab streaming layer is not available in the browser. No marker will be sent"
+msgstr ""
+
+msgid "Python pylsl module is missing. No marker will be sent"
+msgstr ""
+
 #: plugins/resman.py:110
 msgid "Pump status"
 msgstr ""
