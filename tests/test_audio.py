@@ -1,5 +1,6 @@
 """Tests for core.audio.SequencePlayer (desktop SourceGroup mode and browser sequential mode)."""
 
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import core.audio as audio
@@ -93,3 +94,54 @@ class TestLoadSound:
             second = audio.load_sound("x.wav")
         assert first is second
         load.assert_called_once()
+
+
+class TestWaitForDecoding:
+    """Browser sounds are decoded asynchronously: a sound played before its decoding was silently skipped."""
+
+    def _make(self, sources):
+        players = []
+
+        def new_player():
+            p = MagicMock()
+            players.append(p)
+            return p
+
+        patchers = [patch.object(audio, "AudioPlayer", side_effect=new_player), patch.object(audio, "pyglet")]
+        clock = patchers[1].start().clock
+        patchers[0].start()
+        return audio.SequencePlayer(sources, sequential=True), players, clock, patchers
+
+    def test_starts_only_once_decoded(self):
+        source = SimpleNamespace(audio_buffer=None)
+        sp, players, clock, patchers = self._make([source])
+        try:
+            sp.play()
+            assert players == []
+            clock.schedule_once.assert_called_once_with(sp._start_when_decoded, audio.DECODING_POLL_INTERVAL)
+            source.audio_buffer = object()  # Decoded
+            sp._start_when_decoded(0.01)
+            assert players[-1].queue.call_args[0][0] is source
+            players[-1].play.assert_called_once()
+        finally:
+            [p.stop() for p in patchers]
+
+    def test_gives_up_waiting_after_the_timeout(self):
+        sp, players, _, patchers = self._make([SimpleNamespace(audio_buffer=None)])
+        try:
+            sp.play()
+            sp._start_when_decoded(audio.DECODING_TIMEOUT)
+            assert len(players) == 1
+        finally:
+            [p.stop() for p in patchers]
+
+    def test_pause_while_waiting_cancels_the_start(self):
+        sp, players, clock, patchers = self._make([SimpleNamespace(audio_buffer=None)])
+        try:
+            sp.play()
+            sp.pause()
+            clock.unschedule.assert_called_with(sp._start_when_decoded)
+            sp._start_when_decoded(0.01)
+            assert players == []
+        finally:
+            [p.stop() for p in patchers]

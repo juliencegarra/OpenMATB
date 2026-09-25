@@ -22,6 +22,10 @@ from core.platform import IS_WEB
 
 _cache: dict[str, Any] = dict()
 
+# Browser: how often, and how long at most (seconds), a sound waits for the end of its decoding
+DECODING_POLL_INTERVAL: float = 0.01
+DECODING_TIMEOUT: float = 3.0
+
 
 def load_sound(path: Path) -> Any:
     """Load (and cache) a static sound. Cached sources can be played by several players."""
@@ -99,6 +103,19 @@ class SequencePlayer:
     # ---- Sequential mode ----
 
     def _start_current(self) -> None:
+        self._decoding_wait = 0.0
+        self._start_when_decoded(0)
+
+    def _start_when_decoded(self, dt: float) -> None:
+        if not self._playing:
+            return
+        # Browser sounds are decoded asynchronously, and a sound played before the end of its decoding is
+        # silently skipped (pyglet starts an empty buffer): wait for it (e.g. a prompt just after loading)
+        self._decoding_wait += dt
+        if getattr(self.source, "audio_buffer", True) is None and self._decoding_wait < DECODING_TIMEOUT:
+            pyglet.clock.schedule_once(self._start_when_decoded, DECODING_POLL_INTERVAL)
+            return
+
         self._player = AudioPlayer()
         self._player.volume = self._volume
         self._player.push_handlers(on_player_eos=self._on_player_eos)
@@ -106,6 +123,7 @@ class SequencePlayer:
         self._player.play()
 
     def _stop_current(self) -> None:
+        pyglet.clock.unschedule(self._start_when_decoded)
         if self._player is not None:
             self._player.remove_handlers(on_player_eos=self._on_player_eos)
             self._player.pause()
