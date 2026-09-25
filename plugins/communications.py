@@ -9,7 +9,7 @@ from pathlib import Path
 from string import ascii_lowercase, ascii_uppercase, digits
 from typing import Any, Callable
 
-from pyglet.media import Player, SourceGroup, load
+from pyglet.media import AudioPlayer, SourceGroup, load_audio
 
 from core import validation
 from core.constants import COLORS as C
@@ -230,7 +230,7 @@ class Communications(AbstractPlugin):
         for f in list_of_sounds:
             wav_path = self.sound_path.joinpath(f"{f}.wav")
             try:
-                source: Any = load(str(wav_path), streaming=False)
+                source: Any = load_audio(str(wav_path), streaming=False)
                 sources.append(source)
             except Exception:
                 self.logger.log_manual_entry(f"Audio file missing or unreadable: {wav_path}")
@@ -267,7 +267,7 @@ class Communications(AbstractPlugin):
         sound_group: Any = self.group_audio_files(callsign, radio_name, random_frequency)
 
         try:
-            self.player: Any = Player()
+            self.player: Any = AudioPlayer()
             self.player.queue(sound_group)
             self.player.play()
         except Exception:

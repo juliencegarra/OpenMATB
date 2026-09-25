@@ -8,6 +8,9 @@ from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.widgets.abstractwidget import *
 
+# pyglet 3.0.dev10 crashes (IndexError) on consecutive tabs in multiline labels
+_TAB: str = "    "
+
 
 class Simpletext(AbstractWidget):
     def __init__(
@@ -44,12 +47,12 @@ class Simpletext(AbstractWidget):
         )
         if bold:
             label_kwargs["weight"] = "bold"
-        self.vertex["text"] = Label(text, **label_kwargs)
+        self.vertex["text"] = Label(text.expandtabs(len(_TAB)), **label_kwargs)
 
     def set_text(self, text: str) -> None:
-        if text == self.get_text():
+        if text.expandtabs(len(_TAB)) == self.get_text():
             return
-        self.vertex["text"].text = text
+        self.vertex["text"].text = text.expandtabs(len(_TAB))
         self.logger.record_state(self.name, "text", text)
 
     def get_text(self) -> str:

@@ -7,7 +7,6 @@ from __future__ import annotations
 import math
 from typing import Any, Callable
 
-from pyglet.gl import GL_BLEND, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, glBlendFunc, glEnable, glLineWidth
 from pyglet.shapes import Arc, Circle, Rectangle
 from pyglet.text import Label
 
@@ -52,10 +51,6 @@ class Slider(AbstractWidget):
         self.hover: bool = False
         self.selected: bool = False
         self.on_mouse_focus: Callable[[int], Any] | None = on_mouse_focus
-
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glEnable(GL_BLEND)
-        glLineWidth(3)
 
         self.containers: dict[str, Container] = dict()
         self.set_sub_containers()

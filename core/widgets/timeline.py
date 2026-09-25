@@ -71,7 +71,7 @@ class Timeline(AbstractWidget):
             anchor_x="center",
             anchor_y="center",
             color=C["BLACK"],
-            italic=True,
+            style="italic",
             group=G(1),
         )
 

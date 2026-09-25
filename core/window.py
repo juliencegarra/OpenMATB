@@ -6,9 +6,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from pyglet import gl, image
+from pyglet import image
+from pyglet.config import Config
 from pyglet.display import get_display
-from pyglet.gl import glClearColor
 from pyglet.graphics import Batch
 from pyglet.shapes import Rectangle
 from pyglet.window import Window
@@ -21,7 +21,18 @@ from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
 from core.modaldialog import ModalDialog
+from core.platform import IS_WEB, viewport_size
 from core.utils import get_conf_value
+
+
+def _antialiased_configs() -> list[Config]:
+    # Preferred config: 4x multisampling antialiasing (MSAA) for smooth edges, then a plain fallback
+    msaa: Config = Config()
+    msaa.opengl.sample_buffers = 1
+    msaa.opengl.samples = 4
+    msaa.opengl.double_buffer = True
+    msaa.webgl.antialias = True
+    return [msaa, Config()]
 
 
 class Window(Window):
@@ -31,30 +42,31 @@ class Window(Window):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         Window.MainWindow = self  # correct way to set it as a static
 
-        screen: Any = self.get_screen()
-
-        self._width: int = int(screen.width)
-        self._height: int = int(screen.height)
-        self._fullscreen: bool = get_conf_value("Openmatb", "fullscreen")
-
-        # Enable 4x multisampling antialiasing (MSAA) for smooth edges
-        config: Any = screen.get_best_config(gl.Config(
-            sample_buffers=1, samples=4,
-            double_buffer=True,
-        ))
+        if IS_WEB:
+            # In the browser, the canvas fills the viewport; fullscreen requires a user gesture
+            screen: Any = None
+            self._width, self._height = viewport_size()
+            self._fullscreen: bool = False
+        else:
+            screen = self.get_screen()
+            self._width: int = int(screen.width)
+            self._height: int = int(screen.height)
+            self._fullscreen = get_conf_value("Openmatb", "fullscreen")
 
         super().__init__(
             fullscreen=self._fullscreen, width=self._width, height=self._height,
-            vsync=True, config=config, *args, **kwargs
+            vsync=True, config=_antialiased_configs(), *args, **kwargs
         )
+        self.context.set_clear_color(0, 0, 0, 1)
 
-        img_path: Any = P["IMG"]
-        logo16: Any = image.load(img_path.joinpath("logo16.png"))
-        logo32: Any = image.load(img_path.joinpath("logo32.png"))
-        self.set_icon(logo16, logo32)
+        if not IS_WEB:
+            img_path: Any = P["IMG"]
+            logo16: Any = image.load(str(img_path.joinpath("logo16.png")))
+            logo32: Any = image.load(str(img_path.joinpath("logo32.png")))
+            self.set_icon(logo16, logo32)
+            self.set_size_and_location(screen)  # Postpone multiple monitor support
 
-        self.set_size_and_location(screen)  # Postpone multiple monitor support
-        self.set_mouse_visible(REPLAY_MODE)
+        self.set_mouse_cursor_visible(REPLAY_MODE)
 
         self.batch: Batch = Batch()
         self.keyboard: dict[str, bool] = dict()  # Reproduce a simple KeyStateHandler
@@ -131,8 +143,7 @@ class Window(Window):
         self.bg_shapes: list[Rectangle] = [bg, upper, mid]
 
     def on_draw(self) -> None:
-        self.set_mouse_visible(self.is_mouse_necessary())
-        glClearColor(0, 0, 0, 1)
+        self.set_mouse_cursor_visible(self.is_mouse_necessary())
         self.clear()
         self.batch.draw()
 

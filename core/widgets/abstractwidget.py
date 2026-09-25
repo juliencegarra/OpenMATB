@@ -8,7 +8,6 @@ import math
 from typing import Any
 
 from pyglet import sprite
-from pyglet.gl import glLineWidth  # noqa: F401
 from pyglet.shapes import Line, ShapeBase
 from pyglet.text import HTMLLabel, Label
 
@@ -32,7 +31,6 @@ class AbstractWidget:
         self._batch_assigned: bool = False  # True after first show assigns batch
         self.logger: Logger = get_logger()
         self.highlight_aoi: str = get_conf_value("Openmatb", "highlight_aoi")
-        glLineWidth(2)
 
         self.m_draw: int = 0
         self.verbose: bool = False

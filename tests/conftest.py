@@ -129,6 +129,8 @@ _real_pyglet_math = _importlib.import_module("pyglet.math")
 _pyglet_modules = [
     "pyglet",
     "pyglet.gl",
+    "pyglet.config",
+    "pyglet.graphics.framebuffer",
     "pyglet.window",
     "pyglet.window.key",
     "pyglet.graphics",
@@ -138,7 +140,6 @@ _pyglet_modules = [
     "pyglet.app",
     "pyglet.input",
     "pyglet.media",
-    "pyglet.canvas",
     "pyglet.image",
     "pyglet.sprite",
     "pyglet.font",
@@ -464,14 +465,14 @@ sys.modules["pyglet.clock"].schedule = MagicMock()
 sys.modules["pyglet.app"].EventLoop = MagicMock
 
 # pyglet.media
-sys.modules["pyglet.media"].Player = MagicMock
+sys.modules["pyglet.media"].AudioPlayer = MagicMock
 sys.modules["pyglet.media"].SourceGroup = MagicMock
-sys.modules["pyglet.media"].load = MagicMock()
+sys.modules["pyglet.media"].load_audio = MagicMock()
 
-# pyglet.canvas
-sys.modules["pyglet.canvas"].get_display = MagicMock()
+# pyglet.config (pyglet 3)
+sys.modules["pyglet.config"].Config = MagicMock
 
-# pyglet.display (new in pyglet 2.x)
+# pyglet.display
 sys.modules["pyglet.display"].get_display = MagicMock()
 
 # pyglet.image
@@ -496,7 +497,7 @@ pyglet_mod.graphics = sys.modules["pyglet.graphics"]
 pyglet_mod.text = sys.modules["pyglet.text"]
 pyglet_mod.input = sys.modules["pyglet.input"]
 pyglet_mod.media = sys.modules["pyglet.media"]
-pyglet_mod.canvas = sys.modules["pyglet.canvas"]
+pyglet_mod.config = sys.modules["pyglet.config"]
 pyglet_mod.display = sys.modules["pyglet.display"]
 pyglet_mod.image = sys.modules["pyglet.image"]
 pyglet_mod.sprite = sys.modules["pyglet.sprite"]

@@ -323,7 +323,7 @@ class FileSelector:
         while not self._done:
             pyglet.clock.tick()
             self.win.dispatch_events()
-            self.win.set_mouse_visible(True)
+            self.win.set_mouse_cursor_visible(True)
             self.win.clear()
             self.win.batch.draw()
             self.win.flip()
