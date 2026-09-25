@@ -22,18 +22,18 @@ Contact : <a href="mailto:julien.cegarra@univ-jfc.fr">julien.cegarra AT univ-jfc
 
 ## Requirements
 
-The last version requires Python 3.9 and only depends on the following third-part libraries:
+The last version requires Python 3.10 and only depends on the following third-part libraries:
 
-- [pyglet](https://github.com/pyglet/pyglet)
+- [pyglet](https://github.com/pyglet/pyglet) (version 3, currently a development release pinned in `requirements.txt`)
 - [pyparallel](https://github.com/pyserial/pyparallel)
 - [rstr](https://github.com/leapfrogonline/rstr)
 - [pylsl](https://github.com/chkothe/pylsl)
 
-The program is compatible with Windows, Mac and Linux systems. To run perfectly, the software requires only a personal computer and a joystick for the tracking task.
+The program is compatible with Windows, Mac and Linux systems. To run perfectly, the software requires only a personal computer and a joystick for the tracking task. It can also run in a web browser (see [Web version](#web-version-browser)).
 
 ## Cross-platform installation
 
-The first thing to do is to [install python 3.9](https://www.python.org/downloads/) (or above) on your computer.
+The first thing to do is to [install python 3.10](https://www.python.org/downloads/) (or above) on your computer.
 
 To execute OpenMATB on most platforms, simply clone the current repository to a given local folder. Then, make sure you installed the correct python libraries with pip. The correct library versions are written in `requirements.txt`. You can use the `-r` flag of `pip` to install everything at once.
 
@@ -71,6 +71,25 @@ Finally, you can simply execute the `main.py`. Two possibilities here :
 1. You can activate the OpenMATB virtual environment and type `python main.py` in the shell;
 2. Or you can execute `main.py` and let the shebang finds the virtual distribution for you. In that case, (a) no need to activate the virtual environment, (b) be sure that you made the `main.py` file executable.
 
+
+### Web version (browser)
+
+OpenMATB can also run in a web browser, with no installation for participants: Python runs in the page thanks to [Pyodide](https://pyodide.org) and pyglet 3 draws with WebGL. To build and test it locally:
+
+```bash
+python web/build.py --serve
+```
+
+Then open http://localhost:8000. `web/build.py` writes a static site into `web/dist` (the application files, the pyglet and rstr wheels, and a font), which can be hosted on any web server (the page must be served over HTTP, `file://` does not work). The start page lets you choose the language, run a scenario or replay a session. These choices can also be given in the URL: `?lang=fr_FR`, `?scenario=basic.txt`, `?mode=replay`, `?session=12`.
+
+Differences with the desktop version:
+
+- **Session files** are downloaded at the end of the session. They are also kept in the browser storage (IndexedDB), so they can be replayed later from the same browser. A session file can also be imported from the start page to be replayed.
+- **The scenario is paused** when the page is hidden (tab change, minimized window), because browsers slow down hidden pages. The `visibility` entries of the session file record when it happened.
+- **Joysticks**, the **parallel port** and **Lab Streaming Layer** are not available.
+- **Sound** starts after the first click (the "Start" button), as required by browsers.
+- **Timing**: response times are measured with the browser clock (`performance.now`), whose resolution browsers reduce (to about 0.1 ms in Chrome, 1 ms in Firefox), and the display is refreshed by the browser (`requestAnimationFrame`). Take it into account for time-critical experiments.
+- The web version is tested with Chrome/Chromium; pyglet's browser backend is recent and other browsers may still have issues.
 
 ### Use of compiled source (coming soon)
 
