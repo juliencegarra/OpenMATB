@@ -7,9 +7,8 @@ from __future__ import annotations
 import time as _time
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
-import pyglet
 from pyglet.shapes import Rectangle
 from pyglet.text import Label
 from pyglet.window import key as winkey
@@ -25,6 +24,9 @@ class FileSelector:
     """
     A pyglet-based file selection screen displayed before the main MATB task.
     Supports scenario files (.txt) and replay session files (.csv).
+
+    The selector is event driven (no blocking loop, so it also runs in the browser):
+    open() pushes its handlers, and on_done(path or None) is called once a choice is made.
     """
 
     _BG_GROUP: Any = G(30)
@@ -36,6 +38,7 @@ class FileSelector:
         self.mode: str = mode
         self._done: bool = False
         self._selected_path: Path | None = None
+        self._on_done: Callable[[Path | None], None] | None = None
 
         # Scan files
         self._files: list[Path] = self._scan_files()
@@ -228,11 +231,11 @@ class FileSelector:
     def _on_key_press(self, symbol: int, modifiers: int) -> bool:
         if symbol == winkey.ESCAPE:
             self._selected_path = None
-            self._done = True
+            self._finish()
         elif symbol in (winkey.RETURN, winkey.NUM_ENTER):
             if self._files:
                 self._selected_path = self._files[self._selected_index]
-                self._done = True
+                self._finish()
         elif symbol == winkey.UP:
             if self._selected_index > 0:
                 self._selected_index -= 1
@@ -297,7 +300,7 @@ class FileSelector:
         # Double-click: second click on same item within 0.4 s -> confirm
         if idx == self._last_click_index and (now - self._last_click_time) < 0.4:
             self._selected_path = self._files[idx]
-            self._done = True
+            self._finish()
         else:
             self._selected_index = idx
             self._refresh_display()
@@ -306,13 +309,16 @@ class FileSelector:
         self._last_click_index = idx
         return True
 
-    # ---- Main loop ----
+    # ---- Lifecycle ----
 
-    def run(self) -> Path | None:
+    def open(self, on_done: Callable[[Path | None], None]) -> None:
+        self._on_done = on_done
         if not self._files:
             self._cleanup()
-            return None
+            on_done(None)
+            return
 
+        self.win.selector_visible = True
         self.win.push_handlers(
             on_key_press=self._on_key_press,
             on_key_release=self._on_key_release,
@@ -320,17 +326,19 @@ class FileSelector:
             on_mouse_press=self._on_mouse_press,
         )
 
-        while not self._done:
-            pyglet.clock.tick()
-            self.win.dispatch_events()
-            self.win.set_mouse_cursor_visible(True)
-            self.win.clear()
-            self.win.batch.draw()
-            self.win.flip()
-
+    def _finish(self) -> None:
+        if self._done:
+            return
+        self._done = True
+        self.win.selector_visible = False
+        self.win.remove_handlers(
+            on_key_press=self._on_key_press,
+            on_key_release=self._on_key_release,
+            on_mouse_scroll=self._on_mouse_scroll,
+            on_mouse_press=self._on_mouse_press,
+        )
         self._cleanup()
-        self.win.pop_handlers()
-        return self._selected_path
+        self._on_done(self._selected_path)
 
     def _cleanup(self) -> None:
         for v in self._vertices:

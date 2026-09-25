@@ -142,3 +142,44 @@ class TestActivePluginHelpers:
         result = sched.get_active_non_blocking_plugins()
         assert p2 in result
         assert p1 not in result
+
+
+class TestExit:
+    def _make_scheduler(self):
+        from core.scheduler import Scheduler
+
+        sched = object.__new__(Scheduler)
+        sched._exited = False
+        sched.clock = MagicMock()
+        return sched
+
+    def test_exit_does_not_block_nor_sys_exit(self, mock_window, monkeypatch):
+        """exit() ends the session and asks the pyglet app loop to stop (no sys.exit)."""
+        import core.scheduler as scheduler_module
+
+        logger = MagicMock()
+        app_exit = MagicMock()
+        monkeypatch.setattr(scheduler_module, "get_logger", lambda: logger)
+        monkeypatch.setattr(scheduler_module.pyglet.app, "exit", app_exit)
+        sched = self._make_scheduler()
+
+        sched.exit()
+
+        sched.clock.unschedule.assert_called_once_with(sched.update)
+        logger.end_session.assert_called_once()
+        mock_window.close.assert_called_once()
+        app_exit.assert_called_once()
+
+    def test_exit_is_idempotent(self, mock_window, monkeypatch):
+        """A second exit() call (e.g. from the next update) does nothing."""
+        import core.scheduler as scheduler_module
+
+        logger = MagicMock()
+        monkeypatch.setattr(scheduler_module, "get_logger", lambda: logger)
+        monkeypatch.setattr(scheduler_module.pyglet.app, "exit", MagicMock())
+        sched = self._make_scheduler()
+
+        sched.exit()
+        sched.exit()
+
+        logger.end_session.assert_called_once()

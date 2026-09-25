@@ -8,6 +8,7 @@ from pyglet import font
 
 from core.constants import CONFIG
 from core.constants import PATHS as P
+from core.platform import url_params
 
 
 def clamp(x: float, val_min: float, val_max: float) -> float:
@@ -114,7 +115,9 @@ def get_conf_value(section: str, key: str, val_type: Optional[type] = None) -> A
 
 
 def get_replay_session_id() -> int:
-    if len(sys.argv) > 2:
+    if url_params().get("session"):
+        return int(url_params()["session"])
+    elif len(sys.argv) > 2:
         return int(sys.argv[2])
     elif has_conf_value("Replay", "replay_session_id"):
         return int(get_conf_value("Replay", "replay_session_id"))

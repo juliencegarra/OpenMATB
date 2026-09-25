@@ -12,6 +12,7 @@ from time import perf_counter
 from typing import IO, Any
 
 from core.constants import PATHS, REPLAY_MODE
+from core.platform import IS_WEB, download_file, notify_page, sync_storage
 from core.utils import find_the_first_available_session_number
 
 _logger: Logger | None = None
@@ -30,6 +31,8 @@ def set_logger(lg: Logger | None) -> None:
 
 
 class Logger:
+    _ended: bool = False  # True once end_session() closed the session file
+
     def __init__(self) -> None:
         self.datetime: datetime = datetime.now()
         self.fields_list: list[str] = ["logtime", "scenario_time", "type", "module", "address", "value"]
@@ -117,6 +120,17 @@ class Logger:
     def close(self) -> None:
         self.file.close()
 
+    def end_session(self) -> None:
+        """Close the session file. In the browser, persist it and hand it to the page / user."""
+        if REPLAY_MODE or self._ended or self.file is None:
+            return
+        self._ended = True
+        self.close()
+        if IS_WEB:
+            sync_storage()
+            download_file(self.path)
+            notify_page("openmatb-end", self.path.name)
+
     def add_row_to_queue(self, row: Any) -> None:
         self.queue.append(row)
 
@@ -132,7 +146,9 @@ class Logger:
 
     def write_row_queue(self, change_dict: dict[str, Any] | None = None) -> None:
         if not REPLAY_MODE:
-            if len(self.queue) == 0:
+            if self._ended:  # Late writes after the end of the session are dropped
+                self.empty_queue()
+            elif len(self.queue) == 0:
                 print(_("Warning, queue is empty"))
             else:
                 for this_row in self.queue:

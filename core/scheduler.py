@@ -4,11 +4,10 @@
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 from typing import Any
 
-from pyglet.app import EventLoop
+import pyglet.app
 
 from core.clock import Clock
 from core.constants import REPLAY_MODE, SYSTEM_PSEUDO_PLUGIN
@@ -23,6 +22,8 @@ from core.window import Window
 class Scheduler:
     """
     This class manages events execution.
+
+    It does not block: the pyglet event loop must be started by the caller (pyglet.app.run()).
     """
 
     def __init__(self, scenario_path: Path | None = None) -> None:
@@ -33,15 +34,13 @@ class Scheduler:
         self.scenario_time: float = 0
         self.scenario_path: Path | None = scenario_path
 
-        # Create the event loop
+        self._exited: bool = False
         self.clock.schedule(self.update)
-        self.event_loop: EventLoop = EventLoop()
 
         self.joystick: Any = joystick
         self.set_scenario()
 
         Window.MainWindow.display_session_id()
-        self.event_loop.run()
 
     def set_scenario(self, events: list[str] | None = None) -> None:
         scenario_path: Path | None = self.scenario_path if events is None else None
@@ -266,7 +265,11 @@ class Scheduler:
         return None
 
     def exit(self) -> None:
+        if self._exited:
+            return
+        self._exited = True
+        self.clock.unschedule(self.update)
         get_logger().log_manual_entry("end")
-        self.event_loop.exit()
+        get_logger().end_session()
         Window.MainWindow.close()  # needed for windows clean exit
-        sys.exit(0)
+        pyglet.app.exit()

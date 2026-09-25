@@ -12,8 +12,23 @@ from urllib.parse import parse_qs
 
 IS_WEB: bool = sys.platform == "emscripten"
 
-# Persistent storage (IndexedDB backed) mounted by pyglet's emscripten launcher
-WEB_DATA_PATH: Path = Path("/data")
+STORAGE_NAME: str = "openmatb"
+
+
+def web_sessions_path() -> Path:
+    """Sessions folder in the browser persistent storage (IndexedDB backed /data mount)."""
+    import pyglet.storage  # noqa: PLC0415
+
+    return pyglet.storage.get(STORAGE_NAME).data / "sessions"
+
+
+def sync_storage() -> None:
+    """Commit pending writes of the browser persistent storage. No-op on desktop."""
+    if not IS_WEB:
+        return
+    import pyglet.storage  # noqa: PLC0415
+
+    pyglet.storage.get(STORAGE_NAME).sync()
 
 
 def url_params() -> dict[str, str]:

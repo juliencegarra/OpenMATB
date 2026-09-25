@@ -378,3 +378,40 @@ class TestWriteRowQueue:
         lg.queue = [lg.slot(1.0, 0, "event", "sysmon", "self", "start")]
         lg.write_row_queue()
         mock_lsl.push.assert_called_once()
+
+
+# ── end_session ──────────────────────────────────
+
+
+class TestEndSession:
+    @patch.object(_logger_module, "REPLAY_MODE", False)
+    def test_closes_file_once(self):
+        """end_session() closes the file and is idempotent."""
+        lg = _make_logger(file=MagicMock())
+        lg.end_session()
+        lg.end_session()
+        lg.file.close.assert_called_once()
+
+    @patch.object(_logger_module, "REPLAY_MODE", False)
+    def test_late_writes_are_dropped(self):
+        """Rows logged after the end of the session are not written to the closed file."""
+        lg = _make_logger(file=MagicMock())
+        lg.end_session()
+        lg.write_single_slot([1.0, 0, "event", "sysmon", "self", "stop"])
+        lg.writer.writerow.assert_not_called()
+        assert lg.queue == []
+
+    @patch.object(_logger_module, "REPLAY_MODE", False)
+    @patch.object(_logger_module, "IS_WEB", True)
+    def test_web_persists_and_downloads(self):
+        """In the browser, the session file is synced, downloaded and announced to the page."""
+        lg = _make_logger(file=MagicMock(), path=MagicMock())
+        with (
+            patch.object(_logger_module, "sync_storage") as sync,
+            patch.object(_logger_module, "download_file") as download,
+            patch.object(_logger_module, "notify_page") as notify,
+        ):
+            lg.end_session()
+        sync.assert_called_once()
+        download.assert_called_once_with(lg.path)
+        notify.assert_called_once()

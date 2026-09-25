@@ -19,6 +19,7 @@ def _make_window(**overrides):
     w.batch = MagicMock()
     w.alive = True
     w.slider_visible = False
+    w.selector_visible = False
     w.on_key_press_replay = None
     w.__dict__.update(overrides)
     return w

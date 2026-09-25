@@ -8,7 +8,12 @@ from pathlib import Path
 
 from pyglet.graphics import Group  # noqa: F401
 
-REPLAY_MODE: bool = len(sys.argv) > 1 and sys.argv[1] == "-r"
+from core.platform import IS_WEB, url_params, web_sessions_path
+
+if IS_WEB:
+    REPLAY_MODE: bool = url_params().get("mode") == "replay"
+else:
+    REPLAY_MODE = len(sys.argv) > 1 and sys.argv[1] == "-r"
 REPLAY_STRIP_PROPORTION: float = 0.08
 
 COLORS: dict[str, tuple[int, int, int, int]] = dict(
@@ -44,6 +49,9 @@ PATHS: dict[str, Path] = {k.upper(): Path(".", k) for k in ["plugins", "sessions
 PATHS.update(
     {k.upper(): Path(".", "includes", k) for k in ["img", "instructions", "scenarios", "sounds", "questionnaires"]}
 )
+if IS_WEB:
+    # Session logs are kept in the browser persistent storage, so they can be replayed later
+    PATHS["SESSIONS"] = web_sessions_path()
 
 [path.mkdir(parents=False, exist_ok=True) for p, path in PATHS.items() if path.exists() is False]
 PATHS["SCENARIO_ERRORS"] = Path(".", "last_scenario_errors.log")
