@@ -23,10 +23,11 @@ jobs:
         shell: bash
         run: |
           pip install nuitka ordered-set
-          # Versions come from requirements.txt; pyparallel and pylsl are optional
-          pip install $(grep -E '^(pyglet|rstr)==' requirements.txt)
-          pip install $(grep -E '^pyparallel==' requirements.txt) || echo "::warning::pyparallel not available, skipping"
-          pip install $(grep -E '^pylsl==' requirements.txt) || echo "::warning::pylsl not available, skipping"
+          # Versions come from requirements.txt (without Windows line endings); pyparallel and pylsl are optional
+          req() { tr -d '\r' < requirements.txt | grep -E "^($1)=="; }
+          pip install $(req 'pyglet|rstr')
+          pip install $(req pyparallel) || echo "::warning::pyparallel not available, skipping"
+          pip install $(req pylsl) || echo "::warning::pylsl not available, skipping"
 
       - name: Read version
         id: version
