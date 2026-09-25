@@ -161,12 +161,27 @@ class TestDynamicLayoutBounds:
             assert within(containers[name], parent), f"{name} outside parent: {containers[name]} vs {parent}"
 
     def test_long_text_within_bounds(self, gs):
+        """Long texts may also use the space between two scales (above the scale container)."""
         slide = "Title;A long question;Low/High;0/100/50"
         containers = run_make_slide_graphs(gs, slide, {"Title": 30, "A long question": 80})
 
-        parent = self._get_scale_container(gs)
+        scale = self._get_scale_container(gs)
+        interspace = gs.question_interspace * gs.container.h
+        parent = Container("scale_and_interspace", scale.l, scale.b, scale.w, scale.h + interspace)
         for name in ["title_1", "label_1", "slider_1"]:
             assert within(containers[name], parent), f"{name} outside parent: {containers[name]} vs {parent}"
+
+
+class TestLongTextNotShrunk:
+    """Long texts use the space between scales rather than being squeezed on top of each other."""
+
+    def test_texts_keep_their_height(self, gs):
+        slide = "Title;A long question;Low/High;0/100/50"
+        containers = run_make_slide_graphs(gs, slide, {"Title": 30, "A long question": 80})
+
+        assert containers["title_1"].h == pytest.approx(30 + 4)
+        assert containers["label_1"].h == pytest.approx(80 + 4)
+        assert containers["title_1"].b >= containers["label_1"].b + containers["label_1"].h - 0.5
 
 
 class TestSliderMinimumHeight:

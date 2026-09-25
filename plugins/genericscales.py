@@ -101,10 +101,13 @@ class Genericscales(BlockingPlugin):
                     title_h: float = self._measure_text_height(title, F["MEDIUM"], wrap_px, bold=True) + padding
                     question_h: float = self._measure_text_height(label, F["MEDIUM"], wrap_px) + padding
 
+                    # Long title and question may also use the space between two scales (they overlapped otherwise)
                     min_slider_h: float = scale_container.h * 0.40
-                    slider_h: float = max(min_slider_h, scale_container.h - title_h - question_h)
+                    missing_h: float = title_h + question_h + min_slider_h - scale_container.h
+                    H: float = scale_container.h + min(max(missing_h, 0), self.question_interspace * self.container.h)
+                    slider_h: float = max(min_slider_h, H - title_h - question_h)
 
-                    text_budget: float = scale_container.h - slider_h
+                    text_budget: float = H - slider_h
                     if title_h + question_h > text_budget and text_budget > 0:
                         ratio: float = text_budget / (title_h + question_h)
                         title_h *= ratio
@@ -113,7 +116,6 @@ class Genericscales(BlockingPlugin):
                     L: float = scale_container.l
                     B: float = scale_container.b
                     W: float = scale_container.w
-                    H: float = scale_container.h
                     title_container: Container = Container("title", L, B + H - title_h, W, title_h)
                     question_container: Container = Container(
                         "question", L, B + H - title_h - question_h, W, question_h
