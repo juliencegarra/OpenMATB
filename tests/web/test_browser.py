@@ -43,7 +43,8 @@ def timing_run(page_factory):
     app.start(_timing_scenario())
     middle = app.wait_until(lambda s: s["scenario_time"] >= TIMING_SCENARIO_DURATION / 2, timeout=30)
     app.page.wait_for_selector("#end:not([hidden])", timeout=(TIMING_SCENARIO_DURATION + 30) * 1000)
-    final = app.state()
+    # The end screen is shown when the session file is handed over; pyglet's loop stops just after
+    final = app.wait_until(lambda s: not s["running"], timeout=10)
     return app, middle, final
 
 
