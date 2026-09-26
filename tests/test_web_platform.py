@@ -7,6 +7,7 @@ web build.
 
 from __future__ import annotations
 
+import asyncio
 import importlib
 import importlib.util
 import re
@@ -157,8 +158,12 @@ def web_modules(js):
         _key_map=key_map,
         js_key_to_pyglet=lambda event: (key_map.get(event.key, 0), 0),
     )
+    adaptation = _module("pyglet.media.drivers.pyodide_js.adaptation", asyncio=None)
     modules = {
         "pyodide.webloop": webloop,
+        "pyglet.media.drivers": _module("pyglet.media.drivers"),
+        "pyglet.media.drivers.pyodide_js": _module("pyglet.media.drivers.pyodide_js", adaptation=adaptation),
+        "pyglet.media.drivers.pyodide_js.adaptation": adaptation,
         "pyglet.libs": _module("pyglet.libs", emscripten=emscripten_libs),
         "pyglet.libs.emscripten": emscripten_libs,
         "pyglet.graphics.api": _module("pyglet.graphics.api"),
@@ -179,6 +184,7 @@ def web_modules(js):
             domains=(vertexdomain.WebGLVertexDomain, vertexdomain.WebGLIndexedVertexDomain),
             window=web_window,
             font=font_js,
+            audio=adaptation,
         )
 
 
@@ -267,6 +273,19 @@ class TestSetupWeb:
         """Resman pumps are numpad keys: the browser key name ("End" or "1") lost them."""
         event = SimpleNamespace(key=key, code=code)
         assert web_modules.window.js_key_to_pyglet(event)[0] == expected
+
+    def test_end_of_sound_does_not_raise(self, web_modules):
+        """pyglet passed None (the result of post_event) to asyncio.create_task: a TypeError for every sound."""
+        assert web_modules.audio.asyncio.create_task(None) is None
+
+    def test_end_of_sound_still_creates_real_tasks(self, web_modules):
+        async def coroutine():
+            return 42
+
+        async def main():
+            return await web_modules.audio.asyncio.create_task(coroutine())
+
+        assert asyncio.run(main()) == 42
 
 
 # ── Page helpers ────────────────────────────────────────────────────────────
@@ -656,3 +675,79 @@ class TestFitToPage:
         with patch("core.window.viewport_size", return_value=(800, 450)):
             win.fit_to_page()
         assert win._scale == pytest.approx(1.5 / 0.5)
+
+
+# ── SCORM package (python web/build.py --scorm) ─────────────────────────────
+
+
+IMSCP_NAMESPACES: dict[str, str] = {
+    "1.2": "http://www.imsproject.org/xsd/imscp_rootv1p1p2",
+    "2004": "http://www.imsglobal.org/xsd/imscp_v1p1",
+}
+ADLCP_NAMESPACES: dict[str, str] = {
+    "1.2": "http://www.adlnet.org/xsd/adlcp_rootv1p2",
+    "2004": "http://www.adlnet.org/xsd/adlcp_v1p3",
+}
+
+
+class TestScormPackage:
+    @pytest.mark.parametrize("scorm_version", ["1.2", "2004"])
+    def test_manifest(self, build_module, scorm_version):
+        import xml.etree.ElementTree as ET
+
+        files = ["index.html", "openmatb.js", "pyodide/pyodide.asm.wasm", "a&b.js"]
+        manifest = build_module.scorm_manifest(scorm_version, "MATB <pilot>", "1.4.0-dev", files)
+        root = ET.fromstring(manifest.encode("utf-8"))
+        ns = {"cp": IMSCP_NAMESPACES[scorm_version]}
+        assert root.tag == f"{{{ns['cp']}}}manifest"
+        assert root.get("identifier") == "OpenMATB-1-4-0-dev"
+        assert root.findtext("cp:metadata/cp:schema", namespaces=ns) == "ADL SCORM"
+        assert root.findtext("cp:metadata/cp:schemaversion", namespaces=ns).startswith(scorm_version)
+        organization = root.find("cp:organizations/cp:organization", ns)
+        assert root.find("cp:organizations", ns).get("default") == organization.get("identifier")
+        assert organization.findtext("cp:title", namespaces=ns) == "MATB <pilot>"
+        item = organization.find("cp:item", ns)
+        resource = root.find("cp:resources/cp:resource", ns)
+        assert item.get("identifierref") == resource.get("identifier")
+        assert resource.get("href") == "index.html"
+        scorm_type = "scormtype" if scorm_version == "1.2" else "scormType"
+        assert resource.get(f"{{{ADLCP_NAMESPACES[scorm_version]}}}{scorm_type}") == "sco"
+        assert [f.get("href") for f in resource.findall("cp:file", ns)] == files
+
+    def test_unknown_version(self, build_module):
+        with pytest.raises(ValueError):
+            build_module.scorm_manifest("3", "OpenMATB", "1.0", [])
+
+    def test_package(self, build_module, tmp_path, monkeypatch):
+        dist = tmp_path / "dist"
+        (dist / "pyodide").mkdir(parents=True)
+        (dist / "index.html").write_text("<html></html>", encoding="utf-8")
+        (dist / "pyodide" / "pyodide-module.js").write_text("export {}", encoding="utf-8")
+        monkeypatch.setattr(build_module, "DIST", dist)
+        monkeypatch.setattr(build_module, "WEB", tmp_path)
+        package = build_module.build_scorm_package("1.2", "OpenMATB")
+        assert package == tmp_path / "openmatb_scorm_1.2.zip"
+        with zipfile.ZipFile(package) as archive:
+            assert sorted(archive.namelist()) == ["imsmanifest.xml", "index.html", "pyodide/pyodide-module.js"]
+            manifest = archive.read("imsmanifest.xml").decode("utf-8")
+        assert '<file href="index.html"/>' in manifest
+        assert '<file href="pyodide/pyodide-module.js"/>' in manifest
+
+    def test_pyodide_packages_with_their_dependencies(self, build_module):
+        lock = {
+            "packages": {
+                "micropip": {"file_name": "micropip-1.whl", "depends": ["packaging"]},
+                "packaging": {"file_name": "packaging-2.whl", "depends": []},
+                "numpy": {"file_name": "numpy-3.whl", "depends": []},
+            }
+        }
+        assert build_module.pyodide_package_files(lock, ("micropip",)) == ["micropip-1.whl", "packaging-2.whl"]
+
+    def test_the_page_gets_the_pyodide_module_from_the_build(self, build_module):
+        index = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
+        assert '<meta name="pyodide-module" content="{{PYODIDE_MODULE}}">' in index
+        assert build_module.PYODIDE_MODULES["cdn"].endswith(f"/v{build_module.PYODIDE_VERSION}/full/pyodide.mjs")
+        # Shipped with the page: a .js name, served as JavaScript by every server (not always the case of .mjs)
+        local = build_module.PYODIDE_MODULES["local"]
+        assert local.endswith(".js") and local.split("/")[-1] in build_module.PYODIDE_FILES.values()
+        assert "cdn.jsdelivr.net/pyodide" not in (ROOT / "web" / "openmatb.js").read_text(encoding="utf-8")

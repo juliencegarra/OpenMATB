@@ -21,7 +21,7 @@ import time
 
 import pytest
 
-from tests.web.conftest import OpenMATBPage
+from tests.web.conftest import PROBE, OpenMATBPage
 
 TIMING_SCENARIO_DURATION: int = 12
 ENGINE: str = os.environ.get("OPENMATB_BROWSER", "chromium")
@@ -772,6 +772,12 @@ class TestSessionOutput:
         assert app.page.is_visible("#menu")
         assert not app.state()["started"]
 
+    def test_none(self, page_factory):
+        app = page_factory()
+        app.start(OUTPUT_SCENARIO, config={"web_session_output": "none"})
+        assert _end_items(app) == ["ok: Not sent anywhere (web_session_output=none)"]
+        assert app.downloads == []
+
     def test_jatos_outside_jatos(self, page_factory):
         """jatos.js is served by JATOS: without it, a clear message instead of a broken session."""
         app = page_factory()
@@ -781,6 +787,118 @@ class TestSessionOutput:
         app.page.wait_for_selector("#config-error:not([hidden])", timeout=10_000)
         assert "run the study from JATOS" in app.page.text_content("#config-error")
         assert app.page.is_visible("#menu")
+
+
+# ── SCORM (the page run by an LMS) ──────────────────────────────────────────
+
+
+# The SCORM 1.2 API of an LMS: records the calls, keeps the data model values
+FAKE_SCORM_API: str = """
+window.API = {
+    calls: [],
+    values: {"cmi.core.lesson_status": "not attempted", "cmi.core.student_id": "learner-42"},
+    record(name, ...args) { this.calls.push([name, ...args]); },
+    LMSInitialize(arg) { this.record("LMSInitialize"); return "true"; },
+    LMSFinish(arg) { this.record("LMSFinish"); return "true"; },
+    LMSGetValue(key) { this.record("LMSGetValue", key); return this.values[key] ?? ""; },
+    LMSSetValue(key, value) { this.record("LMSSetValue", key, value); this.values[key] = value; return "true"; },
+    LMSCommit(arg) { this.record("LMSCommit"); return "true"; },
+    LMSGetLastError() { return "0"; },
+};
+"""
+
+
+class TestScorm:
+    def test_completed_at_the_end_of_the_session(self, page_factory):
+        app = page_factory()
+        app.page.context.add_init_script(FAKE_SCORM_API)
+        app.prepare(OUTPUT_SCENARIO)
+        assert not app.page.is_visible("#mode")  # Participants only run the scenario
+        assert app.page.evaluate("() => window.API.values['cmi.core.lesson_status']") == "incomplete"
+        app.page.click("#start")
+        assert _end_items(app) == [
+            "ok: Downloaded on this computer",  # The session file still goes where config.ini says
+            "ok: Activity completed in the learning platform (LMS)",
+        ]
+        assert not app.page.is_visible("#back")  # The LMS takes over
+        values = app.page.evaluate("() => window.API.values")
+        assert values["cmi.core.lesson_status"] == "completed"
+        assert re.fullmatch(r"\d{4}-\d\d-\d\d/\d+_\d{6}_\d{6}\.csv", values["cmi.core.lesson_location"])
+        assert values["cmi.core.lesson_location"].endswith(app.downloads[0].suggested_filename)
+
+        app.page.evaluate("() => window.dispatchEvent(new PageTransitionEvent('pagehide'))")
+        calls = app.page.evaluate("() => window.API.calls")
+        assert calls[0] == ["LMSInitialize"] and calls[-1] == ["LMSFinish"]
+        assert [c[0] for c in calls].count("LMSFinish") == 1
+        assert re.fullmatch(
+            r"\d{4}:\d\d:\d\d\.\d\d", app.page.evaluate("() => window.API.values['cmi.core.session_time']")
+        )
+
+    def test_without_lms(self, page_factory):
+        app = page_factory()
+        app.start(OUTPUT_SCENARIO)
+        assert _end_items(app) == ["ok: Downloaded on this computer"]
+        assert app.page.is_visible("#back")
+
+    def test_api_found_in_a_parent_frame(self, page_factory):
+        """LMSs run the content in a frame: the API is looked for in the parent frames (SCORM 2004 here)."""
+        app = page_factory()
+        app.open_menu()
+        result = app.page.evaluate(
+            """async () => {
+                const { findScormApi, ScormSession } = await import("./scorm.js");
+                window.API_1484_11 = { Initialize: () => "true" };
+                const outer = document.body.appendChild(document.createElement("iframe"));
+                const inner = outer.contentDocument.body.appendChild(outer.contentDocument.createElement("iframe"));
+                const found = findScormApi(inner.contentWindow);
+                const session = new ScormSession(found);
+                return [found.version, found.api === window.API_1484_11, session.names.sessionTimeFormat(3725.5)];
+            }"""
+        )
+        assert result == ["2004", True, "PT3725.50S"]
+
+
+# ── Demo (?demo=1, the Demo tab of the website) ─────────────────────────────
+
+
+class TestDemo:
+    def open_demo(self, app: OpenMATBPage, scenario: str | None = None) -> None:
+        app.page.goto(f"{app.url}/index.html?lang=en_EN&demo=1")
+        app.page.wait_for_selector("#start:not([disabled])", timeout=180_000)
+        if scenario is not None:
+            app.write_file("/app/includes/scenarios/demo.txt", scenario)
+        app.write_file("/app/_openmatb_probe.py", PROBE.read_text(encoding="utf-8"))
+        app.python("import _openmatb_probe")
+        app.page.uncheck("#fullscreen")
+
+    def test_nothing_is_recorded(self, page_factory):
+        app = page_factory()
+        self.open_demo(app, "0:00:00;system;mousecontrol;True\n0:00:00;sysmon;start\n0:00:03;sysmon;stop\n")
+        assert not app.page.is_visible("#mode")  # Only the demo scenario
+        app.page.click("#start")
+        app.page.wait_for_selector("#end:not([hidden])", timeout=40_000)
+        app.page.wait_for_function("() => document.querySelector('#end-destinations').textContent !== 'Sending…'")
+        assert app.page.text_content("#end-destinations") == "This was a demo: the session was not recorded."
+        assert "scenario=demo.txt" in app.page.url
+        assert app.downloads == []
+        assert app.page.text_content("#back") == "Restart the demo"
+        menu = app.new_tab()
+        menu.page.goto(f"{menu.url}/index.html?lang=en_EN")
+        assert _stored_sessions(menu) == []  # Not kept for replay either
+
+    def test_the_demo_scenario_runs(self, page_factory):
+        """The real includes/scenarios/demo.txt: valid, all the tasks started, mouse enabled."""
+        app = page_factory()
+        self.open_demo(app)
+        app.page.click("#start")
+        app.wait_until(lambda s: s["started"] and (s["scenario_time"] or 0) >= 2, timeout=60)
+        assert app.python("from core.window import Window; Window.MainWindow.mouse_control_active") is True
+        running = app.python(
+            "import json, _openmatb_probe as p; "
+            "json.dumps(sorted(n for n, pl in p.PROBE['scheduler'].plugins.items() if pl.alive))"
+        )
+        assert {"sysmon", "track", "resman", "communications", "scheduling"} <= set(json.loads(running))
+        assert app.errors == []
 
 
 # ── Replay: page hidden and pauses of the page ──────────────────────────────

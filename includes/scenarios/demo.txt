@@ -1,0 +1,47 @@
+# Demo of the website (Demo tab, ?demo=1): the basic scenario for visitors
+# English voice, no questionnaire, and every task can be done with the mouse (no numeric keypad on laptops)
+
+0:00:00;system;mousecontrol;True
+
+0:00:00;resman;tank-b-target;1000
+0:00:00;track;cursorcolor;#009900
+0:00:00;communications;callsignregex;[A-Z][A-Z]\d\d
+0:00:00;communications;othercallsignnumber;5
+0:00:00;communications;voicegender;male
+0:00:00;communications;voiceidiom;english
+
+0:00:00;resman;start
+0:00:00;track;start
+0:00:00;sysmon;start
+0:00:00;scheduling;start
+0:00:00;communications;start
+
+# System monitoring: two scale failures
+0:00:10;sysmon;scales-1-side;-1
+0:00:10;sysmon;scales-1-failure;True
+0:00:30;sysmon;scales-4-side;1
+0:00:30;sysmon;scales-4-failure;True
+
+# Resources management: automated at first, then two pump failures
+0:00:00;resman;automaticsolver;True
+0:00:15;resman;pump-3-state;failure
+0:00:25;resman;pump-3-state;off
+0:00:25;resman;automaticsolver;False
+0:00:30;resman;pump-7-state;failure
+0:00:40;resman;pump-7-state;off
+
+# Tracking: automated between 0:20 and 0:40
+0:00:20;track;automaticsolver;True
+0:00:40;track;automaticsolver;False
+
+# Communications: own and other callsigns, then automated
+0:00:00;communications;radioprompt;own
+0:00:25;communications;radioprompt;other
+0:00:40;communications;automaticsolver;True
+0:00:45;communications;radioprompt;own
+
+0:01:00;resman;stop
+0:01:00;track;stop
+0:01:00;sysmon;stop
+0:01:00;communications;stop
+0:01:00;scheduling;stop

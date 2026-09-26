@@ -85,7 +85,7 @@ OpenMATB can also run in a web browser, with no installation for participants: P
 python web/build.py --serve
 ```
 
-Then open http://localhost:8000. `web/build.py` writes a static site into `web/dist` (the application files, the pyglet and rstr wheels, and a font), which can be hosted on any web server (the page must be served over HTTP, `file://` does not work). The start page lets you choose the language, run a scenario or replay a session. These choices can also be given in the URL: `?lang=fr_FR`, `?scenario=basic.txt`, `?mode=replay`, `?session=12`.
+Then open http://localhost:8000. `web/build.py` writes a static site into `web/dist` (the application files, the pyglet and rstr wheels, and a font), which can be hosted on any web server (the page must be served over HTTP, `file://` does not work). The start page lets you choose the language, run a scenario or replay a session. These choices can also be given in the URL: `?lang=fr_FR`, `?scenario=basic.txt`, `?mode=replay`, `?session=12`. `?demo=1` runs the demo scenario (`includes/scenarios/demo.txt`: English voice, no questionnaire, mouse control) without recording anything: it is the Demo tab of the website.
 
 Differences with the desktop version:
 
@@ -109,6 +109,7 @@ instead (or also) be sent to a server, set by `web_session_output` in `config.in
 | `webdav` | A folder of a web server, with the desktop structure: `<web_webdav_url>/YYYY-MM-DD/<N>_<yymmdd>_<hhmmss>.csv` | Every 10 s and at the end |
 | `jatos` | [JATOS](https://www.jatos.org), in the result of the study run | Every 10 s and at the end |
 | `datapipe` | An [OSF](https://osf.io) project, through [DataPipe](https://pipe.jspsych.org) | At the end (DataPipe refuses to replace a file) |
+| `none` | Nowhere: only kept in the browser storage | |
 
 For example `web_session_output=webdav, download` sends the file to the server and also downloads it. The end page
 tells the participant where the file went. If it could not be sent anywhere, it is downloaded instead. Sending the
@@ -126,6 +127,27 @@ file every 10 s keeps the data of a session interrupted by a closed tab or a cra
   JATOS: it loads `jatos.js` from there.
 - **DataPipe** (`web_datapipe_experiment=<experiment ID>`): create the experiment on https://pipe.jspsych.org, link it
   to an OSF project and enable data collection. The site can then be hosted anywhere, e.g. on GitHub Pages.
+
+#### Running OpenMATB from an LMS (SCORM)
+
+OpenMATB can be imported as an activity into a learning management system (Moodle, Canvas, Blackboard, SCORM
+Cloud...):
+
+```bash
+python web/build.py --scorm        # SCORM 1.2 (supported by every LMS): web/openmatb_scorm_1.2.zip
+python web/build.py --scorm 2004   # SCORM 2004 4th edition: web/openmatb_scorm_2004.zip
+```
+
+The package contains `web/dist` and Pyodide (about 12 MB), because LMSs often block scripts from other sites
+(`--pyodide cdn` loads it from its CDN instead; `--pyodide local` also works without SCORM, to host Pyodide with the
+page). Set `config.ini` (scenario, `web_session_output`...) before building: it is part of the package.
+
+In the LMS, the start page only offers to run the scenario. The LMS records that the activity was started
+(`incomplete`), then `completed` at the end of the session, the time spent, and the name of the session file as the
+lesson location (`cmi.core.lesson_location`, `cmi.location` in SCORM 2004), to match each learner with their file.
+**The session file itself is not stored in the LMS**: SCORM only keeps a few kB per learner, while a session file is a
+few MB. It goes where `web_session_output` says, e.g. `webdav` or `datapipe`, which must accept requests from the
+LMS site (CORS). Open the activity in a new window if the LMS frame prevents the fullscreen or the joystick.
 
 ### Use of compiled source (coming soon)
 

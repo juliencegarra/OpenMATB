@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>OpenMATB</title>
     <link rel="icon" href="favicon.png">
+    <meta name="pyodide-module" content="{{PYODIDE_MODULE}}">
     <style>
         :root {
             --bg: #f0f0f0;
@@ -55,7 +56,7 @@
         button { margin-top: 24px; width: 100%; padding: 12px; font: inherit; font-weight: 600; border: 0;
             border-radius: 4px; background: var(--accent); color: var(--accent-text); cursor: pointer; }
         button:disabled { opacity: 0.5; cursor: progress; }
-        button[hidden] { display: none; }
+        button[hidden], label[hidden] { display: none; }
         button.secondary { margin-top: 8px; padding: 8px; background: var(--panel); color: var(--text);
             border: 1px solid var(--border); font-weight: 400; }
         .sessions { margin: 0; padding: 0; list-style: none; max-height: 220px; overflow-y: auto; }

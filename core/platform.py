@@ -41,6 +41,22 @@ def setup_web() -> None:
     _patch_pyglet_webgl()
     _patch_pyglet_numpad_keys()
     _patch_pyglet_glyph_baseline()
+    _patch_pyglet_audio_end()
+
+
+def _patch_pyglet_audio_end() -> None:
+    """At the end of every sound, pyglet 3.0.dev10 passes the result of post_event(player, "on_eos") to
+    asyncio.create_task(), but post_event() queues the event at once and returns None: a TypeError was printed
+    in the console for every sound. The event is still dispatched: only skip the create_task() of None."""
+    import asyncio
+    import types
+
+    from pyglet.media.drivers.pyodide_js import adaptation
+
+    def create_task(coro: Any, **kwargs: Any) -> Any:
+        return asyncio.create_task(coro, **kwargs) if asyncio.iscoroutine(coro) else None
+
+    adaptation.asyncio = types.SimpleNamespace(create_task=create_task)
 
 
 def _patch_pyglet_glyph_baseline() -> None:

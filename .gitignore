@@ -7,3 +7,4 @@ audio_matb
 *.odt
 .venv*/
 web/dist/
+web/openmatb_scorm_*.zip

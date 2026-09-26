@@ -10,8 +10,10 @@ import { installPygletEmscripten } from "./pyglet_emscripten.js";
 import {
     SessionOutput, downloadText, loadJatos, sessionOutputSettings, sessionRelativePath,
 } from "./session_output.js";
+import { connectScorm } from "./scorm.js";
 
-const PYODIDE_VERSION = "0.29.4";
+// Set by web/build.py: pyodide.mjs on the Pyodide CDN, or its copy shipped with the page (--pyodide local)
+const PYODIDE_MODULE = new URL(document.querySelector('meta[name="pyodide-module"]').content, location.href).href;
 const APP_DIR = "/app";
 const SESSIONS_DIR = "/data/openmatb/sessions"; // pyglet.storage.get("openmatb").data / "sessions"
 let storage = null; // pyglet's storage bridge (persists /data in IndexedDB), set by boot()
@@ -41,6 +43,10 @@ const TEXTS = {
         sent_webdav: "Sent to the server (WebDAV)",
         sent_jatos: "Sent to JATOS",
         sent_datapipe: "Sent to the OSF (DataPipe)",
+        sent_scorm: "Activity completed in the learning platform (LMS)",
+        sent_none: "Not sent anywhere (web_session_output=none)",
+        demo_not_recorded: "This was a demo: the session was not recorded.",
+        restart_demo: "Restart the demo",
         not_sent: "Not sent to {destination}:",
         config_error: "Configuration error (config.ini):",
         stored_sessions: "Sessions kept in this browser",
@@ -82,6 +88,10 @@ const TEXTS = {
         sent_webdav: "Envoyé au serveur (WebDAV)",
         sent_jatos: "Envoyé à JATOS",
         sent_datapipe: "Envoyé à l'OSF (DataPipe)",
+        sent_scorm: "Activité terminée dans la plateforme de formation (LMS)",
+        sent_none: "Envoyé nulle part (web_session_output=none)",
+        demo_not_recorded: "C'était une démonstration : la session n'a pas été enregistrée.",
+        restart_demo: "Relancer la démo",
         not_sent: "Non envoyé à {destination} :",
         config_error: "Erreur de configuration (config.ini) :",
         stored_sessions: "Sessions conservées dans ce navigateur",
@@ -194,6 +204,37 @@ function checkBrowser(pyodide = null) {
 }
 checkBrowser();
 
+// ?demo=1 (Demo tab of the website): runs the demo scenario, and nothing is recorded
+const DEMO = new URLSearchParams(location.search).get("demo") === "1";
+const DEMO_SCENARIO = "demo.txt";
+// config.ini values of the demo: no session number to acknowledge, and the session is not sent anywhere
+const DEMO_CONFIG = { display_session_number: "False", web_session_output: "none" };
+
+function applyDemoConfig(pyodide) {
+    let config = readAppConfig(pyodide);
+    for (const [key, value] of Object.entries(DEMO_CONFIG)) {
+        config = config.replace(new RegExp(`^(\\s*${key}\\s*=).*$`, "m"), `$1${value}`);
+    }
+    pyodide.FS.writeFile(`${APP_DIR}/config.ini`, config);
+}
+if (DEMO) {
+    $("mode").value = "scenario";
+    $("mode").hidden = true;
+    document.querySelector('label[for="mode"]').hidden = true;
+    $("back").dataset.i18n = "restart_demo";
+    $("back").textContent = t("restart_demo");
+}
+
+// Run by an LMS (SCORM package): the LMS records the completion, participants only run the scenario
+const scorm = connectScorm();
+if (scorm) {
+    $("mode").value = "scenario";
+    $("mode").hidden = true;
+    document.querySelector('label[for="mode"]').hidden = true;
+    $("back").hidden = true; // The LMS takes over at the end
+    window.addEventListener("pagehide", () => scorm.terminate());
+}
+
 async function loadFonts() {
     // pyglet measures and renders text with the fonts known by the document
     for (const weight of FONT_WEIGHTS) {
@@ -205,7 +246,7 @@ async function loadFonts() {
 async function boot() {
     status("loading_python");
     await loadFonts();
-    const { loadPyodide } = await import(`https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/pyodide.mjs`);
+    const { loadPyodide } = await import(PYODIDE_MODULE);
     const pyodide = await loadPyodide();
     // Mounts /data (IndexedDB, where sessions are kept). The /cache mount (OPFS) is optional: Safari refuses
     // OPFS in private browsing, which made the loading fail. OpenMATB does not use it: keep /cache in memory then.
@@ -228,6 +269,9 @@ async function boot() {
     status("loading_openmatb");
     const app = await (await fetch("app.zip")).arrayBuffer();
     pyodide.unpackArchive(app, "zip", { extractDir: APP_DIR });
+    if (DEMO) {
+        applyDemoConfig(pyodide);
+    }
     pyodide.runPython(`import os, sys; os.chdir("${APP_DIR}"); sys.path.insert(0, "${APP_DIR}")`);
 
     window.openmatb = { pyodide }; // for debugging from the browser console
@@ -255,7 +299,9 @@ function showConfigErrors(errors) {
 
 // Session file destinations (web_session_output in config.ini), set when a scenario is started
 let sessionOutput = null;
-const DESTINATION_NAMES = { download: "download", webdav: "WebDAV", jatos: "JATOS", datapipe: "DataPipe" };
+const DESTINATION_NAMES = {
+    download: "download", webdav: "WebDAV", jatos: "JATOS", datapipe: "DataPipe", scorm: "LMS",
+};
 
 function importSession(pyodide, file, bytes) {
     // Imported CSV files are stored with the browser sessions, so they appear in the replay selector
@@ -373,6 +419,9 @@ $("start").addEventListener("click", async () => {
     const params = new URLSearchParams(location.search);
     params.set("lang", $("lang").value);
     params.set("mode", $("mode").value);
+    if (DEMO && !params.has("scenario")) {
+        params.set("scenario", DEMO_SCENARIO);
+    }
     history.replaceState(null, "", `?${params}`);
 
     const file = $("mode").value === "replay" ? $("session-file").files[0] : undefined;
@@ -417,7 +466,9 @@ $("start").addEventListener("click", async () => {
 });
 
 // Back to the menu, keeping the chosen language
-const backToMenu = () => { location.href = `${location.pathname}?lang=${$("lang").value}`; };
+const backToMenu = () => {
+    location.href = `${location.pathname}?lang=${$("lang").value}${DEMO ? "&demo=1" : ""}`;
+};
 $("back").addEventListener("click", backToMenu);
 
 // Dispatched when OpenMATB closes (end of scenario, replay closed or selection cancelled)
@@ -456,8 +507,20 @@ document.addEventListener("openmatb-end", async (event) => {
     $("end").hidden = false;
 
     const pyodide = await ready;
+    if (DEMO) {
+        // Not kept for replay either
+        pyodide.FS.unlink(event.detail);
+        await storage.sync_idbfs();
+        $("end-destinations").replaceChildren(destinationItem(t("demo_not_recorded")));
+        document.querySelector('#end [data-i18n="kept_in_browser"]').hidden = true;
+        return;
+    }
     const output = sessionOutput || new SessionOutput(sessionOutputSettings(""));
     const results = await output.finish(relativePath, readSessionFile(pyodide, event.detail));
+    if (scorm) {
+        const ok = scorm.complete(relativePath);
+        results.push(ok ? { destination: "scorm", ok } : { destination: "scorm", ok, error: "see the console" });
+    }
     $("end-destinations").replaceChildren(...results.map((result) => destinationItem(
         result.ok
             ? t(`sent_${result.destination}`)

@@ -3,11 +3,11 @@
 // License : CeCILL, version 2.1 (see the LICENSE file)
 
 // Where the session files go (web_session_output in config.ini): downloaded on the participant's computer
-// (default) and/or sent to a server: JATOS, DataPipe (OSF) or a WebDAV folder. The file is always kept in the
-// browser storage too (replay). core/logger.py tells the page when the file changes ("openmatb-checkpoint",
+// (default) and/or sent to a server: JATOS, DataPipe (OSF) or a WebDAV folder, or nowhere ("none"). The file is
+// always kept in the browser storage too (replay). core/logger.py tells the page when the file changes ("openmatb-checkpoint",
 // every 10 s) and when the session ends ("openmatb-end"), with the path of the file in the Pyodide file system.
 
-export const DESTINATIONS = ["download", "jatos", "datapipe", "webdav"];
+export const DESTINATIONS = ["download", "jatos", "datapipe", "webdav", "none"];
 export const DATAPIPE_URL = "https://pipe.jspsych.org/api/data/";
 const SESSIONS_FOLDER = "/sessions/"; // Path of the session files: .../sessions/<YYYY-MM-DD>/<file>.csv
 
@@ -74,6 +74,11 @@ async function describeError(response) {
 }
 
 // ---- Destinations: checkpoint(relativePath, csv) during the session, finish(relativePath, csv) at the end ----
+
+// Only kept in the browser storage
+class Nowhere {
+    async finish() {}
+}
 
 class Download {
     async finish(relativePath, csv) {
@@ -188,6 +193,7 @@ export class SessionOutput {
                 case "webdav": return [name, new WebDAV(settings.webdavUrl, fetchImpl)];
                 case "jatos": return [name, new JATOS(jatos)];
                 case "datapipe": return [name, new DataPipe(settings.datapipeExperiment, fetchImpl)];
+                case "none": return [name, new Nowhere()];
                 default: return [name, new Download()];
             }
         });
