@@ -314,3 +314,63 @@ class TestCleanupAfterSeek:
         blocker.stop.assert_called_once()
         assert rs.pause_scenario_time is False
         mock_dialog.on_delete.assert_called_once()
+
+
+class TestExecuteDueEvents:
+    """Seek (fast-forward): every event due at the reached time is executed, not only the first one."""
+
+    def _replay_with_events(self, events):
+        from core.event import Event
+
+        rs = _make_replay(scenario_time=8, paused_plugins=[], executed=[], _event_cursor=0)
+        rs.events = [Event(line, t, plugin, command) for line, t, plugin, command in events]
+
+        def execute_one_event(event):
+            event.done = 1
+            rs.executed.append(event.line)
+            if event.plugin == "instructions" and event.command == ["start"]:  # Started plugins are not paused
+                rs.plugins["instructions"].alive = True
+                rs.plugins["instructions"].paused = False
+
+        rs.execute_one_event = execute_one_event
+        return rs
+
+    def test_simultaneous_events_at_the_end_are_all_executed(self):
+        rs = self._replay_with_events([(1, 8, "sysmon", "stop"), (2, 8, "track", "stop"), (3, 8, "resman", "stop")])
+        rs.execute_events()  # The update of the last fast-forward step executes one event
+        assert rs.executed == [1]
+        rs.execute_due_events()
+        assert rs.executed == [1, 2, 3]
+        assert rs.events_queue == []
+
+    def test_future_events_are_not_executed(self):
+        rs = self._replay_with_events([(1, 8, "sysmon", "stop"), (2, 9, "track", "stop")])
+        rs.execute_events()
+        rs.execute_due_events()
+        assert rs.executed == [1]
+
+    def test_stops_when_a_blocking_plugin_starts(self):
+        """Instructions pause the scenario: the next events wait, as in playback."""
+        rs = self._replay_with_events(
+            [(1, 8, "sysmon", "stop"), (2, 8, "instructions", "start"), (3, 8, "track", "stop")]
+        )
+        rs.plugins = {"instructions": MagicMock(alive=False, blocking=True, paused=True)}
+        rs.execute_events()
+        rs.execute_due_events()
+        assert rs.executed == [1, 2]
+        assert rs.is_scenario_time_paused()
+        assert [e.line for e in rs.events_queue] == [3]
+
+    @pytest.mark.parametrize("fast_forward", [True, False])
+    def test_only_during_a_fast_forward(self, fast_forward):
+        """In playback, events are executed one per update (~every 10 ms), as during the session."""
+        from core.scheduler import Scheduler
+
+        rs = _make_replay(is_paused=False, target_time=10, replay_time=5)
+        rs.clock.isFastForward = fast_forward
+        for name in ("pause_if_end_reached", "update_time_string", "slider_control_update", "execute_due_events"):
+            setattr(rs, name, MagicMock())
+        rs.events_queue = [MagicMock()]  # Stop before the input emulation
+        with patch.object(Scheduler, "update"):
+            rs.update(0.1)
+        assert rs.execute_due_events.called == fast_forward
