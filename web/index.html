@@ -55,6 +55,15 @@
         button { margin-top: 24px; width: 100%; padding: 12px; font: inherit; font-weight: 600; border: 0;
             border-radius: 4px; background: var(--accent); color: var(--accent-text); cursor: pointer; }
         button:disabled { opacity: 0.5; cursor: progress; }
+        button[hidden] { display: none; }
+        button.secondary { margin-top: 8px; padding: 8px; background: var(--panel); color: var(--text);
+            border: 1px solid var(--border); font-weight: 400; }
+        .sessions { margin: 0; padding: 0; list-style: none; max-height: 220px; overflow-y: auto; }
+        .sessions li { display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+        .sessions .session-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+        .sessions small { display: block; color: var(--muted); }
+        button.icon { margin: 0; width: auto; padding: 4px 8px; background: none; border: 1px solid var(--border);
+            font-size: 1rem; line-height: 1; }
         #pygletStatus { position: fixed; left: 16px; bottom: 12px; margin: 0; color: var(--muted);
             font-size: 0.85rem; white-space: pre-wrap; pointer-events: none; }
     </style>
@@ -82,6 +91,10 @@
                 <label for="session-file" data-i18n="import_session">Import a session file (optional)</label>
                 <input id="session-file" type="file" accept=".csv">
                 <p class="hint" data-i18n="sessions_kept">Sessions run in this browser are kept and listed automatically.</p>
+                <label data-i18n="stored_sessions">Sessions kept in this browser</label>
+                <p id="sessions-empty" class="hint" data-i18n="no_session">No session yet.</p>
+                <ul id="sessions-list" class="sessions"></ul>
+                <button id="delete-all" type="button" class="secondary" data-i18n="delete_all" hidden>Delete all the sessions</button>
             </div>
 
             <label class="inline"><input id="fullscreen" type="checkbox" checked> <span data-i18n="fullscreen">Fullscreen</span></label>

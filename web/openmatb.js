@@ -7,11 +7,14 @@
 // required to enable audio and fullscreen).
 
 import { installPygletEmscripten } from "./pyglet_emscripten.js";
-import { SessionOutput, loadJatos, sessionOutputSettings, sessionRelativePath } from "./session_output.js";
+import {
+    SessionOutput, downloadText, loadJatos, sessionOutputSettings, sessionRelativePath,
+} from "./session_output.js";
 
 const PYODIDE_VERSION = "0.29.4";
 const APP_DIR = "/app";
 const SESSIONS_DIR = "/data/openmatb/sessions"; // pyglet.storage.get("openmatb").data / "sessions"
+let storage = null; // pyglet's storage bridge (persists /data in IndexedDB), set by boot()
 const FONT_FAMILY = "Noto Sans"; // core.platform.WEB_FONT_NAME, files downloaded by web/build.py
 const FONT_WEIGHTS = [400, 700];
 
@@ -40,6 +43,13 @@ const TEXTS = {
         sent_datapipe: "Sent to the OSF (DataPipe)",
         not_sent: "Not sent to {destination}:",
         config_error: "Configuration error (config.ini):",
+        stored_sessions: "Sessions kept in this browser",
+        no_session: "No session yet.",
+        download: "Download",
+        delete: "Delete",
+        delete_all: "Delete all the sessions",
+        confirm_delete: "Delete the session {name} from this browser?",
+        confirm_delete_all: "Delete the {count} sessions kept in this browser?",
         back_to_menu: "Back to menu",
         joystick_hint: "Joystick: press one of its buttons to detect it.",
         joystick_detected: "Joystick detected:",
@@ -74,6 +84,13 @@ const TEXTS = {
         sent_datapipe: "Envoyé à l'OSF (DataPipe)",
         not_sent: "Non envoyé à {destination} :",
         config_error: "Erreur de configuration (config.ini) :",
+        stored_sessions: "Sessions conservées dans ce navigateur",
+        no_session: "Aucune session pour le moment.",
+        download: "Télécharger",
+        delete: "Supprimer",
+        delete_all: "Supprimer toutes les sessions",
+        confirm_delete: "Supprimer la session {name} de ce navigateur ?",
+        confirm_delete_all: "Supprimer les {count} sessions conservées dans ce navigateur ?",
         back_to_menu: "Retour au menu",
         joystick_hint: "Joystick : appuyez sur l'un de ses boutons pour le détecter.",
         joystick_detected: "Joystick détecté :",
@@ -214,6 +231,7 @@ async function boot() {
     pyodide.runPython(`import os, sys; os.chdir("${APP_DIR}"); sys.path.insert(0, "${APP_DIR}")`);
 
     window.openmatb = { pyodide }; // for debugging from the browser console
+    storage = bridge;
     status("ready");
     const outputErrors = sessionOutputSettings(readAppConfig(pyodide)).errors;
     $("start").disabled = !checkBrowser(pyodide) || !showConfigErrors(outputErrors);
@@ -259,8 +277,92 @@ window.addEventListener("keydown", (event) => {
     }
 }, { capture: true });
 
+// ---- Sessions kept in this browser (replay mode): download them again or delete them ----
+
+// Session files under SESSIONS_DIR (run in this browser, or imported), the most recent first
+function storedSessions(pyodide) {
+    const sessions = [];
+    const walk = (folder) => {
+        let names;
+        try {
+            names = pyodide.FS.readdir(folder);
+        } catch {
+            return; // No session yet
+        }
+        for (const name of names.filter((n) => n !== "." && n !== "..")) {
+            const path = `${folder}/${name}`;
+            const stat = pyodide.FS.stat(path);
+            if (pyodide.FS.isDir(stat.mode)) {
+                walk(path);
+            } else if (name.endsWith(".csv")) {
+                const time = new Date(stat.mtime).getTime();
+                sessions.push({ path, name, folder: folder.slice(SESSIONS_DIR.length + 1), size: stat.size, time });
+            }
+        }
+    };
+    walk(SESSIONS_DIR);
+    return sessions.sort((a, b) => b.time - a.time);
+}
+
+function sessionButton(label, icon, action) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "icon";
+    button.title = label;
+    button.setAttribute("aria-label", label);
+    button.textContent = icon;
+    button.addEventListener("click", action);
+    return button;
+}
+
+async function deleteSessions(pyodide, sessions) {
+    for (const session of sessions) {
+        pyodide.FS.unlink(session.path);
+    }
+    await storage.sync_idbfs(); // Also delete them from the browser storage
+    showStoredSessions();
+}
+
+async function showStoredSessions() {
+    if ($("mode").value !== "replay") {
+        return;
+    }
+    const pyodide = await ready;
+    const sessions = storedSessions(pyodide);
+    $("sessions-empty").hidden = sessions.length > 0;
+    $("delete-all").hidden = sessions.length === 0;
+    $("sessions-list").replaceChildren(...sessions.map((session) => {
+        const row = document.createElement("li");
+        const label = document.createElement("span");
+        label.className = "session-name";
+        label.textContent = session.name;
+        const details = document.createElement("small");
+        const size = `${Math.max(1, Math.round(session.size / 1024))} kB`;
+        details.textContent = session.folder ? `${session.folder} · ${size}` : size;
+        label.append(details);
+        row.append(
+            label,
+            sessionButton(t("download"), "⬇️", () => {
+                downloadText(session.name, pyodide.FS.readFile(session.path, { encoding: "utf8" }));
+            }),
+            sessionButton(t("delete"), "🗑️", () => {
+                if (window.confirm(t("confirm_delete").replace("{name}", session.name))) {
+                    deleteSessions(pyodide, [session]);
+                }
+            }),
+        );
+        return row;
+    }));
+    $("delete-all").onclick = () => {
+        if (window.confirm(t("confirm_delete_all").replace("{count}", sessions.length))) {
+            deleteSessions(pyodide, sessions);
+        }
+    };
+}
+
 $("mode").addEventListener("change", () => {
     $("replay-options").hidden = $("mode").value !== "replay";
+    showStoredSessions();
 });
 
 $("start").addEventListener("click", async () => {

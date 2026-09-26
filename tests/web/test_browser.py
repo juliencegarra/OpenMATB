@@ -498,6 +498,8 @@ json.dumps({
     "events": len(s.events),
     "alive": sorted(name for name, plugin in s.plugins.items() if plugin.alive),
     "errors": list(get_errors().errors_list),
+    "environment": s.logreader.environment,
+    "environment_label": s.environment_label.get_text() if hasattr(s, "environment_label") else None,
 })
 """
 
@@ -548,6 +550,14 @@ class TestReplay:
         assert loaded["paused"]  # A replay starts paused
         assert loaded["errors"] == []
         assert replay_run["errors"] == []
+
+    def test_browser_of_the_session_is_shown(self, replay_run):
+        loaded = replay_run["loaded"]
+        expected = {"chromium": ("Chrome", "Edge"), "firefox": ("Firefox",), "webkit": ("Safari",)}[ENGINE]
+        assert loaded["environment"]["browser"].startswith(expected)
+        browser, system = loaded["environment_label"].split("\n")
+        assert loaded["environment"]["browser"].startswith(browser) and "." not in browser  # Major version
+        assert system == loaded["environment"]["os"]
 
     def test_log_contents(self, replay_run):
         session_keys = [
@@ -771,3 +781,135 @@ class TestSessionOutput:
         app.page.wait_for_selector("#config-error:not([hidden])", timeout=10_000)
         assert "run the study from JATOS" in app.page.text_content("#config-error")
         assert app.page.is_visible("#menu")
+
+
+# ── Replay: page hidden and pauses of the page ──────────────────────────────
+
+
+PAGE_EVENTS_STATE: str = """
+import json, _openmatb_probe as probe
+s = probe.PROBE["scheduler"]
+json.dumps({
+    "hidden_periods": s.logreader.hidden_periods,
+    "freezes": s.logreader.freezes,
+    "marks": len(s.timeline_marks),
+    "notice": s._page_notice_text,
+    "notice_visible": s.page_notice.is_visible(),
+    "replay_time": s.replay_time,
+})
+"""
+
+
+@pytest.fixture(scope="module")
+def page_events_replay(page_factory):
+    """A session with a pause of the page (400 ms busy loop) and a hidden tab, then its replay."""
+    session = page_factory()
+    session.start(LONG_SCENARIO.replace("0:05:00", "0:00:12"))
+    session.wait_until(lambda s: s["scenario_time"] >= 2, timeout=20)
+    session.page.evaluate("() => { const end = performance.now() + 400; while (performance.now() < end) {} }")
+    session.wait_until(lambda s: s["scenario_time"] >= 4, timeout=20)
+    session.hide_tab()
+    session.page.wait_for_timeout(2000)
+    session.page.evaluate(
+        """() => {
+            Object.defineProperty(document, "visibilityState", {value: "visible", configurable: true});
+            document.dispatchEvent(new Event("visibilitychange"));
+        }"""
+    )
+    session.page.wait_for_timeout(1000)
+    session.page.focus("#pygletCanvas")
+    session.page.keyboard.press("Space")  # Close the pause dialog
+    session.page.wait_for_selector("#end:not([hidden])", timeout=40_000)
+    replay = session.new_tab()
+    replay.start_replay(int(session.page.text_content("#end-file").split("_")[0]))
+    replay.wait_until(lambda s: s["running"], timeout=20)
+    return replay
+
+
+def _page_events_at(replay: OpenMATBPage, replay_time: float) -> dict:
+    replay.python(f"import _openmatb_probe as p; p.PROBE['scheduler'].set_target_time({replay_time})")
+    replay.page.wait_for_timeout(300)
+    return json.loads(replay.python(PAGE_EVENTS_STATE))
+
+
+class TestReplayPageEvents:
+    def test_hidden_page_and_pause_are_read(self, page_events_replay):
+        state = json.loads(page_events_replay.python(PAGE_EVENTS_STATE))
+        ((hidden, visible, resumed),) = state["hidden_periods"]
+        assert 3.5 < hidden < visible <= resumed
+        assert visible - hidden == pytest.approx(2, abs=0.5)
+        assert resumed - visible == pytest.approx(1, abs=0.5)  # Until the pause dialog was closed
+        assert any(duration >= 0.39 for _start, duration in state["freezes"])  # The 400 ms busy loop
+        assert state["marks"] == len(state["hidden_periods"]) + len(state["freezes"])
+
+    def test_notice_while_the_page_was_hidden(self, page_events_replay):
+        ((hidden, visible, resumed),) = json.loads(page_events_replay.python(PAGE_EVENTS_STATE))["hidden_periods"]
+        assert _page_events_at(page_events_replay, hidden - 0.5)["notice_visible"] is False
+        during = _page_events_at(page_events_replay, (hidden + visible) / 2)
+        assert during["notice_visible"] and during["notice"].startswith("Page hidden")
+        dialog = _page_events_at(page_events_replay, (visible + resumed) / 2)
+        assert dialog["notice_visible"] and dialog["notice"].startswith("Session paused")
+        assert _page_events_at(page_events_replay, resumed + 0.5)["notice_visible"] is False
+
+
+# ── Start page: sessions kept in the browser ────────────────────────────────
+
+
+def _stored_sessions(app: OpenMATBPage) -> list[str]:
+    app.page.wait_for_function("() => window.openmatb !== undefined", timeout=180_000)
+    app.page.select_option("#mode", "replay")
+    app.page.wait_for_timeout(500)
+    return app.page.eval_on_selector_all("#sessions-list .session-name", "items => items.map(i => i.firstChild.data)")
+
+
+class TestStoredSessions:
+    def test_download_again_and_delete(self, page_factory):
+        session = page_factory()
+        session.start(OUTPUT_SCENARIO)
+        session.page.wait_for_selector("#end:not([hidden])", timeout=40_000)
+        name = session.page.text_content("#end-file")
+        content = session.downloads[0].path().read_text(encoding="utf-8")
+
+        menu = session.new_tab()
+        menu.page.goto(f"{menu.url}/index.html?lang=en_EN")
+        assert _stored_sessions(menu) == [name]
+        assert menu.page.is_visible("#delete-all")
+
+        with menu.page.expect_download() as download:
+            menu.page.click("#sessions-list button[aria-label='Download']")
+        assert download.value.suggested_filename == name
+        assert download.value.path().read_text(encoding="utf-8") == content
+
+        menu.page.once("dialog", lambda dialog: dialog.accept())
+        menu.page.click("#sessions-list button[aria-label='Delete']")
+        menu.page.wait_for_selector("#sessions-empty:not([hidden])", timeout=10_000)
+        assert _stored_sessions(menu) == []
+
+        menu.page.reload()  # Deleted from the browser storage too
+        assert _stored_sessions(menu) == []
+        assert not menu.page.is_visible("#delete-all")
+
+    def test_delete_cancelled(self, page_factory):
+        session = page_factory()
+        session.start(OUTPUT_SCENARIO)
+        session.page.wait_for_selector("#end:not([hidden])", timeout=40_000)
+        menu = session.new_tab()
+        menu.page.goto(f"{menu.url}/index.html?lang=en_EN")
+        assert len(_stored_sessions(menu)) == 1
+        menu.page.once("dialog", lambda dialog: dialog.dismiss())
+        menu.page.click("#sessions-list button[aria-label='Delete']")
+        menu.page.wait_for_timeout(500)
+        assert len(_stored_sessions(menu)) == 1
+
+    def test_delete_all(self, page_factory):
+        menu = page_factory()
+        menu.open_menu()
+        for name in ("2026-09-20/1_260920_100000.csv", "2026-09-21/2_260921_100000.csv", "imported/7_260901_1.csv"):
+            folder = "/data/openmatb/sessions/" + name.rsplit("/", 1)[0]
+            menu.page.evaluate(f"() => window.openmatb.pyodide.FS.mkdirTree('{folder}')")
+            menu.write_file(f"/data/openmatb/sessions/{name}", "logtime,scenario_time,type,module,address,value\n")
+        assert len(_stored_sessions(menu)) == 3
+        menu.page.once("dialog", lambda dialog: dialog.accept())
+        menu.page.click("#delete-all")
+        menu.page.wait_for_selector("#sessions-empty:not([hidden])", timeout=10_000)
+        assert _stored_sessions(menu) == []

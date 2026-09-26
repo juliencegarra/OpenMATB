@@ -531,6 +531,14 @@ msgstr ""
 msgid "Generic Trigger"
 msgstr "Déclencheur générique"
 
+#: core/replayscheduler.py
+msgid "Page hidden (tab change or minimized window): session paused"
+msgstr "Page masquée (changement d'onglet ou fenêtre réduite) : session en pause"
+
+#: core/replayscheduler.py
+msgid "Session paused (pause dialog after the page was hidden)"
+msgstr "Session en pause (fenêtre de pause après le masquage de la page)"
+
 #~ msgid "Press any key to exit"
 #~ msgstr "Appuyez sur n’importe quelle touche pour sortir"
 

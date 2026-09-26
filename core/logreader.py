@@ -70,6 +70,10 @@ class LogReader:
         self._bp_scenario_times: list[float] = [0.0]
         self.perf_rows: list[dict[str, Any]] = []
         self.perf_series: dict[str, list[tuple[float, dict[str, str]]]] = {}
+        # Browser sessions only (see _read_page_events)
+        self.environment: dict[str, str] = {}
+        self.hidden_periods: list[tuple[float, float, float]] = []
+        self.freezes: list[tuple[float, float]] = []
 
         self.reload_session()
 
@@ -89,6 +93,9 @@ class LogReader:
         self._bp_scenario_times = [0.0]
         self.perf_rows = []
         self.perf_series = {}
+        self.environment = {}
+        self.hidden_periods = []
+        self.freezes = []
 
         # First pass: read all rows
         all_rows: list[dict[str, Any]] = []
@@ -113,6 +120,7 @@ class LogReader:
 
         # Session duration based on logtime (includes blocking periods)
         self.session_duration = all_rows[-1]["normalized_logtime"]
+        self._read_page_events(all_rows)
 
         # Second pass: process rows (skip first row as before)
         for row in all_rows[1:]:
@@ -232,6 +240,36 @@ class LogReader:
 
         # Normal segment: slope = 1
         return st_base + (replay_time - rt_base)
+
+    def _read_page_events(self, all_rows: list[dict[str, Any]]) -> None:
+        """Browser sessions: the browser and its system, the periods when the page was hidden (the scenario is
+        paused), and the pauses of the page (freeze, e.g. garbage collection), in replay time (seconds).
+
+        hidden_periods: (hidden, visible, resumed): the page was hidden from `hidden` to `visible`, and the
+        scenario resumed at `resumed` (after the pause dialog). freezes: (start, duration in seconds)."""
+        hidden_since: float | None = None
+        for row in all_rows:
+            kind: str = row["type"]
+            if kind in ("browser", "os"):
+                self.environment[kind] = row["value"]
+            elif kind == "freeze":
+                duration: float = float(row["value"]) / 1000  # Logged when the page runs again
+                self.freezes.append((max(row["normalized_logtime"] - duration, 0), duration))
+            elif kind == "visibility" and row["value"] == "hidden" and hidden_since is None:
+                hidden_since = row["normalized_logtime"]
+            elif kind == "visibility" and row["value"] == "visible" and hidden_since is not None:
+                self.hidden_periods.append(self._hidden_period(hidden_since, row["normalized_logtime"]))
+                hidden_since = None
+        if hidden_since is not None:  # Still hidden at the end of the session
+            self.hidden_periods.append(self._hidden_period(hidden_since, self.session_duration))
+
+    def _hidden_period(self, hidden: float, visible: float) -> tuple[float, float, float]:
+        # The scenario time is frozen from when the page is hidden until the pause dialog is closed
+        resumed: float = visible
+        for lt_start, lt_end, _frozen_st in self.blocking_segments:
+            if lt_start - 0.5 <= hidden <= lt_end:
+                resumed = max(resumed, lt_end)
+        return hidden, visible, resumed
 
     def is_in_blocking_segment(self, replay_time: float) -> bool:
         """Check if replay_time falls inside a blocking segment."""

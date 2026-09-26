@@ -377,3 +377,12 @@ msgstr ""
 #: replay.py:41
 msgid "In config.ini, screen index must be an integer, not {config['Openmatb']['screen_index']}"
 msgstr ""
+
+#: core/replayscheduler.py
+msgid "Page hidden (tab change or minimized window): session paused"
+msgstr ""
+
+#: core/replayscheduler.py
+msgid "Session paused (pause dialog after the page was hidden)"
+msgstr ""
+

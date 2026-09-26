@@ -8,12 +8,12 @@ from bisect import bisect_right
 from time import gmtime, strftime
 from typing import Any
 
-from pyglet.shapes import Circle
+from pyglet.shapes import Circle, Rectangle
 from pyglet.window import key
 
+from core.constants import BFLIM, REPLAY_PERF_STRIP_PROPORTION, REPLAY_STRIP_PROPORTION
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
-from core.constants import REPLAY_PERF_STRIP_PROPORTION, REPLAY_STRIP_PROPORTION
 from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
@@ -25,6 +25,10 @@ from core.widgets import Frame, MuteButton, PlayPause, Reticle, SimpleHTML, Simp
 from core.window import Window
 
 CLOCK_STEP: float = 0.1
+
+# Browser sessions: marks on the timeline where the page was hidden (scenario paused) or paused by the browser
+HIDDEN_MARK_COLOR: tuple[int, int, int, int] = (240, 160, 60, 200)
+FREEZE_MARK_COLOR: tuple[int, int, int, int] = (220, 50, 50, 230)
 
 
 class ReplayScheduler(Scheduler):
@@ -99,8 +103,96 @@ class ReplayScheduler(Scheduler):
         self.sliding: bool = False
 
         self.slider.value_max = self.logreader.session_duration
+        if need_new_logreader:
+            self.set_page_events_display()
 
         self.pause_playback()
+
+    # ---- Browser sessions: browser, page hidden (scenario paused), pauses of the page ----
+
+    def set_page_events_display(self) -> None:
+        """Show the browser of the session, mark on the timeline when the page was hidden or paused by the
+        browser, and prepare the notice displayed over the tasks while the page was hidden."""
+        environment: dict[str, str] = self.logreader.environment
+        browser: str = environment.get("browser", "").split(".")[0]  # "Chrome 153.0.0.0" -> "Chrome 153"
+        text: str = "\n".join(v for v in (browser, environment.get("os")) if v)
+        if text:
+            input_container: Container = Window.MainWindow.get_container("inputstrip")
+            label_container: Container = input_container.reduce_and_translate(width=0.9, height=0.07, y=0.73, x=0.5)
+            self.environment_label: Simpletext = Simpletext(
+                "replay_environment", label_container, text=text, font_size=F["SMALL"], color=C["BLACK"]
+            )
+            self.environment_label.show()
+
+        self.timeline_marks: list[Any] = self.create_timeline_marks()
+
+        notice_container: Container = Window.MainWindow.get_container("fullscreen").reduce_and_translate(
+            width=0.6, height=0.08, x=0.5, y=0.92
+        )
+        self.page_notice_back: Frame = Frame(
+            "page_notice_back",
+            notice_container,
+            fill_color=C["WHITE"],
+            border_color=C["RED"],
+            border_thickness=0.05,
+            draw_order=BFLIM + 20,
+        )
+        self.page_notice: Simpletext = Simpletext(
+            "page_notice", notice_container, text="", draw_order=BFLIM + 21, color=C["RED"], bold=True
+        )
+        self._page_notice_text: str | None = None
+
+    def create_timeline_marks(self) -> list[Any]:
+        """Rectangles over the timeline: page hidden (until the scenario resumed) and pauses of the page."""
+        duration: float = self.logreader.session_duration
+        if duration <= 0:
+            return []
+        groove: Container = self.slider.containers["allgroove"]
+        height: float = groove.h * 2.5
+        y: float = groove.cy - height / 2
+
+        def x_of(replay_time: float) -> float:
+            return groove.l + clamp(replay_time / duration, 0, 1) * groove.w
+
+        periods: list[tuple[float, float, tuple[int, int, int, int]]] = [
+            (hidden, resumed, HIDDEN_MARK_COLOR) for hidden, _visible, resumed in self.logreader.hidden_periods
+        ] + [(start, start + length, FREEZE_MARK_COLOR) for start, length in self.logreader.freezes]
+        marks: list[Any] = []
+        for start, end, color in periods:
+            mark = Rectangle(
+                x=x_of(start),
+                y=y,
+                width=max(x_of(end) - x_of(start), 2),
+                height=height,
+                color=color,
+                batch=Window.MainWindow.batch,
+                group=G(self.slider.draw_order + self.slider.rank - 0.5),  # Under the slider handle
+            )
+            marks.append(mark)
+        return marks
+
+    def page_notice_at(self, replay_time: float) -> str | None:
+        for hidden, visible, resumed in self.logreader.hidden_periods:
+            if hidden <= replay_time < visible:
+                return _("Page hidden (tab change or minimized window): session paused")
+            if visible <= replay_time < resumed:
+                return _("Session paused (pause dialog after the page was hidden)")
+        return None
+
+    def update_page_notice(self) -> None:
+        if not hasattr(self, "page_notice"):
+            return
+        text: str | None = self.page_notice_at(self.replay_time)
+        if text == self._page_notice_text:
+            return
+        self._page_notice_text = text
+        if text is None:
+            self.page_notice.hide()
+            self.page_notice_back.hide()
+        else:
+            self.page_notice.set_text(text)
+            self.page_notice_back.show()
+            self.page_notice.show()
 
     def set_inputs_buttons(self) -> None:
         # Plot the keyboard keys that are available in the present plugins
@@ -192,6 +284,7 @@ class ReplayScheduler(Scheduler):
         self.pause_if_end_reached()
         self.update_time_string()
         self.slider_control_update()
+        self.update_page_notice()
 
         if not self.is_paused:
             dt = min(dt, self.target_time - self.replay_time)

@@ -134,3 +134,97 @@ class TestWebSessionFile:
     def test_session_duration(self, reader):
         assert reader.session_duration == pytest.approx(10.01)
         assert reader.replay_session_id == 12
+
+
+# ── Page events of a browser session: hidden page, pauses of the page, browser ──
+
+# Page hidden at 4 s (scenario time frozen at 3.99), visible again at 8 s, pause dialog closed at 9.4 s
+PAUSED_SESSION = HEADER + (
+    "1000.0,0,version,,,1.4.5\n"
+    "1000.0,0,browser,,,Chrome 153.0.0.0\n"
+    "1000.0,0,os,,,Windows\n"
+    "1000.01,0,event,sysmon,self,start\n"
+    "1002.5,2.49,freeze,,,300\n"
+    "1004.0,3.99,visibility,,,hidden\n"
+    "1006.0,3.99,state,sysmon,x,1\n"
+    "1008.0,3.99,visibility,,,visible\n"
+    "1009.4,3.99,state,sysmon,x,2\n"
+    "1009.5,4.1,state,sysmon,x,3\n"
+    "1015.0,9.6,event,sysmon,self,stop\n"
+)
+
+
+class TestPageEvents:
+    @pytest.fixture
+    def reader(self, web_sessions):
+        _write(web_sessions / "2026-09-26" / "12_260926_101500.csv", PAUSED_SESSION)
+        return LogReader(12)
+
+    def test_browser_and_system(self, reader):
+        assert reader.environment == {"browser": "Chrome 153.0.0.0", "os": "Windows"}
+
+    def test_hidden_page_until_the_scenario_resumes(self, reader):
+        """Hidden from 4 s to 8 s, then the scenario stays paused until the pause dialog is closed (9.4 s)."""
+        ((hidden, visible, resumed),) = reader.hidden_periods
+        assert (hidden, visible, resumed) == pytest.approx((4.0, 8.0, 9.4))
+
+    def test_freeze_starts_when_the_page_stopped(self, reader):
+        """A freeze row is written when the page runs again: its period ends at the row."""
+        ((start, duration),) = reader.freezes
+        assert (start, duration) == pytest.approx((2.2, 0.3))
+
+    def test_page_still_hidden_at_the_end(self, web_sessions):
+        content = PAUSED_SESSION.replace("1008.0,3.99,visibility,,,visible\n", "")
+        _write(web_sessions / "2026-09-26" / "12_260926_101500.csv", content)
+        ((_hidden, visible, _resumed),) = LogReader(12).hidden_periods
+        assert visible == pytest.approx(15.0)  # Session end
+
+    def test_desktop_session_has_no_page_event(self, web_sessions):
+        desktop = (
+            HEADER + "1000.0,0,version,,,1.4.5\n1000.01,0,event,sysmon,self,start\n1005,5,event,sysmon,self,stop\n"
+        )
+        _write(web_sessions / "2026-09-26" / "3_260926_101500.csv", desktop)
+        reader = LogReader(3)
+        assert (reader.environment, reader.hidden_periods, reader.freezes) == ({}, [], [])
+
+
+class TestReplayPageNotice:
+    def _replay(self, hidden_periods):
+        from unittest.mock import MagicMock
+
+        from core.replayscheduler import ReplayScheduler
+
+        rs = object.__new__(ReplayScheduler)
+        rs.logreader = MagicMock(hidden_periods=hidden_periods)
+        return rs
+
+    @pytest.mark.parametrize(
+        "replay_time,notice",
+        [
+            (3.9, None),
+            (4.0, "Page hidden"),
+            (7.9, "Page hidden"),
+            (8.0, "Session paused"),
+            (9.3, "Session paused"),
+            (9.4, None),
+        ],
+    )
+    def test_notice_over_the_tasks(self, replay_time, notice):
+        text = self._replay([(4.0, 8.0, 9.4)]).page_notice_at(replay_time)
+        assert text == notice if notice is None else text.startswith(notice)
+
+    def test_timeline_marks(self):
+        """One mark per hidden period (until the scenario resumed) and per freeze, at their replay times."""
+        from unittest.mock import MagicMock
+
+        from core.container import Container
+
+        rs = self._replay([(4.0, 8.0, 9.0)])
+        rs.logreader.freezes = [(2.0, 0.3)]
+        rs.logreader.session_duration = 20.0
+        rs.slider = MagicMock(draw_order=1, rank=1, containers={"allgroove": Container("groove", 100, 10, 200, 4)})
+        with patch("core.replayscheduler.Window"):
+            marks = rs.create_timeline_marks()
+        hidden, freeze = marks
+        assert (hidden.x, hidden.width) == pytest.approx((140, 50))  # 4 s to 9 s of 20 s over 200 px
+        assert (freeze.x, freeze.width) == pytest.approx((120, 3))
