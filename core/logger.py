@@ -12,7 +12,7 @@ from time import perf_counter
 from typing import IO, Any
 
 from core.constants import PATHS, REPLAY_MODE
-from core.platform import IS_WEB, download_file, notify_page, sync_storage
+from core.platform import IS_WEB, notify_page, sync_storage
 from core.utils import find_the_first_available_session_number
 
 _logger: Logger | None = None
@@ -120,22 +120,24 @@ class Logger:
         self.file.close()
 
     def checkpoint(self, dt: float = 0) -> None:
-        """Browser: persist the session file written so far (in case the tab is closed)."""
+        """Browser: persist the session file written so far (in case the tab is closed), and let the page
+        send it to the server if configured (web_session_output, see web/session_output.js)."""
         if REPLAY_MODE or self._ended or self.file is None:
             return
         self.file.flush()
         sync_storage()
+        notify_page("openmatb-checkpoint", str(self.path))
 
     def end_session(self) -> None:
-        """Close the session file. In the browser, persist it and hand it to the page / user."""
+        """Close the session file. In the browser, persist it and hand it to the page, which downloads it
+        and/or sends it to the server (web_session_output, see web/session_output.js)."""
         if REPLAY_MODE or self._ended or self.file is None:
             return
         self._ended = True
         self.close()
         if IS_WEB:
             sync_storage()
-            download_file(self.path)
-            notify_page("openmatb-end", self.path.name)
+            notify_page("openmatb-end", str(self.path))
 
     def add_row_to_queue(self, row: Any) -> None:
         self.queue.append(row)

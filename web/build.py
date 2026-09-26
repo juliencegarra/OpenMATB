@@ -31,6 +31,9 @@ DIST: Path = WEB / "dist"
 # Keep in sync with requirements.txt
 WHEELS: list[str] = ["pyglet==3.0.dev10", "rstr==3.1.0"]
 
+# JavaScript modules of the page (web/*.js), copied as is
+PAGE_MODULES: tuple[str, ...] = ("openmatb.js", "session_output.js")
+
 # Browsers have no common sans-serif font name that pyglet can use: ship one (SIL Open Font License)
 FONT_URL: str = "https://cdn.jsdelivr.net/npm/@fontsource/noto-sans@5.3.0/files/noto-sans-latin-{weight}-normal.woff2"
 FONT_WEIGHTS: tuple[int, ...] = (400, 700)
@@ -105,7 +108,8 @@ def build() -> None:
     wheels: list[str] = download_wheels()
     copy_pyglet_bridge()
     download_fonts()
-    shutil.copy(WEB / "openmatb.js", DIST / "openmatb.js")
+    for module in PAGE_MODULES:
+        shutil.copy(WEB / module, DIST / module)
     version: str = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
     index: str = (WEB / "index.html").read_text(encoding="utf-8").replace("{{VERSION}}", version)
     (DIST / "index.html").write_text(index, encoding="utf-8")

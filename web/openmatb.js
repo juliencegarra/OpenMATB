@@ -7,6 +7,7 @@
 // required to enable audio and fullscreen).
 
 import { installPygletEmscripten } from "./pyglet_emscripten.js";
+import { SessionOutput, loadJatos, sessionOutputSettings, sessionRelativePath } from "./session_output.js";
 
 const PYODIDE_VERSION = "0.29.4";
 const APP_DIR = "/app";
@@ -30,7 +31,15 @@ const TEXTS = {
         start: "Start",
         session_ended: "Session ended",
         log_file: "The log file",
-        log_downloaded: "has been downloaded. It is also kept in this browser for replay.",
+        kept_in_browser: "It is also kept in this browser for replay.",
+        sending: "Sending…",
+        sent_download: "Downloaded on this computer",
+        sent_fallback: "Downloaded on this computer, because it could not be sent",
+        sent_webdav: "Sent to the server (WebDAV)",
+        sent_jatos: "Sent to JATOS",
+        sent_datapipe: "Sent to the OSF (DataPipe)",
+        not_sent: "Not sent to {destination}:",
+        config_error: "Configuration error (config.ini):",
         back_to_menu: "Back to menu",
         joystick_hint: "Joystick: press one of its buttons to detect it.",
         joystick_detected: "Joystick detected:",
@@ -56,7 +65,15 @@ const TEXTS = {
         start: "Démarrer",
         session_ended: "Session terminée",
         log_file: "Le fichier de log",
-        log_downloaded: "a été téléchargé. Il est aussi conservé dans ce navigateur pour le rejouer.",
+        kept_in_browser: "Il est aussi conservé dans ce navigateur pour le rejouer.",
+        sending: "Envoi en cours…",
+        sent_download: "Téléchargé sur cet ordinateur",
+        sent_fallback: "Téléchargé sur cet ordinateur, car il n'a pas pu être envoyé",
+        sent_webdav: "Envoyé au serveur (WebDAV)",
+        sent_jatos: "Envoyé à JATOS",
+        sent_datapipe: "Envoyé à l'OSF (DataPipe)",
+        not_sent: "Non envoyé à {destination} :",
+        config_error: "Erreur de configuration (config.ini) :",
         back_to_menu: "Retour au menu",
         joystick_hint: "Joystick : appuyez sur l'un de ses boutons pour le détecter.",
         joystick_detected: "Joystick détecté :",
@@ -198,9 +215,29 @@ async function boot() {
 
     window.openmatb = { pyodide }; // for debugging from the browser console
     status("ready");
-    $("start").disabled = !checkBrowser(pyodide);
+    const outputErrors = sessionOutputSettings(readAppConfig(pyodide)).errors;
+    $("start").disabled = !checkBrowser(pyodide) || !showConfigErrors(outputErrors);
     return pyodide;
 }
+
+function readAppConfig(pyodide) {
+    try {
+        return pyodide.FS.readFile(`${APP_DIR}/config.ini`, { encoding: "utf8" });
+    } catch {
+        return "";
+    }
+}
+
+// Show the configuration errors (session destinations) on the start page. Returns false if there are some.
+function showConfigErrors(errors) {
+    $("config-error").hidden = errors.length === 0;
+    $("config-error").textContent = errors.length ? `${t("config_error")} ${errors.join(" ; ")}` : "";
+    return errors.length === 0;
+}
+
+// Session file destinations (web_session_output in config.ini), set when a scenario is started
+let sessionOutput = null;
+const DESTINATION_NAMES = { download: "download", webdav: "WebDAV", jatos: "JATOS", datapipe: "DataPipe" };
 
 function importSession(pyodide, file, bytes) {
     // Imported CSV files are stored with the browser sessions, so they appear in the replay selector
@@ -238,12 +275,32 @@ $("start").addEventListener("click", async () => {
 
     const file = $("mode").value === "replay" ? $("session-file").files[0] : undefined;
     const bytes = file ? await file.arrayBuffer() : null;
+    const pyodide = await ready;
+
+    // Where the session file will go. config.ini is read again: it may have been changed since the loading
+    if ($("mode").value !== "replay") {
+        const settings = sessionOutputSettings(readAppConfig(pyodide));
+        let jatos;
+        try {
+            if (settings.destinations.includes("jatos")) {
+                jatos = await loadJatos();
+            }
+        } catch (error) {
+            settings.errors.push(String(error.message || error));
+        }
+        if (!showConfigErrors(settings.errors)) {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+            return;
+        }
+        sessionOutput = new SessionOutput(settings, { jatos });
+    }
 
     $("menu").hidden = true;
     $("pygletCanvas").hidden = false;
     await fullscreen;
 
-    const pyodide = await ready;
     if (file) {
         importSession(pyodide, file, bytes);
     }
@@ -268,12 +325,45 @@ document.addEventListener("openmatb-exit", () => {
     }
 });
 
-// Dispatched by core.logger.Logger.end_session() (the CSV download is triggered from Python)
-document.addEventListener("openmatb-end", (event) => {
+const readSessionFile = (pyodide, path) => pyodide.FS.readFile(path, { encoding: "utf8" });
+
+// Dispatched by core.logger.Logger.checkpoint() every 10 s: send the file written so far (if configured)
+document.addEventListener("openmatb-checkpoint", async (event) => {
+    if (sessionOutput) {
+        const pyodide = await ready;
+        sessionOutput.checkpoint(sessionRelativePath(event.detail), readSessionFile(pyodide, event.detail));
+    }
+});
+
+function destinationItem(text, ok) {
+    const item = document.createElement("li");
+    item.className = ok === undefined ? "" : ok ? "ok" : "failed";
+    item.textContent = text;
+    return item;
+}
+
+// Dispatched by core.logger.Logger.end_session(), with the path of the session file: download it and/or send it
+document.addEventListener("openmatb-end", async (event) => {
     if (document.fullscreenElement) {
         document.exitFullscreen();
     }
     $("pygletCanvas").hidden = true;
-    $("end-file").textContent = event.detail;
+    const relativePath = sessionRelativePath(event.detail);
+    $("end-file").textContent = relativePath.split("/").pop();
+    $("end-destinations").replaceChildren(destinationItem(t("sending")));
     $("end").hidden = false;
+
+    const pyodide = await ready;
+    const output = sessionOutput || new SessionOutput(sessionOutputSettings(""));
+    const results = await output.finish(relativePath, readSessionFile(pyodide, event.detail));
+    $("end-destinations").replaceChildren(...results.map((result) => destinationItem(
+        result.ok
+            ? t(`sent_${result.destination}`)
+            : `${t("not_sent").replace("{destination}", DESTINATION_NAMES[result.destination])} ${result.error}`,
+        result.ok,
+    )));
+    // JATOS: end the study run (JATOS end page, or the redirection set in JATOS, e.g. to Prolific)
+    if (results.some((result) => result.destination === "jatos" && result.ok)) {
+        setTimeout(() => window.jatos.endStudy(), 3000);
+    }
 });

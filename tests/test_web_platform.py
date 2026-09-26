@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib
 import importlib.util
+import re
 import sys
 import types
 import zipfile
@@ -455,32 +456,34 @@ def web_logger(tmp_path):
         patch.object(logger_module, "IS_WEB", True),
         patch.object(logger_module, "REPLAY_MODE", False),
         patch.object(logger_module, "sync_storage") as sync,
-        patch.object(logger_module, "download_file") as download,
         patch.object(logger_module, "notify_page") as notify,
     ):
-        yield SimpleNamespace(logger=lg, sync=sync, download=download, notify=notify, module=logger_module)
+        yield SimpleNamespace(logger=lg, sync=sync, notify=notify, module=logger_module)
 
 
 class TestWebLogger:
     def test_checkpoint_persists_what_is_written(self, web_logger):
-        """Every WEB_CHECKPOINT_INTERVAL, the session file is saved (in case the tab is closed)."""
-        web_logger.logger.checkpoint(10)
-        web_logger.logger.file.flush.assert_called_once()
+        """Every WEB_CHECKPOINT_INTERVAL, the session file is saved (in case the tab is closed), and the page
+        is told, so that it can send the file to the server (web/session_output.js)."""
+        lg = web_logger.logger
+        lg.checkpoint(10)
+        lg.file.flush.assert_called_once()
         web_logger.sync.assert_called_once()
+        web_logger.notify.assert_called_once_with("openmatb-checkpoint", str(lg.path))
 
-    def test_end_session_saves_downloads_and_notifies_the_page(self, web_logger):
+    def test_end_session_saves_and_hands_the_file_to_the_page(self, web_logger):
+        """The page downloads the file and/or sends it to the server (web_session_output)."""
         lg = web_logger.logger
         lg.end_session()
         lg.file.close.assert_called_once()
         web_logger.sync.assert_called_once()
-        web_logger.download.assert_called_once_with(lg.path)
-        web_logger.notify.assert_called_once_with("openmatb-end", "1_session.csv")
+        web_logger.notify.assert_called_once_with("openmatb-end", str(lg.path))
 
     def test_end_session_only_once(self, web_logger):
         web_logger.logger.end_session()
         web_logger.logger.end_session()
         web_logger.logger.checkpoint()
-        web_logger.download.assert_called_once()
+        web_logger.notify.assert_called_once()
         web_logger.logger.file.flush.assert_not_called()
 
     def test_nothing_is_saved_in_replay(self, web_logger):
@@ -488,7 +491,7 @@ class TestWebLogger:
             web_logger.logger.checkpoint()
             web_logger.logger.end_session()
         web_logger.sync.assert_not_called()
-        web_logger.download.assert_not_called()
+        web_logger.notify.assert_not_called()
 
 
 # ── Window: hidden tab ──────────────────────────────────────────────────────
@@ -573,6 +576,15 @@ def build_module():
 
 
 class TestWebBuild:
+    def test_page_modules_are_copied(self, build_module):
+        """Every JavaScript module imported by the page must be copied into web/dist."""
+        imported = set()
+        for module in build_module.PAGE_MODULES:
+            imported |= set(re.findall(r'from "\./([\w.]+\.js)"', (ROOT / "web" / module).read_text(encoding="utf-8")))
+        copied_elsewhere = {"pyglet_emscripten.js"}  # Extracted from the pyglet wheel
+        assert imported - copied_elsewhere <= set(build_module.PAGE_MODULES)
+        assert "session_output.js" in imported
+
     def test_wheels_match_requirements(self, build_module):
         """web/build.py pins must stay in sync with requirements.txt."""
         requirements = {

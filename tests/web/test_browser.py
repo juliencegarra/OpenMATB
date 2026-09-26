@@ -14,6 +14,7 @@ import csv
 import io
 import json
 import os
+import re
 import statistics
 import sys
 import time
@@ -600,3 +601,173 @@ class TestScreenshot:
         image_module = pytest.importorskip("PIL.Image")
         colors = image_module.open(download.value.path()).convert("RGB").getcolors(maxcolors=1 << 16)
         assert colors is None or len(colors) > 10  # The tasks are drawn: not a blank (cleared) image
+
+
+# ── Session file destinations (web_session_output) ──────────────────────────
+
+
+OUTPUT_SCENARIO: str = "0:00:00;sysmon;start\n0:00:03;sysmon;stop\n"
+# Longer than the checkpoint interval (10 s): the file is also sent during the session
+CHECKPOINT_SCENARIO: str = "0:00:00;sysmon;start\n0:00:12;sysmon;stop\n"
+FAKE_JATOS: str = """
+window.jatos = {
+    calls: [],
+    onLoad(callback) { setTimeout(callback, 0); },
+    submitResultData(data) { this.calls.push(["submitResultData", data]); return Promise.resolve(); },
+    uploadResultFile(data, filename) { this.calls.push(["uploadResultFile", filename, data]); return Promise.resolve(); },
+    endStudy() { this.calls.push(["endStudy"]); },
+};
+"""
+
+
+class Requests:
+    """Requests received by a mocked service (page.route)."""
+
+    def __init__(self) -> None:
+        self.received: list[dict] = []
+
+    def record(self, route, status: int = 201, body: str = "") -> None:
+        request = route.request
+        self.received.append(
+            {"method": request.method, "url": request.url, "headers": request.headers, "body": request.post_data}
+        )
+        route.fulfill(status=status, body=body, headers={"Access-Control-Allow-Origin": "*"})
+
+
+def _end_items(app: OpenMATBPage) -> list[str]:
+    app.page.wait_for_selector("#end:not([hidden])", timeout=40_000)
+    app.page.wait_for_function(
+        "() => !document.querySelector('#end-destinations li:not(.ok):not(.failed)')", timeout=20_000
+    )
+    return app.page.eval_on_selector_all(
+        "#end-destinations li", "items => items.map(i => i.className + ': ' + i.textContent)"
+    )
+
+
+class TestSessionOutput:
+    def test_default_is_the_download_only(self, page_factory):
+        app = page_factory()
+        requests = Requests()
+        app.page.route("**/dav/**", lambda route: requests.record(route))
+        app.page.route("https://pipe.jspsych.org/**", lambda route: requests.record(route))
+        app.start(OUTPUT_SCENARIO)
+        assert _end_items(app) == ["ok: Downloaded on this computer"]
+        assert len(app.downloads) == 1
+        assert requests.received == []
+
+    def test_webdav_during_the_session_and_at_the_end(self, page_factory):
+        """Same structure as desktop: <folder>/<YYYY-MM-DD>/<N>_<yymmdd>_<hhmmss>.csv, sent every 10 s."""
+        app = page_factory()
+        dav = Requests()
+        app.page.route("**/dav/**", lambda route: dav.record(route))
+        app.start(CHECKPOINT_SCENARIO, config={"web_session_output": "webdav", "web_webdav_url": f"{app.url}/dav/"})
+        assert _end_items(app) == ["ok: Sent to the server (WebDAV)"]
+        assert app.downloads == []  # Not downloaded
+        methods = [r["method"] for r in dav.received]
+        assert methods[0] == "MKCOL" and methods.count("MKCOL") == 1
+        puts = [r for r in dav.received if r["method"] == "PUT"]
+        assert len(puts) >= 2  # During the session (checkpoint) and at the end
+        pattern = rf"{re.escape(app.url)}/dav/\d{{4}}-\d\d-\d\d/\d+_\d{{6}}_\d{{6}}\.csv"
+        assert re.fullmatch(pattern, puts[-1]["url"])
+        assert dav.received[0]["url"] == puts[-1]["url"].rsplit("/", 1)[0] + "/"  # MKCOL of the day folder
+        assert puts[0]["headers"].get("if-none-match") == "*"  # Never overwrite another session
+        assert "if-none-match" not in puts[-1]["headers"]
+        rows = list(csv.DictReader(io.StringIO(puts[-1]["body"])))
+        assert [r["value"] for r in rows if r["type"] == "event"] == ["start", "stop"]
+        assert len(puts[-1]["body"]) > len(puts[0]["body"])  # The checkpoint sent the file written so far
+
+    def test_webdav_does_not_overwrite_another_session(self, page_factory):
+        """A file with the same name already on the server (412): the session is sent as <name>_2.csv."""
+        app = page_factory()
+        dav = Requests()
+
+        def handler(route):
+            first_put = route.request.method == "PUT" and not any(r["method"] == "PUT" for r in dav.received)
+            dav.record(route, status=412 if first_put else 201)
+
+        app.page.route("**/dav/**", handler)
+        app.start(OUTPUT_SCENARIO, config={"web_session_output": "webdav", "web_webdav_url": f"{app.url}/dav/"})
+        assert _end_items(app) == ["ok: Sent to the server (WebDAV)"]
+        puts = [r["url"] for r in dav.received if r["method"] == "PUT"]
+        assert puts[1].endswith("_2.csv") and puts[1][: -len("_2.csv")] == puts[0][: -len(".csv")]
+
+    def test_datapipe_at_the_end(self, page_factory):
+        app = page_factory()
+        pipe = Requests()
+        app.page.route("https://pipe.jspsych.org/**", lambda route: pipe.record(route, body='{"message": "Success"}'))
+        app.start(OUTPUT_SCENARIO, config={"web_session_output": "datapipe", "web_datapipe_experiment": "abc123"})
+        assert _end_items(app) == ["ok: Sent to the OSF (DataPipe)"]
+        posts = [r for r in pipe.received if r["method"] == "POST"]
+        assert len(posts) == 1 and posts[0]["url"] == "https://pipe.jspsych.org/api/data/"
+        body = json.loads(posts[0]["body"])
+        assert body["experimentID"] == "abc123"
+        assert re.fullmatch(r"\d+_\d{6}_\d{6}\.csv", body["filename"])
+        assert "sysmon" in body["data"]
+
+    def test_datapipe_existing_file_name(self, page_factory):
+        """DataPipe rejects an existing file name: the session is sent again with a random suffix."""
+        app = page_factory()
+        pipe = Requests()
+
+        def handler(route):
+            if route.request.method != "POST":
+                return pipe.record(route, status=204)
+            if not [r for r in pipe.received if r["method"] == "POST"]:
+                return pipe.record(route, status=400, body='{"error": "FILE_EXISTS", "message": "File exists"}')
+            return pipe.record(route, body='{"message": "Success"}')
+
+        app.page.route("https://pipe.jspsych.org/**", handler)
+        app.start(OUTPUT_SCENARIO, config={"web_session_output": "datapipe", "web_datapipe_experiment": "abc123"})
+        assert _end_items(app) == ["ok: Sent to the OSF (DataPipe)"]
+        names = [json.loads(r["body"])["filename"] for r in pipe.received if r["method"] == "POST"]
+        assert len(names) == 2 and names[1] != names[0] and names[1].startswith(names[0][: -len(".csv")] + "_")
+
+    def test_jatos(self, page_factory):
+        app = page_factory()
+        app.page.route("**/jatos.js", lambda route: route.fulfill(body=FAKE_JATOS, content_type="text/javascript"))
+        app.start(CHECKPOINT_SCENARIO, config={"web_session_output": "jatos"})
+        assert _end_items(app) == ["ok: Sent to JATOS"]
+        app.page.wait_for_function("() => window.jatos.calls.some(c => c[0] === 'endStudy')", timeout=10_000)
+        calls = app.page.evaluate("() => window.jatos.calls")
+        names = [c[0] for c in calls]
+        assert names.count("submitResultData") >= 2  # Checkpoint(s) and end
+        assert names[-2:] == ["uploadResultFile", "endStudy"]
+        assert re.fullmatch(r"\d+_\d{6}_\d{6}\.csv", calls[-2][1]) and "sysmon" in calls[-2][2]
+        assert app.downloads == []
+
+    def test_server_and_download(self, page_factory):
+        app = page_factory()
+        dav = Requests()
+        app.page.route("**/dav/**", lambda route: dav.record(route))
+        config = {"web_session_output": "webdav, download", "web_webdav_url": f"{app.url}/dav/"}
+        app.start(OUTPUT_SCENARIO, config=config)
+        assert _end_items(app) == ["ok: Sent to the server (WebDAV)", "ok: Downloaded on this computer"]
+        assert len(app.downloads) == 1
+
+    def test_failed_upload_falls_back_to_the_download(self, page_factory):
+        app = page_factory()
+        app.page.route("**/dav/**", lambda route: route.fulfill(status=500, body="Server error"))
+        app.start(OUTPUT_SCENARIO, config={"web_session_output": "webdav", "web_webdav_url": f"{app.url}/dav/"})
+        items = _end_items(app)
+        assert items[0].startswith("failed: Not sent to WebDAV: HTTP 500")
+        assert items[1] == "ok: Downloaded on this computer, because it could not be sent"
+        assert len(app.downloads) == 1
+
+    def test_configuration_error_prevents_starting(self, page_factory):
+        app = page_factory()
+        app.prepare(OUTPUT_SCENARIO, config={"web_session_output": "webdav"})  # No web_webdav_url
+        app.page.click("#start")
+        app.page.wait_for_selector("#config-error:not([hidden])", timeout=10_000)
+        assert "web_webdav_url" in app.page.text_content("#config-error")
+        assert app.page.is_visible("#menu")
+        assert not app.state()["started"]
+
+    def test_jatos_outside_jatos(self, page_factory):
+        """jatos.js is served by JATOS: without it, a clear message instead of a broken session."""
+        app = page_factory()
+        app.page.route("**/jatos.js", lambda route: route.fulfill(status=404, body=""))
+        app.prepare(OUTPUT_SCENARIO, config={"web_session_output": "jatos"})
+        app.page.click("#start")
+        app.page.wait_for_selector("#config-error:not([hidden])", timeout=10_000)
+        assert "run the study from JATOS" in app.page.text_content("#config-error")
+        assert app.page.is_visible("#menu")

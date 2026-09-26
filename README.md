@@ -89,7 +89,7 @@ Then open http://localhost:8000. `web/build.py` writes a static site into `web/d
 
 Differences with the desktop version:
 
-- **Session files** are downloaded at the end of the session. They are also kept in the browser storage (IndexedDB), so they can be replayed later from the same browser. A session file can also be imported from the start page to be replayed.
+- **Session files** are downloaded at the end of the session by default, or sent to a server (see [Collecting the session files](#collecting-the-session-files)). They are also kept in the browser storage (IndexedDB), so they can be replayed later from the same browser. A session file can also be imported from the start page to be replayed.
 - **The scenario is paused** when the page is hidden (tab change, minimized window), because browsers slow down hidden pages. The `visibility` entries of the session file record when it happened.
 - **Joysticks** (e.g. flight joysticks) are read with the browser Gamepad API: the main stick axes control the tracking task and buttons are available as `JOY_BTN_n`. Browsers reveal a joystick only once one of its buttons has been pressed: the start page shows the detected joystick.
 - The **parallel port** and **Lab Streaming Layer** are not available.
@@ -97,6 +97,35 @@ Differences with the desktop version:
 - **Timing**: response times are measured with the browser clock (`performance.now`), whose resolution browsers reduce (to about 0.1 ms in Chrome, 1 ms in Firefox), and the display is refreshed by the browser (`requestAnimationFrame`). Take it into account for time-critical experiments.
 - **Browsers**: use **Chrome or Edge** for experiments. They are tested with Firefox and Safari's engine (WebKit) too, but **Firefox pauses the page for 0.1 to 1 s every few seconds** (garbage collection, notably when the user has not interacted for a few seconds), which delays updates and responses. Timing studies of online experiment platforms also found Firefox the most variable browser ([Anwyl-Irvine et al., 2021](https://doi.org/10.3758/s13428-020-01501-5)). The start page displays a notice in Firefox; `web_browser_check` in `config.ini` sets this check: `warn` (default), `block` (Firefox cannot start) or `off`. It can also be set in the URL: `?browsercheck=block`.
 - **Session file**: it records the browser, its version and the system (`browser`, `os` and `useragent` entries), and every pause of the page longer than 100 ms (`freeze` entries: the duration in ms, at the scenario time when the page stopped), so that the affected periods can be excluded from the analysis.
+
+#### Collecting the session files
+
+The web version is a static site: by default, the session file is downloaded on the participant's computer. It can
+instead (or also) be sent to a server, set by `web_session_output` in `config.ini` (a comma separated list):
+
+| `web_session_output` | Where the file goes | When |
+|---|---|---|
+| `download` (default) | Downloaded on the participant's computer | At the end |
+| `webdav` | A folder of a web server, with the desktop structure: `<web_webdav_url>/YYYY-MM-DD/<N>_<yymmdd>_<hhmmss>.csv` | Every 10 s and at the end |
+| `jatos` | [JATOS](https://www.jatos.org), in the result of the study run | Every 10 s and at the end |
+| `datapipe` | An [OSF](https://osf.io) project, through [DataPipe](https://pipe.jspsych.org) | At the end (DataPipe refuses to replace a file) |
+
+For example `web_session_output=webdav, download` sends the file to the server and also downloads it. The end page
+tells the participant where the file went. If it could not be sent anywhere, it is downloaded instead. Sending the
+file every 10 s keeps the data of a session interrupted by a closed tab or a crash.
+
+- **WebDAV** (`web_webdav_url=https://lab.example.org/openmatb/sessions/`): a folder of an Apache (`mod_dav`), nginx
+  (`dav_methods`) or Nextcloud server that accepts `PUT` (and `MKCOL` for the day folders). Allow only these methods on
+  this folder (no reading, listing or deleting by the participants), and limit the file size (a one hour session is a
+  few MB). Serve it from the same server as the page, or allow CORS for `PUT`, `MKCOL` and the `If-None-Match` header.
+  A file is never overwritten by another session: if the name is already used, the session is sent as `<name>_2.csv`.
+  The session numbers are those of the browser, which can be the same for two participants.
+- **JATOS**: upload the files of `web/dist` as the files of a JATOS study (one HTML component, `index.html`). The
+  session file is saved in the result data during the session, then as a result file (`uploadResultFile`), and the
+  study run is ended (JATOS end page, or the end redirect set in JATOS, e.g. to Prolific). The page must be run from
+  JATOS: it loads `jatos.js` from there.
+- **DataPipe** (`web_datapipe_experiment=<experiment ID>`): create the experiment on https://pipe.jspsych.org, link it
+  to an OSF project and enable data collection. The site can then be hosted anywhere, e.g. on GitHub Pages.
 
 ### Use of compiled source (coming soon)
 

@@ -47,6 +47,11 @@
         .notice.info::before { content: "\2139\FE0F"; }
         .notice.warning { background: var(--warning-bg); color: var(--warning-text); border-color: var(--warning-border); }
         .notice.warning::before { content: "\26A0\FE0F"; }
+        .destinations { margin: 0 0 8px; padding: 0; list-style: none; }
+        .destinations li { margin: 6px 0; padding-left: 24px; text-indent: -24px; }
+        .destinations li::before { display: inline-block; width: 24px; text-indent: 0; content: "\2026"; }
+        .destinations li.ok::before { content: "\2705"; }
+        .destinations li.failed::before { content: "\274C"; }
         button { margin-top: 24px; width: 100%; padding: 12px; font: inherit; font-weight: 600; border: 0;
             border-radius: 4px; background: var(--accent); color: var(--accent-text); cursor: pointer; }
         button:disabled { opacity: 0.5; cursor: progress; }
@@ -84,6 +89,7 @@
                 <strong id="joystick-name"></strong></span></p>
 
             <p id="browser-warning" class="notice warning" role="alert" hidden></p>
+            <p id="config-error" class="notice warning" role="alert" hidden></p>
 
             <button id="start" disabled data-i18n="start">Start</button>
         </div>
@@ -92,8 +98,9 @@
     <main id="end" class="screen" hidden>
         <div class="panel">
             <h1 data-i18n="session_ended">Session ended</h1>
-            <p class="subtitle"><span data-i18n="log_file">The log file</span> <strong id="end-file"></strong>
-                <span data-i18n="log_downloaded">has been downloaded. It is also kept in this browser for replay.</span></p>
+            <p class="subtitle"><span data-i18n="log_file">The log file</span> <strong id="end-file"></strong></p>
+            <ul id="end-destinations" class="destinations" aria-live="polite"></ul>
+            <p class="hint" data-i18n="kept_in_browser">It is also kept in this browser for replay.</p>
             <button id="back" data-i18n="back_to_menu">Back to menu</button>
         </div>
     </main>

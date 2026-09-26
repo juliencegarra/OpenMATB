@@ -403,28 +403,30 @@ class TestEndSession:
 
     @patch.object(_logger_module, "REPLAY_MODE", False)
     @patch.object(_logger_module, "IS_WEB", True)
-    def test_web_persists_and_downloads(self):
-        """In the browser, the session file is synced, downloaded and announced to the page."""
+    def test_web_persists_and_hands_the_file_to_the_page(self):
+        """In the browser, the session file is synced and handed to the page (download and/or upload)."""
         lg = _make_logger(file=MagicMock(), path=MagicMock())
         with (
             patch.object(_logger_module, "sync_storage") as sync,
-            patch.object(_logger_module, "download_file") as download,
             patch.object(_logger_module, "notify_page") as notify,
         ):
             lg.end_session()
         sync.assert_called_once()
-        download.assert_called_once_with(lg.path)
-        notify.assert_called_once()
+        notify.assert_called_once_with("openmatb-end", str(lg.path))
 
 
 class TestCheckpoint:
     @patch.object(_logger_module, "REPLAY_MODE", False)
     def test_flushes_and_syncs(self):
-        lg = _make_logger(file=MagicMock())
-        with patch.object(_logger_module, "sync_storage") as sync:
+        lg = _make_logger(file=MagicMock(), path=MagicMock())
+        with (
+            patch.object(_logger_module, "sync_storage") as sync,
+            patch.object(_logger_module, "notify_page") as notify,
+        ):
             lg.checkpoint()
         lg.file.flush.assert_called_once()
         sync.assert_called_once()
+        notify.assert_called_once_with("openmatb-checkpoint", str(lg.path))
 
     @patch.object(_logger_module, "REPLAY_MODE", False)
     def test_nothing_after_end(self):
