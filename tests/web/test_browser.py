@@ -11,6 +11,7 @@ wake-ups actually come every ~9-17 ms.
 from __future__ import annotations
 
 import csv
+import gzip
 import io
 import json
 import os
@@ -624,8 +625,17 @@ window.jatos = {
     calls: [],
     onLoad(callback) { setTimeout(callback, 0); },
     submitResultData(data) { this.calls.push(["submitResultData", data]); return Promise.resolve(); },
-    uploadResultFile(data, filename) { this.calls.push(["uploadResultFile", filename, data]); return Promise.resolve(); },
+    uploadResultFile(data, filename) {
+        this.calls.push(["uploadResultFile", filename, data.type]);
+        this.files[filename] = data;  // Replaces the previous upload, as JATOS does in the same component
+        return Promise.resolve();
+    },
     endStudy() { this.calls.push(["endStudy"]); },
+    files: {},
+    async text(filename) {
+        const stream = this.files[filename].stream().pipeThrough(new DecompressionStream("gzip"));
+        return new Response(stream).text();
+    },
 };
 """
 
@@ -740,9 +750,21 @@ class TestSessionOutput:
         app.page.wait_for_function("() => window.jatos.calls.some(c => c[0] === 'endStudy')", timeout=10_000)
         calls = app.page.evaluate("() => window.jatos.calls")
         names = [c[0] for c in calls]
-        assert names.count("submitResultData") >= 2  # Checkpoint(s) and end
-        assert names[-2:] == ["uploadResultFile", "endStudy"]
-        assert re.fullmatch(r"\d+_\d{6}_\d{6}\.csv", calls[-2][1]) and "sysmon" in calls[-2][2]
+        assert names.count("uploadResultFile") >= 2  # Checkpoint(s) and end
+        assert names[-3:] == ["uploadResultFile", "submitResultData", "endStudy"]
+        # The file goes compressed, always under the same name (JATOS limits the result data to 5 MB)
+        filenames = {c[1] for c in calls if c[0] == "uploadResultFile"}
+        assert len(filenames) == 1
+        filename = filenames.pop()
+        assert re.fullmatch(r"\d+_\d{6}_\d{6}\.csv\.gz", filename)
+        assert {c[2] for c in calls if c[0] == "uploadResultFile"} == {"application/gzip"}
+        csv_text = app.page.evaluate("(name) => window.jatos.text(name)", filename)
+        assert csv_text.startswith("logtime,scenario_time,") and csv_text.rstrip().endswith("manual,,,end")
+        # The result data only holds a summary
+        summaries = [json.loads(c[1]) for c in calls if c[0] == "submitResultData"]
+        assert summaries[0]["state"] == "running" and summaries[-1]["state"] == "finished"
+        assert summaries[-1]["file"] == filename and summaries[-1]["csv_bytes"] == len(csv_text.encode())
+        assert summaries[-1]["scenario_time"] == pytest.approx(12, abs=0.5)
         assert app.downloads == []
 
     def test_server_and_download(self, page_factory):
@@ -1018,6 +1040,29 @@ class TestStoredSessions:
         menu.page.click("#sessions-list button[aria-label='Delete']")
         menu.page.wait_for_timeout(500)
         assert len(_stored_sessions(menu)) == 1
+
+    def test_import_compressed_session(self, page_factory):
+        """A session file sent to JATOS (.csv.gz) is imported decompressed."""
+        content = "logtime,scenario_time,type,module,address,value\n0.1,0,event,sysmon,self,start\n"
+        app = page_factory()
+        app.open_menu()
+        app.page.select_option("#mode", "replay")
+        app.page.uncheck("#fullscreen")
+        compressed = {
+            "name": "9_260901_100000.csv.gz",
+            "mimeType": "application/gzip",
+            "buffer": gzip.compress(content.encode()),
+        }
+        app.page.set_input_files("#session-file", files=[compressed])
+        app.page.click("#start")
+        path = "/data/openmatb/sessions/imported/9_260901_100000.csv"
+        app.page.wait_for_function(
+            "(path) => window.openmatb.pyodide.FS.analyzePath(path).exists", arg=path, timeout=30_000
+        )
+        assert (
+            app.page.evaluate("(path) => window.openmatb.pyodide.FS.readFile(path, {encoding: 'utf8'})", path)
+            == content
+        )
 
     def test_delete_all(self, page_factory):
         menu = page_factory()

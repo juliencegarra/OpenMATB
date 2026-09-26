@@ -107,7 +107,7 @@ instead (or also) be sent to a server, set by `web_session_output` in `config.in
 |---|---|---|
 | `download` (default) | Downloaded on the participant's computer | At the end |
 | `webdav` | A folder of a web server, with the desktop structure: `<web_webdav_url>/YYYY-MM-DD/<N>_<yymmdd>_<hhmmss>.csv` | Every 10 s and at the end |
-| `jatos` | [JATOS](https://www.jatos.org), in the result of the study run | Every 10 s and at the end |
+| `jatos` | [JATOS](https://www.jatos.org), as a compressed result file (`.csv.gz`) of the study run | Every 10 s and at the end |
 | `datapipe` | An [OSF](https://osf.io) project, through [DataPipe](https://pipe.jspsych.org) | At the end (DataPipe refuses to replace a file) |
 | `none` | Nowhere: only kept in the browser storage | |
 
@@ -117,14 +117,19 @@ file every 10 s keeps the data of a session interrupted by a closed tab or a cra
 
 - **WebDAV** (`web_webdav_url=https://lab.example.org/openmatb/sessions/`): a folder of an Apache (`mod_dav`), nginx
   (`dav_methods`) or Nextcloud server that accepts `PUT` (and `MKCOL` for the day folders). Allow only these methods on
-  this folder (no reading, listing or deleting by the participants), and limit the file size (a one hour session is a
-  few MB). Serve it from the same server as the page, or allow CORS for `PUT`, `MKCOL` and the `If-None-Match` header.
+  this folder (no reading, listing or deleting by the participants), and limit the file size (a session writes about
+  70 MB of CSV per hour). Serve it from the same server as the page, or allow CORS for `PUT`, `MKCOL` and the `If-None-Match` header.
   A file is never overwritten by another session: if the name is already used, the session is sent as `<name>_2.csv`.
   The session numbers are those of the browser, which can be the same for two participants.
 - **JATOS**: upload the files of `web/dist` as the files of a JATOS study (one HTML component, `index.html`). The
-  session file is saved in the result data during the session, then as a result file (`uploadResultFile`), and the
-  study run is ended (JATOS end page, or the end redirect set in JATOS, e.g. to Prolific). The page must be run from
-  JATOS: it loads `jatos.js` from there.
+  session file is saved as a gzip result file, `<N>_<yymmdd>_<hhmmss>.csv.gz`, replaced every 10 s, and the study run
+  is ended at the end of the session (JATOS end page, or the end redirect set in JATOS, e.g. to Prolific). The result
+  data only holds a summary (`{"file", "state": "running" | "finished", "scenario_time", "csv_bytes"}`), to follow the
+  sessions in the JATOS result pages. The file is compressed because of the JATOS limits (by default 5 MB of result
+  data, 30 MB per result file and 50 MB per study run): a session writes about 70 MB of CSV per hour, about 14 MB once
+  compressed. The `.csv.gz` files can be imported as they are in the replay (start page), or decompressed with any
+  archive tool (7-Zip, `gunzip`, `pandas.read_csv` reads them directly). The page must be run from JATOS: it loads
+  `jatos.js` from there.
 - **DataPipe** (`web_datapipe_experiment=<experiment ID>`): create the experiment on https://pipe.jspsych.org, link it
   to an OSF project and enable data collection. The site can then be hosted anywhere, e.g. on GitHub Pages.
 

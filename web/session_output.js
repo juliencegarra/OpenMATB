@@ -62,6 +62,29 @@ export function downloadText(filename, text, mime = "text/csv") {
     URL.revokeObjectURL(url);
 }
 
+// gzip compression of a text or a Blob (CompressionStream: Chrome 80, Firefox 113, Safari 16.4)
+export async function gzip(text) {
+    const stream = new Blob([text]).stream().pipeThrough(new CompressionStream("gzip"));
+    return new Blob([await new Response(stream).arrayBuffer()], { type: "application/gzip" });
+}
+
+// Bytes (ArrayBuffer) decompressed if they are gzip data, unchanged otherwise
+export async function gunzipIfNeeded(bytes) {
+    const header = new Uint8Array(bytes, 0, Math.min(2, bytes.byteLength));
+    if (header[0] !== 0x1f || header[1] !== 0x8b) {
+        return bytes;
+    }
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+    return new Response(stream).arrayBuffer();
+}
+
+// Scenario time of the last row of a session file (second column), without splitting the whole file
+function lastScenarioTime(csv) {
+    const text = csv.trimEnd();
+    const time = Number(text.slice(text.lastIndexOf("\n") + 1).split(",")[1]);
+    return Number.isFinite(time) ? time : null;
+}
+
 async function describeError(response) {
     let detail = "";
     try {
@@ -142,18 +165,45 @@ class WebDAV {
     }
 }
 
+// jatos.js rejects with an Error, a message or a request object, depending on the call and the JATOS version
+function jatosError(error) {
+    if (error instanceof Error) {
+        return error;
+    }
+    const detail = error?.responseText || error?.statusText || error?.message || String(error);
+    return new Error(error?.status ? `HTTP ${error.status} (${detail})` : detail);
+}
+
+// The session file is uploaded as a gzip result file: JATOS limits the result data to 5 MB by default (a session
+// writes about 70 MB of CSV per hour) and the result files to 30 MB (about 14 MB per hour once compressed).
+// It is uploaded again under the same name at every checkpoint, replacing the previous upload.
+// The result data only holds a summary, shown in the JATOS result pages.
 class JATOS {
     constructor(jatos) {
         this.jatos = jatos;
     }
 
-    checkpoint(relativePath, csv) {
-        return this.jatos.submitResultData(csv); // Overwrites the result data sent before
+    async send(relativePath, csv, state) {
+        const filename = `${relativePath.split("/").pop()}.gz`;
+        const raw = new Blob([csv]);
+        const file = await gzip(raw);
+        const summary = { file: filename, state, scenario_time: lastScenarioTime(csv), csv_bytes: raw.size };
+        console.info(`[OpenMATB] JATOS: uploading ${filename} (${Math.round(file.size / 1024)} kB, ${state})`);
+        try {
+            await this.jatos.uploadResultFile(file, filename);
+            await this.jatos.submitResultData(JSON.stringify(summary));
+        } catch (error) {
+            throw jatosError(error);
+        }
+        console.info(`[OpenMATB] JATOS: ${filename} uploaded`);
     }
 
-    async finish(relativePath, csv) {
-        await this.jatos.submitResultData(csv);
-        await this.jatos.uploadResultFile(csv, relativePath.split("/").pop());
+    checkpoint(relativePath, csv) {
+        return this.send(relativePath, csv, "running");
+    }
+
+    finish(relativePath, csv) {
+        return this.send(relativePath, csv, "finished");
     }
 }
 
@@ -229,6 +279,7 @@ export class SessionOutput {
                 await destination.finish(relativePath, csv);
                 results.push({ destination: name, ok: true });
             } catch (error) {
+                console.error(`[OpenMATB] Session file not sent to ${name}:`, error);
                 results.push({ destination: name, ok: false, error: String(error.message || error) });
             }
         }

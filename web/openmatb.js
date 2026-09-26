@@ -8,7 +8,7 @@
 
 import { installPygletEmscripten } from "./pyglet_emscripten.js";
 import {
-    SessionOutput, downloadText, loadJatos, sessionOutputSettings, sessionRelativePath,
+    SessionOutput, downloadText, gunzipIfNeeded, loadJatos, sessionOutputSettings, sessionRelativePath,
 } from "./session_output.js";
 import { connectScorm } from "./scorm.js";
 
@@ -303,11 +303,13 @@ const DESTINATION_NAMES = {
     download: "download", webdav: "WebDAV", jatos: "JATOS", datapipe: "DataPipe", scorm: "LMS",
 };
 
-function importSession(pyodide, file, bytes) {
-    // Imported CSV files are stored with the browser sessions, so they appear in the replay selector
+async function importSession(pyodide, file, bytes) {
+    // Imported CSV files are stored with the browser sessions, so they appear in the replay selector.
+    // Compressed files (.csv.gz, as sent to JATOS) are stored decompressed.
     const folder = `${SESSIONS_DIR}/imported`;
     pyodide.FS.mkdirTree(folder);
-    pyodide.FS.writeFile(`${folder}/${file.name}`, new Uint8Array(bytes));
+    const csv = await gunzipIfNeeded(bytes);
+    pyodide.FS.writeFile(`${folder}/${file.name.replace(/\.gz$/i, "")}`, new Uint8Array(csv));
 }
 
 const ready = boot().catch((error) => {
@@ -453,7 +455,7 @@ $("start").addEventListener("click", async () => {
     await fullscreen;
 
     if (file) {
-        importSession(pyodide, file, bytes);
+        await importSession(pyodide, file, bytes);
     }
     status(null);
     try {
