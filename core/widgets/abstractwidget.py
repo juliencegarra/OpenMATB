@@ -75,24 +75,26 @@ class AbstractWidget:
             self.visible = False
 
     def _show_all_vertices(self) -> None:
-        """Re-show: set .visible=True on shapes, restore batch on labels/sprites."""
+        """Re-show: set .visible=True on shapes and labels, restore the batch if it was removed."""
         batch = Window.MainWindow.batch
         for v_def in self.vertex.values():
-            if isinstance(v_def, ShapeBase):
+            if isinstance(v_def, (ShapeBase, Label, HTMLLabel)):
                 if v_def.batch is None:
                     v_def.batch = batch
                 v_def.visible = True
-            elif isinstance(v_def, (Label, HTMLLabel, sprite.Sprite)):
+            elif isinstance(v_def, sprite.Sprite):
                 if v_def.batch is None:
                     v_def.batch = batch
 
     def _hide_all_vertices(self) -> None:
-        """Hide: set .visible=False on shapes, remove batch on labels."""
+        """Hide: set .visible=False on shapes and labels, which stay in the batch.
+
+        Labels are not removed from the batch to hide them: pyglet then cleans up the groups left empty, and
+        removes an equal group of other labels by mistake (groups with the same order and state are equal). Those
+        labels were no longer drawn, e.g. the task titles after a fullscreen questionnaire at the start."""
         for v_def in self.vertex.values():
-            if isinstance(v_def, ShapeBase):
+            if isinstance(v_def, (ShapeBase, Label, HTMLLabel)):
                 v_def.visible = False
-            elif isinstance(v_def, (Label, HTMLLabel)):
-                v_def.batch = None
 
     def show_aoi_highlight(self) -> None:
         """Add some AOI vertices (frame and text)"""
@@ -120,7 +122,12 @@ class AbstractWidget:
                 v_def.batch = batch
 
     def empty_batch(self) -> None:
-        self._hide_all_vertices()
+        """The widget is discarded: remove its vertices from the batch."""
+        for v_def in self.vertex.values():
+            if isinstance(v_def, ShapeBase):
+                v_def.visible = False
+            elif isinstance(v_def, (Label, HTMLLabel)):
+                v_def.batch = None
         self._batch_assigned = False
 
     def get_triangle_vertice(self, h_ratio: float = 0.25, x_ratio: float = 0.3, angle: float = 0) -> list[float]:
