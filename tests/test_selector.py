@@ -69,12 +69,18 @@ class TestScanAndFormat:
         fs = FileSelector(_window(), mode="replay")
         assert fs._display_texts == ["3_999999_000000"]
 
-    def test_small_files_are_marked_empty(self, folders):
-        _write(folders[0] / "a.txt", size=10)
-        _write(folders[0] / "b.txt")
-        fs = FileSelector(_window())
-        assert fs._display_texts == ["a  (vide)", "b"]
+    def test_small_session_files_are_marked_empty(self, folders):
+        _write(folders[1] / "1_240101_120000.csv", size=10)
+        _write(folders[1] / "2_240101_130000.csv")
+        fs = FileSelector(_window(), mode="replay")
+        assert fs._display_texts == ["#1 — 2024-01-01 12:00:00  (vide)", "#2 — 2024-01-01 13:00:00"]
         assert fs._empty_indices == {0}
+
+    def test_short_scenarios_are_not_marked_empty(self, folders):
+        _write(folders[0] / "a.txt", size=10)
+        fs = FileSelector(_window())
+        assert fs._display_texts == ["a"]
+        assert fs._empty_indices == set()
 
 
 class TestBuildUi:
@@ -96,10 +102,10 @@ class TestBuildUi:
         assert fs._highlight.visible is False
 
     def test_row_colors_and_highlight(self, folders):
-        _write(folders[0] / "a.txt")
-        _write(folders[0] / "b.txt", size=10)
-        _write(folders[0] / "c.txt")
-        fs = FileSelector(_window())
+        _write(folders[1] / "1_240101_120000.csv")
+        _write(folders[1] / "2_240101_120000.csv", size=10)
+        _write(folders[1] / "3_240101_120000.csv")
+        fs = FileSelector(_window(), mode="replay")
         assert [lbl.color for lbl in fs._label_pool[:3]] == [C["WHITE"], C["GREY"], C["BLACK"]]
         assert fs._highlight.visible is True
         assert (fs._highlight.x, fs._highlight.y) == (40, 600 - 40 - 70 - 32)

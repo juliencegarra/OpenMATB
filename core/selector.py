@@ -41,9 +41,7 @@ class FileSelector:
         self._files: list[Path] = self._scan_files()
         self._display_texts: list[str] = [self._format_entry(f) for f in self._files]
 
-        # Identify empty/near-empty files (crash, immediate close, etc.)
-        EMPTY_THRESHOLD = 500  # bytes
-        self._empty_indices: set[int] = {i for i, f in enumerate(self._files) if f.stat().st_size < EMPTY_THRESHOLD}
+        self._empty_indices: set[int] = self._find_empty_indices()
         for i in self._empty_indices:
             self._display_texts[i] += "  (vide)"
 
@@ -74,6 +72,14 @@ class FileSelector:
         self._build_ui()
 
     # ---- File scanning ----
+
+    def _find_empty_indices(self) -> set[int]:
+        """Empty or near-empty session files (crash, immediate close, etc.). Not scenarios: a short scenario is a
+        small file."""
+        if self.mode != "replay":
+            return set()
+        empty_threshold = 500  # bytes
+        return {i for i, f in enumerate(self._files) if f.stat().st_size < empty_threshold}
 
     def _scan_files(self) -> list[Path]:
         if self.mode == "scenario":
