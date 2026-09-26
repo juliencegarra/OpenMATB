@@ -1,0 +1,19 @@
+name: Update GitHub Pages
+
+# The website is published by the "GitHub Pages" workflow of master, which builds the web version from this
+# branch: run it again when this branch changes, so that the Demo tab of the website is up to date.
+on:
+  push:
+    branches: [pyglet3-pyodide-web]
+
+permissions:
+  actions: write
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run the GitHub Pages workflow of master
+        run: gh workflow run pages.yml --ref master --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ github.token }}
