@@ -176,6 +176,8 @@ class ReplayScheduler(Scheduler):
             if dt > 0:
                 self.replay_time += dt
                 super().update(dt)  # update_timers (mapping) + execute_events
+                if self.clock.isFastForward:
+                    self.execute_due_events()
         else:
             # Required: check exit while paused (super().update is not called)
             self.check_if_must_exit()
@@ -192,6 +194,18 @@ class ReplayScheduler(Scheduler):
         self.display_mouse_inputs()
         self.process_states()
         self._enforce_mute()
+
+    def execute_due_events(self) -> None:
+        """Fast-forward (seek): execute all the events due at the reached time.
+
+        An update executes one event, and a fast-forward step lasts 0.1 s: events at the same time
+        (e.g. the stop of every task at the end of the session) were not all executed by a seek.
+        Stops when a blocking plugin (instructions, questionnaire) pauses the scenario, as in playback.
+        """
+        for _ in range(len(self.events_queue) + len(self.events)):
+            if len(self.events_queue) == 0 or self.is_scenario_time_paused():
+                return
+            self.execute_events()
 
     def check_plugins_alive(self) -> bool:
         return all([p.alive for _, p in self.plugins.items()])
