@@ -529,6 +529,27 @@ def _dark_runs(flags: list[bool]) -> list[tuple[int, int]]:
 
 
 class TestTextRendering:
+    def test_task_titles_after_a_fullscreen_questionnaire(self, page_factory):
+        """Regression: after a fullscreen questionnaire (basic.txt starts with the NASA-TLX), the black title bands
+        of the tasks had no text. Hiding the questionnaire labels removed them from the batch, and pyglet 3 then
+        removed the equal group of the task titles too."""
+        image_module = pytest.importorskip("PIL.Image")
+        app = page_factory()
+        app.start(
+            "0:00:00;sysmon;start\n0:00:00;track;start\n"
+            "0:00:00;genericscales;filename;nasatlx_en.txt\n0:00:00;genericscales;start\n"
+            "0:00:30;sysmon;stop\n0:00:30;track;stop\n"
+        )
+        app.page.wait_for_timeout(1000)
+        app.page.focus("#pygletCanvas")
+        app.page.keyboard.press("Space")  # Validates the questionnaire
+        app.page.wait_for_timeout(1000)
+        image = image_module.open(io.BytesIO(app.page.screenshot())).convert("L")
+        pixels, (width, height) = image.load(), image.size
+        # The upper black band (task titles) is the top 5 % of the page: white text on it
+        light = sum(pixels[x, y] > 200 for x in range(width) for y in range(3, int(height * 0.04)))
+        assert light > 100, "no task title in the upper band"
+
     def test_letters_share_the_same_baseline(self, page_factory):
         """Regression: with fractional font metrics (Firefox), pyglet drew some letters one pixel too high
         or too low. Measured on the session ID dialog: the bottom of every letter is on the baseline, except
