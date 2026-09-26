@@ -98,13 +98,22 @@ class Resman(AbstractPlugin):
         self.automode_position: tuple[float, float] = (0.48, 0.55)
         self.wait_before_leak: int = 1  # How many updates to wait before the leak begins
 
+        # Tanks whose widget displays a tolerance area (known once the widgets are created)
+        self._tolerance_tanks: set[str] = set()
+
         # Add response timers to target tanks, and an is_in_tolerance information
-        for tank_letter, this_tank in self.parameters["tank"].items():
+        for this_tank in self.parameters["tank"].values():
             if this_tank["target"] is not None:
-                tank: dict[str, Any] = self.parameters["tank"][tank_letter]
-                tank["_response_start"] = None
-                tank["_is_in_tolerance"] = None
-                tank["_tolerance_color"] = self.parameters["tolerancecolor"]
+                self._init_target_state(this_tank)
+
+    def _init_target_state(self, this_tank: dict[str, Any]) -> None:
+        """Add the response timer and tolerance fields of a target tank, if missing.
+
+        Any tank may receive a target from the scenario (e.g. tank-c-target), not only a and b.
+        """
+        this_tank.setdefault("_response_start", None)
+        this_tank.setdefault("_is_in_tolerance", None)
+        this_tank.setdefault("_tolerance_color", self.parameters["tolerancecolor"])
 
     def show(self) -> None:
         super().show()
@@ -201,6 +210,8 @@ class Resman(AbstractPlugin):
                 )
 
         tanks: dict[str, dict[str, Any]] = self.parameters["tank"]
+        # The tank widget reads the target once, here: only these tanks can display a tolerance area
+        self._tolerance_tanks = {letter for letter, t in tanks.items() if t["target"] is not None}
         for tank_letter, this_tank in tanks.items():
             fluid_label: str = str(this_tank["level"]) if this_tank["depletable"] else ""
             this_tank["widget"] = self.add_widget(
@@ -296,6 +307,7 @@ class Resman(AbstractPlugin):
                     this_pump["state"] = "off"
 
             if this_tank["target"] is not None:  # Record performance for target tanks
+                self._init_target_state(this_tank)
                 t: int = this_tank["target"]
                 r: int = self.parameters["toleranceradius"]
                 this_tank["_is_in_tolerance"] = float("nan")
@@ -329,19 +341,24 @@ class Resman(AbstractPlugin):
             else:
                 this_pump["widget"].set_color(self.parameters[f"pumpcolor{this_pump['state']}"])
 
+            if this_pump.get("statuswidget") is None:  # Pump status not displayed (displaystatus False)
+                continue
             if this_pump["state"] == "on":
                 this_pump["statuswidget"].set_flow(str(this_pump["flow"]))
             else:  # failure || off
                 this_pump["statuswidget"].set_flow(str(0))
 
-        for _tank_letter, this_tank in tanks.items():
+        for tank_letter, this_tank in tanks.items():
             this_tank["widget"].set_fluid_level(this_tank["level"], this_tank["max"])
             fluid_label: str = str(this_tank["level"]) if this_tank["depletable"] else ""
             this_tank["widget"].set_fluid_label(fluid_label)
 
             # Apply modification that are specific to target tanks
             # a.    Is there a need to refresh the tolerance radius ?
-            if this_tank["target"] is not None:  # Check only target tanks
+            # Check only target tanks whose widget was created with a tolerance area
+            # (a target set after the widgets creation is not displayed)
+            if this_tank["target"] is not None and tank_letter in self._tolerance_tanks:
+                self._init_target_state(this_tank)
                 this_tank["widget"].set_tolerance_radius(
                     self.parameters["toleranceradius"], this_tank["target"], this_tank["max"]
                 )

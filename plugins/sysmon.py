@@ -273,22 +273,20 @@ class Sysmon(AbstractPlugin):
         # Does this feedback type (positive or negative) is currently active ?
         # If so, set the feedback type and duration, if the gauge has got one
         # (the feedback widget is refreshed by the refresh_widget method)
-        if self.parameters["feedbacks"][ft]["active"] and "_feedbacktimer" in gauge:
+        if self.parameters["feedbacks"][ft]["active"] and self._is_scale(gauge):
             self.set_scale_feedback(gauge, ft)
 
         # Feed the freeze timer with feedback duration (1.5 by default) if the response is good
         if success:
             gauge["_freezetimer"] = self.parameters["feedbackduration"]
 
-        # IDEA: do we need to distinguish manual detection (hit) from automatic detection ?
         # Evaluate performance in terms of signal detection and response time
+        sdt_string: str
+        rt: int | float
         if ft == "positive":
-            sdt_string: str
-            rt: int | float
             sdt_string, rt = "HIT", self._response_elapsed_ms(gauge["_response_start"])
         else:
             sdt_string, rt = "MISS", float("nan")
-        sdt_string = "HIT" if ft == "positive" else "MISS"
 
         self.log_performance("name", gauge["name"])
         self.log_performance("signal_detection", sdt_string)
@@ -326,11 +324,23 @@ class Sysmon(AbstractPlugin):
     def get_all_gauges(self) -> list[dict[str, Any]]:
         return [g for g in self.get_scale_gauges() + self.get_light_gauges()]
 
+    def _is_scale(self, gauge: dict[str, Any]) -> bool:
+        """Only scales own a feedback widget (lights have none)."""
+        return any(gauge is g for g in self.get_scale_gauges())
+
     def set_scale_feedback(self, gauge: dict[str, Any], feedback_type: str) -> None:
         # Set the feedback type and duration, if the gauge has got one
         # (the feedback widget is refreshed by the refresh_widget method)
         gauge["_feedbacktype"] = feedback_type
         gauge["_feedbacktimer"] = self.parameters["feedbackduration"]
+
+    def filter_key(self, keystr: str) -> str | None:
+        # allowanykey may be enabled from a scenario (set_parameter) or directly by an agent:
+        # make SPACE an accepted key whenever the mode is on, whatever the way it was set.
+        # (When the mode is off, a SPACE left in self.keys is ignored by do_on_key.)
+        if self.parameters["allowanykey"]:
+            self.keys.add("SPACE")
+        return super().filter_key(keystr)
 
     def do_on_key(self, key: str, state: str, emulate: bool) -> None:
         key = super().do_on_key(key, state, emulate)
@@ -347,7 +357,10 @@ class Sysmon(AbstractPlugin):
                     self.stop_failure(gauge=failures[0], success=True, resolved_by=resolver)
                 return
 
-            gauge: dict[str, Any] = self.get_gauge_by_key(key)
+            gauges: list[dict[str, Any]] = self.get_gauges_key_value("key", key)
+            if not gauges:  # An accepted key mapped to no gauge (e.g. SPACE without allowanykey)
+                return
+            gauge: dict[str, Any] = gauges[0]
             if key in [g["key"] for g in self.get_gauges_on_failure()]:
                 self.stop_failure(gauge=gauge, success=True, resolved_by=resolver)
             else:
@@ -357,7 +370,7 @@ class Sysmon(AbstractPlugin):
                 self.log_performance("resolved_by", resolver)
 
                 # Set a negative feedback if relevant
-                if self.parameters["feedbacks"]["negative"]["active"]:
+                if self.parameters["feedbacks"]["negative"]["active"] and self._is_scale(gauge):
                     self.set_scale_feedback(gauge, "negative")
 
     def do_on_mouse_press(self, x: int, y: int, button: int) -> None:

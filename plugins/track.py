@@ -225,13 +225,13 @@ class Track(AbstractPlugin):
                     diff: float = cursorx - limitx
                     cursorx -= diff
                     if compx != 0 and diff / compx > 0:  # Same sign
-                        moffx -= diff + compx * self.parameters["joystickforce"]
+                        moffx -= diff + compx
 
                 if clamp_y:
                     diff = cursory - limity
                     cursory -= diff
                     if compy != 0 and diff / compy > 0:  # Same sign
-                        moffy -= diff + compy * self.parameters["joystickforce"]
+                        moffy -= diff + compy
 
                 yield (cursorx, cursory)
             else:
