@@ -251,6 +251,14 @@ class TestBrowserCheck:
         assert app.page.is_visible("#browser-warning") == (ENGINE == "firefox")
         assert app.page.is_enabled("#start")
 
+    def test_notice_is_shown_when_the_page_opens(self, page_factory):
+        """Not only once OpenMATB is loaded (several seconds later)."""
+        app = page_factory()
+        app.page.goto(f"{app.url}/index.html?lang=en_EN")
+        app.page.wait_for_selector("#lang")
+        assert app.page.evaluate("() => window.openmatb === undefined")  # Still loading
+        assert app.page.is_visible("#browser-warning") == (ENGINE == "firefox")
+
     def test_block_mode(self, page_factory):
         app = self._menu(page_factory, "&browsercheck=block")
         assert app.page.is_enabled("#start") == (ENGINE != "firefox")
@@ -267,7 +275,7 @@ class TestBrowserCheck:
             pytest.skip("the notice is only displayed in Firefox")
         app = self._menu(page_factory)
         app.page.select_option("#lang", "fr_FR")
-        assert "Utilisez Chrome ou Edge" in app.page.text_content("#browser-warning")
+        assert "privilégiez Chrome ou Edge" in app.page.text_content("#browser-warning")
 
 
 # ── Browser specific behaviour ──────────────────────────────────────────────

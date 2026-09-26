@@ -39,8 +39,8 @@ const TEXTS = {
         loading_openmatb: "Loading OpenMATB…",
         ready: "Ready",
         loading_failed: "Loading failed:",
-        browser_warn: "Firefox pauses for 0.1 to 1 s every few seconds: timing is not reliable. "
-            + "Use Chrome or Edge for experiments.",
+        browser_warn: "The Firefox browser cannot guarantee the timing accuracy of the results, "
+            + "prefer Chrome or Edge.",
         browser_block: "This experiment requires Chrome or Edge: Firefox pauses for 0.1 to 1 s every few seconds, "
             + "which makes timing unreliable.",
     },
@@ -65,8 +65,8 @@ const TEXTS = {
         loading_openmatb: "Chargement d'OpenMATB…",
         ready: "Prêt",
         loading_failed: "Échec du chargement :",
-        browser_warn: "Firefox s'interrompt 0,1 à 1 s toutes les quelques secondes : la précision temporelle "
-            + "n'est pas garantie. Utilisez Chrome ou Edge pour les expériences.",
+        browser_warn: "Le navigateur Firefox ne peut garantir la précision temporelle des résultats, "
+            + "privilégiez Chrome ou Edge.",
         browser_block: "Cette expérience nécessite Chrome ou Edge : Firefox s'interrompt 0,1 à 1 s toutes les "
             + "quelques secondes, ce qui rend la mesure du temps peu fiable.",
     },
@@ -127,14 +127,14 @@ showJoystick();
 const TIMING_ISSUE_BROWSERS = [/Firefox\/|FxiOS\//];
 const BROWSER_CHECK_MODES = ["warn", "block", "off"];
 
-// ?browsercheck= in the URL, otherwise web_browser_check in config.ini, otherwise "warn"
-function browserCheckMode(pyodide) {
+// ?browsercheck= in the URL, otherwise web_browser_check in config.ini (once OpenMATB is loaded), otherwise "warn"
+function browserCheckMode(pyodide = null) {
     const requested = new URLSearchParams(location.search).get("browsercheck");
     if (BROWSER_CHECK_MODES.includes(requested)) {
         return requested;
     }
     try {
-        const config = pyodide.FS.readFile(`${APP_DIR}/config.ini`, { encoding: "utf8" });
+        const config = pyodide?.FS.readFile(`${APP_DIR}/config.ini`, { encoding: "utf8" }) ?? "";
         const mode = (config.match(/^\s*web_browser_check\s*=\s*(\w+)/m) || [])[1]?.toLowerCase();
         if (BROWSER_CHECK_MODES.includes(mode)) {
             return mode;
@@ -145,17 +145,20 @@ function browserCheckMode(pyodide) {
     return "warn";
 }
 
-// Show the notice for browsers with timing issues. Returns false when starting is not allowed.
-function checkBrowser(pyodide) {
+// Show (or hide) the notice for browsers with timing issues. Returns false when starting is not allowed.
+// Called when the page opens, then again once config.ini is available (it is in app.zip).
+function checkBrowser(pyodide = null) {
     const mode = browserCheckMode(pyodide);
-    if (mode === "off" || !TIMING_ISSUE_BROWSERS.some((pattern) => pattern.test(navigator.userAgent))) {
+    const concerned = mode !== "off" && TIMING_ISSUE_BROWSERS.some((pattern) => pattern.test(navigator.userAgent));
+    $("browser-warning").hidden = !concerned;
+    if (!concerned) {
         return true;
     }
     $("browser-warning").dataset.i18n = `browser_${mode}`;
     $("browser-warning").textContent = t(`browser_${mode}`);
-    $("browser-warning").hidden = false;
     return mode !== "block";
 }
+checkBrowser();
 
 async function loadFonts() {
     // pyglet measures and renders text with the fonts known by the document
