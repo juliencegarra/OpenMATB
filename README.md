@@ -151,7 +151,7 @@ In the LMS, the start page only offers to run the scenario. The LMS records that
 (`incomplete`), then `completed` at the end of the session, the time spent, and the name of the session file as the
 lesson location (`cmi.core.lesson_location`, `cmi.location` in SCORM 2004), to match each learner with their file.
 **The session file itself is not stored in the LMS**: SCORM only keeps a few kB per learner, while a session file is a
-few MB. It goes where `web_session_output` says, e.g. `webdav` or `datapipe`, which must accept requests from the
+tens of MB (about 70 MB per hour). It goes where `web_session_output` says, e.g. `webdav` or `datapipe`, which must accept requests from the
 LMS site (CORS). Open the activity in a new window if the LMS frame prevents the fullscreen or the joystick.
 
 ### Use of compiled source (coming soon)
