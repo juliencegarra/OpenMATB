@@ -7,3 +7,5 @@ audio_matb
 *.odt
 report.xml
 coverage.xml
+main.dist/
+.coverage

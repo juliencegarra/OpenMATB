@@ -20,6 +20,8 @@ from core.pseudorandom import choice, randint, uniform, xeger
 from core.widgets import Radio, Simpletext
 from plugins.abstractplugin import AbstractPlugin
 
+CALLSIGN_MAX_ATTEMPTS: int = 100
+
 
 class Communications(AbstractPlugin):
     def __init__(self, label: str = "", taskplacement: str = "bottomleft", taskupdatetime: int = 80) -> None:
@@ -214,16 +216,23 @@ class Communications(AbstractPlugin):
         self.letters = ascii_uppercase if len(self.letters) < 3 else self.letters
         self.digits = digits if len(self.digits) < 3 else self.digits
 
+        attempts: int = 0
         while duplicateChar or notInList:
+            # The characters left may not fit the regex (e.g. its fixed prefix is already used): use them all again
+            if attempts == CALLSIGN_MAX_ATTEMPTS:
+                self.letters, self.digits = ascii_uppercase, digits
+            # Even all the characters do not fit (e.g. lowercase or repeated characters): accept the callsign
+            elif attempts == 2 * CALLSIGN_MAX_ATTEMPTS:
+                break
             callsign: str = xeger(call_rgx, self.alias, self.scenario_time, self.callsign_seed)
             duplicateChar = len(callsign) != len(set(callsign))
             notInList = any([s not in self.letters + self.digits for s in callsign])
             self.callsign_seed += 1
+            attempts += 1
 
-        for s in callsign:
-            for li in [self.letters, self.digits]:
-                if s in li:
-                    li = li.replace(s, "")
+        # The characters of this callsign are not used by the next ones, so that callsigns are easier to tell apart
+        self.letters = "".join(s for s in self.letters if s not in callsign)
+        self.digits = "".join(s for s in self.digits if s not in callsign)
         return callsign
 
     def group_audio_files(self, callsign: str, radio_name: str, freq: float) -> Any:
