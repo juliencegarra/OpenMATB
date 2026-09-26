@@ -5,6 +5,11 @@ on:
   push:
     tags:
       - 'v*'
+      - '[0-9]*'  # The release tags have no "v" (1.4.2)
+
+# Creating the GitHub release (tags) needs to write to the repository
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -23,9 +28,11 @@ jobs:
         shell: bash
         run: |
           pip install nuitka ordered-set
-          pip install pyglet==1.5.26 rstr==3.1.0
+          # Versions come from requirements.txt (without Windows line endings); pylsl and pyparallel are optional
+          req() { tr -d '\r' < requirements.txt | grep -E "^($1)([<>=!~ ;]|$)"; }
+          pip install $(req 'pyglet|rstr')
+          pip install $(req pylsl) || echo "::warning::pylsl not available, skipping"
           pip install pyparallel==0.2.2 || echo "::warning::pyparallel not available, skipping"
-          pip install pylsl==1.16.1 || echo "::warning::pylsl not available, skipping"
 
       - name: Read version
         id: version
@@ -69,7 +76,7 @@ jobs:
           path: main.dist/
 
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: installer/Output/OpenMATB-Setup-*.exe
