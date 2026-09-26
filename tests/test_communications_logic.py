@@ -254,3 +254,11 @@ class TestVoiceSwitching:
         mock_errors.add_error.assert_called_once()
         logged_msg = mock_errors.add_error.call_args[0][0]
         assert "does not exist" in logged_msg
+
+
+class TestPromptWithoutSoundPath:
+    def test_no_sound_when_the_voice_is_invalid(self):
+        """Regression: an invalid voice (no sound path) returned a pyglet SourceGroup, not imported here."""
+        c = _make_comms_for_voice()
+        c.sound_path = None
+        assert c.group_audio_files("AB12", "COM1", 120.5) == []

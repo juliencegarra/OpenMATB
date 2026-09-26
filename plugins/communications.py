@@ -244,8 +244,8 @@ class Communications(AbstractPlugin):
         )
 
         sources: list[Any] = []
-        if self.sound_path is None:
-            return SourceGroup()
+        if self.sound_path is None:  # Invalid voice idiom/gender (reported by set_sample_sounds): no sound
+            return sources
 
         for f in list_of_sounds:
             wav_path = self.sound_path.joinpath(f"{f}.wav")
