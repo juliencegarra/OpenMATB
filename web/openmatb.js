@@ -38,6 +38,8 @@ const TEXTS = {
         log_file: "The log file",
         kept_in_browser: "It is also kept in this browser for replay.",
         sending: "Sending…",
+        ending_study: "End of the study…",
+        study_not_ended: "The study could not be ended in JATOS:",
         sent_download: "Downloaded on this computer",
         sent_fallback: "Downloaded on this computer, because it could not be sent",
         sent_webdav: "Sent to the server (WebDAV)",
@@ -83,6 +85,8 @@ const TEXTS = {
         log_file: "Le fichier de log",
         kept_in_browser: "Il est aussi conservé dans ce navigateur pour le rejouer.",
         sending: "Envoi en cours…",
+        ending_study: "Fin de l'étude…",
+        study_not_ended: "L'étude n'a pas pu être terminée dans JATOS :",
         sent_download: "Téléchargé sur cet ordinateur",
         sent_fallback: "Téléchargé sur cet ordinateur, car il n'a pas pu être envoyé",
         sent_webdav: "Envoyé au serveur (WebDAV)",
@@ -506,6 +510,10 @@ document.addEventListener("openmatb-end", async (event) => {
     const relativePath = sessionRelativePath(event.detail);
     $("end-file").textContent = relativePath.split("/").pop();
     $("end-destinations").replaceChildren(destinationItem(t("sending")));
+    // JATOS (like an LMS) takes over at the end: going back to the menu would reload the page and leave the study
+    // run unfinished
+    const inJatos = Boolean(sessionOutput?.settings.destinations.includes("jatos"));
+    $("back").hidden = inJatos || Boolean(scorm);
     $("end").hidden = false;
 
     const pyodide = await ready;
@@ -531,6 +539,18 @@ document.addEventListener("openmatb-end", async (event) => {
     )));
     // JATOS: end the study run (JATOS end page, or the redirection set in JATOS, e.g. to Prolific)
     if (results.some((result) => result.destination === "jatos" && result.ok)) {
-        setTimeout(() => window.jatos.endStudy(), 3000);
+        $("end-destinations").append(destinationItem(t("ending_study")));
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Time to read that the file was sent
+        try {
+            console.info("[OpenMATB] JATOS: ending the study run");
+            await window.jatos.endStudy();
+            return; // JATOS shows its end page
+        } catch (error) {
+            console.error("[OpenMATB] JATOS: the study run could not be ended:", error);
+            $("end-destinations").lastChild.replaceWith(destinationItem(
+                `${t("study_not_ended")} ${error?.message || error?.responseText || error}`, false,
+            ));
+        }
     }
+    $("back").hidden = Boolean(scorm); // JATOS did not take over
 });

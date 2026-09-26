@@ -654,14 +654,18 @@ class Requests:
         route.fulfill(status=status, body=body, headers={"Access-Control-Allow-Origin": "*"})
 
 
+def _end_list(app: OpenMATBPage) -> list[str]:
+    return app.page.eval_on_selector_all(
+        "#end-destinations li", "items => items.map(i => i.className + ': ' + i.textContent)"
+    )
+
+
 def _end_items(app: OpenMATBPage) -> list[str]:
     app.page.wait_for_selector("#end:not([hidden])", timeout=40_000)
     app.page.wait_for_function(
         "() => !document.querySelector('#end-destinations li:not(.ok):not(.failed)')", timeout=20_000
     )
-    return app.page.eval_on_selector_all(
-        "#end-destinations li", "items => items.map(i => i.className + ': ' + i.textContent)"
-    )
+    return _end_list(app)
 
 
 class TestSessionOutput:
@@ -746,8 +750,10 @@ class TestSessionOutput:
         app = page_factory()
         app.page.route("**/jatos.js", lambda route: route.fulfill(body=FAKE_JATOS, content_type="text/javascript"))
         app.start(CHECKPOINT_SCENARIO, config={"web_session_output": "jatos"})
-        assert _end_items(app) == ["ok: Sent to JATOS"]
-        app.page.wait_for_function("() => window.jatos.calls.some(c => c[0] === 'endStudy')", timeout=10_000)
+        app.page.wait_for_function("() => window.jatos.calls.some(c => c[0] === 'endStudy')", timeout=60_000)
+        assert _end_list(app) == ["ok: Sent to JATOS", ": End of the study…"]
+        # JATOS takes over: going back to the menu would reload the page and leave the study run unfinished
+        assert not app.page.is_visible("#back")
         calls = app.page.evaluate("() => window.jatos.calls")
         names = [c[0] for c in calls]
         assert names.count("uploadResultFile") >= 2  # Checkpoint(s) and end
@@ -799,6 +805,21 @@ class TestSessionOutput:
         app.start(OUTPUT_SCENARIO, config={"web_session_output": "none"})
         assert _end_items(app) == ["ok: Not sent anywhere (web_session_output=none)"]
         assert app.downloads == []
+
+    def test_jatos_study_not_ended(self, page_factory):
+        """If JATOS refuses to end the study run, the participant sees it and can go back to the menu."""
+        app = page_factory()
+        refusing = FAKE_JATOS.replace(
+            'endStudy() { this.calls.push(["endStudy"]); },',
+            'endStudy() { this.calls.push(["endStudy"]); return Promise.reject(new Error("study run closed")); },',
+        )
+        app.page.route("**/jatos.js", lambda route: route.fulfill(body=refusing, content_type="text/javascript"))
+        app.start(OUTPUT_SCENARIO, config={"web_session_output": "jatos"})
+        assert _end_items(app) == [
+            "ok: Sent to JATOS",
+            "failed: The study could not be ended in JATOS: study run closed",
+        ]
+        assert app.page.is_visible("#back")
 
     def test_jatos_outside_jatos(self, page_factory):
         """jatos.js is served by JATOS: without it, a clear message instead of a broken session."""
