@@ -10,6 +10,7 @@ wake-ups actually come every ~9-17 ms.
 
 from __future__ import annotations
 
+import base64
 import csv
 import gzip
 import io
@@ -841,16 +842,18 @@ class TestSessionOutput:
         pipe = Requests()
         app.page.route("https://pipe.jspsych.org/**", lambda route: pipe.record(route, body='{"message": "Success"}'))
         app.start(OUTPUT_SCENARIO, config={"web_session_output": "datapipe", "web_datapipe_experiment": "abc123"})
-        assert _end_items(app) == ["ok: Sent to the OSF (DataPipe)"]
+        assert _end_items(app) == ["ok: Sent to DataPipe"]
         posts = [r for r in pipe.received if r["method"] == "POST"]
-        assert len(posts) == 1 and posts[0]["url"] == "https://pipe.jspsych.org/api/data/"
+        assert len(posts) == 1 and posts[0]["url"] == "https://pipe.jspsych.org/api/base64/"
         body = json.loads(posts[0]["body"])
         assert body["experimentID"] == "abc123"
-        assert re.fullmatch(r"\d+_\d{6}_\d{6}\.csv", body["filename"])
-        assert "sysmon" in body["data"]
+        # Compressed (DataPipe accepts 32 MB per request), with a random suffix (Zenodo replaces a file silently)
+        assert re.fullmatch(r"\d+_\d{6}_\d{6}_[a-z0-9]+\.csv\.gz", body["filename"])
+        csv_text = gzip.decompress(base64.b64decode(body["data"])).decode("utf-8")
+        assert csv_text.startswith("logtime,scenario_time,") and csv_text.rstrip().endswith("manual,,,end")
 
     def test_datapipe_existing_file_name(self, page_factory):
-        """DataPipe rejects an existing file name: the session is sent again with a random suffix."""
+        """DataPipe rejects an existing file name (OSF): the session is sent again with another random suffix."""
         app = page_factory()
         pipe = Requests()
 
@@ -863,9 +866,11 @@ class TestSessionOutput:
 
         app.page.route("https://pipe.jspsych.org/**", handler)
         app.start(OUTPUT_SCENARIO, config={"web_session_output": "datapipe", "web_datapipe_experiment": "abc123"})
-        assert _end_items(app) == ["ok: Sent to the OSF (DataPipe)"]
+        assert _end_items(app) == ["ok: Sent to DataPipe"]
         names = [json.loads(r["body"])["filename"] for r in pipe.received if r["method"] == "POST"]
-        assert len(names) == 2 and names[1] != names[0] and names[1].startswith(names[0][: -len(".csv")] + "_")
+        stem = re.compile(r"(\d+_\d{6}_\d{6})_[a-z0-9]+\.csv\.gz")
+        assert len(names) == 2 and names[1] != names[0]
+        assert stem.fullmatch(names[0]).group(1) == stem.fullmatch(names[1]).group(1)
 
     def test_jatos(self, page_factory):
         app = page_factory()

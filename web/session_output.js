@@ -3,12 +3,12 @@
 // License : CeCILL, version 2.1 (see the LICENSE file)
 
 // Where the session files go (web_session_output in config.ini): downloaded on the participant's computer
-// (default) and/or sent to a server: JATOS, DataPipe (OSF) or a WebDAV folder, or nowhere ("none"). The file is
+// (default) and/or sent to a server: JATOS, DataPipe or a WebDAV folder, or nowhere ("none"). The file is
 // always kept in the browser storage too (replay). core/logger.py tells the page when the file changes ("openmatb-checkpoint",
 // every 10 s) and when the session ends ("openmatb-end"), with the path of the file in the Pyodide file system.
 
 export const DESTINATIONS = ["download", "jatos", "datapipe", "webdav", "none"];
-export const DATAPIPE_URL = "https://pipe.jspsych.org/api/data/";
+export const DATAPIPE_URL = "https://pipe.jspsych.org/api/base64/"; // Binary files (the compressed session file)
 const SESSIONS_FOLDER = "/sessions/"; // Path of the session files: .../sessions/<YYYY-MM-DD>/<file>.csv
 
 // Value of a key of config.ini ([Openmatb] section, "key=value" lines), or null
@@ -207,20 +207,37 @@ class JATOS {
     }
 }
 
+// Base64 text of a Blob (without the "data:...;base64," prefix of a data URL)
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).slice(String(reader.result).indexOf(",") + 1));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+    });
+}
+
+// DataPipe (https://pipe.jspsych.org) stores the files in Google Drive, Dataverse or Zenodo (OSF until
+// November 16, 2026). The file is only sent at the end: DataPipe refuses or renames an existing file name, or
+// replaces it silently (Zenodo). It is sent compressed (.csv.gz, as base64): DataPipe accepts 32 MB per request,
+// and a session writes about 70 MB of CSV per hour (about 19 MB per hour compressed and in base64).
+// A random suffix keeps two sessions with the same name (session numbers are per browser) from replacing each other.
 class DataPipe {
     constructor(experimentID, fetchImpl) {
         this.experimentID = experimentID;
         this.fetch = fetchImpl;
     }
 
-    // DataPipe rejects a file name that already exists: the file is only sent at the end
     async finish(relativePath, csv) {
-        let filename = relativePath.split("/").pop();
+        const stem = relativePath.split("/").pop().replace(/\.csv$/, "");
+        const data = await blobToBase64(await gzip(csv));
         for (let attempt = 0; attempt < 2; attempt++) {
+            const filename = `${stem}_${Math.random().toString(36).slice(2, 8)}.csv.gz`;
+            console.info(`[OpenMATB] DataPipe: sending ${filename} (${Math.round(data.length / 1024)} kB)`);
             const response = await this.fetch(DATAPIPE_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", Accept: "*/*" },
-                body: JSON.stringify({ experimentID: this.experimentID, filename, data: csv }),
+                body: JSON.stringify({ experimentID: this.experimentID, filename, data }),
             });
             if (response.ok) {
                 return;
@@ -229,7 +246,6 @@ class DataPipe {
             if (body.error !== "FILE_EXISTS") {
                 throw new Error(`HTTP ${response.status}${body.message || body.error ? ` (${body.message || body.error})` : ""}`);
             }
-            filename = filename.replace(/\.csv$/, `_${Math.random().toString(36).slice(2, 8)}.csv`);
         }
         throw new Error("file name already used on DataPipe");
     }

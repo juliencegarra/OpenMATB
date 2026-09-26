@@ -108,7 +108,7 @@ instead (or also) be sent to a server, set by `web_session_output` in `config.in
 | `download` (default) | Downloaded on the participant's computer | At the end |
 | `webdav` | A folder of a web server, with the desktop structure: `<web_webdav_url>/YYYY-MM-DD/<N>_<yymmdd>_<hhmmss>.csv` | Every 10 s and at the end |
 | `jatos` | [JATOS](https://www.jatos.org), as a compressed result file (`.csv.gz`) of the study run | Every 10 s and at the end |
-| `datapipe` | An [OSF](https://osf.io) project, through [DataPipe](https://pipe.jspsych.org) | At the end (DataPipe refuses to replace a file) |
+| `datapipe` | Google Drive, Dataverse or Zenodo, through [DataPipe](https://pipe.jspsych.org), as a compressed file (`.csv.gz`) | At the end |
 | `none` | Nowhere: only kept in the browser storage | |
 
 For example `web_session_output=webdav, download` sends the file to the server and also downloads it. The end page
@@ -130,8 +130,14 @@ file every 10 s keeps the data of a session interrupted by a closed tab or a cra
   compressed. The `.csv.gz` files can be imported as they are in the replay (start page), or decompressed with any
   archive tool (7-Zip, `gunzip`, `pandas.read_csv` reads them directly). The page must be run from JATOS: it loads
   `jatos.js` from there.
-- **DataPipe** (`web_datapipe_experiment=<experiment ID>`): create the experiment on https://pipe.jspsych.org, link it
-  to an OSF project and enable data collection. The site can then be hosted anywhere, e.g. on GitHub Pages.
+- **DataPipe** (`web_datapipe_experiment=<experiment ID>`): connect a storage provider to your account on
+  https://pipe.jspsych.org (Google Drive, Dataverse or Zenodo; DataPipe stops writing to OSF after November 16, 2026),
+  create the experiment and enable data collection. The site can then be hosted anywhere, e.g. on GitHub Pages. The
+  file is sent at the end of the session only, compressed, as `<N>_<yymmdd>_<hhmmss>_<random>.csv.gz`: DataPipe accepts
+  32 MB per request (about 1 h 40 of session once compressed), and the random suffix keeps two sessions with the same
+  name from replacing each other (Zenodo replaces an existing file silently). With Zenodo, the files go to an
+  unpublished (private) deposition, which holds at most 100 files: DataPipe merges the sessions into archives as the
+  collection goes on. Publishing it makes it public, with a DOI, and it can no longer be changed.
 
 #### Running OpenMATB from an LMS (SCORM)
 
