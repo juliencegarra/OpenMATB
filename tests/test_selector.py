@@ -24,6 +24,21 @@ def _make_selector(files):
     return sel
 
 
+class TestEmptyFiles:
+    def test_small_session_files_are_marked_empty(self, tmp_path):
+        small, full = tmp_path / "1_small.csv", tmp_path / "2_full.csv"
+        small.write_text("logtime\n")
+        full.write_text("x" * 600)
+        sel = _make_selector([small, full])
+        sel.mode = "replay"
+        assert sel._find_empty_indices() == {0}
+
+    def test_short_scenarios_are_not_marked_empty(self, tmp_path):
+        scenario = tmp_path / "test_1s.txt"
+        scenario.write_text("0:00:00;sysmon;start\n0:00:01;sysmon;stop\n")
+        assert _make_selector([scenario])._find_empty_indices() == set()
+
+
 class TestOpen:
     def test_pushes_handlers_and_shows_mouse(self):
         sel = _make_selector([Path("a.txt")])
