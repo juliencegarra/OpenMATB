@@ -75,8 +75,10 @@ class TestInvalidPluginName:
 
     def test_unknown_plugin_registers_fatal_no_crash(self, mock_errors):
         """Unknown plugin -> fatal error, empty plugins dict, no AttributeError."""
-        with patch("core.scenario.get_errors", return_value=mock_errors), \
-             patch("core.scenario.get_logger") as mock_logger:
+        with (
+            patch("core.scenario.get_errors", return_value=mock_errors),
+            patch("core.scenario.get_logger") as mock_logger,
+        ):
             mock_logger.return_value = MagicMock()
             s = Scenario(contents=["0:00:00;nonexistent;somecmd"])
 

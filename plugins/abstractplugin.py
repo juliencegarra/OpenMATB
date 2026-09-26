@@ -16,8 +16,8 @@ from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.container import Container
 from core.logger import get_logger
-from core.window import Window
 from core.widgets import Frame, SimpleHTML, Simpletext
+from core.window import Window
 
 # Plugin steps later than this (seconds) are skipped instead of caught up (see compute_next_plugin_state)
 MAX_STEP_CATCH_UP: float = 0.25
@@ -215,9 +215,7 @@ class AbstractPlugin:
 
     def update_can_receive_mouse(self) -> None:
         """Update the ability of the plugin to receive mouse inputs"""
-        if self.paused or not self.is_visible() or REPLAY_MODE:
-            self.can_receive_mouse = False
-        elif self.parameters.get("automaticsolver", False):
+        if self.paused or not self.is_visible() or REPLAY_MODE or self.parameters.get("automaticsolver", False):
             self.can_receive_mouse = False
         else:
             self.can_receive_mouse = True

@@ -20,9 +20,14 @@ from pyglet.window import Window
 from pyglet.window import key as winkey
 
 from core.constants import COLORS as C
-from core.constants import HEADLESS_MODE
+from core.constants import (
+    HEADLESS_MODE,
+    PLUGIN_TITLE_HEIGHT_PROPORTION,
+    REPLAY_MODE,
+    REPLAY_PERF_STRIP_PROPORTION,
+    REPLAY_STRIP_PROPORTION,
+)
 from core.constants import PATHS as P
-from core.constants import PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE, REPLAY_PERF_STRIP_PROPORTION, REPLAY_STRIP_PROPORTION
 from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger

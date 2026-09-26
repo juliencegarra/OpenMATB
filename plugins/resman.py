@@ -13,8 +13,8 @@ from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.constants import PLUGIN_TITLE_HEIGHT_PROPORTION
 from core.container import Container
-from core.window import Window
 from core.widgets import Frame, Pump, PumpFlow, Simpletext, Tank
+from core.window import Window
 from plugins.abstractplugin import AbstractPlugin
 
 
@@ -37,18 +37,26 @@ class Resman(AbstractPlugin):
             "displaystatus": validation.is_boolean,
             "tolerancecolor": validation.is_color,
             "tolerancecoloroutside": validation.is_color,
-            **self._indexed_validators("pump", range(1, 9), {
-                "flow": validation.is_positive_integer,
-                "state": (validation.is_in_list, ["off", "on", "failure"]),
-                "key": validation.is_keyboard_key,
-            }),
-            **self._indexed_validators("tank", "abcdef", {
-                "level": validation.is_natural_integer,
-                "max": validation.is_positive_integer,
-                "target": validation.is_positive_integer,
-                "depletable": validation.is_boolean,
-                "lossperminute": validation.is_natural_integer,
-            }),
+            **self._indexed_validators(
+                "pump",
+                range(1, 9),
+                {
+                    "flow": validation.is_positive_integer,
+                    "state": (validation.is_in_list, ["off", "on", "failure"]),
+                    "key": validation.is_keyboard_key,
+                },
+            ),
+            **self._indexed_validators(
+                "tank",
+                "abcdef",
+                {
+                    "level": validation.is_natural_integer,
+                    "max": validation.is_positive_integer,
+                    "target": validation.is_positive_integer,
+                    "depletable": validation.is_boolean,
+                    "lossperminute": validation.is_natural_integer,
+                },
+            ),
         }
 
         self.keys: set[str] = {"NUM_1", "NUM_2", "NUM_3", "NUM_4", "NUM_5", "NUM_6", "NUM_7", "NUM_8"}
@@ -111,8 +119,11 @@ class Resman(AbstractPlugin):
                 self.get_widget("status_foreground").set_visibility(True)
 
     def get_response_timers(self) -> list[float]:
-        return [self._response_elapsed_ms(t["_response_start"])
-                for l, t in self.parameters["tank"].items() if t["target"] is not None]
+        return [
+            self._response_elapsed_ms(t["_response_start"])
+            for l, t in self.parameters["tank"].items()
+            if t["target"] is not None
+        ]
 
     def has_active_fault(self) -> bool:
         for _, tank in self.parameters["tank"].items():
@@ -318,8 +329,9 @@ class Resman(AbstractPlugin):
                         if this_tank["_response_start"] is None:
                             this_tank["_response_start"] = self.scenario_time
                     elif this_tank["_response_start"] is not None:  # Back in the tolerance zone
-                        self.log_performance(f"{tank_l}_response_time",
-                                             self._response_elapsed_ms(this_tank["_response_start"]))
+                        self.log_performance(
+                            f"{tank_l}_response_time", self._response_elapsed_ms(this_tank["_response_start"])
+                        )
                         this_tank["_response_start"] = None
                     this_tank["_tolerance_color"] = tolerance_color
 

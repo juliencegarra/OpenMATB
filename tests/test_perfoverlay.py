@@ -9,7 +9,6 @@ import pytest
 from core.container import Container
 from core.perfoverlay import PerfOverlay, downsample, normalize
 
-
 # ──────────────────────────────────────────────
 # downsample()
 # ──────────────────────────────────────────────
@@ -147,7 +146,7 @@ class TestPerfOverlaySysmon:
         overlay = PerfOverlay(perf_container, mock_batch, series, 20.0)
         assert overlay._cursor is not None
         # Should have bg + 3 circle markers + cursor
-        circles = [s for s in overlay._shapes if hasattr(s, '_radius')]
+        circles = [s for s in overlay._shapes if hasattr(s, "_radius")]
         assert len(circles) == 3
 
     def test_cr_events_not_drawn(self, perf_container, mock_batch):
@@ -157,7 +156,7 @@ class TestPerfOverlaySysmon:
             ]
         }
         overlay = PerfOverlay(perf_container, mock_batch, series, 20.0)
-        circles = [s for s in overlay._shapes if hasattr(s, '_radius')]
+        circles = [s for s in overlay._shapes if hasattr(s, "_radius")]
         assert len(circles) == 0
 
 
@@ -170,7 +169,7 @@ class TestPerfOverlayComms:
             ]
         }
         overlay = PerfOverlay(perf_container, mock_batch, series, 30.0)
-        circles = [s for s in overlay._shapes if hasattr(s, '_radius')]
+        circles = [s for s in overlay._shapes if hasattr(s, "_radius")]
         assert len(circles) == 2
 
 

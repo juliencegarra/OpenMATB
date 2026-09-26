@@ -245,8 +245,10 @@ class TestVoiceSwitching:
         nonexistent = tmp_path / "english" / "female"  # Does not exist
 
         mock_errors = MagicMock()
-        with patch.object(Communications, "get_sounds_path", return_value=nonexistent), \
-             patch("plugins.communications.get_errors", return_value=mock_errors):
+        with (
+            patch.object(Communications, "get_sounds_path", return_value=nonexistent),
+            patch("plugins.communications.get_errors", return_value=mock_errors),
+        ):
             c.set_sample_sounds()
 
         # sound_path should NOT be updated
