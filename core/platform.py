@@ -135,6 +135,16 @@ def on_visibility_change(callback: Callable[[bool], None]) -> None:
     js.document.addEventListener("visibilitychange", create_proxy(listener))
 
 
+def on_page_resize(callback: Callable[[], None]) -> None:
+    """Call callback() when the page is resized (browser window, leaving fullscreen...). No-op on desktop."""
+    if not IS_WEB:
+        return
+    import js
+    from pyodide.ffi import create_proxy
+
+    js.window.addEventListener("resize", create_proxy(lambda event: callback()))
+
+
 def web_sessions_path() -> Path:
     """Sessions folder in the browser persistent storage (IndexedDB backed /data mount)."""
     import pyglet.storage

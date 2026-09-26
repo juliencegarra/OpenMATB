@@ -610,3 +610,37 @@ class TestWebBuild:
         assert "plugins/eyetracker.py" not in names
         assert not any("__pycache__" in n or n.endswith(".pyc") for n in names)
         assert not any(n.startswith("includes/scenarios/generated/") for n in names)
+
+
+class TestFitToPage:
+    """Browser: the page can be resized after the start (e.g. leaving fullscreen)."""
+
+    def _window(self, ratio: float = 1.0):
+        from core.window import Window
+
+        win = SimpleNamespace(_width=1600, _height=900, _device_pixel_ratio=ratio, _scale=ratio)
+        win._canvas = SimpleNamespace(style=SimpleNamespace(width="1600px", height="900px"))
+        win.fit_to_page = Window.fit_to_page.__get__(win)
+        return win
+
+    @pytest.mark.parametrize(
+        "page,shown,factor",
+        [
+            ((1280, 720), ("1280.0px", "720.0px"), 0.8),  # Same proportions
+            ((1000, 800), ("1000.0px", "562.5px"), 0.625),  # Taller page: bands above and below
+            ((2000, 900), ("1600.0px", "900.0px"), 1.0),  # Wider page: bands on the sides
+            ((3200, 1800), ("3200.0px", "1800.0px"), 2.0),  # Entering fullscreen after a small start
+        ],
+    )
+    def test_display_is_scaled_to_the_page(self, page, shown, factor):
+        win = self._window()
+        with patch("core.window.viewport_size", return_value=page):
+            win.fit_to_page()
+        assert (win._canvas.style.width, win._canvas.style.height) == shown
+        assert win._scale == pytest.approx(1 / factor)  # Mouse: CSS pixels -> framebuffer pixels
+
+    def test_mouse_factor_includes_the_pixel_ratio(self):
+        win = self._window(ratio=1.5)
+        with patch("core.window.viewport_size", return_value=(800, 450)):
+            win.fit_to_page()
+        assert win._scale == pytest.approx(1.5 / 0.5)

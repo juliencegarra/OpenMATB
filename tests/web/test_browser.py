@@ -429,3 +429,38 @@ class TestTextRendering:
         print(f"\n{len(letters)} letters, offsets from the baseline: {sorted(set(offsets))}")
         assert len(letters) >= 10
         assert all(offset == 0 or offset >= 3 for offset in offsets)  # Aligned, or a descender (g, p, q, y...)
+
+
+class TestPageResize:
+    @pytest.mark.parametrize("width,height", [(1280, 720), (1000, 800), (1600, 900)])
+    def test_display_follows_the_page(self, page_factory, width, height):
+        """Leaving fullscreen shrinks the page: the whole interface stays visible and centered, and mouse
+        positions are still converted to the right place."""
+        app = page_factory()
+        app.page.set_viewport_size({"width": 1600, "height": 900})
+        app.start(LONG_SCENARIO)
+        app.python(
+            "import _openmatb_probe as probe\n"
+            "from core.window import Window\n"
+            "probe.clicks = []\n"
+            "def on_press(x, y, button, modifiers):\n"
+            "    probe.clicks.append([x, y])\n"
+            "probe.PROBE['handlers'].append(on_press)\n"
+            "Window.MainWindow.push_handlers(on_mouse_press=on_press)"
+        )
+        app.page.set_viewport_size({"width": width, "height": height})
+        app.page.wait_for_timeout(500)
+        box = app.page.evaluate(
+            """() => { const c = document.getElementById("pygletCanvas"); const r = c.getBoundingClientRect();
+                return {left: r.left, top: r.top, width: r.width, height: r.height, fw: c.width, fh: c.height}; }"""
+        )
+        factor = min(width / 1600, height / 900)
+        assert box["width"] == pytest.approx(1600 * factor, abs=1)
+        assert box["height"] == pytest.approx(900 * factor, abs=1)
+        assert box["left"] == pytest.approx((width - box["width"]) / 2, abs=1)  # Centered
+        assert box["top"] == pytest.approx((height - box["height"]) / 2, abs=1)
+
+        app.page.mouse.click(box["left"] + box["width"] / 4, box["top"] + box["height"] / 4)
+        x, y = app.python("import json, _openmatb_probe as probe; json.dumps(probe.clicks[-1])").strip("[]").split(",")
+        assert float(x) == pytest.approx(box["fw"] / 4, abs=3)
+        assert float(y) == pytest.approx(box["fh"] * 3 / 4, abs=3)  # pyglet: y from the bottom

@@ -24,7 +24,7 @@ from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
 from core.modaldialog import ModalDialog
-from core.platform import IS_WEB, on_visibility_change, viewport_size
+from core.platform import IS_WEB, on_page_resize, on_visibility_change, viewport_size
 from core.utils import get_conf_value
 
 
@@ -122,6 +122,30 @@ class Window(Window):
 
         # In the browser, timers are throttled in hidden tabs: pause the scenario
         on_visibility_change(self.on_visibility_change)
+
+        # In the browser, the page can be resized (e.g. leaving fullscreen): scale the display to it
+        self._device_pixel_ratio: float | None = self.scale if IS_WEB else None
+        on_page_resize(self.fit_to_page)
+
+    @property
+    def scale(self) -> float:
+        # Browser: pyglet also converts the mouse positions with _scale, which fit_to_page() adapts
+        return getattr(self, "_device_pixel_ratio", None) or super().scale
+
+    @property
+    def dpi(self) -> int:
+        ratio: float | None = getattr(self, "_device_pixel_ratio", None)
+        return int(ratio * 96) if ratio else super().dpi
+
+    def fit_to_page(self) -> None:
+        """Browser: scale the display of the canvas to the page, centered (see web/index.html), keeping the
+        resolution and the layout computed at startup: everything stays visible when leaving fullscreen."""
+        page_width, page_height = viewport_size()
+        factor: float = min(page_width / self._width, page_height / self._height)
+        self._canvas.style.width = f"{self._width * factor}px"
+        self._canvas.style.height = f"{self._height * factor}px"
+        # pyglet converts mouse positions (CSS pixels) to framebuffer pixels by multiplying them by _scale
+        self._scale = self._device_pixel_ratio / factor
 
     def on_visibility_change(self, hidden: bool) -> None:
         get_logger().log_manual_entry("hidden" if hidden else "visible", key="visibility")
