@@ -26,4 +26,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -r requirements.txt -r requirements-dev.txt
-      - run: python -m pytest tests/ -v --cov=core --cov=plugins --cov-report=term-missing
+      - run: python -m pytest tests/ -v --cov=core --cov=plugins --cov-report=term-missing --cov-report=xml --junitxml=report.xml
+      - name: Publish badges
+        if: matrix.python-version == '3.11' && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: gaelgirodon/ci-badges-action@v1
+        with:
+          gist-id: 5d551479385698a23440737307999f72
+          token: ${{ secrets.GIST_TOKEN }}

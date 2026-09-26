@@ -5,3 +5,5 @@ __pycache__
 capture.sublime-workspace
 audio_matb
 *.odt
+report.xml
+coverage.xml
