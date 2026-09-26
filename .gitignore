@@ -9,3 +9,13 @@ report.xml
 coverage.xml
 main.dist/
 .coverage
+# Simulation agents: developed on the agents branch, kept locally on master
+agents/AGENTS.md
+agents/actr_agent.py
+agents/assisted_agent.py
+agents/carbonell_agent.py
+agents/cooperative_agent.py
+agents/humanlike_agent.py
+agents/stom_agent.py
+agents/__init__.py.full
+tests/test_humanlike_agent.py

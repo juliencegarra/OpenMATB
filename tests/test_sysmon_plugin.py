@@ -597,16 +597,6 @@ class TestDoOnKey:
         assert _light(sysmon, 1)["_onfailure"] is True
         assert not hasattr(sysmon, "performance")
 
-    def test_cooperative_agent_enables_space(self, sysmon):
-        """The cooperative agent turns allowanykey on and SPACE then resolves failures."""
-        from agents.cooperative_agent import CooperativeAgent
-
-        CooperativeAgent()._update_sysmon(sysmon)
-        sysmon.start_failure(_light(sysmon, 2))
-        sysmon.do_on_key("SPACE", "press", False)
-        assert _light(sysmon, 2)["_onfailure"] is False
-        assert _performance(sysmon)["signal_detection"] == "HIT"
-
 
 @pytest.mark.usefixtures("no_modal_dialog")
 class TestMousePress:
