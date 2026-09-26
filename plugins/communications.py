@@ -115,7 +115,7 @@ class Communications(AbstractPlugin):
                 "currentfreq": self.get_rand_frequency(r),
                 "targetfreq": None,
                 "pos": r,
-                "response_time": 0,
+                "_response_start": None,
                 "is_active": False,
                 "is_prompting": False,
                 "_feedbacktimer": None,
@@ -316,8 +316,9 @@ class Communications(AbstractPlugin):
     def get_radios_number_by_key_value(self, k: str, v: Any) -> list[int] | None:
         return self._filter_keys_by(self.parameters["radios"], k, v) or None
 
-    def get_response_timers(self) -> list[int]:
-        return [r["response_time"] for _, r in self.parameters["radios"].items() if r["response_time"] > 0]
+    def get_response_timers(self) -> list[float]:
+        return [self._response_elapsed_ms(r["_response_start"])
+                for _, r in self.parameters["radios"].items() if r["_response_start"] is not None]
 
     def get_waiting_response_radios(self) -> list[dict[str, Any]]:
         """A radio is waiting a response when it specifies a target and its prompting message
@@ -387,12 +388,13 @@ class Communications(AbstractPlugin):
 
         # Browse targeted radios
         for radio in target_radios:
-            # Increment response time as soon as auditory prompting has ended
+            # Start response timer as soon as auditory prompting has ended
             if not radio["is_prompting"]:
-                radio["response_time"] += self.parameters["taskupdatetime"]
+                if radio["_response_start"] is None:
+                    radio["_response_start"] = self.scenario_time
 
                 # Record potential target miss
-                if radio["response_time"] >= self.parameters["maxresponsedelay"]:
+                if self._response_elapsed_ms(radio["_response_start"]) >= self.parameters["maxresponsedelay"]:
                     self.record_target_missing(radio)
 
             elif self.player.source is None:  # If the radio prompt has just ended
@@ -459,7 +461,7 @@ class Communications(AbstractPlugin):
             radio["widget"].set_feedback_color(color)
 
     def disable_radio_target(self, radio: dict[str, Any]) -> None:
-        radio["response_time"] = 0
+        radio["_response_start"] = None
         radio["targetfreq"] = None
 
     def record_target_missing(self, target_radio: dict[str, Any]) -> None:
@@ -527,7 +529,7 @@ class Communications(AbstractPlugin):
             target_frequency = measure_radio["targetfreq"]
             target_radio_name = measure_radio["name"]
             deviation = round(responded_radio["currentfreq"] - target_frequency, 1)
-            rt = measure_radio["response_time"]
+            rt = self._response_elapsed_ms(measure_radio["_response_start"])
         else:
             deviation = rt = target_frequency = target_radio_name = float("nan")
 

@@ -84,7 +84,7 @@ class Sysmon(AbstractPlugin):
         # Add private parameters
         # to any gauge
         for gauge in self.get_all_gauges():
-            gauge.update({"_failuretimer": None, "_onfailure": False, "_milliresponsetime": 0, "_freezetimer": None})
+            gauge.update({"_failuretimer": None, "_onfailure": False, "_response_start": None, "_freezetimer": None})
 
         # and to scale only
         for gauge in self.get_scale_gauges():
@@ -93,8 +93,8 @@ class Sysmon(AbstractPlugin):
         self.automode_position: tuple[float, float] = (0.5, 0.05)
         self.scale_zones: dict[int, list[int]] = {1: list(range(3)), 0: list(range(3, 8)), -1: list(range(8, 11))}
 
-    def get_response_timers(self) -> list[int]:
-        return [g["_milliresponsetime"] for g in self.get_all_gauges()]
+    def get_response_timers(self) -> list[float]:
+        return [self._response_elapsed_ms(g["_response_start"]) for g in self.get_all_gauges()]
 
     def create_widgets(self) -> None:
         super().create_widgets()
@@ -147,9 +147,8 @@ class Sysmon(AbstractPlugin):
 
         # For the gauges that are on failure
         for gauge in self.get_gauges_on_failure():
-            # Decrement their failure timer / increment their response time
+            # Decrement their failure timer
             gauge["_failuretimer"] -= self.parameters["taskupdatetime"]
-            gauge["_milliresponsetime"] += self.parameters["taskupdatetime"]
 
             # If the failure timer has ended by itself, stop failure and trigger a negative feedback
             # if possible (scale gauges)
@@ -231,6 +230,7 @@ class Sysmon(AbstractPlugin):
                     gauge["side"] = choice([-1, 1], self.alias, self.scenario_time, int(add))
                 gauge["_zone"] = gauge["side"]
         gauge["failure"] = False
+        gauge["_response_start"] = self.scenario_time
 
         # Schedule failure timing
         delay: int = (
@@ -263,7 +263,7 @@ class Sysmon(AbstractPlugin):
         if ft == "positive":
             sdt_string: str
             rt: int | float
-            sdt_string, rt = "HIT", gauge["_milliresponsetime"]
+            sdt_string, rt = "HIT", self._response_elapsed_ms(gauge["_response_start"])
         else:
             sdt_string, rt = "MISS", float("nan")
         sdt_string = "HIT" if ft == "positive" else "MISS"
@@ -277,7 +277,7 @@ class Sysmon(AbstractPlugin):
             gauge["on"] = gauge["default"] == "on"
         else:  # Scale case
             gauge["_zone"] = 0
-        gauge["_milliresponsetime"] = 0
+        gauge["_response_start"] = None
 
     def get_gauges_key_value(self, key: str, value: Any) -> list[dict[str, Any]]:
         return self._filter_by(self.get_all_gauges(), key, value)

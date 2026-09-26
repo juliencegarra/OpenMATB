@@ -55,7 +55,7 @@ def _make_resman(**overrides):
                 depletable=True,
                 lossperminute=800,
                 _infoside="left",
-                _response_time=0,
+                _response_start=None,
                 _is_in_tolerance=None,
                 _tolerance_color=C["BLACK"],
             ),
@@ -66,7 +66,7 @@ def _make_resman(**overrides):
                 depletable=True,
                 lossperminute=800,
                 _infoside="right",
-                _response_time=0,
+                _response_start=None,
                 _is_in_tolerance=None,
                 _tolerance_color=C["BLACK"],
             ),
@@ -303,19 +303,20 @@ class TestGetResponseTimers:
     """Test the actual Resman.get_response_timers() method."""
 
     def test_initial_timers(self):
-        """Both target tanks start with timer=0."""
+        """Both target tanks start with timer=0.0 (no response pending)."""
         r = _make_resman()
         timers = r.get_response_timers()
         # Only target tanks (a, b) have response timers
         assert len(timers) == 2
-        assert all(t == 0 for t in timers)
+        assert all(t == 0.0 for t in timers)
 
     def test_timers_after_out_of_tolerance(self):
-        """Timer reflects out-of-tolerance duration."""
+        """Timer reflects out-of-tolerance duration via elapsed time."""
         r = _make_resman()
-        r.parameters["tank"]["a"]["_response_time"] = 4000
+        r.parameters["tank"]["a"]["_response_start"] = 1.0
+        r.scenario_time = 5.0  # 4 seconds elapsed
         timers = r.get_response_timers()
-        assert timers[0] == 4000
+        assert abs(timers[0] - 4000.0) < 0.01
 
 
 # ──────────────────────────────────────────────
@@ -338,25 +339,26 @@ class TestToleranceZone:
         _run_one_update(r)
         assert r.parameters["tank"]["a"]["_is_in_tolerance"] is False
 
-    def test_response_time_accumulates_outside(self):
-        """Response time grows while out of tolerance."""
+    def test_response_start_set_outside(self):
+        """_response_start is set to scenario_time when going out of tolerance."""
         r = _make_resman()
         r.parameters["tank"]["a"]["level"] = 2000
         _run_one_update(r)
-        assert r.parameters["tank"]["a"]["_response_time"] == 2000  # taskupdatetime
+        # _response_start should be set to the scenario_time at which the update ran (0)
+        assert r.parameters["tank"]["a"]["_response_start"] is not None
 
-    def test_response_time_resets_on_return(self):
-        """Response time resets when returning to tolerance."""
+    def test_response_start_resets_on_return(self):
+        """_response_start resets to None when returning to tolerance."""
         r = _make_resman()
         # First: outside tolerance
         r.parameters["tank"]["a"]["level"] = 2000
         _run_one_update(r)
-        assert r.parameters["tank"]["a"]["_response_time"] == 2000
+        assert r.parameters["tank"]["a"]["_response_start"] is not None
 
         # Then: back in tolerance
         r.parameters["tank"]["a"]["level"] = 2500
         _run_one_update(r)
-        assert r.parameters["tank"]["a"]["_response_time"] == 0
+        assert r.parameters["tank"]["a"]["_response_start"] is None
 
     def test_tolerance_color_changes_outside(self):
         """Color changes when outside tolerance."""

@@ -92,7 +92,7 @@ class Resman(AbstractPlugin):
         for tank_letter, this_tank in self.parameters["tank"].items():
             if this_tank["target"] is not None:
                 tank: dict[str, Any] = self.parameters["tank"][tank_letter]
-                tank["_response_time"] = 0
+                tank["_response_start"] = None
                 tank["_is_in_tolerance"] = None
                 tank["_tolerance_color"] = self.parameters["tolerancecolor"]
 
@@ -108,8 +108,9 @@ class Resman(AbstractPlugin):
             if self.get_widget("status_foreground") is not None:
                 self.get_widget("status_foreground").set_visibility(True)
 
-    def get_response_timers(self) -> list[int]:
-        return [t["_response_time"] for l, t in self.parameters["tank"].items() if t["target"] is not None]
+    def get_response_timers(self) -> list[float]:
+        return [self._response_elapsed_ms(t["_response_start"])
+                for l, t in self.parameters["tank"].items() if t["target"] is not None]
 
     def create_widgets(self) -> None:
         super().create_widgets()
@@ -295,10 +296,12 @@ class Resman(AbstractPlugin):
                     tolerance_color: tuple[int, ...] = self.parameters["tolerancecolor"]
                     if not this_tank["_is_in_tolerance"]:  # If a response is needed
                         tolerance_color = self.parameters["tolerancecoloroutside"]
-                        this_tank["_response_time"] += self.parameters["taskupdatetime"]
-                    elif this_tank["_response_time"] > 0:  # Back in the tolerance zone
-                        self.log_performance(f"{tank_l}_response_time", this_tank["_response_time"])
-                        this_tank["_response_time"] = 0
+                        if this_tank["_response_start"] is None:
+                            this_tank["_response_start"] = self.scenario_time
+                    elif this_tank["_response_start"] is not None:  # Back in the tolerance zone
+                        self.log_performance(f"{tank_l}_response_time",
+                                             self._response_elapsed_ms(this_tank["_response_start"]))
+                        this_tank["_response_start"] = None
                     this_tank["_tolerance_color"] = tolerance_color
 
                 deviation: int = this_tank["level"] - this_tank["target"]
