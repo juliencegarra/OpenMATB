@@ -762,6 +762,42 @@ window.jatos = {
 """
 
 
+class FakeDataPipe:
+    """DataPipe (pipe.jspsych.org), mocked: it checks the experiment before the data, like DataPipe."""
+
+    def __init__(self, app: OpenMATBPage, active: bool = True, existing_files: int = 0) -> None:
+        self.active = active
+        self.existing_files = existing_files  # Number of uploads rejected with FILE_EXISTS
+        self.checks: list[dict] = []
+        self.files: list[dict] = []
+        app.page.route("https://pipe.jspsych.org/**", self.handle)
+
+    def handle(self, route) -> None:
+        request = {"url": route.request.url, "json": json.loads(route.request.post_data or "{}")}
+        headers = {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"}
+        if route.request.method != "POST":
+            route.fulfill(status=204, headers=headers)
+        elif not self.active:
+            body = {
+                "error": "BASE64DATA_COLLECTION_NOT_ACTIVE",
+                "message": "Base64 data collection is not active for this experiment",
+            }
+            route.fulfill(status=400, headers=headers, body=json.dumps(body), content_type="application/json")
+        elif request["json"].get("data") == "!":  # Not base64: the check made when the session starts
+            self.checks.append(request)
+            body = {"error": "INVALID_BASE64_DATA", "message": "The data are not valid base64 data"}
+            route.fulfill(status=400, headers=headers, body=json.dumps(body), content_type="application/json")
+        else:
+            self.files.append(request)
+            if len(self.files) <= self.existing_files:
+                body = {"error": "FILE_EXISTS", "message": "File exists"}
+                route.fulfill(status=400, headers=headers, body=json.dumps(body), content_type="application/json")
+            else:
+                route.fulfill(
+                    status=201, headers=headers, body='{"message": "Success"}', content_type="application/json"
+                )
+
+
 class Requests:
     """Requests received by a mocked service (page.route)."""
 
@@ -839,13 +875,12 @@ class TestSessionOutput:
 
     def test_datapipe_at_the_end(self, page_factory):
         app = page_factory()
-        pipe = Requests()
-        app.page.route("https://pipe.jspsych.org/**", lambda route: pipe.record(route, body='{"message": "Success"}'))
+        pipe = FakeDataPipe(app)
         app.start(OUTPUT_SCENARIO, config={"web_session_output": "datapipe", "web_datapipe_experiment": "abc123"})
         assert _end_items(app) == ["ok: Sent to DataPipe"]
-        posts = [r for r in pipe.received if r["method"] == "POST"]
-        assert len(posts) == 1 and posts[0]["url"] == "https://pipe.jspsych.org/api/base64/"
-        body = json.loads(posts[0]["body"])
+        assert len(pipe.checks) == 1  # When the session started
+        assert len(pipe.files) == 1 and pipe.files[0]["url"] == "https://pipe.jspsych.org/api/base64/"
+        body = pipe.files[0]["json"]
         assert body["experimentID"] == "abc123"
         # Compressed (DataPipe accepts 32 MB per request), with a random suffix (Zenodo replaces a file silently)
         assert re.fullmatch(r"\d+_\d{6}_\d{6}_[a-z0-9]+\.csv\.gz", body["filename"])
@@ -855,22 +890,24 @@ class TestSessionOutput:
     def test_datapipe_existing_file_name(self, page_factory):
         """DataPipe rejects an existing file name (OSF): the session is sent again with another random suffix."""
         app = page_factory()
-        pipe = Requests()
-
-        def handler(route):
-            if route.request.method != "POST":
-                return pipe.record(route, status=204)
-            if not [r for r in pipe.received if r["method"] == "POST"]:
-                return pipe.record(route, status=400, body='{"error": "FILE_EXISTS", "message": "File exists"}')
-            return pipe.record(route, body='{"message": "Success"}')
-
-        app.page.route("https://pipe.jspsych.org/**", handler)
+        pipe = FakeDataPipe(app, existing_files=1)
         app.start(OUTPUT_SCENARIO, config={"web_session_output": "datapipe", "web_datapipe_experiment": "abc123"})
         assert _end_items(app) == ["ok: Sent to DataPipe"]
-        names = [json.loads(r["body"])["filename"] for r in pipe.received if r["method"] == "POST"]
+        names = [request["json"]["filename"] for request in pipe.files]
         stem = re.compile(r"(\d+_\d{6}_\d{6})_[a-z0-9]+\.csv\.gz")
         assert len(names) == 2 and names[1] != names[0]
         assert stem.fullmatch(names[0]).group(1) == stem.fullmatch(names[1]).group(1)
+
+    def test_datapipe_not_ready(self, page_factory):
+        """Checked when the session starts, rather than lost at its end: the session does not start."""
+        app = page_factory()
+        pipe = FakeDataPipe(app, active=False)
+        app.prepare(OUTPUT_SCENARIO, config={"web_session_output": "datapipe", "web_datapipe_experiment": "abc123"})
+        app.page.click("#start")
+        app.page.wait_for_selector("#config-error:not([hidden])", timeout=10_000)
+        assert "Base64 data collection is not active" in app.page.text_content("#config-error")
+        assert app.page.is_visible("#menu")
+        assert pipe.files == []
 
     def test_jatos(self, page_factory):
         app = page_factory()

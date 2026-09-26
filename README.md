@@ -132,7 +132,10 @@ file every 10 s keeps the data of a session interrupted by a closed tab or a cra
   `jatos.js` from there.
 - **DataPipe** (`web_datapipe_experiment=<experiment ID>`): connect a storage provider to your account on
   https://pipe.jspsych.org (Google Drive, Dataverse or Zenodo; DataPipe stops writing to OSF after November 16, 2026),
-  create the experiment and enable data collection. The site can then be hosted anywhere, e.g. on GitHub Pages. The
+  create the experiment and enable its **base64 data collection** (the compressed file is sent as base64; the text
+  data collection is not used). When a session starts, OpenMATB checks, without sending a file, that DataPipe
+  accepts the files of the experiment: otherwise the session does not start and the reason is shown. The site can
+  then be hosted anywhere, e.g. on GitHub Pages. The
   file is sent at the end of the session only, compressed, as `<N>_<yymmdd>_<hhmmss>_<random>.csv.gz`: DataPipe accepts
   32 MB per request (about 1 h 40 of session once compressed), and the random suffix keeps two sessions with the same
   name from replacing each other (Zenodo replaces an existing file silently). With Zenodo, the files go to an

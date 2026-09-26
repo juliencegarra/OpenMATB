@@ -207,6 +207,27 @@ class JATOS {
     }
 }
 
+// Checked when a session starts, without sending any file, that DataPipe accepts the files of the experiment.
+// DataPipe checks the experiment (found, not finalized, base64 data collection active) before the data: a request
+// with invalid base64 data stops at INVALID_BASE64_DATA when everything is ready. (The experiment logs show it as a
+// failed request.) The connection of the storage provider cannot be checked this way.
+export async function checkDataPipe(experimentID, fetchImpl = (...args) => fetch(...args)) {
+    let response;
+    try {
+        response = await fetchImpl(DATAPIPE_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "*/*" },
+            body: JSON.stringify({ experimentID, filename: "openmatb-check.csv.gz", data: "!" }),
+        });
+    } catch (error) {
+        throw new Error(`DataPipe cannot be reached (${error.message || error})`);
+    }
+    const body = await response.json().catch(() => ({}));
+    if (body.error !== "INVALID_BASE64_DATA") {
+        throw new Error(`DataPipe: ${body.message || body.error || `HTTP ${response.status}`}`);
+    }
+}
+
 // Base64 text of a Blob (without the "data:...;base64," prefix of a data URL)
 function blobToBase64(blob) {
     return new Promise((resolve, reject) => {

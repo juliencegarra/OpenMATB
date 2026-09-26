@@ -8,7 +8,7 @@
 
 import { installPygletEmscripten } from "./pyglet_emscripten.js";
 import {
-    SessionOutput, downloadText, gunzipIfNeeded, loadJatos, sessionOutputSettings, sessionRelativePath,
+    SessionOutput, checkDataPipe, downloadText, gunzipIfNeeded, loadJatos, sessionOutputSettings, sessionRelativePath,
 } from "./session_output.js";
 import { connectScorm } from "./scorm.js";
 
@@ -444,6 +444,14 @@ $("start").addEventListener("click", async () => {
             }
         } catch (error) {
             settings.errors.push(String(error.message || error));
+        }
+        // Better now than after the session: DataPipe must accept the files of the experiment (the demo sends nothing)
+        if (settings.destinations.includes("datapipe") && !settings.errors.length && !DEMO) {
+            try {
+                await checkDataPipe(settings.datapipeExperiment);
+            } catch (error) {
+                settings.errors.push(String(error.message || error));
+            }
         }
         if (!showConfigErrors(settings.errors)) {
             if (document.fullscreenElement) {
