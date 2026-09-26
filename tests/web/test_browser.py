@@ -330,6 +330,20 @@ class TestKeyboard:
         assert app.page.evaluate("() => window.__not_reloaded === true")
         app.python("import _openmatb_probe; _openmatb_probe.PROBE['keys'].clear()")
 
+    def test_key_released_without_the_focus(self, keyboard_app):
+        """A key released while the page has lost the focus sends no key up: the next press must still count."""
+        app = keyboard_app
+        app.page.keyboard.down("F2")
+        app.page.evaluate("() => document.getElementById('pygletCanvas').blur()")
+        app.page.keyboard.up("F2")
+        app.page.wait_for_timeout(200)  # pyglet handles the focus change in its event loop
+        app.page.focus("#pygletCanvas")
+        app.page.wait_for_timeout(200)
+        app.page.keyboard.press("F2")
+        state = app.wait_until(lambda s: len(s["keys"]) >= 2, timeout=5)
+        assert state["keys"] == ["F2", "F2"]
+        app.python("import _openmatb_probe; _openmatb_probe.PROBE['keys'].clear()")
+
 
 class TestAudio:
     def test_sounds_are_played_one_after_the_other(self, page_factory, tolerance):

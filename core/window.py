@@ -288,6 +288,19 @@ class Window(Window):
         self.keyboard[keystr] = False  # KeyStateHandler
         get_logger().record_input("keyboard", keystr, "release")
 
+    def on_deactivate(self) -> None:
+        # In the browser, a key released while the page does not have the focus (tab change, click outside the
+        # page) sends no key up: pyglet keeps it pressed and ignores the next press of that key (a lost response).
+        # Release the held keys when the focus is lost. (Only the browser window has _keys_down.)
+        keys_down: set[int] | None = getattr(self, "_keys_down", None)
+        if not keys_down:
+            return
+        held: list[int] = list(keys_down)
+        keys_down.clear()
+        if self.modal_dialog is None:  # A key release would answer the dialog
+            for symbol in held:
+                self.dispatch_event("on_key_release", symbol, 0)
+
     def on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> None:
         if REPLAY_MODE:
             return
