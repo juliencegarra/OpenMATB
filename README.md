@@ -3,8 +3,8 @@
 ![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/juliencegarra/5d551479385698a23440737307999f72/raw/OpenMATB-cobertura-coverage.json)
 
 > [!NOTE]
-> **Experimental web version.** OpenMATB can also run in a web browser (Chrome/Chromium), with no installation, thanks to [Pyodide](https://pyodide.org) and pyglet 3. Flight joysticks are supported through the browser Gamepad API (press one of the joystick buttons on the start page to detect it). It is still experimental: the parallel port and Lab Streaming Layer are not available, and timing relies on the browser clock.
-> It is developed on the [`pyglet3-pyodide-web`](https://github.com/juliencegarra/OpenMATB/tree/pyglet3-pyodide-web) branch. See [Web version](https://github.com/juliencegarra/OpenMATB/blob/pyglet3-pyodide-web/README.md#web-version-browser) in its README to build and host it.
+> **Experimental web version.** OpenMATB can also run in a web browser, with no installation, thanks to Pyodide and pyglet 3. Chrome or Edge are recommended: Firefox and Safari also work, but Firefox pauses the page for 0.1 to 1 s every few seconds, which affects timing. Joysticks are supported through the browser Gamepad API (press one of the joystick buttons on the start page to detect it). Session files are downloaded, or sent to JATOS, DataPipe (OSF) or a WebDAV folder, and can be replayed in the browser. It is still incomplete: the parallel port and Lab Streaming Layer are not available, and timing relies on the browser clock.
+> It is developed on the [`pyglet3-pyodide-web`](https://github.com/juliencegarra/OpenMATB/tree/pyglet3-pyodide-web) branch. See [Web version](https://github.com/juliencegarra/OpenMATB/tree/pyglet3-pyodide-web#web-version-browser) in its README to build and host it.
  
 
 # OpenMATB: An open-source version of the Multi-Attribute Task Battery (MATB)
