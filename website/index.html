@@ -340,6 +340,20 @@ a.cite-link:hover { color: var(--blue-800); border-color: var(--blue-700); text-
   background: radial-gradient(circle, rgba(255,255,255,.05) 0%, transparent 70%);
   pointer-events: none;
 }
+.hero-section { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 40px; align-items: center; }
+.hero-text { position: relative; z-index: 1; min-width: 0; }
+.hero-visual { position: relative; z-index: 1; margin: 0; }
+.hero-visual img {
+  width: 100%; display: block; border-radius: var(--radius-sm); cursor: zoom-in;
+  border: 1px solid rgba(255,255,255,.25); box-shadow: 0 12px 32px rgba(0,0,0,.35);
+  transition: transform .2s;
+}
+.hero-visual img:hover { transform: scale(1.01); }
+.hero-visual figcaption { margin-top: 10px; font-size: 13px; opacity: .8; text-align: center; }
+.downloads td:first-child { white-space: nowrap; }
+.downloads td:last-child a { white-space: nowrap; }
+.downloads .note { font-size: 14px; color: var(--grey-600); margin: -8px 0 32px; }
+@media (max-width: 960px) { .hero-section { grid-template-columns: 1fr; } .hero-visual { max-width: 640px; } }
 .hero-section h1 { font-size: 38px; font-weight: 700; margin-bottom: 8px; letter-spacing: -.5px; }
 .hero-section .subtitle { font-size: 18px; opacity: .85; margin-bottom: 20px; }
 .hero-section p { font-size: 16px; line-height: 1.7; opacity: .92; max-width: 720px; }
@@ -413,7 +427,10 @@ a.cite-link:hover { color: var(--blue-800); border-color: var(--blue-700); text-
   .workflow { flex-direction: column; align-items: stretch; }
   .wf-arrow { transform: rotate(90deg); text-align: center; }
   pre { font-size: 12.5px; padding: 12px 14px; }
-  .hero-section { padding: 32px 20px; }
+  .hero-section { padding: 32px 20px; grid-template-columns: 1fr; gap: 28px; }
+  .downloads td:first-child { white-space: normal; }
+  .downloads th:nth-child(2), .downloads td:nth-child(2) { display: none; }
+  .downloads td:last-child a { white-space: normal; overflow-wrap: anywhere; }
   .hero-section h1 { font-size: 28px; }
   .hero-section .subtitle { font-size: 16px; }
   .feature-grid { grid-template-columns: repeat(2, 1fr); }
@@ -453,6 +470,7 @@ a.cite-link:hover { color: var(--blue-800); border-color: var(--blue-700); text-
 <section class="tab-panel active" id="home" role="tabpanel" aria-labelledby="tab-home">
 
 <div class="hero-section">
+<div class="hero-text">
   <h1>OpenMATB</h1>
   <p class="subtitle">Open Multi-Attribute Task Battery</p>
   <div class="ci-badges">
@@ -469,11 +487,28 @@ a.cite-link:hover { color: var(--blue-800); border-color: var(--blue-700); text-
     <a class="btn-secondary" href="#build-scenario">Get Started</a>
   </div>
 </div>
-
-<div class="home-screenshot">
+<figure class="hero-visual">
   <img src="img/capture.png" alt="OpenMATB full interface showing all five concurrent tasks" data-lightbox>
-  <p class="caption">OpenMATB running a full session with all five interactive components</p>
+  <figcaption>A full session with the five interactive components</figcaption>
+</figure>
 </div>
+
+<h3 id="download">Download</h3>
+<div class="table-wrap downloads">
+<table>
+<thead><tr><th>Version</th><th>For</th><th>Status</th><th>Download</th></tr></thead>
+<tbody>
+<tr><td><strong>Windows</strong> &mdash; installer</td><td>Lab computers; no Python needed, Start menu shortcut</td><td><span class="badge badge-green">Stable</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-Setup.exe">OpenMATB-Setup.exe</a></td></tr>
+<tr><td><strong>Windows</strong> &mdash; portable</td><td>No installation rights: unzip and run <code>OpenMATB.exe</code> (e.g. from a USB key)</td><td><span class="badge badge-green">Stable</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-Portable.zip">OpenMATB-Portable.zip</a></td></tr>
+<tr><td><strong>Source code</strong> &mdash; Windows, macOS, Linux</td><td>Python 3.9+, all the features (see Quick Start below)</td><td><span class="badge badge-green">Stable</span></td><td><a href="https://github.com/juliencegarra/OpenMATB" target="_blank" rel="noopener">GitHub</a></td></tr>
+<tr><td><strong>Web</strong> &mdash; online</td><td>Try it now in your browser, nothing to install</td><td><span class="badge badge-orange">Experimental</span></td><td><a href="#demo">&#9654;&nbsp;Demo</a></td></tr>
+<tr><td><strong>Web</strong> &mdash; your server</td><td>Static site to host on a lab web server (session files downloaded or sent to WebDAV / DataPipe)</td><td><span class="badge badge-orange">Experimental</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-Web.zip">OpenMATB-Web.zip</a></td></tr>
+<tr><td><strong>Web</strong> &mdash; JATOS study</td><td>Online studies: import into <a href="https://www.jatos.org" target="_blank" rel="noopener">JATOS</a> (Import Study), e.g. with Prolific; session files saved in the results</td><td><span class="badge badge-orange">Experimental</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-JATOS.jzip">OpenMATB-JATOS.jzip</a></td></tr>
+<tr><td><strong>Web</strong> &mdash; SCORM</td><td>Learning platforms (Moodle, Canvas, Blackboard&hellip;): completion and time recorded by the LMS</td><td><span class="badge badge-orange">Experimental</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-SCORM-1.2.zip">SCORM&nbsp;1.2</a> &middot; <a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-SCORM-2004.zip">SCORM&nbsp;2004</a></td></tr>
+</tbody>
+</table>
+</div>
+<p class="note">Latest release; older versions and release notes: <a href="https://github.com/juliencegarra/OpenMATB/releases" target="_blank" rel="noopener">all releases</a>. The web versions are described in the <a href="#web">Web Version</a> tab.</p>
 
 <h3>Five Interactive Components</h3>
 <div class="feature-grid">
@@ -550,25 +585,6 @@ a.cite-link:hover { color: var(--blue-800); border-color: var(--blue-700); text-
   <div class="card">
     <h4>Cross-Platform</h4>
     <p>Runs on Windows, macOS, and Linux, and in the browser (<a href="#web">experimental</a>). Built with Python and pyglet &mdash; no heavy framework dependencies.</p>
-  </div>
-</div>
-
-<h3 id="download">Download</h3>
-<div class="card-grid">
-  <div class="card">
-    <h4>Windows Installer</h4>
-    <p>Installs OpenMATB with a Start menu shortcut. No Python needed.</p>
-    <p><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-Setup.exe">OpenMATB-Setup.exe</a></p>
-  </div>
-  <div class="card">
-    <h4>Windows Portable</h4>
-    <p>Unzip and run <code>OpenMATB.exe</code>, e.g. from a USB key on lab computers without installation rights.</p>
-    <p><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-Portable.zip">OpenMATB-Portable.zip</a></p>
-  </div>
-  <div class="card">
-    <h4>macOS, Linux &amp; Source</h4>
-    <p>Run from source with Python (see below), or try the <a href="#demo">demo</a> in your browser.</p>
-    <p><a href="https://github.com/juliencegarra/OpenMATB/releases" target="_blank" rel="noopener">All releases &amp; release notes</a></p>
   </div>
 </div>
 

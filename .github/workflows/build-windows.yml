@@ -1,23 +1,38 @@
-name: Build Windows Installer
+name: Build and release
 
+# Windows installer and portable version (Nuitka), and the web packages (static site, JATOS study, SCORM), built
+# from the pyglet3-pyodide-web branch. A tag (e.g. 1.4.6) creates the GitHub release with all of them; the website
+# links to releases/latest/download/<name>, so the release files have fixed names.
+# Run by hand: builds everything (Actions artifacts); with "release_tag", also adds the files to that release.
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Add the files to this existing release (e.g. 1.4.5). Empty: only build."
+        required: false
+        default: ""
   push:
     tags:
       - 'v*'
       - '[0-9]*'  # The release tags have no "v" (1.4.2)
 
-# Creating the GitHub release (tags) needs to write to the repository
+# Creating the GitHub release needs to write to the repository
 permissions:
   contents: write
 
+env:
+  WEB_BRANCH: pyglet3-pyodide-web
+  RELEASE_TAG: ${{ inputs.release_tag || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
+
 jobs:
-  build:
+  windows:
     runs-on: windows-latest
     timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}  # The code of the release, when adding files to it
 
       - uses: actions/setup-python@v6
         with:
@@ -75,9 +90,7 @@ jobs:
           name: OpenMATB-Portable-${{ steps.version.outputs.VERSION }}
           path: main.dist/
 
-      # Release files with fixed names: the website links to releases/latest/download/<name>
       - name: Prepare the release files
-        if: startsWith(github.ref, 'refs/tags/')
         shell: pwsh
         run: |
           New-Item -ItemType Directory release | Out-Null
@@ -85,12 +98,51 @@ jobs:
           Copy-Item $installer.FullName release/OpenMATB-Setup.exe
           Copy-Item main.dist release/OpenMATB -Recurse
           Compress-Archive -Path release/OpenMATB -DestinationPath release/OpenMATB-Portable.zip
+          Remove-Item release/OpenMATB -Recurse
 
-      - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
+      - uses: actions/upload-artifact@v6
+        with:
+          name: release-windows
+          path: release/
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.WEB_BRANCH }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      # OpenMATB-Web.zip, OpenMATB-JATOS.jzip, OpenMATB-SCORM-1.2.zip, OpenMATB-SCORM-2004.zip
+      - name: Build the web packages
+        run: python web/build.py --release release
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: release-web
+          path: release/
+
+  release:
+    needs: [windows, web]
+    if: startsWith(github.ref, 'refs/tags/') || inputs.release_tag != ''
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: release-*
+          path: release
+          merge-multiple: true
+
+      - name: Create or update the GitHub release
         uses: softprops/action-gh-release@v3
         with:
-          files: |
-            release/OpenMATB-Setup.exe
-            release/OpenMATB-Portable.zip
+          tag_name: ${{ env.RELEASE_TAG }}
+          files: release/*
+          fail_on_unmatched_files: true
           generate_release_notes: true
