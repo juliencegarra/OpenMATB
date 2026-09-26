@@ -345,6 +345,113 @@ class TestKeyboard:
         app.python("import _openmatb_probe; _openmatb_probe.PROBE['keys'].clear()")
 
 
+# Sysmon failures answered with their key, resman pumps switched with the numpad: checked in the session file
+KEY_RESPONSES_SCENARIO: str = """0:00:00;sysmon;start
+0:00:00;resman;start
+0:00:02;sysmon;scales-1-failure;True
+0:00:05;sysmon;scales-2-failure;True
+0:00:08;sysmon;scales-3-failure;True
+0:00:11;sysmon;scales-4-failure;True
+0:00:13;resman;pump-3-state;failure
+0:00:14;sysmon;lights-1-failure;True
+0:00:17;sysmon;lights-2-failure;True
+0:00:19;resman;pump-3-state;off
+0:00:22;sysmon;stop
+0:00:22;resman;stop
+"""
+KEY_RESPONSES_STATE: str = """
+import json, _openmatb_probe as probe
+s = probe.PROBE["scheduler"]
+json.dumps({"time": s.scenario_time,
+            "failures": [g["key"] for g in s.plugins["sysmon"].get_gauges_on_failure()],
+            "pumps": {k: v["state"] for k, v in s.plugins["resman"].parameters["pump"].items()}})
+"""
+# (scenario time, key, pump, its state after the press). Pump 3 is failed from 13 to 19 s: its key does nothing
+PUMP_PRESSES: list[tuple[float, str, str, str]] = [
+    (1, "Numpad1", "1", "on"),
+    (4, "Numpad2", "2", "on"),
+    (7, "Numpad1", "1", "off"),
+    (10, "Numpad2", "2", "off"),
+    (15.5, "Numpad3", "3", "failure"),
+    (20, "Numpad3", "3", "on"),
+]
+RESPONSE_DELAY_S: float = 0.3
+
+
+class TestKeyResponses:
+    def test_responses_are_in_the_session_file(self, page_factory):
+        """Each failure is answered with its key 0.3 s after it appears. Before the F5 answer, F5 is released
+        while the page has lost the focus: the answer must still count (then a second F5 press is a false alarm)."""
+        app = page_factory()
+        app.start(KEY_RESPONSES_SCENARIO)
+        app.page.focus("#pygletCanvas")
+        seen: dict[str, float] = {}
+        answered: list[str] = []
+        pump_presses = list(PUMP_PRESSES)
+        pumps_after: list[tuple[str, str, str]] = []
+        while not app.page.is_visible("#end"):
+            try:
+                state = json.loads(app.python(KEY_RESPONSES_STATE))
+            except Exception:  # The session has just ended
+                break
+            for key in state["failures"]:
+                seen.setdefault(key, time.monotonic())
+                if key not in answered and time.monotonic() - seen[key] >= RESPONSE_DELAY_S:
+                    if key == "F5":
+                        app.page.keyboard.down("F5")  # Answers the failure
+                        app.page.evaluate("() => document.getElementById('pygletCanvas').blur()")
+                        app.page.keyboard.up("F5")  # Released outside the page
+                        app.page.wait_for_timeout(200)
+                        app.page.focus("#pygletCanvas")
+                        app.page.wait_for_timeout(200)
+                    app.page.keyboard.press(key)
+                    answered.append(key)
+            while pump_presses and state["time"] >= pump_presses[0][0]:
+                _time, key, pump, expected = pump_presses.pop(0)
+                app.page.keyboard.press(key)
+                app.page.wait_for_timeout(100)
+                pumps_after.append((key, json.loads(app.python(KEY_RESPONSES_STATE))["pumps"][pump], expected))
+            app.page.wait_for_timeout(50)
+        app.page.wait_for_selector("#end:not([hidden])", timeout=30_000)
+
+        assert answered == ["F1", "F2", "F3", "F4", "F5", "F6"]
+        assert [(key, state) for key, state, _ in pumps_after] == [(key, expected) for key, _, expected in pumps_after]
+        assert len(pumps_after) == len(PUMP_PRESSES)
+
+        rows = list(csv.DictReader(io.StringIO(app.downloads[0].path().read_text(encoding="utf-8"))))
+        sysmon = [r for r in rows if r["type"] == "performance" and r["module"] == "sysmon"]
+        names = [r["value"] for r in sysmon if r["address"] == "name"]
+        detections = [r["value"] for r in sysmon if r["address"] == "signal_detection"]
+        assert list(zip(names, detections)) == [
+            ("F1", "HIT"),
+            ("F2", "HIT"),
+            ("F3", "HIT"),
+            ("F4", "HIT"),
+            ("F5", "HIT"),
+            ("F5", "FA"),
+            ("F6", "HIT"),
+        ]
+        response_times = [float(r["value"]) for r in sysmon if r["address"] == "response_time"]
+        hits = [rt for rt, detection in zip(response_times, detections) if detection == "HIT"]
+        assert all(RESPONSE_DELAY_S * 1000 <= rt < 2000 for rt in hits), hits
+        presses = [r["address"] for r in rows if r["module"] == "keyboard" and r["value"] == "press"]
+        assert presses == [
+            "NUM_1",
+            "F1",
+            "NUM_2",
+            "F2",
+            "NUM_1",
+            "F3",
+            "NUM_2",
+            "F4",
+            "F5",
+            "F5",
+            "NUM_3",
+            "F6",
+            "NUM_3",
+        ]
+
+
 class TestAudio:
     def test_sounds_are_played_one_after_the_other(self, page_factory, tolerance):
         """Browser SequencePlayer chains one player per sound: the sequence lasts the sum of the sounds."""
