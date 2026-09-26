@@ -75,9 +75,22 @@ jobs:
           name: OpenMATB-Portable-${{ steps.version.outputs.VERSION }}
           path: main.dist/
 
+      # Release files with fixed names: the website links to releases/latest/download/<name>
+      - name: Prepare the release files
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory release | Out-Null
+          $installer = Get-ChildItem installer/Output/OpenMATB-Setup-*.exe | Select-Object -First 1
+          Copy-Item $installer.FullName release/OpenMATB-Setup.exe
+          Copy-Item main.dist release/OpenMATB -Recurse
+          Compress-Archive -Path release/OpenMATB -DestinationPath release/OpenMATB-Portable.zip
+
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v3
         with:
-          files: installer/Output/OpenMATB-Setup-*.exe
+          files: |
+            release/OpenMATB-Setup.exe
+            release/OpenMATB-Portable.zip
           generate_release_notes: true
