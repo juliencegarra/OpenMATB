@@ -10,11 +10,12 @@ usage:
     python web/build.py --pyodide local   # ship Pyodide with the page instead of loading it from its CDN
     python web/build.py --scorm    # also write web/openmatb_scorm_1.2.zip, to import into an LMS
     python web/build.py --scorm 2004
+    python web/build.py --release DIR     # the packages of a release, with fixed names (see RELEASE_PACKAGES)
 
 The page must be served over HTTP (file:// does not work). The output is static
 and can be hosted anywhere (GitHub Pages, a lab server...).
 
-A SCORM package ships Pyodide (LMSs often block external scripts), unless --pyodide cdn.
+SCORM and release packages ship Pyodide (LMSs and JATOS servers may block external scripts), unless --pyodide cdn.
 """
 
 from __future__ import annotations
@@ -22,11 +23,14 @@ from __future__ import annotations
 import argparse
 import functools
 import http.server
+import io
 import json
+import re
 import shutil
 import subprocess
 import sys
 import urllib.request
+import uuid
 import zipfile
 from pathlib import Path
 from xml.sax.saxutils import escape, quoteattr
@@ -58,6 +62,20 @@ PYODIDE_PACKAGES: tuple[str, ...] = ("micropip",)
 PYODIDE_MODULES: dict[str, str] = {"cdn": PYODIDE_CDN + "pyodide.mjs", "local": "pyodide/pyodide-module.js"}
 
 SCORM_VERSIONS: tuple[str, ...] = ("1.2", "2004")
+
+# JATOS study: fixed identifiers, so that importing a new version updates the study already imported
+JATOS_STUDY_UUID: str = str(uuid.uuid5(uuid.NAMESPACE_URL, "https://github.com/juliencegarra/OpenMATB/jatos/study"))
+JATOS_COMPONENT_UUID: str = str(uuid.uuid5(uuid.NAMESPACE_URL, "https://github.com/juliencegarra/OpenMATB/jatos/page"))
+JATOS_STUDY_DIR: str = "openmatb"
+JATOS_WORKER_TYPES: list[str] = ["Jatos", "PersonalSingle", "PersonalMultiple", "GeneralSingle", "GeneralMultiple"]
+
+# Files of a release (python web/build.py --release DIR), linked by the website (releases/latest/download/<name>)
+RELEASE_PACKAGES: dict[str, str] = {
+    "web": "OpenMATB-Web.zip",
+    "jatos": "OpenMATB-JATOS.jzip",
+    "scorm-1.2": "OpenMATB-SCORM-1.2.zip",
+    "scorm-2004": "OpenMATB-SCORM-2004.zip",
+}
 
 # Browsers have no common sans-serif font name that pyglet can use: ship one (SIL Open Font License)
 FONT_URL: str = "https://cdn.jsdelivr.net/npm/@fontsource/noto-sans@5.3.0/files/noto-sans-latin-{weight}-normal.woff2"
@@ -238,17 +256,117 @@ def scorm_manifest(scorm_version: str, title: str, version: str, files: list[str
 """
 
 
-def build_scorm_package(scorm_version: str, title: str = "OpenMATB") -> Path:
+def dist_files() -> list[str]:
+    return sorted(p.relative_to(DIST).as_posix() for p in DIST.rglob("*") if p.is_file())
+
+
+def app_zip_with_config(overrides: dict[str, str]) -> bytes:
+    """app.zip of web/dist with other config.ini values (e.g. web_session_output=jatos for the JATOS study)."""
+    source = zipfile.ZipFile(DIST / "app.zip")
+    output = io.BytesIO()
+    with source, zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as archive:
+        for item in source.infolist():
+            data: bytes = source.read(item)
+            if item.filename == "config.ini":
+                text: str = data.decode("utf-8")
+                for key, value in overrides.items():
+                    text, count = re.subn(rf"(?m)^{key}=.*$", f"{key}={value}", text)
+                    if not count:
+                        raise KeyError(f"{key} is not in config.ini")
+                data = text.encode("utf-8")
+            archive.writestr(item, data)
+    return output.getvalue()
+
+
+def write_package(
+    package: Path, prefix: str = "", extra: dict[str, str] | None = None, config: dict[str, str] | None = None
+) -> Path:
+    """Zip web/dist under prefix, with extra files (name -> text) and other config.ini values."""
+    package.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as archive:
+        for name, text in (extra or {}).items():
+            archive.writestr(name, text)
+        for name in dist_files():
+            if name == "app.zip" and config:
+                archive.writestr(prefix + name, app_zip_with_config(config))
+            else:
+                archive.write(DIST / name, prefix + name)
+    print(f"{package.name}: {package} ({package.stat().st_size / 1e6:.1f} MB)")
+    return package
+
+
+def build_scorm_package(scorm_version: str, title: str = "OpenMATB", package: Path | None = None) -> Path:
     """Zip web/dist with its imsmanifest.xml: the package to import into an LMS (Moodle, SCORM Cloud...)."""
     version: str = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    files: list[str] = sorted(p.relative_to(DIST).as_posix() for p in DIST.rglob("*") if p.is_file())
-    package: Path = WEB / f"openmatb_scorm_{scorm_version}.zip"
-    with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as archive:
-        archive.writestr("imsmanifest.xml", scorm_manifest(scorm_version, title, version, files))
-        for name in files:
-            archive.write(DIST / name, name)
-    print(f"SCORM {scorm_version} package: {package} ({package.stat().st_size / 1e6:.1f} MB)")
-    return package
+    manifest: str = scorm_manifest(scorm_version, title, version, dist_files())
+    return write_package(package or WEB / f"openmatb_scorm_{scorm_version}.zip", extra={"imsmanifest.xml": manifest})
+
+
+def jatos_study(title: str, version: str) -> dict:
+    """The .jas file of a JATOS study archive: one component (the page), one batch."""
+    return {
+        "version": "3",
+        "data": {
+            "uuid": JATOS_STUDY_UUID,
+            "title": title,
+            "description": f"OpenMATB {version} (web version). Session files are saved in the results.",
+            "groupStudy": False,
+            "linearStudy": False,
+            "allowPreview": False,
+            "dirName": JATOS_STUDY_DIR,
+            "comments": None,
+            "jsonData": None,
+            "endRedirectUrl": None,
+            "studyEntryMsg": None,
+            "componentList": [
+                {
+                    "uuid": JATOS_COMPONENT_UUID,
+                    "title": "OpenMATB",
+                    "htmlFilePath": "index.html",
+                    "reloadable": False,
+                    "active": True,
+                    "comments": None,
+                    "jsonData": None,
+                }
+            ],
+            "batchList": [
+                {
+                    "uuid": str(uuid.uuid5(uuid.NAMESPACE_URL, f"{JATOS_STUDY_UUID}/batch")),
+                    "title": "Default",
+                    "active": True,
+                    "maxActiveMembers": None,
+                    "maxTotalMembers": None,
+                    "maxTotalWorkers": None,
+                    "allowedWorkerTypes": JATOS_WORKER_TYPES,
+                    "comments": None,
+                    "jsonData": None,
+                }
+            ],
+        },
+    }
+
+
+def build_jatos_package(package: Path, title: str = "OpenMATB") -> Path:
+    """JATOS study archive (.jzip, imported with Import Study): web/dist in the study folder, and the session
+    files sent to JATOS (web_session_output=jatos)."""
+    version: str = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    jas: str = json.dumps(jatos_study(title, version), indent=2)
+    return write_package(
+        package,
+        prefix=f"{JATOS_STUDY_DIR}/",
+        extra={f"{JATOS_STUDY_DIR}.jas": jas},
+        config={"web_session_output": "jatos"},
+    )
+
+
+def build_release(folder: Path) -> list[Path]:
+    """The web packages of a release: static site to host, JATOS study, SCORM 1.2 and 2004 packages."""
+    return [
+        write_package(folder / RELEASE_PACKAGES["web"], prefix="OpenMATB-Web/"),
+        build_jatos_package(folder / RELEASE_PACKAGES["jatos"]),
+        build_scorm_package("1.2", package=folder / RELEASE_PACKAGES["scorm-1.2"]),
+        build_scorm_package("2004", package=folder / RELEASE_PACKAGES["scorm-2004"]),
+    ]
 
 
 def serve(port: int) -> None:
@@ -277,9 +395,14 @@ if __name__ == "__main__":
         help="also write a SCORM package, web/openmatb_scorm_<version>.zip (1.2 by default, or 2004)",
     )
     parser.add_argument("--scorm-title", default="OpenMATB", help="title of the activity in the LMS")
+    parser.add_argument(
+        "--release", type=Path, metavar="DIR", help="write the web packages of a release into DIR (fixed names)"
+    )
     args = parser.parse_args()
-    build(args.pyodide or ("local" if args.scorm else "cdn"))
+    build(args.pyodide or ("local" if args.scorm or args.release else "cdn"))
     if args.scorm:
         build_scorm_package(args.scorm, args.scorm_title)
+    if args.release:
+        build_release(args.release)
     if args.serve:
         serve(args.port)

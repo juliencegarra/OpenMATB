@@ -10,6 +10,8 @@ from __future__ import annotations
 import asyncio
 import importlib
 import importlib.util
+import io
+import json
 import re
 import sys
 import types
@@ -751,3 +753,75 @@ class TestScormPackage:
         local = build_module.PYODIDE_MODULES["local"]
         assert local.endswith(".js") and local.split("/")[-1] in build_module.PYODIDE_FILES.values()
         assert "cdn.jsdelivr.net/pyodide" not in (ROOT / "web" / "openmatb.js").read_text(encoding="utf-8")
+
+
+# ── Release packages (python web/build.py --release DIR) ────────────────────
+
+
+@pytest.fixture
+def small_dist(build_module, tmp_path, monkeypatch):
+    """A minimal web/dist: index.html, a Pyodide file and app.zip with a config.ini."""
+    dist = tmp_path / "dist"
+    (dist / "pyodide").mkdir(parents=True)
+    (dist / "index.html").write_text("<html></html>", encoding="utf-8")
+    (dist / "pyodide" / "pyodide-module.js").write_text("export {}", encoding="utf-8")
+    with zipfile.ZipFile(dist / "app.zip", "w") as app:
+        app.writestr("config.ini", "[Openmatb]\nlanguage=en_EN\nweb_session_output=download\n")
+        app.writestr("main.py", "print('OpenMATB')\n")
+    monkeypatch.setattr(build_module, "DIST", dist)
+    monkeypatch.setattr(build_module, "WEB", tmp_path)
+    return dist
+
+
+def _app_config(archive: zipfile.ZipFile, name: str) -> str:
+    with zipfile.ZipFile(io.BytesIO(archive.read(name))) as app:
+        return app.read("config.ini").decode("utf-8")
+
+
+class TestReleasePackages:
+    def test_release_files_have_the_names_linked_by_the_website(self, build_module, small_dist, tmp_path):
+        packages = build_module.build_release(tmp_path / "release")
+        assert sorted(p.name for p in packages) == sorted(build_module.RELEASE_PACKAGES.values())
+        assert all(p.parent == tmp_path / "release" for p in packages)
+
+    def test_web_package_is_the_site_in_a_folder(self, build_module, small_dist, tmp_path):
+        package = build_module.write_package(tmp_path / "web.zip", prefix="OpenMATB-Web/")
+        with zipfile.ZipFile(package) as archive:
+            assert sorted(archive.namelist()) == [
+                "OpenMATB-Web/app.zip",
+                "OpenMATB-Web/index.html",
+                "OpenMATB-Web/pyodide/pyodide-module.js",
+            ]
+            assert "web_session_output=download" in _app_config(archive, "OpenMATB-Web/app.zip")
+
+    def test_jatos_study_archive(self, build_module, small_dist, tmp_path):
+        package = build_module.build_jatos_package(tmp_path / "study.jzip")
+        with zipfile.ZipFile(package) as archive:
+            names = archive.namelist()
+            jas = json.loads(archive.read("openmatb.jas"))
+            config = _app_config(archive, "openmatb/app.zip")
+        assert "openmatb/index.html" in names and "openmatb/pyodide/pyodide-module.js" in names
+        study = jas["data"]
+        assert jas["version"] == "3"
+        assert study["dirName"] == "openmatb" and study["uuid"] == build_module.JATOS_STUDY_UUID
+        assert [c["htmlFilePath"] for c in study["componentList"]] == ["index.html"]
+        assert study["batchList"][0]["active"] is True
+        # The session files go to JATOS; the rest of config.ini is kept
+        assert "web_session_output=jatos" in config and "language=en_EN" in config
+
+    def test_jatos_study_keeps_its_identifiers(self, build_module):
+        """Importing a new version into JATOS updates the study instead of creating another one."""
+        first = build_module.jatos_study("OpenMATB", "1.4.5")["data"]
+        second = build_module.jatos_study("OpenMATB", "1.4.6")["data"]
+        assert first["uuid"] == second["uuid"]
+        assert first["componentList"][0]["uuid"] == second["componentList"][0]["uuid"]
+
+    def test_unknown_config_key_is_an_error(self, build_module, small_dist):
+        with pytest.raises(KeyError):
+            build_module.app_zip_with_config({"no_such_key": "1"})
+
+    def test_scorm_package_in_the_release(self, build_module, small_dist, tmp_path):
+        package = build_module.build_scorm_package("2004", package=tmp_path / "scorm.zip")
+        with zipfile.ZipFile(package) as archive:
+            assert archive.namelist()[0] == "imsmanifest.xml"
+            assert "2004 4th Edition" in archive.read("imsmanifest.xml").decode("utf-8")
