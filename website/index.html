@@ -1,0 +1,2222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenMATB &mdash; Multi-Attribute Task Battery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Custom properties ──────────────────────────────── */
+:root {
+  --blue-900: #0f2440;
+  --blue-800: #1e3a5f;
+  --blue-700: #2a4f7f;
+  --blue-600: #3a6ba5;
+  --blue-500: #4a87c8;
+  --blue-100: #e8f0fa;
+  --blue-50: #f4f8fd;
+  --cyan-400: #22d3ee;
+  --cyan-600: #0891b2;
+  --green-500: #22c55e;
+  --orange-400: #fb923c;
+  --orange-500: #f97316;
+  --red-500: #ef4444;
+  --yellow-400: #facc15;
+  --grey-50: #f9fafb;
+  --grey-100: #f3f4f6;
+  --grey-200: #e5e7eb;
+  --grey-300: #d1d5db;
+  --grey-400: #9ca3af;
+  --grey-500: #6b7280;
+  --grey-600: #4b5563;
+  --grey-700: #374151;
+  --grey-800: #1f2937;
+  --grey-900: #111827;
+  --white: #ffffff;
+  --code-bg: #1e293b;
+  --code-fg: #e2e8f0;
+  --card-shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+  --card-shadow-hover: 0 4px 6px rgba(0,0,0,.1), 0 2px 4px rgba(0,0,0,.06);
+  --radius: 8px;
+  --radius-sm: 4px;
+  --header-h: 56px;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Consolas', monospace;
+}
+/* ── Reset ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 16px); }
+body {
+  font-family: var(--font-sans);
+  color: var(--grey-800);
+  background: var(--grey-50);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--blue-600); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Header ─────────────────────────────────────────── */
+.site-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: var(--header-h);
+  background: var(--blue-800);
+  display: flex; align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+.header-inner {
+  width: 100%; max-width: 1200px; margin: 0 auto;
+  padding: 0 24px;
+  display: flex; align-items: center; gap: 32px;
+}
+.site-logo {
+  font-size: 20px; font-weight: 700; color: var(--white);
+  letter-spacing: -.5px; white-space: nowrap;
+  text-decoration: none;
+}
+.site-logo:hover { text-decoration: none; }
+.tab-nav {
+  display: flex; gap: 4px; overflow-x: auto;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.3) transparent;
+  -ms-overflow-style: none;
+  flex: 1;
+}
+.tab-nav::-webkit-scrollbar { height: 3px; }
+.tab-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.3); border-radius: 2px; }
+.tab-btn {
+  background: none; border: none; cursor: pointer;
+  color: rgba(255,255,255,.7);
+  font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+  padding: 8px 14px; border-radius: var(--radius-sm);
+  white-space: nowrap; transition: background .15s, color .15s;
+}
+.tab-btn:hover { background: rgba(255,255,255,.1); color: var(--white); }
+.tab-btn[aria-selected="true"] {
+  background: rgba(255,255,255,.18); color: var(--white);
+}
+
+/* ── Demo ───────────────────────────────────────────── */
+.tab-btn.tab-demo { margin-left: auto; background: var(--green-500); color: var(--blue-900); font-weight: 600; }
+.tab-btn.tab-demo:hover { background: #4ade80; color: var(--blue-900); }
+.tab-btn.tab-demo[aria-selected="true"] { background: var(--white); color: var(--blue-800); }
+.demo-stage {
+  position: relative; aspect-ratio: 16 / 10; margin-bottom: 12px; overflow: hidden;
+  background: var(--blue-900); border-radius: var(--radius); box-shadow: var(--card-shadow);
+}
+.demo-stage img { width: 100%; height: 100%; object-fit: cover; opacity: .4; display: block; }
+.demo-stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--blue-900); }
+.demo-launch {
+  position: absolute; inset: 0; margin: auto; width: max-content; height: max-content;
+  padding: 14px 28px; border: 0; border-radius: var(--radius); cursor: pointer;
+  background: var(--green-500); color: var(--blue-900);
+  font-family: var(--font-sans); font-size: 17px; font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0,0,0,.3); transition: transform .15s, background .15s;
+}
+.demo-launch:hover { background: #4ade80; transform: scale(1.04); }
+.demo-actions { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; margin-bottom: 32px; font-size: 14px; }
+.demo-actions button {
+  background: none; border: 1px solid var(--grey-300); border-radius: var(--radius-sm); cursor: pointer;
+  padding: 6px 12px; font-family: var(--font-sans); font-size: 14px; color: var(--grey-700);
+}
+.demo-actions button:hover { border-color: var(--blue-500); color: var(--blue-700); }
+.demo-actions [hidden] { display: none; }
+
+/* ── Main layout ────────────────────────────────────── */
+.main-content {
+  max-width: 1200px; margin: 0 auto;
+  padding: calc(var(--header-h) + 32px) 24px 64px;
+}
+.tab-panel { display: none; animation: fadeIn .25s ease; }
+.tab-panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ── Typography ─────────────────────────────────────── */
+.tab-panel h2 { font-size: 28px; font-weight: 700; color: var(--blue-800); margin-bottom: 8px; }
+.tab-panel h3 { font-size: 20px; font-weight: 600; color: var(--grey-900); margin: 32px 0 12px; border-bottom: 2px solid var(--blue-100); padding-bottom: 6px; }
+.tab-panel h4 { font-size: 16px; font-weight: 600; color: var(--grey-700); margin: 20px 0 8px; }
+.tab-panel p { margin-bottom: 12px; }
+.tab-panel ul, .tab-panel ol { margin: 0 0 12px 24px; }
+.tab-panel li { margin-bottom: 4px; }
+.lead { font-size: 17px; color: var(--grey-600); margin-bottom: 24px; }
+
+/* ── Cards ──────────────────────────────────────────── */
+.card {
+  background: var(--white); border-radius: var(--radius);
+  box-shadow: var(--card-shadow); padding: 24px; margin-bottom: 20px;
+  transition: box-shadow .2s;
+}
+.card:hover { box-shadow: var(--card-shadow-hover); }
+.card h4:first-child { margin-top: 0; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; margin-bottom: 24px; }
+
+/* ── Hero images ────────────────────────────────────── */
+.hero-img {
+  border-radius: var(--radius); box-shadow: var(--card-shadow);
+  cursor: pointer; transition: box-shadow .2s, transform .15s;
+  margin-bottom: 24px;
+}
+.hero-img:hover { box-shadow: var(--card-shadow-hover); transform: scale(1.005); }
+
+/* ── Tables ─────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; margin-bottom: 20px; border-radius: var(--radius); box-shadow: var(--card-shadow); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--white); }
+thead th {
+  background: var(--blue-800); color: var(--white);
+  padding: 10px 14px; text-align: left; font-weight: 600; white-space: nowrap;
+}
+tbody td { padding: 8px 14px; border-bottom: 1px solid var(--grey-200); }
+tbody tr:nth-child(even) { background: var(--grey-50); }
+tbody tr:hover { background: var(--blue-50); }
+td code, th code { font-family: var(--font-mono); font-size: 13px; }
+
+/* ── Code blocks ────────────────────────────────────── */
+pre {
+  background: var(--code-bg); color: var(--code-fg);
+  padding: 16px 20px; border-radius: var(--radius);
+  overflow-x: auto; font-family: var(--font-mono);
+  font-size: 13.5px; line-height: 1.6; margin-bottom: 20px;
+  box-shadow: var(--card-shadow);
+}
+code {
+  font-family: var(--font-mono); font-size: 13.5px;
+  background: var(--grey-100); padding: 1px 5px; border-radius: 3px;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+/* Scenario syntax highlighting */
+pre code.scenario .sc-time { color: #67e8f9; }
+pre code.scenario .sc-plugin { color: #86efac; }
+pre code.scenario .sc-command { color: #fde68a; }
+pre code.scenario .sc-value { color: #fdba74; }
+pre code.scenario .sc-comment { color: #94a3b8; font-style: italic; }
+pre code.scenario .sc-semi { color: #64748b; }
+
+/* ── Inline badge / label ───────────────────────────── */
+.badge {
+  display: inline-block; font-size: 12px; font-weight: 600;
+  padding: 2px 8px; border-radius: 999px;
+  line-height: 1.5;
+}
+.badge-blue { background: var(--blue-100); color: var(--blue-700); }
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-orange { background: #ffedd5; color: #9a3412; }
+.badge-red { background: #fee2e2; color: #991b1b; }
+.badge-grey { background: var(--grey-200); color: var(--grey-700); }
+.badge-cyan { background: #cffafe; color: #155e75; }
+.badge-yellow { background: #fef9c3; color: #854d0e; }
+
+/* ── Workflow diagram (CSS boxes) ───────────────────── */
+.workflow { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 24px; }
+.wf-box {
+  background: var(--white); border: 2px solid var(--blue-600);
+  border-radius: var(--radius); padding: 10px 16px;
+  font-size: 14px; font-weight: 500; text-align: center;
+  min-width: 120px;
+}
+.wf-box.accent { background: var(--blue-100); border-color: var(--blue-700); }
+.wf-arrow { font-size: 20px; color: var(--grey-400); }
+
+/* ── Sub-tabs (Tasks page) ──────────────────────────── */
+.sub-tab-nav {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 24px; padding-bottom: 12px;
+  border-bottom: 2px solid var(--grey-200);
+}
+.sub-tab-btn {
+  background: var(--grey-100); border: 1px solid var(--grey-200); border-radius: var(--radius-sm);
+  cursor: pointer; font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+  padding: 6px 14px; color: var(--grey-600);
+  transition: background .15s, color .15s, border-color .15s;
+}
+.sub-tab-btn:hover { background: var(--blue-50); color: var(--blue-700); border-color: var(--blue-500); }
+.sub-tab-btn[aria-selected="true"] {
+  background: var(--blue-800); color: var(--white); border-color: var(--blue-800);
+}
+.sub-panel { display: none; animation: fadeIn .2s ease; }
+.sub-panel.active { display: block; }
+
+/* ── Lightbox ───────────────────────────────────────── */
+.lightbox {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.85); align-items: center; justify-content: center;
+  padding: 24px; cursor: zoom-out;
+}
+.lightbox.open { display: flex; }
+.lightbox img {
+  max-width: 95vw; max-height: 90vh;
+  border-radius: var(--radius); box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  cursor: default;
+}
+.lightbox-close {
+  position: absolute; top: 16px; right: 20px;
+  background: none; border: none; color: var(--white);
+  font-size: 32px; cursor: pointer; opacity: .8;
+  transition: opacity .15s;
+}
+.lightbox-close:hover { opacity: 1; }
+
+/* ── Key (keyboard shortcut) ────────────────────────── */
+kbd {
+  display: inline-block; background: var(--grey-100); border: 1px solid var(--grey-300);
+  border-radius: 4px; padding: 1px 6px; font-family: var(--font-mono);
+  font-size: 12px; box-shadow: 0 1px 0 var(--grey-300);
+}
+
+/* ── Footer ─────────────────────────────────────────── */
+.site-footer {
+  text-align: center; padding: 32px 24px; color: var(--grey-500);
+  font-size: 13px; border-top: 1px solid var(--grey-200);
+  max-width: 1200px; margin: 0 auto;
+}
+.site-footer a { color: var(--blue-600); }
+
+/* ── Responsive ─────────────────────────────────────── */
+/* ── Publications ─────────────────────────────────────── */
+.ref-list { list-style: none; margin: 0 0 28px; padding: 0; counter-reset: ref; }
+.ref-list li {
+  counter-increment: ref; position: relative;
+  padding: 12px 16px 12px 44px; margin-bottom: 2px;
+  font-size: 14px; line-height: 1.65; border-radius: var(--radius-sm);
+  transition: background .15s;
+}
+.ref-list li:nth-child(even) { background: var(--grey-50); }
+.ref-list li:hover { background: var(--blue-50); }
+.ref-list li::before {
+  content: counter(ref) "."; position: absolute; left: 12px; top: 12px;
+  font-weight: 600; color: var(--grey-400); font-size: 13px; min-width: 24px; text-align: right;
+}
+.ref-list .ref-authors { font-weight: 500; color: var(--grey-800); }
+.ref-list .ref-year { font-weight: 600; color: var(--blue-700); }
+.ref-list .ref-title { color: var(--grey-700); }
+.ref-list .ref-journal { font-style: italic; color: var(--grey-500); }
+.ref-list .ref-doi { font-size: 12.5px; }
+.ref-year-heading {
+  font-size: 22px; font-weight: 700; color: var(--blue-800);
+  margin: 28px 0 12px; padding-bottom: 6px;
+  border-bottom: 2px solid var(--blue-100);
+  display: flex; align-items: center; gap: 10px;
+}
+.ref-year-heading .ref-count {
+  font-size: 13px; font-weight: 600; background: var(--blue-100);
+  color: var(--blue-700); padding: 2px 10px; border-radius: 999px;
+}
+.ref-stats {
+  display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 28px;
+}
+.ref-stat {
+  background: var(--white); border-radius: var(--radius);
+  box-shadow: var(--card-shadow); padding: 16px 20px;
+  text-align: center; flex: 1; min-width: 120px;
+}
+.ref-stat .stat-num { font-size: 28px; font-weight: 700; color: var(--blue-700); }
+.ref-stat .stat-label { font-size: 12px; color: var(--grey-500); text-transform: uppercase; letter-spacing: .5px; }
+
+/* ── Citation links ─────────────────────────────────── */
+a.cite-link {
+  font-size: 13px; color: var(--blue-600); text-decoration: none;
+  border-bottom: 1px dotted var(--blue-400); cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+a.cite-link:hover { color: var(--blue-800); border-color: var(--blue-700); text-decoration: none; }
+
+.measure-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.measure-card {
+  background: var(--white); border-radius: var(--radius); box-shadow: var(--card-shadow);
+  padding: 18px 20px; border-left: 4px solid var(--blue-600);
+}
+.measure-card h4 { font-size: 15px; font-weight: 600; color: var(--blue-800); margin: 0 0 8px; }
+.measure-card .measure-refs { font-size: 13px; color: var(--grey-500); line-height: 1.7; }
+
+/* ── Home hero section ──────────────────────────────── */
+.hero-section {
+  background: linear-gradient(135deg, var(--blue-800) 0%, var(--blue-700) 50%, var(--blue-600) 100%);
+  border-radius: var(--radius); padding: 48px 40px; margin-bottom: 32px;
+  color: var(--white); position: relative; overflow: hidden;
+}
+.hero-section::after {
+  content: ''; position: absolute; top: -50%; right: -20%; width: 60%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-section h1 { font-size: 38px; font-weight: 700; margin-bottom: 8px; letter-spacing: -.5px; }
+.hero-section .subtitle { font-size: 18px; opacity: .85; margin-bottom: 20px; }
+.hero-section p { font-size: 16px; line-height: 1.7; opacity: .92; max-width: 720px; }
+.hero-section .badge { margin-right: 6px; }
+.ci-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.ci-badges img { height: 20px; display: block; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.hero-actions a {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 22px; border-radius: var(--radius-sm); font-weight: 600; font-size: 14px;
+  text-decoration: none; transition: background .15s, transform .1s;
+}
+.hero-actions a:hover { transform: translateY(-1px); text-decoration: none; }
+.btn-primary { background: var(--white); color: var(--blue-800); }
+.btn-primary:hover { background: var(--grey-100); }
+.btn-secondary { background: rgba(255,255,255,.15); color: var(--white); border: 1px solid rgba(255,255,255,.3); }
+.btn-secondary:hover { background: rgba(255,255,255,.25); }
+
+.feature-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 28px; }
+.feature-card {
+  background: var(--white); border-radius: var(--radius);
+  box-shadow: var(--card-shadow); padding: 20px; text-align: center;
+  border-top: 3px solid var(--blue-600); transition: box-shadow .2s, transform .15s;
+}
+.feature-card:hover { box-shadow: var(--card-shadow-hover); transform: translateY(-2px); }
+.feature-icon { font-size: 28px; margin-bottom: 8px; color: var(--grey-700); }
+.feature-card h4 { font-size: 15px; font-weight: 600; color: var(--blue-800); margin-bottom: 6px; }
+.feature-card p { font-size: 13px; color: var(--grey-600); margin: 0; line-height: 1.5; }
+
+.home-screenshot { position: relative; margin-bottom: 32px; }
+.home-screenshot img {
+  border-radius: var(--radius); box-shadow: 0 8px 30px rgba(0,0,0,.15);
+  cursor: pointer; transition: box-shadow .2s, transform .15s;
+}
+.home-screenshot img:hover { box-shadow: 0 12px 40px rgba(0,0,0,.2); transform: scale(1.003); }
+.home-screenshot .caption {
+  text-align: center; font-size: 13px; color: var(--grey-500);
+  margin-top: 10px; font-style: italic;
+}
+
+.objectives-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-bottom: 28px; }
+.objective-card {
+  background: var(--white); border-radius: var(--radius); box-shadow: var(--card-shadow);
+  padding: 24px; border-left: 4px solid var(--blue-600);
+}
+.objective-card h4 { font-size: 16px; font-weight: 600; color: var(--blue-800); margin-bottom: 8px; }
+.objective-card p { font-size: 14px; color: var(--grey-600); margin: 0; }
+
+.cite-box {
+  background: var(--blue-50); border-left: 4px solid var(--blue-600);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 20px 24px; margin-bottom: 20px; font-size: 14px; line-height: 1.7;
+}
+.cite-box em { color: var(--grey-700); }
+
+.prereq-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.prereq-item {
+  background: var(--white); border-radius: var(--radius); box-shadow: var(--card-shadow);
+  padding: 14px 18px; display: flex; align-items: center; gap: 10px;
+}
+.prereq-item strong { font-size: 14px; color: var(--grey-800); }
+.prereq-item span { font-size: 13px; color: var(--grey-500); }
+
+@media (max-width: 768px) {
+  .header-inner { gap: 16px; padding: 0 12px; }
+  .site-logo { font-size: 17px; }
+  .tab-btn { font-size: 13px; padding: 6px 10px; }
+  .main-content { padding: calc(var(--header-h) + 16px) 12px 48px; }
+  .card-grid { grid-template-columns: 1fr; }
+  .tab-panel h2 { font-size: 22px; }
+  .workflow { flex-direction: column; align-items: stretch; }
+  .wf-arrow { transform: rotate(90deg); text-align: center; }
+  pre { font-size: 12.5px; padding: 12px 14px; }
+  .hero-section { padding: 32px 20px; }
+  .hero-section h1 { font-size: 28px; }
+  .hero-section .subtitle { font-size: 16px; }
+  .feature-grid { grid-template-columns: repeat(2, 1fr); }
+  .objectives-grid { grid-template-columns: 1fr; }
+  .prereq-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════ HEADER -->
+<header class="site-header">
+  <div class="header-inner">
+    <a class="site-logo" href="#home">OpenMATB</a>
+    <nav class="tab-nav" role="tablist" aria-label="Main sections">
+      <button class="tab-btn" role="tab" aria-selected="true" aria-controls="home" id="tab-home">Home</button>
+      <!-- AGENTS (hidden until released)
+<button class="tab-btn" role="tab" aria-selected="false" aria-controls="tasks" id="tab-tasks">Tasks &amp; Agents</button>
+-->
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tasks" id="tab-tasks">Tasks</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="build-scenario" id="tab-build-scenario">Build Scenario</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="psychophysiology" id="tab-psychophysiology">Psychophysiology</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="replay" id="tab-replay">Replay</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="web" id="tab-web">Web Version</button>
+      <!-- AGENTS (hidden until released)
+<button class="tab-btn" role="tab" aria-selected="false" aria-controls="simulation" id="tab-simulation">Cognitive Simulation</button>
+-->
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="references" id="tab-references">Publications</button>
+      <button class="tab-btn tab-demo" role="tab" aria-selected="false" aria-controls="demo" id="tab-demo">&#9654;&nbsp;Demo</button>
+    </nav>
+  </div>
+</header>
+
+<main class="main-content">
+
+<!-- ═══════════════════════════════════════════════════ HOME -->
+<section class="tab-panel active" id="home" role="tabpanel" aria-labelledby="tab-home">
+
+<div class="hero-section">
+  <h1>OpenMATB</h1>
+  <p class="subtitle">Open Multi-Attribute Task Battery</p>
+  <div class="ci-badges">
+    <a href="https://github.com/juliencegarra/OpenMATB/actions/workflows/tests.yml" target="_blank" rel="noopener"><img alt="CI status" src="https://github.com/juliencegarra/OpenMATB/actions/workflows/tests.yml/badge.svg?branch=master"></a>
+    <a href="https://github.com/juliencegarra/OpenMATB/actions/workflows/tests.yml" target="_blank" rel="noopener"><img alt="Tests" src="https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/juliencegarra/5d551479385698a23440737307999f72/raw/OpenMATB-junit-tests.json"></a>
+    <a href="https://github.com/juliencegarra/OpenMATB/actions/workflows/tests.yml" target="_blank" rel="noopener"><img alt="Coverage" src="https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/juliencegarra/5d551479385698a23440737307999f72/raw/OpenMATB-cobertura-coverage.json"></a>
+  </div>
+  <p>An open-source reimplementation of the Multi-Attribute Task Battery (MATB), originally developed by NASA (Comstock &amp; Arnegard, 1992). OpenMATB provides a set of concurrent interactive tasks representative of aircraft piloting, designed for human factors and cognitive workload research.</p>
+  <p style="font-size:13.5px;opacity:.85;margin-top:12px;line-height:1.6">Cegarra, J., Val&eacute;ry, B., Avril, E., Calmettes, C., &amp; Navarro, J. (2020). OpenMATB: A Multi-Attribute Task Battery promoting task customization, software extensibility and experiment replicability. <em>Behavior Research Methods</em>, 52, 1980&ndash;1990. <a href="https://doi.org/10.3758/s13428-020-01364-w" target="_blank" rel="noopener" style="color:rgba(255,255,255,.9);border-bottom:1px dotted rgba(255,255,255,.5)">doi:10.3758/s13428-020-01364-w</a></p>
+  <div class="hero-actions">
+    <a class="btn-primary" href="https://github.com/juliencegarra/OpenMATB" target="_blank" rel="noopener">GitHub Repository</a>
+    <a class="btn-secondary" href="https://github.com/juliencegarra/OpenMATB/wiki" target="_blank" rel="noopener">Wiki</a>
+    <a class="btn-secondary" href="#build-scenario">Get Started</a>
+  </div>
+</div>
+
+<div class="home-screenshot">
+  <img src="img/capture.png" alt="OpenMATB full interface showing all five concurrent tasks" data-lightbox>
+  <p class="caption">OpenMATB running a full session with all five interactive components</p>
+</div>
+
+<h3>Five Interactive Components</h3>
+<div class="feature-grid">
+  <div class="feature-card">
+    <div class="feature-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><circle cx="12" cy="16" r=".8" fill="currentColor"/><path d="M8.5 7.5l1 1.5"/><path d="M15.5 7.5l-1 1.5"/></svg></div>
+    <h4>System Monitoring</h4>
+    <p>Surveillance of gauges and detection of malfunctions via function keys</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" stroke-dasharray="2 2"/><line x1="12" y1="12" x2="15" y2="9"/><line x1="12" y1="3" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="21"/><line x1="3" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="21" y2="12"/></svg></div>
+    <h4>Tracking</h4>
+    <p>Joystick compensation of a drifting cursor within a target zone</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></div>
+    <h4>Communications</h4>
+    <p>Audio-guided radio frequency tuning with callsign recognition</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="6" height="14" rx="1"/><rect x="15" y="3" width="6" height="17" rx="1"/><line x1="6" y1="10" x2="6" y2="16"/><line x1="18" y1="7" x2="18" y2="16"/><path d="M9 13h6" /><path d="M12 10v6"/></svg></div>
+    <h4>Resources Management</h4>
+    <p>Pump and tank system balancing to maintain target levels</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="4" x2="8" y2="20"/><line x1="8" y1="13" x2="14" y2="13"/><line x1="8" y1="16" x2="18" y2="16"/></svg></div>
+    <h4>Scheduling</h4>
+    <p>Chronological timeline of upcoming events and automation states</p>
+  </div>
+</div>
+
+<h3>Design Objectives</h3>
+<div class="objectives-grid">
+  <div class="objective-card">
+    <h4>Task Customization</h4>
+    <p>Every aspect of the battery is configurable through plain-text scenario files &mdash; difficulty, timing, parameters, feedback, and automation levels.</p>
+  </div>
+  <div class="objective-card">
+    <h4>Software Extensibility</h4>
+    <!-- AGENTS (hidden until released)
+<p>Plugin architecture allows adding new tasks, measurement tools, and agent modes without modifying the core. Supports LSL, parallel port, and custom scales.</p>
+-->
+    <p>Plugin architecture allows adding new tasks and measurement tools without modifying the core. Supports LSL, parallel port, and custom scales.</p>
+  </div>
+  <div class="objective-card">
+    <h4>Experiment Replicability</h4>
+    <p>Deterministic scenario scripts, comprehensive CSV logging, and session replay ensure that experiments can be shared and reproduced exactly.</p>
+  </div>
+</div>
+
+<h3>Key Features</h3>
+<div class="card-grid">
+  <div class="card">
+    <h4>Scenario-Driven Design</h4>
+    <p>Plain-text scripts define every event, parameter, and timing. No code changes needed to create new experimental conditions.</p>
+  </div>
+  <div class="card">
+    <h4>Neurophysiology Integration</h4>
+    <p>Synchronize with EEG, fNIRS, and other recordings through Lab Streaming Layer (LSL) or parallel port triggers.</p>
+  </div>
+  <!-- AGENTS (hidden until released)
+<div class="card">
+    <h4>Configurable Automation</h4>
+    <p>Five agent modes from full manual to full automation, including human-machine cooperation modes (Assisted, Cooperative, Supervisory).</p>
+  </div>
+  <div class="card">
+    <h4>Cognitive Simulation</h4>
+    <p>HumanLike and ACT-R agents simulate realistic operator behavior with limited attention, reaction times, and human errors.</p>
+  </div>
+-->
+  <div class="card">
+    <h4>Session Replay</h4>
+    <p>Replay any recorded session with full input visualization, seeking controls, and speed adjustment.</p>
+  </div>
+  <div class="card">
+    <h4>Cross-Platform</h4>
+    <p>Runs on Windows, macOS, and Linux, and in the browser (<a href="#web">experimental</a>). Built with Python and pyglet &mdash; no heavy framework dependencies.</p>
+  </div>
+</div>
+
+<h3>Prerequisites</h3>
+<div class="prereq-grid">
+  <div class="prereq-item">
+    <div><strong>Python</strong><br><span>3.9 or higher</span></div>
+  </div>
+  <div class="prereq-item">
+    <div><strong>Dependencies</strong><br><span>pyglet, pyparallel, rstr, pylsl</span></div>
+  </div>
+  <div class="prereq-item">
+    <div><strong>Platforms</strong><br><span>Windows, macOS, Linux</span></div>
+  </div>
+  <div class="prereq-item">
+    <div><strong>Hardware</strong><br><span>PC + joystick (optional)</span></div>
+  </div>
+</div>
+
+<h3>Quick Start</h3>
+<pre><code>git clone https://github.com/juliencegarra/OpenMATB.git
+cd OpenMATB
+python -m pip install -r requirements.txt
+python main.py</code></pre>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════ TAB 1: BUILD SCENARIO -->
+<section class="tab-panel" id="build-scenario" role="tabpanel" aria-labelledby="tab-build-scenario">
+
+<h2>Build a Scenario</h2>
+<p class="lead">Scenarios are plain-text scripts that orchestrate tasks, events, and parameters across an entire experimental session.</p>
+
+<h3>Scenario Tools</h3>
+<p>OpenMATB includes two scenario generation helpers:</p>
+<ul>
+  <li><code>scenario_generator.py</code> &mdash; command-line scenario generator for progressive difficulty</li>
+  <li><code>scenario_generator_ui.py</code> &mdash; graphical interface for scenario creation</li>
+</ul>
+<img src="img/scenariogeneratorui.png" alt="OpenMATB Scenario Generator UI" class="hero-img" style="max-width:700px;cursor:pointer;" onclick="openLightbox(this)">
+<p>Scenario validation errors are written to <code>last_scenario_errors.log</code> in the root directory.</p>
+
+<h3>Syntax</h3>
+<p>Each line follows a three- or four-component format separated by semicolons:</p>
+<pre><code class="scenario">time;plugin;command
+time;plugin;parameter;value</code></pre>
+<ul>
+  <li><strong>Time</strong> &mdash; <code>H:mm:ss</code> relative to experiment start</li>
+  <li><strong>Plugin</strong> &mdash; target module alias</li>
+  <li><strong>Command</strong> &mdash; action keyword or parameter path</li>
+  <li><strong>Value</strong> &mdash; parameter value (when setting a parameter)</li>
+</ul>
+<p>Comments begin with <code>#</code> and are ignored by the parser. Commands are automatically sorted by execution time.</p>
+
+<h3>Available Plugins</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Plugin alias</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>sysmon</code></td><td>System Monitoring &mdash; gauge surveillance and failure detection</td></tr>
+<tr><td><code>track</code></td><td>Tracking &mdash; joystick cursor compensation</td></tr>
+<tr><td><code>scheduling</code></td><td>Scheduling &mdash; chronological timeline overview</td></tr>
+<tr><td><code>communications</code></td><td>Communications &mdash; radio frequency tuning from audio prompts</td></tr>
+<tr><td><code>resman</code></td><td>Resources Management &mdash; pump and tank balancing</td></tr>
+<tr><td><code>performance</code></td><td>Performance &mdash; real-time worst-of performance gauge</td></tr>
+<tr><td><code>instructions</code></td><td>Instructions &mdash; HTML instruction slides</td></tr>
+<tr><td><code>genericscales</code></td><td>Generic Scales &mdash; custom questionnaires (e.g. NASA-TLX)</td></tr>
+<tr><td><code>labstreaminglayer</code></td><td>Lab Streaming Layer &mdash; LSL marker streaming</td></tr>
+<tr><td><code>parallelport</code></td><td>Parallel Port &mdash; hardware trigger markers</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Actions</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Action</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>start</code></td><td>Initialize and display a plugin</td></tr>
+<tr><td><code>stop</code></td><td>Terminate a plugin</td></tr>
+<tr><td><code>pause</code></td><td>Suspend plugin activity</td></tr>
+<tr><td><code>resume</code></td><td>Resume after pause</td></tr>
+<tr><td><code>hide</code></td><td>Hide the plugin display</td></tr>
+<tr><td><code>show</code></td><td>Show the plugin display</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Parameter Hierarchy</h3>
+<p>Parameters use a dash-separated hierarchy to target nested elements:</p>
+<pre><code class="scenario">0:00:10;sysmon;scales-1-failure;True
+0:00:10;sysmon;alerttimeout;2000
+0:00:00;resman;tank-b-target;1000
+0:00:00;resman;pump-3-state;failure</code></pre>
+<p>For example, <code>scales-1-failure</code> targets the <code>failure</code> property of scale number&nbsp;<code>1</code> within the <code>sysmon</code> plugin.</p>
+
+<h3>Full Example &mdash; 1 Minute Scenario</h3>
+<pre><code class="scenario"># Scenario template
+
+# 1. Task parameters
+0:00:00;sysmon;feedbacks-positive-active;False
+0:00:00;sysmon;feedbacks-negative-active;False
+0:00:00;resman;tank-b-target;1000
+0:00:00;track;cursorcolor;#009900
+0:00:00;communications;callsignregex;[A-Z][A-Z]\d\d
+0:00:00;communications;othercallsignnumber;5
+0:00:00;communications;voicegender;male
+0:00:00;communications;voiceidiom;french
+
+# 2. Start tasks
+0:00:00;resman;start
+0:00:00;track;start
+0:00:00;sysmon;start
+0:00:00;scheduling;start
+0:00:00;communications;start
+
+# 3. Events
+# 3.a. System monitoring
+0:00:10;sysmon;scales-1-side;-1
+0:00:10;sysmon;scales-1-failure;True
+0:00:30;sysmon;scales-4-side;1
+0:00:30;sysmon;scales-4-failure;True
+
+# 3.b. Resources management
+0:00:00;resman;automaticsolver;True
+0:00:15;resman;pump-3-state;failure
+0:00:25;resman;pump-3-state;off
+0:00:25;resman;automaticsolver;False
+0:00:30;resman;pump-7-state;failure
+0:00:40;resman;pump-7-state;off
+
+# 3.c. Tracking
+0:00:20;track;automaticsolver;True
+0:00:40;track;automaticsolver;False
+
+# 3.d. Communications
+0:00:00;communications;radioprompt;own
+0:00:25;communications;radioprompt;other
+0:00:40;communications;automaticsolver;True
+0:00:45;communications;radioprompt;own
+
+# 4. Stop tasks
+0:01:00;resman;stop
+0:01:00;track;stop
+0:01:00;sysmon;stop
+0:01:00;communications;stop
+0:01:00;scheduling;stop</code></pre>
+
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════ TAB 2: PSYCHOPHYSIOLOGY -->
+<section class="tab-panel" id="psychophysiology" role="tabpanel" aria-labelledby="tab-psychophysiology">
+
+<h2>Psychophysiology Measures</h2>
+<p class="lead">Synchronize OpenMATB events with neurophysiological recordings (EEG, fNIRS, ECG&hellip;) through two complementary methods.</p>
+
+<h3>Physiological Measures Used with OpenMATB</h3>
+<p>The following physiological measures have been recorded alongside OpenMATB in published studies. Each card lists the measure and the studies that employed it.</p>
+
+<div class="measure-grid">
+
+<div class="measure-card">
+  <h4>EEG (Electroencephalography)</h4>
+  <p class="measure-refs">
+    <a class="cite-link" href="#ref-pontiggia-2026" data-tab="references">Pontiggia et al., 2026</a>;
+    <a class="cite-link" href="#ref-zhou-2025" data-tab="references">Zhou et al., 2025</a>;
+    <a class="cite-link" href="#ref-li-2025" data-tab="references">Li et al., 2025</a>;
+    <a class="cite-link" href="#ref-novak-2024" data-tab="references">Novak et al., 2024</a>;
+    <a class="cite-link" href="#ref-liu-2023" data-tab="references">Liu et al., 2023</a>;
+    <a class="cite-link" href="#ref-farago-2022" data-tab="references">Farago et al., 2022</a>
+  </p>
+</div>
+
+<div class="measure-card">
+  <h4>ECG / Heart Rate / HRV</h4>
+  <p class="measure-refs">
+    <a class="cite-link" href="#ref-pontiggia-2026" data-tab="references">Pontiggia et al., 2026</a>;
+    <a class="cite-link" href="#ref-konig-2025" data-tab="references">Konig et al., 2025</a>;
+    <a class="cite-link" href="#ref-sharma-2025" data-tab="references">Sharma et al., 2025</a>;
+    <a class="cite-link" href="#ref-gossett-2025" data-tab="references">Gossett et al., 2025</a>;
+    <a class="cite-link" href="#ref-duchevet-2025" data-tab="references">Duchevet et al., 2025</a>;
+    <a class="cite-link" href="#ref-wittels-2025" data-tab="references">Wittels et al., 2025</a>;
+    <a class="cite-link" href="#ref-pontiggia-2024b" data-tab="references">Pontiggia et al., 2024b</a>;
+    <a class="cite-link" href="#ref-wittels-2024" data-tab="references">Wittels et al., 2024</a>;
+    <a class="cite-link" href="#ref-orlov-2024" data-tab="references">Orlov Savko et al., 2024</a>;
+    <a class="cite-link" href="#ref-liu-2023" data-tab="references">Liu et al., 2023</a>;
+    <a class="cite-link" href="#ref-stonge-2023" data-tab="references">St. Onge et al., 2023</a>;
+    <a class="cite-link" href="#ref-konig-2023" data-tab="references">Konig et al., 2023</a>;
+    <a class="cite-link" href="#ref-konig-2022" data-tab="references">Konig et al., 2022</a>
+  </p>
+</div>
+
+<div class="measure-card">
+  <h4>EDA / GSR (Electrodermal Activity)</h4>
+  <p class="measure-refs">
+    <a class="cite-link" href="#ref-konig-2025" data-tab="references">Konig et al., 2025</a>;
+    <a class="cite-link" href="#ref-sharma-2025" data-tab="references">Sharma et al., 2025</a>;
+    <a class="cite-link" href="#ref-gossett-2025" data-tab="references">Gossett et al., 2025</a>;
+    <a class="cite-link" href="#ref-duchevet-2025" data-tab="references">Duchevet et al., 2025</a>;
+    <a class="cite-link" href="#ref-liu-2023" data-tab="references">Liu et al., 2023</a>;
+    <a class="cite-link" href="#ref-konig-2023" data-tab="references">Konig et al., 2023</a>;
+    <a class="cite-link" href="#ref-konig-2022" data-tab="references">Konig et al., 2022</a>
+  </p>
+</div>
+
+<div class="measure-card">
+  <h4>Eye Tracking / Pupillometry</h4>
+  <p class="measure-refs">
+    <a class="cite-link" href="#ref-pontiggia-2026" data-tab="references">Pontiggia et al., 2026</a>;
+    <a class="cite-link" href="#ref-duchevet-2025" data-tab="references">Duchevet et al., 2025</a>;
+    <a class="cite-link" href="#ref-stasch-2025" data-tab="references">Stasch et al., 2025</a>;
+    <a class="cite-link" href="#ref-wang-2024" data-tab="references">Wang et al., 2024</a>;
+    <a class="cite-link" href="#ref-novak-2024" data-tab="references">Novak et al., 2024</a>;
+    <a class="cite-link" href="#ref-pontiggia-2024b" data-tab="references">Pontiggia et al., 2024b</a>;
+    <a class="cite-link" href="#ref-orlov-2024" data-tab="references">Orlov Savko et al., 2024</a>;
+    <a class="cite-link" href="#ref-liu-2023" data-tab="references">Liu et al., 2023</a>;
+    <a class="cite-link" href="#ref-avril-2021a" data-tab="references">Avril et al., 2021a</a>;
+    <a class="cite-link" href="#ref-avril-2021b" data-tab="references">Avril et al., 2021b</a>
+  </p>
+</div>
+
+<div class="measure-card">
+  <h4>Respiration</h4>
+  <p class="measure-refs">
+    <a class="cite-link" href="#ref-pontiggia-2026" data-tab="references">Pontiggia et al., 2026</a>;
+    <a class="cite-link" href="#ref-sharma-2025" data-tab="references">Sharma et al., 2025</a>;
+    <a class="cite-link" href="#ref-gossett-2025" data-tab="references">Gossett et al., 2025</a>;
+    <a class="cite-link" href="#ref-wittels-2025" data-tab="references">Wittels et al., 2025</a>;
+    <a class="cite-link" href="#ref-pontiggia-2024b" data-tab="references">Pontiggia et al., 2024b</a>
+  </p>
+</div>
+
+<div class="measure-card">
+  <h4>SpO2 (Pulse Oximetry)</h4>
+  <p class="measure-refs">
+    <a class="cite-link" href="#ref-wittels-2025" data-tab="references">Wittels et al., 2025</a>;
+    <a class="cite-link" href="#ref-pontiggia-2024b" data-tab="references">Pontiggia et al., 2024b</a>;
+    <a class="cite-link" href="#ref-wittels-2024" data-tab="references">Wittels et al., 2024</a>;
+    <a class="cite-link" href="#ref-stonge-2023" data-tab="references">St. Onge et al., 2023</a>
+  </p>
+</div>
+
+<div class="measure-card">
+  <h4>PPG (Photoplethysmography)</h4>
+  <p class="measure-refs">
+    <a class="cite-link" href="#ref-sharma-2025" data-tab="references">Sharma et al., 2025</a>
+  </p>
+</div>
+
+<div class="measure-card">
+  <h4>EOG (Electrooculography)</h4>
+  <p class="measure-refs">
+    <a class="cite-link" href="#ref-liu-2023" data-tab="references">Liu et al., 2023</a>;
+    <a class="cite-link" href="#ref-farago-2022" data-tab="references">Farago et al., 2022</a>
+  </p>
+</div>
+
+<div class="measure-card">
+  <h4>Skin Temperature</h4>
+  <p class="measure-refs">
+    <a class="cite-link" href="#ref-gossett-2025" data-tab="references">Gossett et al., 2025</a>
+  </p>
+</div>
+
+<div class="measure-card">
+  <h4>Core Body Temperature</h4>
+  <p class="measure-refs">
+    <a class="cite-link" href="#ref-wittels-2025" data-tab="references">Wittels et al., 2025</a>
+  </p>
+</div>
+
+<div class="measure-card">
+  <h4>Accelerometry</h4>
+  <p class="measure-refs">
+    <a class="cite-link" href="#ref-konig-2025" data-tab="references">Konig et al., 2025</a>;
+    <a class="cite-link" href="#ref-gossett-2025" data-tab="references">Gossett et al., 2025</a>;
+    <a class="cite-link" href="#ref-konig-2023" data-tab="references">Konig et al., 2023</a>;
+    <a class="cite-link" href="#ref-konig-2022" data-tab="references">Konig et al., 2022</a>
+  </p>
+</div>
+
+</div>
+
+<p><em>For a comprehensive review of physiological measures used across 19 MATB studies (including EEG, ECG, EDA, respiration, eye tracking, EOG, fMRI, and skin temperature), see <a class="cite-link" href="#ref-pontiggia-2024a" data-tab="references">Pontiggia et al., 2024a</a>.</em></p>
+
+<h3>Lab Streaming Layer (LSL)</h3>
+<div class="card">
+<h4>Overview</h4>
+<p>The <code>labstreaminglayer</code> plugin uses <strong>pylsl</strong> to create a marker stream named <code>"OpenMATB"</code> of type <code>"Markers"</code>. This stream can be captured by <a href="https://github.com/labstreaminglayer/App-LabRecorder" target="_blank" rel="noopener">LabRecorder</a> alongside your physiology streams for time-aligned multi-modal recording.</p>
+
+<h4>Parameters</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>marker</code></td><td>string</td><td>Custom marker string pushed to the LSL outlet, then auto-reset to empty</td></tr>
+<tr><td><code>streamsession</code></td><td>boolean</td><td>When <code>True</code>, all log entries are also pushed as LSL samples</td></tr>
+<tr><td><code>pauseatstart</code></td><td>boolean</td><td>Pause and display a message until LabRecorder is connected</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Scenario Example</h4>
+<pre><code class="scenario"># Enable full session streaming via LSL
+0:00:00;labstreaminglayer;streamsession;True
+0:00:00;labstreaminglayer;pauseatstart;True
+0:00:00;labstreaminglayer;start
+
+# Send a custom marker at a specific time
+0:05:00;labstreaminglayer;marker;BLOCK_2_START</code></pre>
+</div>
+
+<h3>Parallel Port</h3>
+<div class="card">
+<h4>Overview</h4>
+<p>The <code>parallelport</code> plugin uses <strong>pyparallel</strong> to send hardware triggers (0&ndash;255) through the physical parallel port. Triggers are held for a configurable duration, then reset to&nbsp;0. Queued triggers are sent sequentially.</p>
+
+<h4>Parameters</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>trigger</code></td><td>integer (0&ndash;255)</td><td>0</td><td>Trigger value to send on the parallel port</td></tr>
+<tr><td><code>delayms</code></td><td>integer (ms)</td><td>5</td><td>Duration the trigger is held before reset to 0</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Scenario Example</h4>
+<pre><code class="scenario"># Start the parallel port plugin
+0:00:00;parallelport;start
+
+# Send trigger 10 at experiment start, trigger 20 at 5 minutes
+0:00:00;parallelport;trigger;10
+0:05:00;parallelport;trigger;20</code></pre>
+</div>
+
+<h3>Integration Workflow</h3>
+<div class="workflow">
+  <div class="wf-box accent">OpenMATB<br><small>Events &amp; logs</small></div>
+  <span class="wf-arrow">&rarr;</span>
+  <div class="wf-box">LSL Stream<br><small>"OpenMATB" / Markers</small></div>
+  <span class="wf-arrow">&rarr;</span>
+  <div class="wf-box">LabRecorder<br><small>+ physiology streams</small></div>
+  <span class="wf-arrow">&rarr;</span>
+  <div class="wf-box accent">.xdf file<br><small>Time-aligned data</small></div>
+</div>
+<div class="workflow">
+  <div class="wf-box accent">OpenMATB<br><small>Trigger commands</small></div>
+  <span class="wf-arrow">&rarr;</span>
+  <div class="wf-box">Parallel Port<br><small>Hardware signal</small></div>
+  <span class="wf-arrow">&rarr;</span>
+  <div class="wf-box">EEG Amplifier<br><small>Trigger input</small></div>
+  <span class="wf-arrow">&rarr;</span>
+  <div class="wf-box accent">Hardware timestamps<br><small>Sub-ms precision</small></div>
+</div>
+
+<h3>Compatible Software</h3>
+<ul>
+  <li><strong>LabRecorder</strong> &mdash; records all LSL streams into a single .xdf file</li>
+  <li><strong>BrainVision Recorder/Analyzer</strong> &mdash; receives parallel port triggers natively</li>
+  <li><strong>OpenViBE</strong> &mdash; can read LSL streams for real-time BCI applications</li>
+  <li><strong>MNE-Python / EEGLAB</strong> &mdash; import .xdf files for offline analysis</li>
+</ul>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════ TAB 3: TASKS & AGENTS -->
+<section class="tab-panel" id="tasks" role="tabpanel" aria-labelledby="tab-tasks">
+
+<!-- AGENTS (hidden until released)
+<h2>Tasks &amp; Agent Modes</h2>
+-->
+<h2>Tasks</h2>
+<!-- AGENTS (hidden until released)
+<p class="lead">OpenMATB implements five interactive components plus configurable automation agents for human-machine cooperation research.</p>
+-->
+<p class="lead">OpenMATB implements five interactive components.</p>
+
+<div class="sub-tab-nav" role="tablist" aria-label="Task sub-sections">
+  <button class="sub-tab-btn" role="tab" aria-selected="true" aria-controls="sub-sysmon" id="stab-sysmon">Sysmon</button>
+  <button class="sub-tab-btn" role="tab" aria-selected="false" aria-controls="sub-track" id="stab-track">Tracking</button>
+  <button class="sub-tab-btn" role="tab" aria-selected="false" aria-controls="sub-comms" id="stab-comms">Communications</button>
+  <button class="sub-tab-btn" role="tab" aria-selected="false" aria-controls="sub-resman" id="stab-resman">Resman</button>
+  <button class="sub-tab-btn" role="tab" aria-selected="false" aria-controls="sub-sched" id="stab-sched">Scheduling</button>
+  <button class="sub-tab-btn" role="tab" aria-selected="false" aria-controls="sub-perf" id="stab-perf">Performance</button>
+  <!-- AGENTS (hidden until released)
+<button class="sub-tab-btn" role="tab" aria-selected="false" aria-controls="sub-agents" id="stab-agents">Agent Modes</button>
+-->
+</div>
+
+<!-- ─── Sysmon ──────────────────────────────────────── -->
+<div class="sub-panel active" id="sub-sysmon" role="tabpanel" aria-labelledby="stab-sysmon">
+<img class="hero-img" src="img/sysmon.png" alt="System monitoring task" data-lightbox>
+<h3>System Monitoring</h3>
+<p>Participants monitor <strong>4 analog scales</strong> (F1&ndash;F4) and <strong>2 indicator lights</strong> (F5&ndash;F6). Failures deflect a scale or toggle a light&rsquo;s state. The participant must press the corresponding function key within the <code>alerttimeout</code> window.</p>
+<ul>
+  <li><strong>Scales</strong>: arrow drifts to one side; F1&ndash;F4 to correct</li>
+  <li><strong>Lights</strong>: green light turns off or red light turns on; F5/F6 to correct</li>
+  <li><strong>Outcomes</strong>: HIT (correct key within timeout), MISS (timeout expires), FA (false alarm &mdash; key pressed without failure)</li>
+</ul>
+
+<h4>Key Parameters</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>alerttimeout</code></td><td>10000</td><td>Max failure duration (ms) before MISS</td></tr>
+<tr><td><code>automaticsolver</code></td><td>False</td><td>Enable automatic failure resolution</td></tr>
+<tr><td><code>automaticsolverdelay</code></td><td>1000</td><td>Delay before auto-correction (ms)</td></tr>
+<tr><td><code>allowanykey</code></td><td>False</td><td>Any key resolves the first active failure</td></tr>
+<tr><td><code>feedbackduration</code></td><td>1500</td><td>Duration of visual feedback (ms)</td></tr>
+<tr><td><code>displayautomationstate</code></td><td>True</td><td>Show MANUAL/AUTO label</td></tr>
+<tr><td><code>scales-N-failure</code></td><td>False</td><td>Trigger failure on scale N (1&ndash;4)</td></tr>
+<tr><td><code>scales-N-side</code></td><td>0</td><td>Failure direction: -1 (down), 0 (random), 1 (up)</td></tr>
+<tr><td><code>lights-N-failure</code></td><td>False</td><td>Trigger failure on light N (1&ndash;2)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Performance Metric</h4>
+<p>Average of the last 4 signal detections (hits/misses), mapped to 0&ndash;1.</p>
+</div>
+
+<!-- ─── Tracking ────────────────────────────────────── -->
+<div class="sub-panel" id="sub-track" role="tabpanel" aria-labelledby="stab-track">
+<img class="hero-img" src="img/track.png" alt="Tracking task" data-lightbox>
+<h3>Tracking</h3>
+<p>A cursor drifts according to a deterministic pseudo-random function. The participant uses a <strong>joystick</strong> to compensate, keeping the cursor inside a circular target zone.</p>
+<ul>
+  <li>Cursor changes color when leaving the target (configurable)</li>
+  <li>Target size adjustable via <code>targetproportion</code> (0&ndash;1 fraction of the reticle radius)</li>
+  <li>Optional axis inversion for flight-stick compatibility</li>
+</ul>
+
+<h4>Key Parameters</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>targetproportion</code></td><td>0.25</td><td>Target zone size (fraction of reticle radius)</td></tr>
+<tr><td><code>cursorcolor</code></td><td>black</td><td>Cursor color when inside target</td></tr>
+<tr><td><code>cursorcoloroutside</code></td><td>red</td><td>Cursor color when outside target</td></tr>
+<tr><td><code>joystickforce</code></td><td>1</td><td>Joystick sensitivity multiplier</td></tr>
+<tr><td><code>inverseaxis</code></td><td>False</td><td>Invert joystick direction (airplane mode)</td></tr>
+<tr><td><code>automaticsolver</code></td><td>False</td><td>Enable auto-compensation</td></tr>
+<tr><td><code>taskupdatetime</code></td><td>20</td><td>Update interval (ms)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Performance Metrics</h4>
+<p><code>cursor_in_target</code> &mdash; proportion of time the cursor is inside the target over the last 5 seconds. <code>center_deviation</code> &mdash; average distance from center.</p>
+</div>
+
+<!-- ─── Communications ──────────────────────────────── -->
+<div class="sub-panel" id="sub-comms" role="tabpanel" aria-labelledby="stab-comms">
+<img class="hero-img" src="img/communications.png" alt="Communications task" data-lightbox>
+<h3>Communications</h3>
+<p>Audio prompts instruct the participant to tune a radio to a target frequency. The participant must identify whether the prompt uses <strong>their callsign</strong> (respond) or a <strong>distractor</strong> (ignore).</p>
+<ul>
+  <li><strong>Navigation</strong>: <kbd>&uarr;</kbd> <kbd>&darr;</kbd> to select radio (NAV1, NAV2, COM1, COM2)</li>
+  <li><strong>Tuning</strong>: <kbd>&larr;</kbd> <kbd>&rarr;</kbd> to adjust frequency by 0.1 MHz</li>
+  <li><strong>Validation</strong>: <kbd>Enter</kbd> to confirm</li>
+  <li>Callsigns auto-generated from a configurable regex pattern</li>
+</ul>
+
+<h4>Key Parameters</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>callsignregex</code></td><td><code>[A-Z][A-Z][A-Z]\d\d\d</code></td><td>Regex for generating callsigns</td></tr>
+<tr><td><code>othercallsignnumber</code></td><td>5</td><td>Number of distractor callsigns</td></tr>
+<tr><td><code>voicegender</code></td><td>female</td><td><code>male</code> or <code>female</code> voice</td></tr>
+<tr><td><code>voiceidiom</code></td><td>french</td><td>Language: <code>english</code> or <code>french</code></td></tr>
+<tr><td><code>radioprompt</code></td><td>&mdash;</td><td>Trigger a prompt: <code>own</code> or <code>other</code></td></tr>
+<tr><td><code>maxresponsedelay</code></td><td>20000</td><td>Response window (ms)</td></tr>
+<tr><td><code>promptlist</code></td><td>[NAV1, NAV2, COM1, COM2]</td><td>Radio labels</td></tr>
+<tr><td><code>automaticsolver</code></td><td>False</td><td>Enable auto-tuning</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Performance Metric</h4>
+<p>Proportion of correct responses among the last 4 interactions.</p>
+</div>
+
+<!-- ─── Resman ──────────────────────────────────────── -->
+<div class="sub-panel" id="sub-resman" role="tabpanel" aria-labelledby="stab-resman">
+<img class="hero-img" src="img/resman.png" alt="Resource management task" data-lightbox>
+<h3>Resources Management</h3>
+<p>A system of <strong>6 tanks</strong> (A&ndash;F) and <strong>8 pumps</strong> (NUM 1&ndash;8). Tanks A and B are &ldquo;target&rdquo; tanks that leak continuously. The participant activates/deactivates pumps to maintain levels within tolerance.</p>
+<ul>
+  <li>Tanks C&ndash;F are supply tanks (E and F have infinite capacity by default)</li>
+  <li>Pumps can be in states: <code>on</code>, <code>off</code>, or <code>failure</code></li>
+  <li>Pump failures are injected via scenario events</li>
+</ul>
+
+<h4>Key Parameters</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>tank-X-level</code></td><td>2500</td><td>Initial volume</td></tr>
+<tr><td><code>tank-X-max</code></td><td>4000</td><td>Maximum capacity</td></tr>
+<tr><td><code>tank-X-target</code></td><td>2500</td><td>Target level</td></tr>
+<tr><td><code>tank-X-lossperminute</code></td><td>800</td><td>Leak rate (units/min)</td></tr>
+<tr><td><code>pump-N-flow</code></td><td>800</td><td>Pump flow rate (units/min)</td></tr>
+<tr><td><code>pump-N-state</code></td><td>off</td><td>Pump state: <code>on</code>, <code>off</code>, <code>failure</code></td></tr>
+<tr><td><code>toleranceradius</code></td><td>250</td><td>Acceptable deviation from target (0 = disabled)</td></tr>
+<tr><td><code>automaticsolver</code></td><td>False</td><td>Enable auto-management</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Performance Metric</h4>
+<p>Proportion of time tanks A and B stay within tolerance over the last 5 seconds.</p>
+</div>
+
+<!-- ─── Scheduling ──────────────────────────────────── -->
+<div class="sub-panel" id="sub-sched" role="tabpanel" aria-labelledby="stab-sched">
+<img class="hero-img" src="img/scheduling.png" alt="Scheduling panel" data-lightbox>
+<h3>Scheduling Panel</h3>
+<p>Displays a <strong>chronological timeline</strong> of upcoming events and the automation state of each task. Helps participants anticipate workload changes.</p>
+
+<h4>Key Parameters</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>minduration</code></td><td>8</td><td>Time window shown (minutes)</td></tr>
+<tr><td><code>displaychronometer</code></td><td>True</td><td>Show elapsed time counter</td></tr>
+<tr><td><code>reversechronometer</code></td><td>False</td><td>Show remaining time instead</td></tr>
+<tr><td><code>displayedplugins</code></td><td>[sysmon, track, communications, resman]</td><td>Tasks shown on the timeline</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- ─── Performance ─────────────────────────────────── -->
+<div class="sub-panel" id="sub-perf" role="tabpanel" aria-labelledby="stab-perf">
+<img class="hero-img" src="img/performance.png" alt="Performance gauge" data-lightbox>
+<h3>Performance Gauge</h3>
+<p>Displays a real-time bar showing the <strong>worst-of</strong> performance score across all active tasks. Provides continuous awareness of overall operator effectiveness.</p>
+
+<h4>Per-Task Computation</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Task</th><th>Computation Method</th></tr></thead>
+<tbody>
+<tr><td><code>sysmon</code></td><td>Average of last 4 signal detections (hits/misses), mapped 0&ndash;1</td></tr>
+<tr><td><code>track</code></td><td>Proportion of time cursor is inside target over last 5&nbsp;seconds</td></tr>
+<tr><td><code>resman</code></td><td>Proportion of time tanks A/B stay within tolerance over last 5&nbsp;seconds</td></tr>
+<tr><td><code>communications</code></td><td>Proportion of correct responses among last 4 interactions</td></tr>
+</tbody>
+</table>
+</div>
+<p>Scores are unavailable until minimum event thresholds are reached. The displayed value is always the lowest individual task score.</p>
+
+<h4>Key Parameters</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>criticallevel</code></td><td>20</td><td>Threshold below which the bar turns critical color</td></tr>
+<tr><td><code>defaultcolor</code></td><td>green</td><td>Normal performance color</td></tr>
+<tr><td><code>criticalcolor</code></td><td>red</td><td>Critical performance color</td></tr>
+<tr><td><code>shadowundercritical</code></td><td>True</td><td>Show shading below critical threshold</td></tr>
+<tr><td><code>ticknumber</code></td><td>5</td><td>Number of graduation marks</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- AGENTS (hidden until released)
+<!~~ ─── Agent Modes ─────────────────────────────────── ~~>
+<div class="sub-panel" id="sub-agents" role="tabpanel" aria-labelledby="stab-agents">
+<h3>Agent Modes</h3>
+<p>Agents provide configurable levels of automation, from full manual control to full machine autonomy. Select an agent via scenario command:</p>
+<pre><code class="scenario">0:00:00;system;agent;assisted</code></pre>
+
+<h4>Agent Comparison</h4>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Property</th><th>Manual (reference)</th><th>Default / Supervisory</th><th>Assisted</th><th>Cooperative</th><th>HumanLike</th><th>ACT-R</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Human input</strong></td><td>Allowed</td><td>Blocked</td><td>Allowed</td><td>Allowed</td><td>Blocked</td><td>Blocked</td></tr>
+<tr><td><strong>Key injection</strong></td><td>No</td><td>Yes</td><td>No</td><td>No</td><td>Yes</td><td>Yes</td></tr>
+<tr><td><strong>Joystick injection</strong></td><td>No</td><td>Yes</td><td>No</td><td>No</td><td>Yes</td><td>Yes</td></tr>
+<tr><td><strong>Visual cues</strong></td><td>No</td><td>No</td><td>Yes</td><td>Yes</td><td>No</td><td>No</td></tr>
+<tr><td><strong>Simplification</strong></td><td>No</td><td>N/A (fully auto)</td><td>No</td><td>Yes</td><td>N/A (fully auto)</td><td>N/A (fully auto)</td></tr>
+<tr><td><strong>Limited attention</strong></td><td>N/A (human)</td><td>No (omniscient)</td><td>N/A</td><td>N/A</td><td>Yes (scan)</td><td>Yes (ACT-R scan)</td></tr>
+<tr><td><strong>Human errors</strong></td><td>N/A (human)</td><td>No</td><td>N/A</td><td>N/A</td><td>Yes</td><td>Yes</td></tr>
+<tr><td><strong>Display string</strong></td><td><code>MANUAL</code></td><td><code>AUTO</code></td><td><code>ASSISTED</code></td><td><code>COOP</code></td><td><code>AUTO-HL</code></td><td><code>AUTO-ACTR</code></td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>HMCM Modes (Navarro et al., 2021)</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>HMCM Mode</th><th>Agent</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>Manual</td><td>none</td><td><code>automaticsolver=False</code> (default) &mdash; full human control</td></tr>
+<tr><td>Assisted</td><td><code>assisted</code></td><td>Visual cues only &mdash; human detects, decides, and acts</td></tr>
+<tr><td>Cooperative</td><td><code>cooperative</code></td><td>Simplified controls + visual cues &mdash; human acts with assistance</td></tr>
+<tr><td>Supervisory</td><td><code>supervisory</code></td><td>Full automation (= <code>default</code>) &mdash; human is offloaded</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Default / Supervisory <span class="badge badge-blue">AUTO</span></h4>
+<div class="card">
+<p>Full automation through key and joystick injection. The human is completely offloaded &mdash; keyboard/mouse inputs are blocked.</p>
+<ul>
+  <li><strong>Sysmon</strong>: waits <code>automaticsolverdelay</code> ms, then injects the correct F-key</li>
+  <li><strong>Track</strong>: reads cursor position each cycle, applies binary compensation via joystick</li>
+  <li><strong>Resman</strong>: 3-rule heuristic (activate non-depletable pumps, maintain targets, balance A/B)</li>
+  <li><strong>Communications</strong>: navigates to the correct radio, tunes to frequency, validates</li>
+</ul>
+</div>
+
+<h4>Assisted <span class="badge badge-orange">ASSISTED</span></h4>
+<div class="card">
+<p>Visual cues only. <strong>Never</strong> injects keys or joystick. The human must detect, decide, and act.</p>
+<ul>
+  <li><strong>Sysmon</strong>: failing scale arrows turn <span style="color:#ef4444;font-weight:600">RED</span></li>
+  <li><strong>Track</strong>: cursor color changes to <span style="color:#2563eb;font-weight:600">BLUE</span> (inside) / <span style="color:#ef4444;font-weight:600">RED</span> (outside)</li>
+  <li><strong>Resman</strong>: pumps needing action highlighted in <span style="color:#0891b2;font-weight:600">CYAN</span></li>
+  <li><strong>Communications</strong>: target radio framed in <span style="color:#0891b2;font-weight:600">CYAN</span></li>
+</ul>
+</div>
+
+<h4>Cooperative <span class="badge badge-yellow">COOP</span></h4>
+<div class="card">
+<p>Simplified controls + visual cues. <strong>Never</strong> injects keys or joystick.</p>
+<ul>
+  <li><strong>Sysmon</strong>: <kbd>Space</kbd> resolves any failure (no need for F1&ndash;F6) + RED arrow cues</li>
+  <li><strong>Track</strong>: joystick force &times;10 &mdash; slight movement returns cursor rapidly</li>
+  <li><strong>Resman</strong>: pumps needing action highlighted in <span style="color:#eab308;font-weight:600">YELLOW</span></li>
+  <li><strong>Communications</strong>: auto-selects the waiting radio + <span style="color:#eab308;font-weight:600">YELLOW</span> highlight &mdash; only tune and validate</li>
+</ul>
+</div>
+
+</div><!~~ /sub-agents ~~>
+-->
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════ TAB 4: REPLAY -->
+<section class="tab-panel" id="replay" role="tabpanel" aria-labelledby="tab-replay">
+
+<h2>Replay Participants</h2>
+<p class="lead">Replay any recorded session from CSV log files, with full input visualization and seeking controls.</p>
+
+<img src="img/replay.png" alt="OpenMATB Replay mode" class="hero-img" style="cursor:pointer;" onclick="openLightbox(this)">
+
+<h3>Overview</h3>
+<div class="card">
+<p>OpenMATB can replay complete sessions from CSV log files stored in the <code>sessions/</code> directory. The replay system reconstructs the full visual state&mdash;cursor positions, radio frequencies, scale values, pump states&mdash;from the recorded log entries.</p>
+<p>A <strong>file selector</strong> allows choosing which session to replay. The interface mirrors the original session with all plugins active.</p>
+</div>
+
+<h3>Playback Controls</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Key</th><th>Action</th></tr></thead>
+<tbody>
+<tr><td><kbd>Space</kbd></td><td>Play / Pause</td></tr>
+<tr><td><kbd>&larr;</kbd> <kbd>&rarr;</kbd></td><td>Seek backward / forward</td></tr>
+<tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>Jump to start / end</td></tr>
+<tr><td><kbd>&uarr;</kbd> <kbd>&darr;</kbd></td><td>Increase / decrease playback speed</td></tr>
+<tr><td><kbd>M</kbd></td><td>Mute / unmute audio</td></tr>
+<tr><td><kbd>Esc</kbd></td><td>Exit replay</td></tr>
+</tbody>
+</table>
+</div>
+<p>A <strong>timeline slider</strong> provides direct seeking to any point in the session.</p>
+
+<h3>Input Replay</h3>
+<div class="card-grid">
+<div class="card">
+  <h4>Keyboard History</h4>
+  <p>The last 30 key events are displayed in a scrolling panel, showing the key name and press/release state with timestamps.</p>
+</div>
+<div class="card">
+  <h4>Joystick Visualization</h4>
+  <p>Joystick X/Y position is shown on a 2D indicator, reflecting the exact analog input recorded during the original session.</p>
+</div>
+<div class="card">
+  <h4>Mouse Cursor</h4>
+  <p>The mouse cursor position is replayed on screen, showing click interactions with UI elements.</p>
+</div>
+</div>
+
+<h3>State Replay</h3>
+<p>The full plugin state is reconstructed from log entries:</p>
+<ul>
+  <li><strong>Cursor position</strong> &mdash; tracking reticle follows the recorded trajectory</li>
+  <li><strong>Radio frequencies</strong> &mdash; communications radios show the exact tuning state</li>
+  <li><strong>Scale values</strong> &mdash; sysmon gauges reflect failure/resolution events</li>
+  <li><strong>Tank levels &amp; pump states</strong> &mdash; resman shows the full resource system state</li>
+</ul>
+
+<h3>Time Mapping</h3>
+<div class="card">
+<p>The log uses two time references:</p>
+<ul>
+  <li><code>totaltime</code> &mdash; wall-clock time since the application launched (includes pauses)</li>
+  <li><code>scenario_time</code> &mdash; time within the scenario (pauses excluded, blocking segments skipped)</li>
+</ul>
+<p>During replay, the timeline maps <code>replay_time</code> to <code>scenario_time</code>, allowing accurate reconstruction even when the original session included instruction screens or pauses.</p>
+</div>
+
+<h3>Log Format</h3>
+<p>Sessions are recorded in CSV in the <code>sessions/</code> directory:</p>
+<pre><code>logtime,totaltime,scenario_time,type,module,address,value</code></pre>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Column</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>logtime</code></td><td>Absolute timestamp</td></tr>
+<tr><td><code>totaltime</code></td><td>Total elapsed time</td></tr>
+<tr><td><code>scenario_time</code></td><td>Time relative to scenario start</td></tr>
+<tr><td><code>type</code></td><td>Entry type: <code>input</code>, <code>state</code>, <code>event</code>, <code>performance</code>, <code>manual</code></td></tr>
+<tr><td><code>module</code></td><td>Source module (sysmon, track, etc.)</td></tr>
+<tr><td><code>address</code></td><td>Target address/property</td></tr>
+<tr><td><code>value</code></td><td>Recorded value</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Example Log Entries</h4>
+<pre><code>logtime,totaltime,scenario_time,type,module,address,value
+13869.194646,0,0,input,keyboard,ENTER,release
+13869.210557,0.018296,0,state,sysmon,"task_title, text",SURVEILLANCE
+13869.232539,0.018296,0,event,sysmon,self,start
+13869.238017,0.058883,0.018296,state,track,"task_title, text",POURSUITE
+13869.240641,0.058883,0.018296,performance,track,cursor_in_target,1</code></pre>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════ TAB: WEB VERSION -->
+<section class="tab-panel" id="web" role="tabpanel" aria-labelledby="tab-web">
+
+<h2>Web Version <span class="badge badge-orange">Experimental</span></h2>
+<p class="lead">OpenMATB also runs in a web browser, with no installation for participants: Python runs in the page thanks to <a href="https://pyodide.org" target="_blank" rel="noopener">Pyodide</a> and pyglet 3 draws with WebGL.</p>
+
+<div class="card">
+<p>The web version lives on the <a href="https://github.com/juliencegarra/OpenMATB/tree/pyglet3-pyodide-web" target="_blank" rel="noopener"><code>pyglet3-pyodide-web</code></a> branch. It runs the same scenario files, plugins and logs as the desktop version, and is a static site that can be hosted on any web server (GitHub Pages, a lab server, JATOS, an LMS&hellip;).</p>
+<p>The start page lets participants choose the language, run a scenario or replay a session. These choices can also be given in the URL: <code style="white-space:nowrap">?lang=fr_FR</code>, <code style="white-space:nowrap">?scenario=basic.txt</code>, <code style="white-space:nowrap">?mode=replay</code>, <code style="white-space:nowrap">?session=12</code>.</p>
+</div>
+
+<h3>Build and Host</h3>
+<pre><code>python web/build.py --serve              # build web/dist and serve it on http://localhost:8000
+python web/build.py --pyodide local      # ship Pyodide with the page instead of loading it from its CDN
+python web/build.py --scorm              # also build a SCORM 1.2 package for an LMS (--scorm 2004)</code></pre>
+<p><code>web/build.py</code> writes a static site into <code>web/dist</code> (application files, pyglet and rstr wheels, fonts). The page must be served over HTTP: <code>file://</code> does not work. Set <code>config.ini</code> (scenario, session output&hellip;) before building: it is part of the site.</p>
+
+<h3>Differences with the Desktop Version</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Topic</th><th>In the browser</th></tr></thead>
+<tbody>
+<tr><td><strong>Session files</strong></td><td>Downloaded at the end by default, or sent to a server (see below). Also kept in the browser storage (IndexedDB) to be replayed later; they can be downloaded again or deleted from the start page.</td></tr>
+<tr><td><strong>Hidden page</strong></td><td>The scenario is paused when the page is hidden (tab change, minimized window); <code>visibility</code> entries record it.</td></tr>
+<tr><td><strong>Joysticks</strong></td><td>Read with the Gamepad API: stick axes for tracking, buttons as <code>JOY_BTN_n</code>. Press a joystick button on the start page to detect it.</td></tr>
+<tr><td><strong>Sound</strong></td><td>Starts after the first click (the &laquo;&nbsp;Start&nbsp;&raquo; button), as required by browsers.</td></tr>
+<tr><td><strong>Timing</strong></td><td>Browser clock (<code>performance.now</code>, about 0.1&nbsp;ms resolution in Chrome) and display refreshed by the browser. Page pauses longer than 100&nbsp;ms are logged as <code>freeze</code> entries, so affected periods can be excluded.</td></tr>
+<tr><td><strong>Not available</strong></td><td>Parallel port, Lab Streaming Layer, eye tracker.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Browsers</h3>
+<div class="card-grid">
+<div class="card">
+  <h4><span class="badge badge-green">Recommended</span> Chrome &amp; Edge</h4>
+  <p>Measured in Chrome: scheduler updates every ~9&nbsp;ms (median), scenario-time drift about 0.1&nbsp;ms over 12&nbsp;s.</p>
+</div>
+<div class="card">
+  <h4><span class="badge badge-yellow">Not recommended</span> Firefox</h4>
+  <p>Firefox pauses the page for 0.1 to 1&nbsp;s every few seconds. The start page warns participants; <code>web_browser_check</code> in <code>config.ini</code> sets the check: <code>warn</code> (default), <code>block</code> or <code>off</code>.</p>
+</div>
+</div>
+
+<h3>Collecting the Session Files</h3>
+<p>Set by <code>web_session_output</code> in <code>config.ini</code> (a comma-separated list, e.g. <code>webdav, download</code>). If the file cannot be sent anywhere, it is downloaded instead.</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Value</th><th>Where the file goes</th><th>When</th></tr></thead>
+<tbody>
+<tr><td><code>download</code> (default)</td><td>Downloaded on the participant&rsquo;s computer</td><td>At the end</td></tr>
+<tr><td><code>webdav</code></td><td>A folder of a web server (<code>web_webdav_url</code>), with the desktop structure <code>YYYY-MM-DD/&lt;N&gt;_&lt;yymmdd&gt;_&lt;hhmmss&gt;.csv</code></td><td>Every 10&nbsp;s and at the end</td></tr>
+<tr><td><code>jatos</code></td><td><a href="https://www.jatos.org" target="_blank" rel="noopener">JATOS</a>, in the result of the study run (e.g. with Prolific)</td><td>Every 10&nbsp;s and at the end</td></tr>
+<tr><td><code>datapipe</code></td><td>An <a href="https://osf.io" target="_blank" rel="noopener">OSF</a> project through <a href="https://pipe.jspsych.org" target="_blank" rel="noopener">DataPipe</a> (<code>web_datapipe_experiment</code>)</td><td>At the end</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Online Studies (JATOS)</h3>
+<div class="card">
+<p>Upload the files of <code>web/dist</code> as the files of a <a href="https://www.jatos.org" target="_blank" rel="noopener">JATOS</a> study, with one HTML component (<code>index.html</code>), and set <code>web_session_output=jatos</code>. Participants can be recruited through JATOS links or panels such as Prolific.</p>
+<p>The session file is saved in the result data every 10&nbsp;s, so an interrupted session is not lost, then as a result file at the end. The study run is then ended: JATOS end page, or the end redirect set in JATOS (e.g. back to Prolific). The page must be run from JATOS, since it loads <code>jatos.js</code> from there.</p>
+</div>
+
+<h3>Lab Server (WebDAV)</h3>
+<div class="card">
+<p>With <code>web_session_output=webdav</code> and <code>web_webdav_url=https://lab.example.org/openmatb/sessions/</code>, session files are sent to a folder of an Apache (<code>mod_dav</code>), nginx (<code>dav_methods</code>) or Nextcloud server, with the desktop structure: <code>YYYY-MM-DD/&lt;N&gt;_&lt;yymmdd&gt;_&lt;hhmmss&gt;.csv</code>. The file is sent every 10&nbsp;s and at the end.</p>
+<p>The folder must accept <code>PUT</code> (and <code>MKCOL</code> for the day folders) and nothing else: no reading, listing or deleting by participants; limit the file size too (a one-hour session is a few MB). Serve it from the same server as the page, or allow CORS for <code>PUT</code>, <code>MKCOL</code> and the <code>If-None-Match</code> header. A file is never overwritten by another session: if the name is already used, it is sent as <code>&lt;name&gt;_2.csv</code>.</p>
+</div>
+
+<h3>Open Science Framework (DataPipe)</h3>
+<div class="card">
+<p>With <code>web_session_output=datapipe</code> and <code>web_datapipe_experiment=&lt;experiment ID&gt;</code>, session files are stored in an <a href="https://osf.io" target="_blank" rel="noopener">OSF</a> project through <a href="https://pipe.jspsych.org" target="_blank" rel="noopener">DataPipe</a>. Create the experiment on DataPipe, link it to the OSF project and enable data collection.</p>
+<p>No server is needed: the site can be hosted anywhere, e.g. on GitHub Pages. The file is sent at the end of the session only, since DataPipe refuses to replace a file; if the name is already used, a random suffix is added.</p>
+</div>
+
+<h3>Learning Platforms (SCORM)</h3>
+<div class="card">
+<p><code>python web/build.py --scorm</code> builds a SCORM package (1.2, or 2004 with <code>--scorm 2004</code>) that can be imported as an activity into Moodle, Canvas, Blackboard, SCORM Cloud&hellip; Pyodide is included, since LMSs often block external scripts.</p>
+<p>The LMS records that the activity was started, then completed at the end of the session, the time spent, and the name of the session file, to match each learner with their file. The session file itself is not stored in the LMS (SCORM keeps only a few kB per learner): it goes where <code>web_session_output</code> says.</p>
+</div>
+
+</section>
+
+<!-- AGENTS (hidden until released)
+<!~~ ═══════════════════════════════════════════════════ TAB 5: SIMULATION ~~>
+<section class="tab-panel" id="simulation" role="tabpanel" aria-labelledby="tab-simulation">
+
+<h2>Cognitive Simulation</h2>
+<p class="lead">Two simulation agents model human-like cognitive limitations &mdash; sequential attention, reaction time distributions, motor noise, and memory retrieval.</p>
+
+<!~~ ── HumanLike ─────────────────────────────────────── ~~>
+<h3>HumanLike Agent <span class="badge badge-cyan">AUTO-HL</span></h3>
+<div class="card">
+<h4>Attention Model</h4>
+<p>Unlike the perfect Default agent, the HumanLike agent <strong>cannot monitor all 4 tasks simultaneously</strong>. It scans tasks sequentially, dwelling on each before switching.</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Parameter</th><th>Value</th><th>Reference</th></tr></thead>
+<tbody>
+<tr><td>Scan order</td><td>[sysmon, track, resman, communications]</td><td>Wickens (2002)</td></tr>
+<tr><td>Fixation duration</td><td>Gaussian, mean 3000 ms, std 1000 ms</td><td>Sarter &amp; Woods (1995)</td></tr>
+<tr><td>Switching cost</td><td>300 ms</td><td>Monsell (2003)</td></tr>
+<tr><td>Bottom-up interrupt</td><td>80% probability on sysmon failure</td><td>Yantis &amp; Jonides (1990)</td></tr>
+<tr><td>Idle-switch delay</td><td>500 ms minimum before early switch</td><td>&mdash;</td></tr>
+<tr><td>Persistence cap</td><td>Max 10 s on a single task</td><td>&mdash;</td></tr>
+</tbody>
+</table>
+</div>
+<p>A cyan border highlights the currently attended task when <code>show_attention=True</code>.</p>
+</div>
+
+<h4>Per-Task Behavior</h4>
+<div class="card-grid">
+<div class="card">
+<h4>Sysmon</h4>
+<ul>
+  <li>Only responds when attending sysmon</li>
+  <li>Log-normal RT: mean 2500 ms, std 800 ms</li>
+  <li>Vigilance decrement: +50 ms per detected failure</li>
+  <li>Unattended failures expire as MISS</li>
+</ul>
+<p class="badge badge-grey">Comstock &amp; Arnegard (1992), Warm et al. (2008)</p>
+</div>
+<div class="card">
+<h4>Tracking</h4>
+<ul>
+  <li>400 ms reaction delay to initiate correction</li>
+  <li>15% per-frame motor noise (micro-hesitations)</li>
+  <li>Proportional compensation: gain = 4.0</li>
+  <li>Settling: min force 0.3 for 2000 ms after target entry</li>
+  <li>Cursor drifts freely when unattended</li>
+</ul>
+<p class="badge badge-grey">Welford (1980), Poulton (1974)</p>
+</div>
+<div class="card">
+<h4>Resman</h4>
+<ul>
+  <li>Reuses DefaultAgent heuristics with Gaussian noise (std = 75) on thresholds</li>
+  <li>5% omission error per pump action</li>
+  <li>Tanks drift when unattended</li>
+</ul>
+<p class="badge badge-grey">Reason (1990), Roscoe (1968)</p>
+</div>
+<div class="card">
+<h4>Communications</h4>
+<ul>
+  <li>1500 ms comprehension delay</li>
+  <li>200 ms between tuning steps</li>
+  <li>10% overshoot probability per step</li>
+  <li>Memory persists across visits</li>
+</ul>
+<p class="badge badge-grey">Card, Moran &amp; Newell (1983), Fitts (1954)</p>
+</div>
+</div>
+
+<!~~ ── ACT-R ─────────────────────────────────────────── ~~>
+<h3>ACT-R Agent <span class="badge badge-cyan">AUTO-ACTR</span></h3>
+<div class="card">
+<h4>Architecture</h4>
+<p>Based on the ACT-R cognitive architecture, following Swan, Stevens, Fisher &amp; Klosterman (2022) &mdash; <em>"Exploring Multitasking Strategies in an ACT-R model of a Complex Piloting Task"</em>.</p>
+
+<h4>ACT-R Constants</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Constant</th><th>Value</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>Production cycle</td><td>50 ms</td><td>Time per production rule firing</td></tr>
+<tr><td>Peripheral detection</td><td>3.0 s</td><td>Delay before bottom-up stimulus triggers interrupt</td></tr>
+<tr><td>Motor execution</td><td>250 ms</td><td>Time per motor action (key press)</td></tr>
+<tr><td>Motor error</td><td>5%</td><td>Probability of pressing the wrong key</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Scan Model</h4>
+<p>Cycles through <strong>5 subtasks</strong>: <code>[sysmon_lights, sysmon_gauges, tracking, resman, communications]</code>. Sysmon is split into lights and gauges as per the ACT-R model. Scan advances when no pending work exists (minimum 100 ms dwell).</p>
+
+<h4>Bottom-Up Interrupts</h4>
+<p>Configurable per subtask via the <code>bottom_up</code> parameter (default <code>"LR"</code>):</p>
+<ul>
+  <li><strong>L</strong> = Lights &mdash; sysmon light failures</li>
+  <li><strong>G</strong> = Gauges &mdash; sysmon scale failures</li>
+  <li><strong>R</strong> = Resource &mdash; resman tank deviations (&gt; 700 units)</li>
+  <li><strong>T</strong> = Tracking &mdash; cursor distance (&gt; 27.5 px)</li>
+</ul>
+<p>Priority order: lights &gt; gauges &gt; resman &gt; tracking.</p>
+</div>
+
+<h4>Declarative Memory (Communications)</h4>
+<div class="card">
+<p>Uses ACT-R base-level learning for audio prompt memory retrieval:</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Parameter</th><th>Value</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>Decay (<em>d</em>)</td><td>0.5</td><td>Base-level learning decay rate</td></tr>
+<tr><td>Noise (<em>s</em>)</td><td>0.2</td><td>Activation noise (logistic scale)</td></tr>
+<tr><td>Constant</td><td>2.0</td><td>Base-level constant added to activation</td></tr>
+<tr><td>Threshold (<em>&tau;</em>)</td><td>2.9</td><td>Retrieval threshold</td></tr>
+</tbody>
+</table>
+</div>
+<p>When an audio prompt ends, the agent attempts retrieval. If <code>activation + noise &gt; threshold</code>, the frequency is memorized and the agent switches to communications. Failed retrievals mean the prompt is forgotten.</p>
+</div>
+
+<h4>Per-Subtask Behavior</h4>
+<div class="card-grid">
+<div class="card">
+<h4>Sysmon (Lights + Gauges)</h4>
+<ul>
+  <li>Handled separately based on attended subtask</li>
+  <li>Immediate detection when attention is focused</li>
+  <li>Motor execution: 250 ms blocking per key</li>
+  <li>5% motor error (wrong key)</li>
+</ul>
+</div>
+<div class="card">
+<h4>Tracking</h4>
+<ul>
+  <li>Proportional compensation: gain = 0.125, max 10 px/update</li>
+  <li>Gaussian noise on joystick (std = 0.03)</li>
+  <li>Only compensates when attended</li>
+</ul>
+</div>
+<div class="card">
+<h4>Resman</h4>
+<ul>
+  <li>Initializes first 6 pumps sequentially at startup (250 ms each)</li>
+  <li>Action threshold (attending): 100 units deviation</li>
+  <li>Bottom-up threshold: 700 units deviation</li>
+  <li>Sequential pump queue with motor delay</li>
+</ul>
+</div>
+<div class="card">
+<h4>Communications</h4>
+<ul>
+  <li>Parallel audio monitoring (detects prompts regardless of scan)</li>
+  <li>Declarative memory retrieval per prompt</li>
+  <li>4 production cycles (200 ms) between actions</li>
+  <li>Successful retrieval triggers immediate switch</li>
+</ul>
+</div>
+</div>
+
+<h4>Constructor Parameters</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>seed</code></td><td><code>None</code></td><td>Random seed for reproducibility</td></tr>
+<tr><td><code>bottom_up</code></td><td><code>"LR"</code></td><td>Subtasks with bottom-up selection (L/G/R/T)</td></tr>
+<tr><td><code>top_down</code></td><td><code>True</code></td><td>Enable serial clockwise scanning; <code>False</code> = purely reactive</td></tr>
+</tbody>
+</table>
+</div>
+
+</section>
+-->
+
+<!-- ═══════════════════════════════════════════════════ TAB: DEMO -->
+<section class="tab-panel" id="demo" role="tabpanel" aria-labelledby="tab-demo">
+
+<h2>Try OpenMATB <span class="badge badge-orange">Experimental</span></h2>
+<p class="lead">Run a short scenario with the five tasks, directly in your browser. Nothing to install, and nothing is recorded.</p>
+
+<div class="demo-stage" id="demo-stage">
+  <img src="img/capture.png" alt="">
+  <button class="demo-launch" id="demo-launch" type="button">&#9654;&nbsp; Launch the demo</button>
+</div>
+<div class="demo-actions">
+  <button type="button" id="demo-fullscreen" hidden>Fullscreen</button>
+  <button type="button" id="demo-stop" hidden>Stop the demo</button>
+  <a href="app/index.html?demo=1" target="_blank" rel="noopener">Open in a new window &#8599;</a>
+</div>
+
+<h3>Before You Start</h3>
+<div class="card-grid">
+  <div class="card">
+    <h4>Browser</h4>
+    <p>Use <strong>Chrome or Edge</strong> on a computer. The first launch downloads Python and OpenMATB (about 15&nbsp;MB) and takes a few seconds; it is then cached.</p>
+  </div>
+  <div class="card">
+    <h4>Keyboard &amp; Sound</h4>
+    <p>Click <strong>Start</strong> in the demo to enable sound and the keyboard: while the demo has the focus, function keys (F1&ndash;F6) go to OpenMATB.</p>
+  </div>
+  <div class="card">
+    <h4>Mouse or Joystick</h4>
+    <p>Every task can be done with the mouse in the demo. A USB joystick also works for tracking: press one of its buttons on the start screen to detect it.</p>
+  </div>
+</div>
+
+<h3>Controls</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Task</th><th>Keyboard / joystick</th><th>Mouse</th></tr></thead>
+<tbody>
+<tr><td><strong>System Monitoring</strong></td><td><kbd>F1</kbd>&ndash;<kbd>F4</kbd> scales, <kbd>F5</kbd> <kbd>F6</kbd> lights</td><td>Click the scale or light</td></tr>
+<tr><td><strong>Tracking</strong></td><td>Joystick</td><td>Drag the cursor to the center</td></tr>
+<tr><td><strong>Communications</strong></td><td><kbd>&uarr;</kbd> <kbd>&darr;</kbd> radio, <kbd>&larr;</kbd> <kbd>&rarr;</kbd> frequency, <kbd>Enter</kbd> validate</td><td>Click the radio and the arrows</td></tr>
+<tr><td><strong>Resources Management</strong></td><td>Numeric keypad <kbd>1</kbd>&ndash;<kbd>8</kbd> toggle the pumps</td><td>Click a pump</td></tr>
+</tbody>
+</table>
+</div>
+<p>See the <a href="#tasks">Tasks</a> tab for what each task asks, and the <a href="#web">Web Version</a> tab to run your own experiments online.</p>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════ TAB 6: REFERENCES -->
+<section class="tab-panel" id="references" role="tabpanel" aria-labelledby="tab-references">
+
+<h2>Scientific Publications</h2>
+<p class="lead">Published studies that use or cite OpenMATB, spanning cognitive workload, automation, neurophysiology, and human-machine cooperation research.</p>
+
+<div class="cite-box" style="margin-bottom:28px">
+  <strong>Original reference:</strong> Cegarra, J., Val&eacute;ry, B., Avril, E., Calmettes, C., &amp; Navarro, J. (2020). OpenMATB: A Multi-Attribute Task Battery promoting task customization, software extensibility and experiment replicability. <em>Behavior Research Methods</em>, 52, 1980&ndash;1990. <a href="https://doi.org/10.3758/s13428-020-01364-w" target="_blank" rel="noopener">doi:10.3758/s13428-020-01364-w</a>
+</div>
+
+<div class="ref-stats">
+  <div class="ref-stat"><div class="stat-num">53</div><div class="stat-label">Citing papers</div></div>
+  <div class="ref-stat"><div class="stat-num">2020&ndash;2026</div><div class="stat-label">Publication span</div></div>
+  <div class="ref-stat"><div class="stat-num">10+</div><div class="stat-label">Countries</div></div>
+</div>
+
+<!-- ── 2026 ────────────────────────────────────────── -->
+<div class="ref-year-heading">2026 <span class="ref-count">2 papers</span></div>
+<ol class="ref-list">
+<li>
+  <span class="ref-authors">Singh, S., Sanchez, R., Ororbia, A. G., &amp; Heard, J.</span>
+  (<span class="ref-year">2026</span>).
+  <span class="ref-title">Formulating Reinforcement Learning for Human-Robot Collaboration through Off-Policy Evaluation.</span>
+  <span class="ref-journal">arXiv preprint arXiv:2602.02530.</span>
+</li>
+<li id="ref-pontiggia-2026">
+  <span class="ref-authors">Pontiggia, A., Quiquempoix, M., Fabries, P. A., Beauchamps, V., Jacques, C., Guillard, M., Beers, P., Malle, C., Gomez-Merino, D., Koulmann, N., Chennaoui, M., &amp; Sauvet, F.</span>
+  (<span class="ref-year">2026</span>).
+  <span class="ref-title">Robust multimodal mental workload classification: A cross-physiological condition machine learning approach.</span>
+  <span class="ref-journal">Computer Methods and Programs in Biomedicine, 277, 109251.</span>
+  <a class="ref-doi" href="https://doi.org/10.1016/j.cmpb.2026.109251" target="_blank" rel="noopener">doi:10.1016/j.cmpb.2026.109251</a>
+</li>
+</ol>
+
+<!-- ── 2025 ────────────────────────────────────────── -->
+<div class="ref-year-heading">2025 <span class="ref-count">19 papers</span></div>
+<ol class="ref-list">
+<li id="ref-konig-2025">
+  <span class="ref-authors">Konig, J. L., Bidois, B. J., Manchester, R., Head, M. A., Owen, M. W., Hoskens, M., Dwivedi, A., &amp; August, L. R. J.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">Navigating the Challenges of Wearables: A Case Study of Research-Grade Devices.</span>
+  <span class="ref-journal">Proceedings of OzCHI 2025.</span>
+  <a class="ref-doi" href="https://doi.org/10.1145/3764687.3769942" target="_blank" rel="noopener">doi:10.1145/3764687.3769942</a>
+</li>
+<li id="ref-huang-2025">
+  <span class="ref-authors">Huang, Y., Ding, L., Pei, J., &amp; Li, Y.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">Cognitive and Physiological Assessment in a Mars Analog Habitat: Implications for Aerospace Medical Monitoring in Hypobaric Hypoxia.</span>
+  <span class="ref-journal">Acta Astronautica.</span>
+  <a class="ref-doi" href="https://doi.org/10.1016/j.actaastro.2025.11.002" target="_blank" rel="noopener">doi:10.1016/j.actaastro.2025.11.002</a>
+</li>
+<li>
+  <span class="ref-authors">Hilla, Y., Stasch, S.-M., &amp; Mack, W.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">Habitual video gaming predicts multitasking performance while the role of cognitive capacity remains inconclusive.</span>
+  <span class="ref-journal">Scientific Reports, 15.</span>
+  <a class="ref-doi" href="https://doi.org/10.1038/s41598-025-25260-5" target="_blank" rel="noopener">doi:10.1038/s41598-025-25260-5</a>
+</li>
+<li>
+  <span class="ref-authors">Li, X., Chu, J., Liu, X., &amp; Li, F.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">A Dynamic Bayesian-Based Method for DFA in Specialized Vehicles.</span>
+  <span class="ref-journal">International Journal of Human-Computer Interaction.</span>
+  <a class="ref-doi" href="https://doi.org/10.1080/10447318.2025.2558019" target="_blank" rel="noopener">doi:10.1080/10447318.2025.2558019</a>
+</li>
+<li id="ref-li-2025">
+  <span class="ref-authors">Li, Y., Fang, W., Jiang, T., Yu, H., Zhao, R., Zhan, W., Sun, Z., &amp; Li, Y.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">Effects of dynamic lighting on neurobehavioral performance under different mental states in the working area of a space station.</span>
+  <span class="ref-journal">Ergonomics, 1&ndash;21.</span>
+  <a class="ref-doi" href="https://doi.org/10.1080/00140139.2025.2544814" target="_blank" rel="noopener">doi:10.1080/00140139.2025.2544814</a>
+</li>
+<li>
+  <span class="ref-authors">Chung, H., Holder, T., Shah, J. A., &amp; Yang, X. J.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">A Systematic Review and Taxonomy of Human-Agent Teaming Testbeds.</span>
+  <span class="ref-journal">Human Factors, 68, 197&ndash;238.</span>
+  <a class="ref-doi" href="https://doi.org/10.1177/00187208251376898" target="_blank" rel="noopener">doi:10.1177/00187208251376898</a>
+</li>
+<li id="ref-sharma-2025">
+  <span class="ref-authors">Sharma, M., Duchevet, A., Daiber, F., Imbert, J.-P., &amp; Rekrut, M.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">Distinguishing Startle from Surprise Events Based on Physiological Signals.</span>
+  <span class="ref-journal">IEEE MetroXRAINE 2025, 675&ndash;680.</span>
+  <a class="ref-doi" href="https://doi.org/10.1109/MetroXRAINE66377.2025.11340378" target="_blank" rel="noopener">doi:10.1109/MetroXRAINE66377.2025.11340378</a>
+</li>
+<li>
+  <span class="ref-authors">Reuter, M., Kirchhoff, B. M., Franke, T., Raduntz, T., &amp; Peifer, C.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">To trust or not to trust a human(-like) AI &mdash; A scoping review and conjoint analyses on factors influencing anthropomorphism and trust.</span>
+  <span class="ref-journal">Zeitschrift f&uuml;r Arbeitswissenschaft, 79, 402&ndash;432.</span>
+  <a class="ref-doi" href="https://doi.org/10.1007/s41449-025-00481-6" target="_blank" rel="noopener">doi:10.1007/s41449-025-00481-6</a>
+</li>
+<li id="ref-gossett-2025">
+  <span class="ref-authors">Gossett, E., Piscopo, C., Hughes, J., Khan, S., Wakely, S., Salinas-Aguayo, A., Parker, T., Henning, R. A., &amp; Kim, I.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">Enhancing Ecological Validity in Wearable Sensor Stress Research: A Novel Laboratory Paradigm Integrating Cognitive, Physical, and Social-Evaluative Demands.</span>
+  <span class="ref-journal">Proceedings of the HFES Annual Meeting, 69, 1313&ndash;1318.</span>
+  <a class="ref-doi" href="https://doi.org/10.1177/10711813251371653" target="_blank" rel="noopener">doi:10.1177/10711813251371653</a>
+</li>
+<li id="ref-gaillet-2025">
+  <span class="ref-authors">Gaillet, A. G., Suied, C., Arnold, G., &amp; Taffou, M.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">Auditory-tactile presentation accelerates target detection in a multitasking situation.</span>
+  <span class="ref-journal">Cognitive Research: Principles and Implications, 10.</span>
+  <a class="ref-doi" href="https://doi.org/10.1186/s41235-025-00664-z" target="_blank" rel="noopener">doi:10.1186/s41235-025-00664-z</a>
+</li>
+<li>
+  <span class="ref-authors">Vogl, J., Atchley, J. A., Bommer, S., &amp; McCurry, C. D.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">The United States Army Aeromedical Research Laboratory Multi-Attribute Task Battery: Recent Developments.</span>
+  <span class="ref-journal">IEEE RAPID 2025, 1&ndash;2.</span>
+  <a class="ref-doi" href="https://doi.org/10.1109/rapid64712.2025.11151324" target="_blank" rel="noopener">doi:10.1109/rapid64712.2025.11151324</a>
+</li>
+<li id="ref-wang-2025">
+  <span class="ref-authors">Wang, S., Liu, S., Liu, Z., Liu, Y., Liao, H., Luo, Y., You, X., &amp; Li, Y.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">The Effect of Flight Expertise and Automation Reliability on Task Performance and Mental Workload in a Multitasking Environment.</span>
+  <span class="ref-journal">International Journal of Human-Computer Interaction, 42, 1128&ndash;1140.</span>
+  <a class="ref-doi" href="https://doi.org/10.1080/10447318.2025.2520919" target="_blank" rel="noopener">doi:10.1080/10447318.2025.2520919</a>
+</li>
+<li id="ref-wittels-2025">
+  <span class="ref-authors">Wittels, H. L., Wishon, M., Davilla, H., McDonald, S. M., Temme, L. A., &amp; Wittels, S.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">Threat of Hyperthermia During Live-Fire Combat Training in the UH-60 Helicopter: An Important Tool for Operator State Monitoring of US Warfighter Aircrew.</span>
+  <span class="ref-journal">Military Medicine.</span>
+  <a class="ref-doi" href="https://doi.org/10.1093/milmed/usaf214" target="_blank" rel="noopener">doi:10.1093/milmed/usaf214</a>
+</li>
+<li>
+  <span class="ref-authors">Stasch, S.-M., Mack, W., &amp; Hilla, Y.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">Always in (partner) action? Working in teams may improve simulated flight performance &mdash; but only in the apt cognitive control state.</span>
+  <span class="ref-journal">Cognitive Research: Principles and Implications, 10.</span>
+  <a class="ref-doi" href="https://doi.org/10.1186/s41235-025-00633-6" target="_blank" rel="noopener">doi:10.1186/s41235-025-00633-6</a>
+</li>
+<li>
+  <span class="ref-authors">Hilla, Y., Stefani, M., Friedrich, E. V. C., &amp; Mack, W.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">Military experience predicts military multitasking better than laboratory measures in officer cadets.</span>
+  <span class="ref-journal">Cognitive Research: Principles and Implications, 10.</span>
+  <a class="ref-doi" href="https://doi.org/10.1186/s41235-025-00639-0" target="_blank" rel="noopener">doi:10.1186/s41235-025-00639-0</a>
+</li>
+<li id="ref-stasch-2025">
+  <span class="ref-authors">Stasch, S.-M., Hilla, Y., &amp; Mack, W.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">The Invisible Copilot? Assessing Task Engagement and Team Dynamics in a Virtual Flight Environment Using Eye-Tracking Metrics.</span>
+  <span class="ref-journal">Aviation Psychology and Applied Human Factors, 15(1), 45&ndash;61.</span>
+  <a class="ref-doi" href="https://doi.org/10.1027/2192-0923/a000293" target="_blank" rel="noopener">doi:10.1027/2192-0923/a000293</a>
+</li>
+<li id="ref-duchevet-2025">
+  <span class="ref-authors">Duchevet, A., Imbert, J.-P., Garcia, J., Lamirault, B., &amp; Causse, M.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">Investigating the Independent and Combined Effects of Startle and Surprise in a Simulated Flight Task.</span>
+  <span class="ref-journal">Human Factors, 67, 1170&ndash;1187.</span>
+  <a class="ref-doi" href="https://doi.org/10.1177/00187208251342100" target="_blank" rel="noopener">doi:10.1177/00187208251342100</a>
+</li>
+<li id="ref-zhou-2025">
+  <span class="ref-authors">Zhou, Y., Xu, X., &amp; Zhang, D.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">Cognitive load recognition in simulated flight missions: an EEG study.</span>
+  <span class="ref-journal">Frontiers in Human Neuroscience, 19.</span>
+  <a class="ref-doi" href="https://doi.org/10.3389/fnhum.2025.1542774" target="_blank" rel="noopener">doi:10.3389/fnhum.2025.1542774</a>
+</li>
+<li>
+  <span class="ref-authors">Stasch, S.-M. &amp; Mack, W.</span>
+  (<span class="ref-year">2025</span>).
+  <span class="ref-title">When automation fails &mdash; Investigating cognitive stability and flexibility in a multitasking scenario.</span>
+  <span class="ref-journal">Applied Ergonomics, 125, 104461.</span>
+  <a class="ref-doi" href="https://doi.org/10.1016/j.apergo.2024.104461" target="_blank" rel="noopener">doi:10.1016/j.apergo.2024.104461</a>
+</li>
+</ol>
+
+<!-- ── 2024 ────────────────────────────────────────── -->
+<div class="ref-year-heading">2024 <span class="ref-count">10 papers</span></div>
+<ol class="ref-list">
+<li id="ref-wang-2024">
+  <span class="ref-authors">Wang, S., Liu, Y., Wang, X., Liu, Z., You, X., &amp; Li, Y.</span>
+  (<span class="ref-year">2024</span>).
+  <span class="ref-title">Where Is the Function Allocation Boundary? The Effect of Degree of Automation on Attention Allocation and Human Performance Under Different Reliabilities.</span>
+  <span class="ref-journal">Human Factors, 67, 757&ndash;775.</span>
+  <a class="ref-doi" href="https://doi.org/10.1177/00187208241311808" target="_blank" rel="noopener">doi:10.1177/00187208241311808</a>
+</li>
+<li id="ref-vogl-2024">
+  <span class="ref-authors">Vogl, J., McCurry, C. D., Bommer, S., &amp; Atchley, J. A.</span>
+  (<span class="ref-year">2024</span>).
+  <span class="ref-title">The United States Army Aeromedical Research Laboratory Multi-Attribute Task Battery.</span>
+  <span class="ref-journal">Frontiers in Neuroergonomics, 5.</span>
+  <a class="ref-doi" href="https://doi.org/10.3389/fnrgo.2024.1435588" target="_blank" rel="noopener">doi:10.3389/fnrgo.2024.1435588</a>
+</li>
+<li>
+  <span class="ref-authors">Konig, J. L., Penaredondo, J., Lim, N., Hinze, A., &amp; Bowen, J.</span>
+  (<span class="ref-year">2024</span>).
+  <span class="ref-title">The Impact of Data Aggregation: Advocating for Individualized Analysis in Wearable Sensor Research.</span>
+  <span class="ref-journal">Proceedings of OzCHI 2024.</span>
+  <a class="ref-doi" href="https://doi.org/10.1145/3726986.3727031" target="_blank" rel="noopener">doi:10.1145/3726986.3727031</a>
+</li>
+<li>
+  <span class="ref-authors">Che, X., Tang, R., Lin, J., Hui, Q., Zhang, Y., Li, J., &amp; Lan, J.</span>
+  (<span class="ref-year">2024</span>).
+  <span class="ref-title">Three-dimensional (3D) stimuli are always better than two-dimensional (2D) multi-tasking? A high cognitive load in 3D-MATB-II.</span>
+  <span class="ref-journal">Behavioural Brain Research, 477, 115322.</span>
+  <a class="ref-doi" href="https://doi.org/10.1016/j.bbr.2024.115322" target="_blank" rel="noopener">doi:10.1016/j.bbr.2024.115322</a>
+</li>
+<li id="ref-novak-2024">
+  <span class="ref-authors">Novak, V. D., Kaya, R. A. H., Erion, C. J., Hossain, M. S., &amp; Clapp, J. D.</span>
+  (<span class="ref-year">2024</span>).
+  <span class="ref-title">Effects of Sensor Setup Time and Comfort on User Experience in Physiological Computing.</span>
+  <span class="ref-journal">IEEE SMC 2024, 3776&ndash;3780.</span>
+  <a class="ref-doi" href="https://doi.org/10.1109/SMC54092.2024.10831219" target="_blank" rel="noopener">doi:10.1109/SMC54092.2024.10831219</a>
+</li>
+<li>
+  <span class="ref-authors">Remigereau, A., Darses, F., Dozias, B., &amp; Albentosa, J.</span>
+  (<span class="ref-year">2024</span>).
+  <span class="ref-title">Design and validation of a simulated multitasking environment for assessing the cognitive load on the infantry squad leader.</span>
+  <span class="ref-journal">Frontiers in Psychology, 15.</span>
+  <a class="ref-doi" href="https://doi.org/10.3389/fpsyg.2024.1433822" target="_blank" rel="noopener">doi:10.3389/fpsyg.2024.1433822</a>
+</li>
+<li id="ref-pontiggia-2024a">
+  <span class="ref-authors">Pontiggia, A., Gomez-Merino, D., Quiquempoix, M., Beauchamps, V., Boffet, A., Fabries, P., Chennaoui, M., &amp; Sauvet, F.</span>
+  (<span class="ref-year">2024</span>).
+  <span class="ref-title">MATB for assessing different mental workload levels.</span>
+  <span class="ref-journal">Frontiers in Physiology, 15.</span>
+  <a class="ref-doi" href="https://doi.org/10.3389/fphys.2024.1408242" target="_blank" rel="noopener">doi:10.3389/fphys.2024.1408242</a>
+</li>
+<li id="ref-pontiggia-2024b">
+  <span class="ref-authors">Pontiggia, A., Fabries, P., Beauchamps, V., Quiquempoix, M., Nespoulous, O., Jacques, C., Guillard, M., van Beers, P., Ayounts, H., Koulmann, N., Gomez-Merino, D., Chennaoui, M., &amp; Sauvet, F.</span>
+  (<span class="ref-year">2024</span>).
+  <span class="ref-title">Combined Effects of Moderate Hypoxia and Sleep Restriction on Mental Workload.</span>
+  <span class="ref-journal">Clocks &amp; Sleep, 6, 338&ndash;358.</span>
+  <a class="ref-doi" href="https://doi.org/10.3390/clockssleep6030024" target="_blank" rel="noopener">doi:10.3390/clockssleep6030024</a>
+</li>
+<li id="ref-wittels-2024">
+  <span class="ref-authors">Wittels, H. L., Wittels, S., Wishon, M., Vogl, J., St. Onge, P. S., McDonald, S. M., &amp; Temme, L. A.</span>
+  (<span class="ref-year">2024</span>).
+  <span class="ref-title">Examining the Influence of Cognitive Load and Environmental Conditions on Autonomic Nervous System Response in Military Aircrew: A Hypoxia-Normoxia Study.</span>
+  <span class="ref-journal">Biology, 13(5), 343.</span>
+  <a class="ref-doi" href="https://doi.org/10.3390/biology13050343" target="_blank" rel="noopener">doi:10.3390/biology13050343</a>
+</li>
+<li id="ref-orlov-2024">
+  <span class="ref-authors">Orlov Savko, L., Qian, Z., Gremillion, G., Neubauer, C., Canady, J. D., &amp; Unhelkar, V.</span>
+  (<span class="ref-year">2024</span>).
+  <span class="ref-title">RW4T Dataset: Data of Human-Robot Behavior and Cognitive States in Simulated Disaster Response Tasks.</span>
+  <span class="ref-journal">Proceedings of ACM/IEEE HRI 2024, 924&ndash;928.</span>
+  <a class="ref-doi" href="https://doi.org/10.1145/3610977.3637481" target="_blank" rel="noopener">doi:10.1145/3610977.3637481</a>
+</li>
+</ol>
+
+<!-- ── 2023 ────────────────────────────────────────── -->
+<div class="ref-year-heading">2023 <span class="ref-count">9 papers</span></div>
+<ol class="ref-list">
+<li id="ref-liu-2023">
+  <span class="ref-authors">Liu, Y., Yu, Y., Tao, H., Ye, Z., Wang, S., Li, H., Hu, D., Zhou, Z., &amp; Zeng, L.</span>
+  (<span class="ref-year">2023</span>).
+  <span class="ref-title">Cognitive Load Prediction From Multimodal Physiological Signals Using Multiview Learning.</span>
+  <span class="ref-journal">IEEE Journal of Biomedical and Health Informatics, 29, 3282&ndash;3292.</span>
+  <a class="ref-doi" href="https://doi.org/10.1109/JBHI.2023.3346205" target="_blank" rel="noopener">doi:10.1109/JBHI.2023.3346205</a>
+</li>
+<li id="ref-konig-2023">
+  <span class="ref-authors">Konig, J. L., Penaredondo, J., McCullagh, E., Bowen, J., &amp; Hinze, A.</span>
+  (<span class="ref-year">2023</span>).
+  <span class="ref-title">Let&rsquo;s Make it Accessible: The Challenges Of Working With Low-cost Commercially Available Wearable Devices.</span>
+  <span class="ref-journal">Proceedings of OzCHI 2023.</span>
+  <a class="ref-doi" href="https://doi.org/10.1145/3638380.3638415" target="_blank" rel="noopener">doi:10.1145/3638380.3638415</a>
+</li>
+<li>
+  <span class="ref-authors">Novak, V. D., Hass, D., Hossain, M. S., Sowers, A. F., &amp; Clapp, J. D.</span>
+  (<span class="ref-year">2023</span>).
+  <span class="ref-title">Effects of adaptation accuracy and magnitude in affect-aware difficulty adaptation for the multi-attribute task battery.</span>
+  <span class="ref-journal">International Journal of Human-Computer Studies, 183, 103180.</span>
+  <a class="ref-doi" href="https://doi.org/10.1016/j.ijhcs.2023.103180" target="_blank" rel="noopener">doi:10.1016/j.ijhcs.2023.103180</a>
+</li>
+<li id="ref-stonge-2023">
+  <span class="ref-authors">St. Onge, L., Gomez-Nino, A., Otsuka, Y., Temme, L. A., Wittels, H. L., Wishon, M., McDonald, S. M., Hecocks, D., &amp; Wittels, S.</span>
+  (<span class="ref-year">2023</span>).
+  <span class="ref-title">Continuous Physiological Monitoring of the Combined Exposure to Hypoxia and High Cognitive Load in Military Personnel.</span>
+  <span class="ref-journal">Biology, 12(11), 1398.</span>
+  <a class="ref-doi" href="https://doi.org/10.3390/biology12111398" target="_blank" rel="noopener">doi:10.3390/biology12111398</a>
+</li>
+<li>
+  <span class="ref-authors">Lewis, C. M. &amp; Gutzwiller, R. S.</span>
+  (<span class="ref-year">2023</span>).
+  <span class="ref-title">Examining post-error performance in a complex multitasking environment.</span>
+  <span class="ref-journal">Cognitive Research: Principles and Implications, 8, 65.</span>
+  <a class="ref-doi" href="https://doi.org/10.1186/s41235-023-00512-y" target="_blank" rel="noopener">doi:10.1186/s41235-023-00512-y</a>
+</li>
+<li>
+  <span class="ref-authors">Wang, S., Liu, Y., Li, S., You, X., &amp; Li, Y.</span>
+  (<span class="ref-year">2023</span>).
+  <span class="ref-title">The Effect of Two-Stage Warning System on Human Performance Along with Different Takeover Strategies.</span>
+  <span class="ref-journal">SSRN / International Journal of Industrial Ergonomics.</span>
+  <a class="ref-doi" href="https://doi.org/10.2139/ssrn.4398187" target="_blank" rel="noopener">doi:10.2139/ssrn.4398187</a>
+</li>
+<li>
+  <span class="ref-authors">Nguyen, T. &amp; Gonzalez, C.</span>
+  (<span class="ref-year">2023</span>).
+  <span class="ref-title">Minimap: An interactive dynamic decision making game for search and rescue missions.</span>
+  <span class="ref-journal">Behavior Research Methods, 56, 2311&ndash;2332.</span>
+  <a class="ref-doi" href="https://doi.org/10.3758/s13428-023-02149-7" target="_blank" rel="noopener">doi:10.3758/s13428-023-02149-7</a>
+</li>
+<li>
+  <span class="ref-authors">Pan, X., Sun, L., Ding, S., &amp; Zuo, D.</span>
+  (<span class="ref-year">2023</span>).
+  <span class="ref-title">Impact Analysis of Situation Awareness Based on a Multitasking Difficulty Quantitative Model.</span>
+  <span class="ref-journal">International Journal of Human-Computer Interaction, 40, 4758&ndash;4771.</span>
+  <a class="ref-doi" href="https://doi.org/10.1080/10447318.2023.2221601" target="_blank" rel="noopener">doi:10.1080/10447318.2023.2221601</a>
+</li>
+<li>
+  <span class="ref-authors">Bolton, M., Biltekoff, E., &amp; Humphrey, L.</span>
+  (<span class="ref-year">2023</span>).
+  <span class="ref-title">The Mathematical Meaninglessness of the NASA Task Load Index: A Level of Measurement Analysis.</span>
+  <span class="ref-journal">IEEE Transactions on Human-Machine Systems, 53, 590&ndash;599.</span>
+  <a class="ref-doi" href="https://doi.org/10.1109/THMS.2023.3263482" target="_blank" rel="noopener">doi:10.1109/THMS.2023.3263482</a>
+</li>
+</ol>
+
+<!-- ── 2022 ────────────────────────────────────────── -->
+<div class="ref-year-heading">2022 <span class="ref-count">8 papers</span></div>
+<ol class="ref-list">
+<li id="ref-konig-2022">
+  <span class="ref-authors">Konig, J., Hinze, A., &amp; Bowen, J.</span>
+  (<span class="ref-year">2022</span>).
+  <span class="ref-title">Workload categorization for hazardous industries: The semantic modelling of multi-modal physiological data.</span>
+  <span class="ref-journal">Future Generation Computer Systems, 141, 369&ndash;381.</span>
+  <a class="ref-doi" href="https://doi.org/10.1016/j.future.2022.11.019" target="_blank" rel="noopener">doi:10.1016/j.future.2022.11.019</a>
+</li>
+<li>
+  <span class="ref-authors">Navarro, J., Jomard, E., Saleur, E., Abrard, W., &amp; Cegarra, J.</span>
+  (<span class="ref-year">2022</span>).
+  <span class="ref-title">Influence of automation mode use on selection rates and subjective assessment over time.</span>
+  <span class="ref-journal">Cognition, Technology &amp; Work, 24, 609&ndash;624.</span>
+  <a class="ref-doi" href="https://doi.org/10.1007/s10111-022-00712-4" target="_blank" rel="noopener">doi:10.1007/s10111-022-00712-4</a>
+</li>
+<li id="ref-farago-2022">
+  <span class="ref-authors">Farago, E., Law, A. J., Hajra, S., &amp; Chan, A.</span>
+  (<span class="ref-year">2022</span>).
+  <span class="ref-title">Blink and saccade detection from forehead EEG.</span>
+  <span class="ref-journal">IEEE I2MTC 2022, 1&ndash;6.</span>
+  <a class="ref-doi" href="https://doi.org/10.1109/I2MTC48687.2022.9806494" target="_blank" rel="noopener">doi:10.1109/I2MTC48687.2022.9806494</a>
+</li>
+<li>
+  <span class="ref-authors">Hardy, D. &amp; Hinkin, C.</span>
+  (<span class="ref-year">2022</span>).
+  <span class="ref-title">Mental Workload in Neuropsychology: An Example With the NASA-TLX in Adults With HIV.</span>
+  <span class="ref-journal">Frontiers in Neuroergonomics, 3.</span>
+  <a class="ref-doi" href="https://doi.org/10.3389/fnrgo.2022.881653" target="_blank" rel="noopener">doi:10.3389/fnrgo.2022.881653</a>
+</li>
+<li>
+  <span class="ref-authors">Hu, L., Pan, X., Ding, S., Zuo, D., &amp; Kang, R.</span>
+  (<span class="ref-year">2022</span>).
+  <span class="ref-title">A quantitative input for evaluating human error of visual Neglection: Prediction of Operator&rsquo;s detection time spent on perceiving critical visual signal.</span>
+  <span class="ref-journal">Reliability Engineering &amp; System Safety, 225, 108582.</span>
+  <a class="ref-doi" href="https://doi.org/10.1016/j.ress.2022.108582" target="_blank" rel="noopener">doi:10.1016/j.ress.2022.108582</a>
+</li>
+<li>
+  <span class="ref-authors">Avril, E.</span>
+  (<span class="ref-year">2022</span>).
+  <span class="ref-title">Providing different levels of accuracy about the reliability of automation to a human operator: impact on human performance.</span>
+  <span class="ref-journal">Ergonomics, 66, 217&ndash;226.</span>
+  <a class="ref-doi" href="https://doi.org/10.1080/00140139.2022.2069870" target="_blank" rel="noopener">doi:10.1080/00140139.2022.2069870</a>
+</li>
+<li>
+  <span class="ref-authors">Navarro, J., Osiurak, F., Ha, S., Communay, G., Ferrier-Barbut, E., Coatrine, A., Gaujoux, V., Hernout, E., Cegarra, J., Volante, W., &amp; Hancock, P.</span>
+  (<span class="ref-year">2022</span>).
+  <span class="ref-title">Development of the Smart Tools Proneness Questionnaire (STP-Q): an instrument to assess the individual propensity to use smart tools.</span>
+  <span class="ref-journal">Ergonomics, 65, 1639&ndash;1658.</span>
+  <a class="ref-doi" href="https://doi.org/10.1080/00140139.2022.2048895" target="_blank" rel="noopener">doi:10.1080/00140139.2022.2048895</a>
+</li>
+<li>
+  <span class="ref-authors">Avril, E.</span>
+  (<span class="ref-year">2022</span>).
+  <span class="ref-title">Automatisation de l&rsquo;information et fiabilit&eacute;: effets sur le comportement humain.</span>
+  <span class="ref-journal">Bulletin de Psychologie, 575, 67&ndash;71.</span>
+  <a class="ref-doi" href="https://doi.org/10.3917/bupsy.575.0067" target="_blank" rel="noopener">doi:10.3917/bupsy.575.0067</a>
+</li>
+</ol>
+
+<!-- ── 2021 ────────────────────────────────────────── -->
+<div class="ref-year-heading">2021 <span class="ref-count">3 papers</span></div>
+<ol class="ref-list">
+<li id="ref-avril-2021a">
+  <span class="ref-authors">Avril, E., Cegarra, J., Wioland, L., &amp; Navarro, J.</span>
+  (<span class="ref-year">2021</span>).
+  <span class="ref-title">Automation Type and Reliability Impact on Visual Automation Monitoring and Human Performance.</span>
+  <span class="ref-journal">International Journal of Human-Computer Interaction, 38, 64&ndash;77.</span>
+  <a class="ref-doi" href="https://doi.org/10.1080/10447318.2021.1925435" target="_blank" rel="noopener">doi:10.1080/10447318.2021.1925435</a>
+</li>
+<li id="ref-avril-2021b">
+  <span class="ref-authors">Avril, E., Valery, B., Navarro, J., Wioland, L., &amp; Cegarra, J.</span>
+  (<span class="ref-year">2021</span>).
+  <span class="ref-title">Effect of Imperfect Information and Action Automation on Attentional Allocation.</span>
+  <span class="ref-journal">International Journal of Human-Computer Interaction, 37, 1063&ndash;1073.</span>
+  <a class="ref-doi" href="https://doi.org/10.1080/10447318.2020.1870817" target="_blank" rel="noopener">doi:10.1080/10447318.2020.1870817</a>
+</li>
+<li>
+  <span class="ref-authors">Durant, S., Wilkins, B., Woods, C., Uliana, E., &amp; Stathis, K.</span>
+  (<span class="ref-year">2021</span>).
+  <span class="ref-title">Attention Guidance Agents with Eye-Tracking &mdash; A Use-Case Based on the MATBII Cockpit Task.</span>
+  <span class="ref-journal">EMAS@AAMAS 2021, LNCS vol 13190, 92&ndash;113.</span>
+  <a class="ref-doi" href="https://doi.org/10.1007/978-3-030-97457-2_6" target="_blank" rel="noopener">doi:10.1007/978-3-030-97457-2_6</a>
+</li>
+</ol>
+
+<!-- ── 2020 ────────────────────────────────────────── -->
+<div class="ref-year-heading">2020 <span class="ref-count">1 paper</span></div>
+<ol class="ref-list">
+<li>
+  <span class="ref-authors">Avril, E., Navarro, J., Wioland, L., &amp; Cegarra, J.</span>
+  (<span class="ref-year">2020</span>).
+  <span class="ref-title">Return to Manual Control After Monitoring Automated Systems: Effects of Different Levels of Reliability.</span>
+  <span class="ref-journal">International Conference on Applied Human Factors and Ergonomics (AHFE 2020), 317&ndash;323.</span>
+  <a class="ref-doi" href="https://doi.org/10.1007/978-3-030-51038-1_44" target="_blank" rel="noopener">doi:10.1007/978-3-030-51038-1_44</a>
+</li>
+</ol>
+
+<!-- ── Related ────────────────────────────────────────── -->
+<div class="ref-year-heading">Before the publication of the presentation article</div>
+<ol class="ref-list">
+<li>
+  <span class="ref-authors">Navarro, J., Heuveline, L., Avril, E., &amp; Cegarra, J.</span>
+  (<span class="ref-year">2018</span>).
+  <span class="ref-title">Influence of human-machine interactions and task demand on automation selection and use.</span>
+  <span class="ref-journal">Ergonomics, 61(12), 1601&ndash;1612.</span>
+  <a class="ref-doi" href="https://doi.org/10.1080/00140139.2018.1501517" target="_blank" rel="noopener">doi:10.1080/00140139.2018.1501517</a>
+</li>
+<li>
+  <span class="ref-authors">Navarro, J., Allali, S., Cabrignac, N., &amp; Cegarra, J.</span>
+  (<span class="ref-year">2021</span>).
+  <span class="ref-title">Impact of Pilot&rsquo;s Expertise on Selection, Use, Trust, and Acceptance of Automation.</span>
+  <span class="ref-journal">IEEE Transactions on Human-Machine Systems, 51, 432&ndash;441.</span>
+  <a class="ref-doi" href="https://doi.org/10.1109/THMS.2021.3090199" target="_blank" rel="noopener">doi:10.1109/THMS.2021.3090199</a>
+</li>
+</ol>
+
+</section>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════════ LIGHTBOX -->
+<div class="lightbox" id="lightbox" role="dialog" aria-label="Image preview">
+  <button class="lightbox-close" aria-label="Close">&times;</button>
+  <img src="" alt="">
+</div>
+
+<!-- ═══════════════════════════════════════════════════ FOOTER -->
+<footer class="site-footer">
+  <p>OpenMATB &mdash; Open Multi-Attribute Task Battery</p>
+  <p>Cegarra, J., Val&eacute;ry, B., Avril, E., Calmettes, C., &amp; Navarro, J. (2020). <em>Behavior Research Methods</em>, 52, 1980&ndash;1990. <a href="https://doi.org/10.3758/s13428-020-01364-w" target="_blank" rel="noopener">doi:10.3758/s13428-020-01364-w</a></p>
+  <p><a href="https://github.com/juliencegarra/OpenMATB" target="_blank" rel="noopener">GitHub</a> &middot; CeCILL v2.1 License</p>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════ JAVASCRIPT -->
+<script>
+(function() {
+  'use strict';
+
+  // ── Tab switching ──────────────────────────────────
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  function activateTab(id) {
+    tabs.forEach(t => t.setAttribute('aria-selected', t.getAttribute('aria-controls') === id ? 'true' : 'false'));
+    panels.forEach(p => { p.classList.toggle('active', p.id === id); });
+    if (id !== 'demo') stopDemo();
+  }
+
+  // ── Demo (the web version, published under app/) ──
+  const demoStage = document.getElementById('demo-stage');
+  const demoLaunch = document.getElementById('demo-launch');
+  const demoFullscreen = document.getElementById('demo-fullscreen');
+  const demoStop = document.getElementById('demo-stop');
+  let demoFrame = null;
+
+  function startDemo() {
+    if (demoFrame) return;
+    demoFrame = document.createElement('iframe');
+    demoFrame.src = 'app/index.html?demo=1';
+    demoFrame.title = 'OpenMATB demo';
+    demoFrame.allow = 'fullscreen; gamepad; autoplay';
+    demoStage.appendChild(demoFrame);
+    demoLaunch.hidden = true;
+    demoFullscreen.hidden = demoStop.hidden = false;
+    demoFrame.focus();
+  }
+
+  function stopDemo() {
+    if (!demoFrame) return;
+    demoFrame.remove();
+    demoFrame = null;
+    demoLaunch.hidden = false;
+    demoFullscreen.hidden = demoStop.hidden = true;
+  }
+
+  demoLaunch.addEventListener('click', startDemo);
+  demoStop.addEventListener('click', stopDemo);
+  demoFullscreen.addEventListener('click', () => {
+    if (demoFrame) demoFrame.requestFullscreen().catch(() => {});
+  });
+
+  function getTabIdFromHash() {
+    const hash = location.hash.replace('#', '');
+    const validIds = Array.from(panels).map(p => p.id);
+    return validIds.includes(hash) ? hash : validIds[0];
+  }
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('aria-controls');
+      activateTab(id);
+      history.pushState(null, '', '#' + id);
+    });
+  });
+
+  window.addEventListener('hashchange', () => activateTab(getTabIdFromHash()));
+  window.addEventListener('popstate', () => activateTab(getTabIdFromHash()));
+
+  // Activate from initial hash
+  activateTab(getTabIdFromHash());
+
+  // ── Internal tab links (e.g. "Get Started" → #build-scenario) ──
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[href^="#"]');
+    if (!link) return;
+    const id = link.getAttribute('href').replace('#', '');
+    const validIds = Array.from(panels).map(p => p.id);
+    if (validIds.includes(id)) {
+      e.preventDefault();
+      activateTab(id);
+      history.pushState(null, '', '#' + id);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+
+  // ── Sub-tabs (Tasks page) ─────────────────────────
+  const subTabs = document.querySelectorAll('.sub-tab-btn');
+  const subPanels = document.querySelectorAll('.sub-panel');
+
+  subTabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('aria-controls');
+      subTabs.forEach(t => t.setAttribute('aria-selected', t.getAttribute('aria-controls') === id ? 'true' : 'false'));
+      subPanels.forEach(p => { p.classList.toggle('active', p.id === id); });
+    });
+  });
+
+  // ── Image lightbox ────────────────────────────────
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = lightbox.querySelector('img');
+  const lightboxClose = lightbox.querySelector('.lightbox-close');
+
+  document.querySelectorAll('[data-lightbox]').forEach(img => {
+    img.addEventListener('click', () => {
+      lightboxImg.src = img.src;
+      lightboxImg.alt = img.alt;
+      lightbox.classList.add('open');
+    });
+  });
+
+  function closeLightbox() { lightbox.classList.remove('open'); }
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+
+  // ── Citation links (navigate to Publications tab + scroll) ──
+  document.querySelectorAll('a.cite-link[data-tab]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const tabId = link.getAttribute('data-tab');
+      const refId = link.getAttribute('href').replace('#', '');
+      // Switch to Publications tab
+      activateTab(tabId);
+      history.pushState(null, '', '#' + tabId);
+      // Scroll to the reference and highlight
+      requestAnimationFrame(() => {
+        const target = document.getElementById(refId);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.style.transition = 'background .3s';
+          target.style.background = '#dbeafe';
+          setTimeout(() => { target.style.background = ''; }, 2000);
+        }
+      });
+    });
+  });
+
+  // ── Scenario syntax highlighting ──────────────────
+  document.querySelectorAll('code.scenario').forEach(block => {
+    const lines = block.innerHTML.split('\n');
+    block.innerHTML = lines.map(line => {
+      // Preserve empty lines
+      if (line.trim() === '') return line;
+      // Comments
+      if (line.trim().startsWith('#')) {
+        return '<span class="sc-comment">' + line + '</span>';
+      }
+      // Scenario lines: time;plugin;command[;value]
+      const parts = line.split(';');
+      if (parts.length >= 3 && /^\d/.test(parts[0].trim())) {
+        let result = '<span class="sc-time">' + parts[0] + '</span>';
+        result += '<span class="sc-semi">;</span>';
+        result += '<span class="sc-plugin">' + parts[1] + '</span>';
+        result += '<span class="sc-semi">;</span>';
+        result += '<span class="sc-command">' + parts[2] + '</span>';
+        if (parts.length >= 4) {
+          result += '<span class="sc-semi">;</span>';
+          result += '<span class="sc-value">' + parts.slice(3).join(';') + '</span>';
+        }
+        return result;
+      }
+      return line;
+    }).join('\n');
+  });
+
+})();
+</script>
+
+</body>
+</html>
