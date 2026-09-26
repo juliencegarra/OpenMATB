@@ -136,6 +136,22 @@ class OpenMATBPage:
         self.page.click("#start")
         self.wait_until(lambda s: s["started"] and len(s["updates"]) > 0, timeout=30)
 
+    def new_tab(self) -> OpenMATBPage:
+        """Another page of the same browser context: it shares the browser storage (the sessions)."""
+        return OpenMATBPage(self.page.context.new_page(), self.url)
+
+    def start_replay(self, session_id: int) -> None:
+        """Open the replay of a session kept in the browser storage (paused at its start)."""
+        self.page.goto(f"{self.url}/index.html?lang=en_EN&mode=replay&session={session_id}")
+        self.page.wait_for_selector("#start:not([disabled])", timeout=BOOT_TIMEOUT_MS)
+        self.write_file("/app/config.ini", _config({"display_session_number": "False"}))
+        self.write_file("/app/_openmatb_probe.py", PROBE.read_text(encoding="utf-8"))
+        self.python("import _openmatb_probe")
+        self.page.select_option("#mode", "replay")  # The mode of the start page is used, not the address
+        self.page.uncheck("#fullscreen")
+        self.page.click("#start")
+        self.wait_until(lambda s: s["started"], timeout=30)  # No update while the replay is paused
+
     def state(self) -> dict:
         return json.loads(self.python("import _openmatb_probe; _openmatb_probe.state()"))
 

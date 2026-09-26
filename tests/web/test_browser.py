@@ -12,9 +12,11 @@ from __future__ import annotations
 
 import csv
 import io
+import json
 import os
 import statistics
 import sys
+import time
 
 import pytest
 
@@ -464,3 +466,119 @@ class TestPageResize:
         x, y = app.python("import json, _openmatb_probe as probe; json.dumps(probe.clicks[-1])").strip("[]").split(",")
         assert float(x) == pytest.approx(box["fw"] / 4, abs=3)
         assert float(y) == pytest.approx(box["fh"] * 3 / 4, abs=3)  # pyglet: y from the bottom
+
+
+# ── Replay ──────────────────────────────────────────────────────────────────
+
+
+REPLAY_SCENARIO: str = (
+    "0:00:00;sysmon;start\n0:00:00;track;start\n0:00:00;resman;start\n"
+    "0:00:02;sysmon;scales-1-failure;True\n"
+    "0:00:08;sysmon;stop\n0:00:08;track;stop\n0:00:08;resman;stop\n"
+)
+REPLAY_KEYS: list[tuple[float, str]] = [(3.0, "F1"), (5.0, "Numpad1")]
+
+REPLAY_STATE: str = """
+import json, pyglet.app, _openmatb_probe as probe
+from core.error import get_errors
+s = probe.PROBE["scheduler"]
+inputs = s.logreader.keyboard_inputs
+json.dumps({
+    "type": type(s).__name__,
+    "session_id": s.logreader.replay_session_id,
+    "running": bool(pyglet.app.event_loop.is_running),
+    "paused": s.is_paused,
+    "replay_time": s.replay_time,
+    "duration": s.logreader.session_duration,
+    "keys_in_log": [[i["address"], i["value"]] for i in inputs],
+    "keys_replayed": [[inputs[i]["address"], inputs[i]["value"]] for i in sorted(s._executed_key_indices)],
+    "events_done": sum(1 for e in s.events if e.done),
+    "events": len(s.events),
+    "alive": sorted(name for name, plugin in s.plugins.items() if plugin.alive),
+    "errors": list(get_errors().errors_list),
+})
+"""
+
+
+@pytest.fixture(scope="module")
+def replay_run(page_factory):
+    """Run a session, then replay it in another tab of the same browser (same storage): play it in real time
+    to its end, then restart it and jump to its end."""
+    session = page_factory()
+    session.start(REPLAY_SCENARIO)
+    session.page.focus("#pygletCanvas")
+    for at, key in REPLAY_KEYS:
+        session.wait_until(lambda s, at=at: s["scenario_time"] >= at, timeout=20)
+        session.page.keyboard.press(key)
+    session.page.wait_for_selector("#end:not([hidden])", timeout=30_000)
+    rows = list(csv.DictReader(io.StringIO(session.downloads[0].path().read_text(encoding="utf-8"))))
+    session_id = int(session.downloads[0].suggested_filename.split("_")[0])
+
+    replay = session.new_tab()
+    replay.start_replay(session_id)
+    state = lambda: json.loads(replay.python(REPLAY_STATE))  # noqa: E731
+    replay.wait_until(lambda s: s["running"], timeout=20)  # pyglet starts its loop just after the replay
+    result = {"session_id": session_id, "rows": rows, "loaded": state(), "errors": replay.errors}
+
+    replay.page.focus("#pygletCanvas")
+    replay.page.keyboard.press("Space")  # Play
+    replay.page.wait_for_timeout(2000)
+    result["after_2s"] = state()
+    deadline = time.monotonic() + 20
+    while not (current := state())["paused"] and time.monotonic() < deadline:
+        time.sleep(0.2)
+    result["natural_end"] = current
+
+    replay.page.keyboard.press("Home")  # Back to the start, then jump to the end
+    replay.page.wait_for_timeout(500)
+    replay.page.keyboard.press("End")
+    replay.page.wait_for_timeout(1500)
+    result["jump_end"] = state()
+    return result
+
+
+class TestReplay:
+    def test_session_is_found_in_the_browser_storage(self, replay_run):
+        loaded = replay_run["loaded"]
+        assert loaded["type"] == "ReplayScheduler"
+        assert loaded["session_id"] == replay_run["session_id"]
+        assert loaded["running"]
+        assert loaded["paused"]  # A replay starts paused
+        assert loaded["errors"] == []
+        assert replay_run["errors"] == []
+
+    def test_log_contents(self, replay_run):
+        session_keys = [
+            [r["address"], r["value"]] for r in replay_run["rows"] if r["type"] == "input" and r["module"] == "keyboard"
+        ]
+        assert session_keys == [["F1", "press"], ["F1", "release"], ["NUM_1", "press"], ["NUM_1", "release"]]
+        assert replay_run["loaded"]["keys_in_log"] == session_keys
+        assert replay_run["loaded"]["events"] == 7
+        assert replay_run["loaded"]["duration"] == pytest.approx(8, abs=0.5)
+
+    def test_plays_in_real_time(self, replay_run):
+        after = replay_run["after_2s"]
+        assert not after["paused"]
+        assert after["replay_time"] == pytest.approx(2, abs=0.4)
+
+    def test_played_to_the_end_replays_everything(self, replay_run):
+        end = replay_run["natural_end"]
+        assert end["paused"]  # Paused by the end of the session
+        assert end["replay_time"] == pytest.approx(end["duration"], abs=0.01)
+        assert end["keys_replayed"] == end["keys_in_log"]
+        assert end["events_done"] == end["events"]
+        assert end["alive"] == []  # All the tasks were stopped
+        assert end["running"] and end["errors"] == []
+
+    def test_jump_to_the_end(self, replay_run):
+        end = replay_run["jump_end"]
+        assert end["replay_time"] == pytest.approx(end["duration"], abs=0.01)
+        assert end["keys_replayed"] == end["keys_in_log"]
+        assert end["running"] and end["errors"] == []
+
+    def test_jump_to_the_end_executes_all_the_events(self, replay_run):
+        """Regression: fast-forward ran one event per 0.1 s step, so simultaneous events at the end of the
+        session (the three stops at 0:00:08) were not all executed."""
+        end = replay_run["jump_end"]
+        assert end["events_done"] == end["events"]
+        assert end["alive"] == []
