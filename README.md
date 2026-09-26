@@ -134,8 +134,11 @@ file every 10 s keeps the data of a session interrupted by a closed tab or a cra
   https://pipe.jspsych.org (Google Drive, Dataverse or Zenodo; DataPipe stops writing to OSF after November 16, 2026),
   create the experiment and enable its **base64 data collection** (the compressed file is sent as base64; the text
   data collection is not used). When a session starts, OpenMATB checks, without sending a file, that DataPipe
-  accepts the files of the experiment: otherwise the session does not start and the reason is shown. The site can
-  then be hosted anywhere, e.g. on GitHub Pages. The
+  accepts the files of the experiment: otherwise the session does not start and the reason is shown. This check sends
+  invalid data on purpose, so each session leaves an `INVALID_BASE64_DATA` error in the DataPipe logs of the
+  experiment when it starts: it is expected. The "completed sessions" count of DataPipe stays at 0: it counts the
+  sessions of its incremental API, which OpenMATB does not use. The site can then be hosted anywhere, e.g. on GitHub
+  Pages. The
   file is sent at the end of the session only, compressed, as `<N>_<yymmdd>_<hhmmss>_<random>.csv.gz`: DataPipe accepts
   32 MB per request (about 1 h 40 of session once compressed), and the random suffix keeps two sessions with the same
   name from replacing each other (Zenodo replaces an existing file silently). With Zenodo, the files go to an
