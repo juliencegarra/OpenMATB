@@ -110,6 +110,30 @@ class FakeDomain:
         return True
 
 
+class FakeCanvasContext:
+    """CanvasRenderingContext2D of the glyph canvas: measureText returns the metrics set for the test."""
+
+    def __init__(self) -> None:
+        self.metrics = SimpleNamespace(width=6.4, actualBoundingBoxAscent=9.3, actualBoundingBoxDescent=0.2)
+        self.drawn_at: list[tuple[str, float, float]] = []
+        self.transforms: list[tuple] = []
+
+    def measureText(self, text: str):  # JavaScript API name
+        return self.metrics
+
+    def translate(self, x: float, y: float) -> None:
+        self.transforms.append(("translate", x, y))
+
+    def scale(self, x: float, y: float) -> None:
+        self.transforms.append(("scale", x, y))
+
+    def fillText(self, text: str, x: float, y: float) -> None:  # JavaScript API name
+        self.drawn_at.append((text, x, y))
+
+    def getImageData(self, x: int, y: int, w: int, h: int):  # JavaScript API name
+        return SimpleNamespace(width=w, height=h, data=b"\0" * (w * h * 4))
+
+
 @pytest.fixture
 def web_modules(js):
     """Fake pyodide.webloop and the pyglet browser modules patched by setup_web()."""
@@ -119,6 +143,12 @@ def web_modules(js):
         "pyglet.graphics.api.webgl.vertexdomain",
         WebGLVertexDomain=type("WebGLVertexDomain", (FakeDomain,), {}),
         WebGLIndexedVertexDomain=type("WebGLIndexedVertexDomain", (FakeDomain,), {}),
+    )
+    font_js = _module(
+        "pyglet.font.pyodide_js",
+        PyodideGlyphRenderer=type("PyodideGlyphRenderer", (), {}),
+        _font_canvas=SimpleNamespace(width=0, height=0),
+        _font_context=FakeCanvasContext(),
     )
     key_map = {"End": "END", "1": "_1", "Numpad1": "NUM_1", "NumpadEnter": "NUM_ENTER", "F1": "F1"}
     web_window = _module(
@@ -134,14 +164,20 @@ def web_modules(js):
         "pyglet.graphics.api.webgl": _module("pyglet.graphics.api.webgl", vertexdomain=vertexdomain),
         "pyglet.graphics.api.webgl.vertexdomain": vertexdomain,
         "pyglet.window.emscripten": web_window,
+        "pyglet.font.pyodide_js": font_js,
     }
-    with patch.dict(sys.modules, modules), patch.object(sys.modules["pyglet.window"], "emscripten", web_window):
+    with (
+        patch.dict(sys.modules, modules),
+        patch.object(sys.modules["pyglet.window"], "emscripten", web_window),
+        patch.object(sys.modules["pyglet.font"], "pyodide_js", font_js, create=True),
+    ):
         platform.setup_web()
         yield SimpleNamespace(
             WebLoop=webloop.WebLoop,
             View=emscripten_libs.PersistentBufferView,
             domains=(vertexdomain.WebGLVertexDomain, vertexdomain.WebGLIndexedVertexDomain),
             window=web_window,
+            font=font_js,
         )
 
 
@@ -190,6 +226,26 @@ class TestSetupWeb:
         view = web_modules.View(proxy)
         assert view.data is empty
         assert proxy.getBuffer.call_count == 1
+
+    @pytest.mark.parametrize("ascent", [9.0, 9.3, 9.6, 12.8])
+    @pytest.mark.parametrize("descent", [-3.4, 0.0, 0.2, 0.6, 2.7])
+    def test_glyph_baseline_matches_the_drawn_one(self, web_modules, ascent, descent):
+        """Regression: pyglet declared ceil(descent) but drew at ceil(ascent + descent) - ceil(ascent) from the
+        bottom: with fractional metrics (Firefox), letters were one pixel too high or too low."""
+        context, canvas = web_modules.font._font_context, web_modules.font._font_canvas
+        context.metrics = SimpleNamespace(width=6.4, actualBoundingBoxAscent=ascent, actualBoundingBoxDescent=descent)
+        renderer = web_modules.font.PyodideGlyphRenderer()
+        renderer.font = MagicMock(js_name="16px 'Noto Sans'")
+
+        renderer.render("a")
+
+        _, _, drawn_y = context.drawn_at[-1]
+        assert context.transforms[-2:] == [("translate", 0, canvas.height), ("scale", 1, -1)]  # Flipped canvas
+        drawn_baseline_from_bottom = canvas.height - drawn_y
+        baseline, left_bearing, advance = renderer.font.create_glyph.return_value.set_bearings.call_args[0]
+        assert baseline == drawn_baseline_from_bottom
+        assert canvas.height >= drawn_y + descent  # The glyph fits in the canvas (not clipped)
+        assert (left_bearing, advance) == (0, 7)
 
     def test_webgl_multi_draw_is_disabled(self, web_modules):
         for domain in web_modules.domains:

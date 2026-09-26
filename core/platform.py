@@ -40,6 +40,43 @@ def setup_web() -> None:
 
     _patch_pyglet_webgl()
     _patch_pyglet_numpad_keys()
+    _patch_pyglet_glyph_baseline()
+
+
+def _patch_pyglet_glyph_baseline() -> None:
+    """pyglet renders each glyph into a canvas of height ceil(ascent + descent), draws its baseline at ceil(ascent)
+    from the top, but declares it at ceil(descent) from the bottom. The two differ by one pixel depending on the
+    fractional metrics of each character (Firefox, display scaling): letters looked shifted up or down by one pixel.
+    Use a canvas of height ceil(ascent) + ceil(descent) so that the drawn and declared baselines match."""
+    import math
+
+    from pyglet.font import pyodide_js
+    from pyglet.image import ImageData
+
+    def render(self: Any, text: str) -> Any:
+        canvas, context = pyodide_js._font_canvas, pyodide_js._font_context
+        context.font = self.font.js_name
+        metrics = context.measureText(text)
+        ascent: int = math.ceil(metrics.actualBoundingBoxAscent)
+        width: int = max(1, math.ceil(metrics.width))
+        height: int = max(1, ascent + math.ceil(metrics.actualBoundingBoxDescent))
+
+        canvas.width = width  # Resizing the canvas resets the context settings
+        canvas.height = height
+        context.imageSmoothingEnabled = False
+        context.font = self.font.js_name
+        context.fillStyle = "white"
+        # Flipped: ImageData rows go top to bottom, pyglet images bottom to top
+        context.translate(0, height)
+        context.scale(1, -1)
+        context.fillText(text, 0, ascent)
+
+        image_data = context.getImageData(0, 0, width, height)
+        glyph = self.font.create_glyph(ImageData(width, height, "RGBA", image_data.data))
+        glyph.set_bearings(height - ascent, 0, math.ceil(metrics.width))  # Pixels below the baseline
+        return glyph
+
+    pyodide_js.PyodideGlyphRenderer.render = render
 
 
 def _patch_pyglet_numpad_keys() -> None:

@@ -387,3 +387,45 @@ class TestFreezeLog:
         ]
         print(f"\nfreeze rows (scenario time s, ms): {freezes}")
         assert any(1 <= time < 2 and 295 <= duration <= 400 for time, duration in freezes)
+
+
+def _dark_runs(flags: list[bool]) -> list[tuple[int, int]]:
+    runs, i = [], 0
+    while i < len(flags):
+        if flags[i]:
+            start = i
+            while i < len(flags) and flags[i]:
+                i += 1
+            runs.append((start, i))
+        i += 1
+    return runs
+
+
+class TestTextRendering:
+    def test_letters_share_the_same_baseline(self, page_factory):
+        """Regression: with fractional font metrics (Firefox), pyglet drew some letters one pixel too high
+        or too low. Measured on the session ID dialog: the bottom of every letter is on the baseline, except
+        descenders (a few pixels lower)."""
+        image_module = pytest.importorskip("PIL.Image")
+        app = page_factory()
+        app.start(LONG_SCENARIO, config={"display_session_number": "True"})
+        app.wait_until(lambda s: s["modal"], timeout=10)
+        app.page.wait_for_timeout(500)
+        image = image_module.open(io.BytesIO(app.page.screenshot())).convert("L")
+        pixels, (width, height) = image.load(), image.size
+        dark = lambda x, y: pixels[x, y] < 128  # noqa: E731
+
+        # The dialog is centered (white background): its 2nd text line is the session ID
+        cx, y0 = width // 2, height // 2 - 55
+        x0 = next(x for x in range(cx, 0, -1) if pixels[x, y0 + 5] < 250) + 3
+        x1 = next(x for x in range(cx, width) if pixels[x, y0 + 5] < 250) - 3
+        rows = _dark_runs([any(dark(x, y) for x in range(x0, x1)) for y in range(y0, height // 2 + 55)])
+        top, bottom = y0 + rows[1][0], y0 + rows[1][1] + 6
+        letters = _dark_runs([any(dark(x, y) for y in range(top, bottom)) for x in range(x0, x1)])
+        bottoms = [max(y for y in range(top, bottom) for x in range(x0 + a, x0 + b) if dark(x, y)) for a, b in letters]
+
+        baseline = max(set(bottoms), key=bottoms.count)
+        offsets = [b - baseline for b in bottoms]
+        print(f"\n{len(letters)} letters, offsets from the baseline: {sorted(set(offsets))}")
+        assert len(letters) >= 10
+        assert all(offset == 0 or offset >= 3 for offset in offsets)  # Aligned, or a descender (g, p, q, y...)
