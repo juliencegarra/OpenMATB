@@ -12,9 +12,9 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -59,20 +59,20 @@ jobs:
           installer\openmatb.iss
 
       - name: Upload installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: OpenMATB-Installer-${{ steps.version.outputs.VERSION }}
           path: installer/Output/OpenMATB-Setup-*.exe
 
       - name: Upload portable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: OpenMATB-Portable-${{ steps.version.outputs.VERSION }}
           path: main.dist/
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: installer/Output/OpenMATB-Setup-*.exe
           generate_release_notes: true
