@@ -5,7 +5,8 @@
 # 1. Set tasks parameters
 
 # 1.a. System monitoring parameters
-0:00:00;sysmon;scales-1-key;F8
+# Example: respond to scale 1 with F8 instead of F1
+# 0:00:00;sysmon;scales-1-key;F8
 
 # 1.b.i. Resources management parameters
 # Change tank B target in resman
