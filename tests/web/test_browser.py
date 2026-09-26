@@ -582,3 +582,20 @@ class TestReplay:
         end = replay_run["jump_end"]
         assert end["events_done"] == end["events"]
         assert end["alive"] == []
+
+
+class TestScreenshot:
+    def test_f12_downloads_a_png(self, page_factory):
+        """F12 saves a screenshot: in the browser it is handed to the user as a download."""
+        app = page_factory()
+        app.start(LONG_SCENARIO)
+        app.wait_until(lambda s: s["scenario_time"] >= 1, timeout=20)
+        app.page.focus("#pygletCanvas")
+        with app.page.expect_download(timeout=10_000) as download:
+            app.page.keyboard.press("F12")
+        assert download.value.suggested_filename.startswith("screenshot_")
+        assert download.value.suggested_filename.endswith(".png")
+        assert download.value.path().read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
+        image_module = pytest.importorskip("PIL.Image")
+        colors = image_module.open(download.value.path()).convert("RGB").getcolors(maxcolors=1 << 16)
+        assert colors is None or len(colors) > 10  # The tasks are drawn: not a blank (cleared) image

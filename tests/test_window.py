@@ -496,3 +496,31 @@ class TestSnapTextToPixels:
             init = layout_class.__init__
             window_module._snap_text_to_pixels()
             assert layout_class.__init__ is init
+
+
+class TestScreenshot:
+    def test_captured_at_the_end_of_the_next_draw(self):
+        """F12 requests a screenshot, taken after drawing (the WebGL buffer is cleared once displayed)."""
+        w = _make_window()
+        order = []
+        w.batch.draw.side_effect = lambda: order.append("draw")
+        w.save_screenshot = MagicMock(side_effect=lambda: order.append("screenshot"))
+        w.clear = MagicMock()
+        w.set_mouse_cursor_visible = MagicMock()
+        w.take_screenshot()
+        w.save_screenshot.assert_not_called()
+        Window.on_draw(w)
+        assert order == ["draw", "screenshot"]
+        Window.on_draw(w)
+        assert order == ["draw", "screenshot", "draw"]  # Only once
+
+    def test_saved_logged_and_downloaded(self, mock_logger, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        w = _make_window()
+        with patch("core.window.get_screenshot") as grab, patch("core.window.download_file") as download:
+            w.save_screenshot()
+        path = grab.return_value.save.call_args[0][0]
+        assert path.startswith("screenshot_") and path.endswith(".png")
+        mock_logger.log_manual_entry.assert_called_once_with(path, key="screenshot")
+        assert str(download.call_args[0][0]) == path
+        assert download.call_args[0][1] == "image/png"

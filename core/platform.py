@@ -225,7 +225,8 @@ def download_file(path: Path, mime: str = "text/csv") -> None:
     from pyodide.ffi import to_js
 
     data: bytes = Path(path).read_bytes()
-    blob = js.Blob.new(to_js([data.decode("utf-8")]), to_js({"type": mime}, dict_converter=js.Object.fromEntries))
+    content: str | bytes = data.decode("utf-8") if mime.startswith("text/") else data  # bytes: a Uint8Array
+    blob = js.Blob.new(to_js([content]), to_js({"type": mime}, dict_converter=js.Object.fromEntries))
     url = js.URL.createObjectURL(blob)
     link = js.document.createElement("a")
     link.href = url

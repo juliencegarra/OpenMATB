@@ -13,6 +13,7 @@ from pyglet import image
 from pyglet.config import Config
 from pyglet.display import get_display
 from pyglet.graphics import Batch
+from pyglet.graphics.framebuffer import get_screenshot
 from pyglet.shapes import Rectangle
 from pyglet.text.formats.html import HTMLDecoder
 from pyglet.text.layout import TextLayout
@@ -32,7 +33,7 @@ from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
 from core.modaldialog import ModalDialog
-from core.platform import IS_WEB, on_page_resize, on_visibility_change, viewport_size
+from core.platform import IS_WEB, download_file, on_page_resize, on_visibility_change, viewport_size
 from core.utils import get_conf_value
 
 
@@ -231,17 +232,25 @@ class Window(Window):
             band.visible = visible
 
     def take_screenshot(self) -> None:
-        """Capture the OpenGL framebuffer directly (bypasses DWM cache issues)."""
+        """Capture the framebuffer at the end of the next draw (bypasses DWM cache issues).
+
+        Not at once: in the browser, the WebGL drawing buffer is cleared once it has been displayed."""
+        self._screenshot_requested = True
+
+    def save_screenshot(self) -> None:
         timestamp: str = datetime.now().strftime("%Y%m%d_%H%M%S")
         filepath = Path(f"screenshot_{timestamp}.png")
-        color_buffer = image.get_buffer_manager().get_color_buffer()
-        color_buffer.save(str(filepath))
+        get_screenshot().save(str(filepath))  # pyglet 3 (pyglet 2: image.get_buffer_manager())
         get_logger().log_manual_entry(str(filepath), key="screenshot")
+        download_file(filepath, "image/png")  # Browser: the file is in the page storage, hand it to the user
 
     def on_draw(self) -> None:
         self.set_mouse_cursor_visible(self.is_mouse_necessary())
         self.clear()
         self.batch.draw()
+        if getattr(self, "_screenshot_requested", False):
+            self._screenshot_requested = False
+            self.save_screenshot()
 
     def is_mouse_necessary(self) -> bool:
         return self.slider_visible or self.selector_visible or REPLAY_MODE or self.mouse_control_active
