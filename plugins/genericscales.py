@@ -37,6 +37,9 @@ class Genericscales(BlockingPlugin):
         self.parameters.update(new_par)
 
         self._presentation_count: int = 0
+        # Answers of the previous pages of the current presentation, as (title, value)
+        self._answers: list[tuple[str, Any]] = list()
+        self._first_page: bool = True
         self.ignore_empty_lines: bool = True
 
         self.regex_scale_pattern: str = r"(.*);(.*)/(.*);(\d*)/(\d*)/(\d*)"
@@ -46,6 +49,8 @@ class Genericscales(BlockingPlugin):
 
     def start(self) -> None:
         self._presentation_count += 1
+        self._answers = list()
+        self._first_page = True
         super().start()
 
     def _measure_text_height(self, text: str, font_size: int, wrap_width_px: float, bold: bool = False) -> int:
@@ -57,6 +62,12 @@ class Genericscales(BlockingPlugin):
         return tmp.content_height
 
     def make_slide_graphs(self) -> None:
+        # Keep the answers of the previous page (its sliders are replaced by the new page ones).
+        # The sliders present at the first page come from a previous presentation: already logged
+        if not self._first_page:
+            self._answers += [(slider.get_title(), slider.get_value()) for slider in self.sliders.values()]
+        self._first_page = False
+
         # Remove old slider/label widgets from previous slide
         for key in list(self.sliders):
             fullname: str = self.get_widget_fullname(key)
@@ -214,6 +225,11 @@ class Genericscales(BlockingPlugin):
 
     def stop(self) -> None:
         self.log_performance("presentation_number", self._presentation_count)
-        for _slider_name, slider_widget in self.sliders.items():
-            self.log_performance(slider_widget.get_title(), slider_widget.get_value())
+        # No page shown yet in this presentation: the sliders (if any) are those of a previous one
+        current: list[tuple[str, Any]] = (
+            [] if self._first_page else [(slider.get_title(), slider.get_value()) for slider in self.sliders.values()]
+        )
+        answers: list[tuple[str, Any]] = self._answers + current
+        for title, value in answers:
+            self.log_performance(title, value)
         super().stop()

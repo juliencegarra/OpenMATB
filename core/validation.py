@@ -176,7 +176,7 @@ def is_callsign(x: str) -> ValidationResult:
     else:
         # Get unallowed char
         errors: list[str] = [el for el in x if el.lower() not in allowed_char_list]
-        return None, _("should be composed of letters [a-z] or digits [0-9] (not %s in %s)") % (*errors, x)
+        return None, _("should be composed of letters [a-z] or digits [0-9] (not %s in %s)") % ("".join(errors), x)
 
 
 def is_callsign_or_list_of(x: str) -> ValidationResult:

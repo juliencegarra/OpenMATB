@@ -44,6 +44,8 @@ def gs():
     obj = object.__new__(Genericscales)
     obj.alias = "genericscales"
     obj.sliders = {}
+    obj._answers = []
+    obj._first_page = True
     obj.widgets = {}
     obj.container = Container("fullscreen", 0, 0, 1920, 1080)
     obj.regex_scale_pattern = r"(.*);(.*)/(.*);(\d*)/(\d*)/(\d*)"
@@ -272,6 +274,8 @@ def gs_with_keys(mock_window):
     obj = object.__new__(Genericscales)
     obj.alias = "genericscales"
     obj.sliders = {}
+    obj._answers = []
+    obj._first_page = True
     obj.widgets = {}
     obj.container = Container("fullscreen", 0, 0, 1920, 1080)
     obj.regex_scale_pattern = r"(.*);(.*)/(.*);(\d*)/(\d*)/(\d*)"

@@ -308,7 +308,7 @@ class AbstractPlugin:
                         overdue["_nexttoggletime"] += overdue["blinkdurationms"] / 1000
                         overdue["_is_visible"] = not overdue["_is_visible"]
             else:
-                overdue["_blinktimer"] = 0
+                overdue["_nexttoggletime"] = 0  # The next alarm blinks from its own start
                 overdue["_is_visible"] = False
         else:
             overdue["_is_visible"] = False
@@ -602,7 +602,8 @@ class BlockingPlugin(AbstractPlugin):
         # Only if this input path exists, retrieve its content into slides (split with <newpage>)
         if self.input_path is not None and self.input_path.exists():
             self.slides.append("")  # Create the first slide
-            lines: list[str] = self.input_path.open(encoding="utf8").readlines()
+            # utf-8-sig: a file saved "UTF-8 with BOM" (e.g. by Windows Notepad) must not show the BOM
+            lines: list[str] = self.input_path.open(encoding="utf-8-sig").readlines()
 
             if self.ignore_empty_lines:
                 lines = [l for l in lines if len(l.strip()) > 0]
@@ -658,8 +659,8 @@ class BlockingPlugin(AbstractPlugin):
             del slide_content[title_idx[-1]]
 
         # Remove a potential previous title
-        elif "instructions_title" in self.widgets:
-            del self.widgets["instructions_title"]
+        elif self.is_a_widget_name("title"):
+            del self.widgets[self.get_widget_fullname("title")]
 
         # Renew the current slide content
         self.current_slide = "\n".join(slide_content)
@@ -681,6 +682,11 @@ class BlockingPlugin(AbstractPlugin):
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if self.parameters["allowkeypress"]:
             super().on_key_press(symbol, modifiers)
+
+    def on_key_release(self, symbol: int, modifiers: int) -> None:
+        # Slides advance on the SPACE release: filter it too
+        if self.parameters["allowkeypress"]:
+            super().on_key_release(symbol, modifiers)
 
     def do_on_key(self, keystr: str, state: str, emulate: bool = False) -> str | None:
         keystr = super().do_on_key(keystr, state, emulate)

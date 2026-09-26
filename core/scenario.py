@@ -34,7 +34,8 @@ class Scenario:
                 sp = P["SCENARIOS"].joinpath(get_conf_value("Openmatb", "scenario_path"))
 
             if sp.exists():
-                with open(sp, "r", encoding="utf-8") as f:
+                # utf-8-sig: also reads files saved "UTF-8 with BOM" (e.g. by Windows Notepad)
+                with open(sp, "r", encoding="utf-8-sig") as f:
                     contents = f.readlines()
                 get_logger().log_manual_entry(sp, key="scenario_path")
             else:
@@ -43,11 +44,17 @@ class Scenario:
 
         # Convert the scenario content into a list of events #
         # (Squeeze empty and commented [#] lines)
-        self.events = [
-            Event.parse_from_string(line_n, line_str)
-            for line_n, line_str in enumerate(contents)
-            if len(line_str.strip()) > 0 and not line_str.startswith("#")
-        ]
+        for line_n, line_str in enumerate(contents):
+            if len(line_str.strip()) == 0 or line_str.startswith("#"):
+                continue
+            try:
+                self.events.append(Event.parse_from_string(line_n, line_str))
+            except ValueError:  # e.g. a line without ';' separators or with a wrong time
+                get_errors().add_error(
+                    _("Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)")
+                    % (line_n, line_str.strip()),
+                    fatal=True,
+                )
 
         # Next load the scheduled plugins into the class, so we can check potential errors
         # But first, check that only available plugins are mentioned

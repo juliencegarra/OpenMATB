@@ -95,8 +95,12 @@ class LogReader:
         with open(self.session_file_path, newline="", encoding="utf-8") as csvfile:
             reader: csv.DictReader = csv.DictReader(csvfile)
             for row in reader:
-                row["logtime"] = float(row["logtime"])
-                row["scenario_time"] = float(row["scenario_time"])
+                # Skip a row without valid times (e.g. the last row of a session that crashed while writing it)
+                try:
+                    row["logtime"] = float(row["logtime"])
+                    row["scenario_time"] = float(row["scenario_time"])
+                except (TypeError, ValueError):
+                    continue
                 all_rows.append(row)
 
         if not all_rows:

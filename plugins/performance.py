@@ -86,7 +86,7 @@ class Performance(AbstractPlugin):
                         p for p in plugin.performance["signal_detection"] if p in ["HIT", "FA", "MISS"]
                     ]
                     if len(perf_list) >= 4:
-                        self.performance_levels[p] = sum([int(p == "HIT") for p in perf_list]) / 4
+                        self.performance_levels[p] = sum([int(p == "HIT") for p in perf_list[-4:]]) / 4
 
                 # Tracking
                 elif p == "track":

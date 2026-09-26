@@ -46,7 +46,6 @@ class CooperativeAgent(AbstractAgent):
         Also set hint arrow colors like AssistedAgent."""
         if not self._sysmon_configured:
             plugin.parameters["allowanykey"] = True
-            plugin.keys.add("SPACE")
             self._sysmon_configured = True
 
         for scale in plugin.get_scale_gauges():
