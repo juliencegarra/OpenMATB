@@ -1,6 +1,6 @@
 name: Build and release
 
-# Windows installer and portable version (Nuitka), and the web packages (static site, JATOS study, SCORM), built
+# Windows installer and portable version (Nuitka), and the web packages (static site, JATOS study, SCORM, cmi5), built
 # from the pyglet3-pyodide-web branch. A tag (e.g. 1.4.6) creates the GitHub release with all of them; the website
 # links to releases/latest/download/<name>, so the release files have fixed names.
 # Run by hand: builds everything (Actions artifacts); with "release_tag", also adds the files to that release.
@@ -118,7 +118,8 @@ jobs:
         with:
           python-version: '3.13'
 
-      # OpenMATB-Web.zip, OpenMATB-JATOS.jzip, OpenMATB-SCORM-1.2.zip, OpenMATB-SCORM-2004.zip
+      # OpenMATB-Web.zip, OpenMATB-JATOS.jzip, OpenMATB-SCORM-1.2.zip, OpenMATB-SCORM-2004.zip, OpenMATB-cmi5.zip
+      # (RELEASE_PACKAGES in web/build.py)
       - name: Build the web packages
         run: python web/build.py --release release
 

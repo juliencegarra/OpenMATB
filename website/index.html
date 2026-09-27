@@ -504,6 +504,7 @@ a.cite-link:hover { color: var(--blue-800); border-color: var(--blue-700); text-
 <tr><td><strong>Web</strong> &mdash; your server</td><td>Static site to host on a lab web server (session files downloaded or sent to WebDAV / DataPipe)</td><td><span class="badge badge-orange">Experimental</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-Web.zip">OpenMATB-Web.zip</a></td></tr>
 <tr><td><strong>Web</strong> &mdash; JATOS study</td><td>Online studies: import into <a href="https://www.jatos.org" target="_blank" rel="noopener">JATOS</a> (Import Study), e.g. with Prolific; session files saved in the results</td><td><span class="badge badge-orange">Experimental</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-JATOS.jzip">OpenMATB-JATOS.jzip</a></td></tr>
 <tr><td><strong>Web</strong> &mdash; SCORM</td><td>Learning platforms (Moodle, Canvas, Blackboard&hellip;): completion and time recorded by the LMS</td><td><span class="badge badge-orange">Experimental</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-SCORM-1.2.zip">SCORM&nbsp;1.2</a> &middot; <a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-SCORM-2004.zip">SCORM&nbsp;2004</a></td></tr>
+<tr><td><strong>Web</strong> &mdash; cmi5</td><td>Learning platforms with cmi5 / xAPI (Moodle plugin, SCORM Cloud, Cornerstone, Docebo&hellip;): statements sent to the LRS, with the name of the session file</td><td><span class="badge badge-orange">Experimental</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-cmi5.zip">OpenMATB-cmi5.zip</a></td></tr>
 </tbody>
 </table>
 </div>
@@ -895,6 +896,7 @@ time;plugin;parameter;value</code></pre>
 
 # Send a custom marker at a specific time
 0:05:00;labstreaminglayer;marker;BLOCK_2_START</code></pre>
+<p><strong>In the browser</strong>, the markers go through a small bridge run on the participant's computer (<code>python web/lsl_bridge.py</code>, with <code>pylsl</code>), which creates the same stream and stamps each marker in LSL time from its time in the page. See the <a href="#web">Web Version</a> tab.</p>
 </div>
 
 <h3>Parallel Port</h3>
@@ -920,6 +922,7 @@ time;plugin;parameter;value</code></pre>
 # Send trigger 10 at experiment start, trigger 20 at 5 minutes
 0:00:00;parallelport;trigger;10
 0:05:00;parallelport;trigger;20</code></pre>
+<p><strong>In the browser</strong> (Chrome, Edge), the same triggers are written to a USB trigger box (Brain Products TriggerBox, BioSemi USB trigger interface, Arduino&hellip;) through the Web Serial API. See the <a href="#web">Web Version</a> tab.</p>
 </div>
 
 <h3>Integration Workflow</h3>
@@ -1344,7 +1347,8 @@ time;plugin;parameter;value</code></pre>
 <h3>Build and Host</h3>
 <pre><code>python web/build.py --serve              # build web/dist and serve it on http://localhost:8000
 python web/build.py --pyodide local      # ship Pyodide with the page instead of loading it from its CDN
-python web/build.py --scorm              # also build a SCORM 1.2 package for an LMS (--scorm 2004)</code></pre>
+python web/build.py --scorm              # also build a SCORM 1.2 package for an LMS (--scorm 2004)
+python web/build.py --cmi5               # also build a cmi5 package for an LMS (xAPI)</code></pre>
 <p><code>web/build.py</code> writes a static site into <code>web/dist</code> (application files, pyglet and rstr wheels, fonts). The page must be served over HTTP: <code>file://</code> does not work. Set <code>config.ini</code> (scenario, session output&hellip;) before building: it is part of the site.</p>
 
 <h3>Differences with the Desktop Version</h3>
@@ -1357,7 +1361,8 @@ python web/build.py --scorm              # also build a SCORM 1.2 package for an
 <tr><td><strong>Joysticks</strong></td><td>Read with the Gamepad API: stick axes for tracking, buttons as <code>JOY_BTN_n</code>. Press a joystick button on the start page to detect it.</td></tr>
 <tr><td><strong>Sound</strong></td><td>Starts after the first click (the &laquo;&nbsp;Start&nbsp;&raquo; button), as required by browsers.</td></tr>
 <tr><td><strong>Timing</strong></td><td>Browser clock (<code>performance.now</code>, about 0.1&nbsp;ms resolution in Chrome) and display refreshed by the browser. Page pauses longer than 100&nbsp;ms are logged as <code>freeze</code> entries, so affected periods can be excluded.</td></tr>
-<tr><td><strong>Not available</strong></td><td>Parallel port, Lab Streaming Layer, eye tracker.</td></tr>
+<tr><td><strong>Psychophysiology</strong></td><td>Parallel port triggers written to a USB trigger box (Web Serial, Chrome and Edge); Lab Streaming Layer through a bridge (see below).</td></tr>
+<tr><td><strong>Not available</strong></td><td>Eye tracker.</td></tr>
 </tbody>
 </table>
 </div>
@@ -1410,6 +1415,19 @@ python web/build.py --scorm              # also build a SCORM 1.2 package for an
 <div class="card">
 <p><code>python web/build.py --scorm</code> builds a SCORM package (1.2, or 2004 with <code>--scorm 2004</code>) that can be imported as an activity into Moodle, Canvas, Blackboard, SCORM Cloud&hellip; Pyodide is included, since LMSs often block external scripts.</p>
 <p>The LMS records that the activity was started, then completed at the end of the session, the time spent, and the name of the session file, to match each learner with their file. The session file itself is not stored in the LMS (SCORM keeps only a few kB per learner): it goes where <code>web_session_output</code> says.</p>
+</div>
+
+<h3>Learning Platforms (cmi5)</h3>
+<div class="card">
+<p><code>python web/build.py --cmi5</code> builds a <a href="https://aicc.github.io/CMI-5_Spec_Current/" target="_blank" rel="noopener">cmi5</a> package, the successor of SCORM: the LMS launches the page with the address of its Learning Record Store (LRS), and the page sends it xAPI statements: <code>initialized</code>, <code>completed</code> (with the duration and the name of the session file) and <code>terminated</code>, then goes back to the course.</p>
+<p>Nothing is recorded as completed when the LMS opens the activity in browse or review mode. The language of the learner's LMS profile is used when none is chosen. As with SCORM, the session file goes where <code>web_session_output</code> says.</p>
+</div>
+
+<h3>Psychophysiology</h3>
+<div class="card">
+<p><strong>USB trigger box</strong> (<code>web_serial_trigger=True</code>, Chrome and Edge): the values of the <code>parallelport</code> plugin are written as one byte to a serial port, which the box outputs on its 8 lines, as a parallel port does. The scenarios do not change. The port is chosen once on the start page; each value stays at least <code>delayms</code> before the next one.</p>
+<p><strong>Lab Streaming Layer</strong> (<code>web_lsl_bridge=ws://127.0.0.1:8766</code>): run <code>python web/lsl_bridge.py</code> (standard library and <code>pylsl</code>) on the participant's computer. It creates the same <code>"OpenMATB"</code> marker stream as the desktop version, recorded with LabRecorder.</p>
+<p><strong>Clocks</strong>: <code>logtime</code> is <code>performance.now()</code> in seconds, and the <code>timeorigin</code> entry is its Unix time origin. The bridge measures the offset between the page clock and the LSL clock like NTP (typically well below 1&nbsp;ms) and stamps each marker in LSL time; the offset is logged (<code>lsl_offset</code>), so any row of the session file can be aligned with an XDF recording: <code>logtime &minus; lsl_offset</code>.</p>
 </div>
 
 </section>
