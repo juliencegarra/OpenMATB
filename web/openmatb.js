@@ -247,8 +247,28 @@ async function loadFonts() {
     }
 }
 
+// LMSs (Moodle...) serve the .wasm files with a generic MIME type, which the streaming compilation refuses
+// ("Incorrect response MIME type. Expected 'application/wasm'"): compile them from their bytes instead
+function allowWasmWithoutMimeType() {
+    for (const [streamingName, bytesName] of [["compileStreaming", "compile"], ["instantiateStreaming", "instantiate"]]) {
+        const streaming = WebAssembly[streamingName];
+        if (!streaming) {
+            continue;
+        }
+        WebAssembly[streamingName] = async (source, ...args) => {
+            const response = await source;
+            const mimeType = response.headers.get("Content-Type")?.split(";")[0].trim().toLowerCase();
+            if (mimeType === "application/wasm") {
+                return streaming.call(WebAssembly, response, ...args);
+            }
+            return WebAssembly[bytesName](await response.arrayBuffer(), ...args);
+        };
+    }
+}
+
 async function boot() {
     status("loading_python");
+    allowWasmWithoutMimeType();
     await loadFonts();
     const { loadPyodide } = await import(PYODIDE_MODULE);
     const pyodide = await loadPyodide();
