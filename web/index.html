@@ -40,6 +40,7 @@
         select, input[type=file] { width: 100%; padding: 8px; font: inherit; border: 1px solid var(--border);
             border-radius: 4px; background: var(--panel); color: var(--text); }
         .hint { margin: 6px 0 0; font-size: 0.85rem; color: var(--muted); }
+        #wasm-mime { cursor: help; }
         .notice { display: flex; gap: 8px; align-items: flex-start; margin: 16px 0 0; padding: 10px 12px;
             font-size: 0.85rem; border-radius: 4px; border: 1px solid; }
         .notice::before { font-size: 1.1rem; line-height: 1.1; flex: none; }
@@ -106,7 +107,7 @@
             <p id="config-error" class="notice warning" role="alert" hidden></p>
 
             <button id="start" disabled data-i18n="start">Start</button>
-            <p id="wasm-mime" class="hint" data-i18n="wasm_mime" hidden></p>
+            <p id="wasm-mime" class="hint" data-i18n-title="wasm_mime_detail" hidden>&#x26A0;&#xFE0F; <span data-i18n="wasm_mime"></span></p>
         </div>
     </main>
 
