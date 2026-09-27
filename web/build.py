@@ -10,12 +10,13 @@ usage:
     python web/build.py --pyodide local   # ship Pyodide with the page instead of loading it from its CDN
     python web/build.py --scorm    # also write web/openmatb_scorm_1.2.zip, to import into an LMS
     python web/build.py --scorm 2004
+    python web/build.py --cmi5     # also write web/openmatb_cmi5.zip, to import into a cmi5 LMS
     python web/build.py --release DIR     # the packages of a release, with fixed names (see RELEASE_PACKAGES)
 
 The page must be served over HTTP (file:// does not work). The output is static
 and can be hosted anywhere (GitHub Pages, a lab server...).
 
-SCORM and release packages ship Pyodide (LMSs and JATOS servers may block external scripts), unless --pyodide cdn.
+SCORM, cmi5 and release packages ship Pyodide (LMSs and JATOS servers may block external scripts), unless --pyodide cdn.
 """
 
 from __future__ import annotations
@@ -43,7 +44,14 @@ DIST: Path = WEB / "dist"
 WHEELS: list[str] = ["pyglet==3.0.dev10", "rstr==3.1.0"]
 
 # JavaScript modules of the page (web/*.js), copied as is
-PAGE_MODULES: tuple[str, ...] = ("openmatb.js", "session_output.js", "scorm.js")
+PAGE_MODULES: tuple[str, ...] = (
+    "openmatb.js",
+    "session_output.js",
+    "scorm.js",
+    "cmi5.js",
+    "serial_trigger.js",
+    "lsl_bridge.js",
+)
 
 PYODIDE_VERSION: str = "0.29.4"
 PYODIDE_CDN: str = f"https://cdn.jsdelivr.net/pyodide/v{PYODIDE_VERSION}/full/"
@@ -75,7 +83,13 @@ RELEASE_PACKAGES: dict[str, str] = {
     "jatos": "OpenMATB-JATOS.jzip",
     "scorm-1.2": "OpenMATB-SCORM-1.2.zip",
     "scorm-2004": "OpenMATB-SCORM-2004.zip",
+    "cmi5": "OpenMATB-cmi5.zip",
 }
+
+# cmi5 course structure: fixed identifiers (IRIs), so that importing a new version updates the course already imported
+CMI5_COURSE_ID: str = "https://github.com/juliencegarra/OpenMATB/cmi5/course"
+CMI5_AU_ID: str = "https://github.com/juliencegarra/OpenMATB/cmi5/au"
+CMI5_NAMESPACE: str = "https://w3id.org/xapi/profiles/cmi5/v1/CourseStructure.xsd"
 
 # Browsers have no common sans-serif font name that pyglet can use: ship one (SIL Open Font License)
 FONT_URL: str = "https://cdn.jsdelivr.net/npm/@fontsource/noto-sans@5.3.0/files/noto-sans-latin-{weight}-normal.woff2"
@@ -302,6 +316,32 @@ def build_scorm_package(scorm_version: str, title: str = "OpenMATB", package: Pa
     return write_package(package or WEB / f"openmatb_scorm_{scorm_version}.zip", extra={"imsmanifest.xml": manifest})
 
 
+def cmi5_course_structure(title: str, version: str) -> str:
+    """cmi5.xml of a course with a single assignable unit (the page), completed at the end of a session."""
+    description: str = f"OpenMATB {version} (web version)"
+    text = f"""<title><langstring lang="en-US">{escape(title)}</langstring></title>
+    <description><langstring lang="en-US">{escape(description)}</langstring></description>"""
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<courseStructure xmlns="{CMI5_NAMESPACE}">
+  <course id={quoteattr(CMI5_COURSE_ID)}>
+    {text}
+  </course>
+  <au id={quoteattr(CMI5_AU_ID)} moveOn="Completed" launchMethod="AnyWindow">
+    {text}
+    <url>index.html</url>
+  </au>
+</courseStructure>
+"""
+
+
+def build_cmi5_package(title: str = "OpenMATB", package: Path | None = None) -> Path:
+    """Zip web/dist with its cmi5.xml: the package to import into a cmi5 LMS (Moodle plugin, SCORM Cloud...)."""
+    version: str = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    return write_package(
+        package or WEB / "openmatb_cmi5.zip", extra={"cmi5.xml": cmi5_course_structure(title, version)}
+    )
+
+
 def jatos_study(title: str, version: str) -> dict:
     """The .jas file of a JATOS study archive: one component (the page), one batch."""
     return {
@@ -360,12 +400,13 @@ def build_jatos_package(package: Path, title: str = "OpenMATB") -> Path:
 
 
 def build_release(folder: Path) -> list[Path]:
-    """The web packages of a release: static site to host, JATOS study, SCORM 1.2 and 2004 packages."""
+    """The web packages of a release: static site to host, JATOS study, SCORM 1.2 and 2004, cmi5 packages."""
     return [
         write_package(folder / RELEASE_PACKAGES["web"], prefix="OpenMATB-Web/"),
         build_jatos_package(folder / RELEASE_PACKAGES["jatos"]),
         build_scorm_package("1.2", package=folder / RELEASE_PACKAGES["scorm-1.2"]),
         build_scorm_package("2004", package=folder / RELEASE_PACKAGES["scorm-2004"]),
+        build_cmi5_package(package=folder / RELEASE_PACKAGES["cmi5"]),
     ]
 
 
@@ -384,7 +425,7 @@ if __name__ == "__main__":
         "--pyodide",
         choices=("cdn", "local"),
         default=None,
-        help="load Pyodide from its CDN (default) or ship it in web/dist (default with --scorm)",
+        help="load Pyodide from its CDN (default) or ship it in web/dist (default with --scorm and --cmi5)",
     )
     parser.add_argument(
         "--scorm",
@@ -394,14 +435,17 @@ if __name__ == "__main__":
         default=None,
         help="also write a SCORM package, web/openmatb_scorm_<version>.zip (1.2 by default, or 2004)",
     )
-    parser.add_argument("--scorm-title", default="OpenMATB", help="title of the activity in the LMS")
+    parser.add_argument("--cmi5", action="store_true", help="also write a cmi5 package, web/openmatb_cmi5.zip")
+    parser.add_argument("--scorm-title", default="OpenMATB", help="title of the activity in the LMS (SCORM, cmi5)")
     parser.add_argument(
         "--release", type=Path, metavar="DIR", help="write the web packages of a release into DIR (fixed names)"
     )
     args = parser.parse_args()
-    build(args.pyodide or ("local" if args.scorm or args.release else "cdn"))
+    build(args.pyodide or ("local" if args.scorm or args.cmi5 or args.release else "cdn"))
     if args.scorm:
         build_scorm_package(args.scorm, args.scorm_title)
+    if args.cmi5:
+        build_cmi5_package(args.scorm_title)
     if args.release:
         build_release(args.release)
     if args.serve:

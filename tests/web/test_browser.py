@@ -20,10 +20,11 @@ import re
 import statistics
 import sys
 import time
+from typing import ClassVar
 
 import pytest
 
-from tests.web.conftest import PROBE, OpenMATBPage
+from tests.web.conftest import PROBE, ROOT, OpenMATBPage
 
 TIMING_SCENARIO_DURATION: int = 12
 ENGINE: str = os.environ.get("OPENMATB_BROWSER", "chromium")
@@ -1083,6 +1084,352 @@ class TestScorm:
             }"""
         )
         assert result == ["2004", True, "PT3725.50S"]
+
+
+# ── cmi5 (the page launched by a cmi5 LMS) ──────────────────────────────────
+
+
+LRS: str = "https://lrs.example.org/xapi/"
+LMS_FETCH: str = "https://lms.example.org/cmi5/fetch?code=abc"
+LMS_RETURN: str = "https://lms.example.org/course/42"
+CMI5_ACTOR: dict = {"objectType": "Agent", "account": {"homePage": "https://lms.example.org", "name": "learner-42"}}
+CMI5_ACTIVITY: str = "https://lms.example.org/au/openmatb"
+CMI5_REGISTRATION: str = "6f1c2d3e-4b5a-4c7d-8e9f-0a1b2c3d4e5f"
+CMI5_SESSION_ID: str = "https://w3id.org/xapi/cmi5/context/extensions/sessionid"
+
+
+class FakeLMS:
+    """A cmi5 LMS and its LRS (page.route): the fetch URL gives the token once, the LRS keeps the statements."""
+
+    CORS: ClassVar[dict] = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
+        # "*" does not cover Authorization
+        "Access-Control-Allow-Headers": "Authorization, Content-Type, X-Experience-API-Version",
+    }
+
+    def __init__(
+        self, app: OpenMATBPage, launch_mode: str = "Normal", refuse: bool = False, language: str = ""
+    ) -> None:
+        self.launch_mode = launch_mode
+        self.refuse = refuse
+        self.language = language
+        self.fetched = 0
+        self.statements: list[dict] = []
+        self.headers: list[dict] = []
+        app.page.route("https://lms.example.org/cmi5/**", self.fetch)
+        app.page.route(f"{LRS}**", self.lrs)
+        app.page.route(f"{LMS_RETURN}**", lambda route: route.fulfill(body="<p>Course</p>", content_type="text/html"))
+
+    def params(self) -> str:
+        from urllib.parse import urlencode
+
+        query = {
+            "endpoint": LRS,
+            "fetch": LMS_FETCH,
+            "actor": json.dumps(CMI5_ACTOR),
+            "registration": CMI5_REGISTRATION,
+            "activityId": CMI5_ACTIVITY,
+        }
+        return "&" + urlencode(query)
+
+    def reply(self, route, body: dict | list | None = None, status: int = 200) -> None:
+        route.fulfill(
+            status=status,
+            headers=self.CORS,
+            body=json.dumps(body) if body is not None else "",
+            content_type="application/json",
+        )
+
+    def fetch(self, route) -> None:
+        if route.request.method == "OPTIONS":
+            return self.reply(route, status=204)
+        self.fetched += 1
+        if self.refuse or self.fetched > 1:  # The token is given only once
+            return self.reply(route, {"error-code": "1", "error-text": "Already in use"}, status=400)
+        self.reply(route, {"auth-token": "dG9rZW4="})
+
+    def lrs(self, route) -> None:
+        request = route.request
+        if request.method == "OPTIONS":
+            return self.reply(route, status=204)
+        self.headers.append(request.headers)
+        path = request.url[len(LRS) :].split("?")[0]
+        if path == "activities/state":
+            launch_data = {
+                "contextTemplate": {
+                    "contextActivities": {"grouping": [{"id": "https://lms.example.org/course"}]},
+                    "extensions": {CMI5_SESSION_ID: "session-7"},
+                },
+                "launchMode": self.launch_mode,
+                "launchMethod": "AnyWindow",
+                "moveOn": "Completed",
+                "returnURL": LMS_RETURN,
+            }
+            return self.reply(route, launch_data)
+        if path == "agents/profile":
+            if not self.language:
+                return self.reply(route, status=404)
+            return self.reply(route, {"languagePreference": self.language})
+        if path == "statements" and request.method == "POST":
+            self.statements.append(json.loads(request.post_data))
+            return self.reply(route, [self.statements[-1]["id"]])
+        self.reply(route, status=404)
+
+    def verbs(self) -> list[str]:
+        return [s["verb"]["id"].rsplit("/", 1)[-1] for s in self.statements]
+
+    def wait_for(self, app: OpenMATBPage, verbs: list[str], timeout: float = 60) -> None:
+        deadline = time.monotonic() + timeout
+        while self.verbs() != verbs:
+            if time.monotonic() > deadline:
+                raise AssertionError(f"statements: {self.verbs()}, expected {verbs}")
+            app.page.wait_for_timeout(100)
+
+
+class TestCmi5:
+    def test_statements_of_a_session(self, page_factory):
+        app = page_factory()
+        lms = FakeLMS(app)
+        app.prepare(OUTPUT_SCENARIO, params=lms.params())
+        assert not app.page.is_visible("#mode")  # Participants only run the scenario
+        assert lms.verbs() == ["initialized"]  # When the page opens
+        app.page.click("#start")
+        app.page.wait_for_url(f"{LMS_RETURN}**", timeout=60_000)  # The LMS takes over at the end
+        assert lms.fetched == 1
+        assert lms.verbs() == ["initialized", "completed", "terminated"]
+        assert all(h.get("authorization") == "Basic dG9rZW4=" for h in lms.headers)
+        assert all(h.get("x-experience-api-version") == "1.0.3" for h in lms.headers)
+        completed, terminated = lms.statements[1:]
+        for statement in lms.statements:
+            assert statement["actor"] == CMI5_ACTOR
+            assert statement["object"]["id"] == CMI5_ACTIVITY
+            context = statement["context"]
+            assert context["registration"] == CMI5_REGISTRATION
+            assert context["extensions"][CMI5_SESSION_ID] == "session-7"  # From the context template
+            assert context["contextActivities"]["grouping"] == [{"id": "https://lms.example.org/course"}]
+            categories = [c["id"] for c in context["contextActivities"]["category"]]
+            assert "https://w3id.org/xapi/cmi5/context/categories/cmi5" in categories
+        assert completed["result"]["completion"] is True
+        assert "https://w3id.org/xapi/cmi5/context/categories/moveon" in [
+            c["id"] for c in completed["context"]["contextActivities"]["category"]
+        ]
+        session_file = completed["context"]["extensions"][
+            "https://github.com/juliencegarra/OpenMATB/xapi/extensions/session-file"
+        ]
+        assert re.fullmatch(r"\d{4}-\d\d-\d\d/\d+_\d{6}_\d{6}\.csv", session_file)
+        assert session_file.endswith(app.downloads[0].suggested_filename)  # Still goes where config.ini says
+        duration = float(re.fullmatch(r"PT([\d.]+)S", terminated["result"]["duration"]).group(1))
+        assert duration >= 3
+        assert len({s["id"] for s in lms.statements}) == 3
+
+    def test_closed_during_the_session(self, page_factory):
+        app = page_factory()
+        lms = FakeLMS(app)
+        app.start(CHECKPOINT_SCENARIO, params=lms.params())
+        app.page.evaluate("() => window.dispatchEvent(new PageTransitionEvent('pagehide'))")
+        lms.wait_for(app, ["initialized", "terminated"], timeout=10)  # Not completed
+
+    def test_launch_refused(self, page_factory):
+        """The page reloaded, or launched twice: the LMS refuses the token, nothing would be recorded."""
+        app = page_factory()
+        lms = FakeLMS(app, refuse=True)
+        app.page.goto(f"{app.url}/index.html?lang=en_EN{lms.params()}")
+        app.page.wait_for_selector("#config-error:not([hidden])", timeout=180_000)
+        assert "the LMS refused the launch (Already in use)" in app.page.text_content("#config-error")
+        assert app.page.is_disabled("#start")
+        assert lms.statements == []
+
+    def test_browse_mode_is_not_completed(self, page_factory):
+        app = page_factory()
+        lms = FakeLMS(app, launch_mode="Browse")
+        app.start(OUTPUT_SCENARIO, params=lms.params())
+        app.page.wait_for_url(f"{LMS_RETURN}**", timeout=60_000)
+        assert lms.verbs() == ["initialized", "terminated"]
+
+    def test_language_of_the_learner(self, page_factory):
+        """Without ?lang=, the language preference of the learner in the LMS."""
+        app = page_factory()
+        lms = FakeLMS(app, language="de-DE,fr-FR")
+        app.page.goto(f"{app.url}/index.html?{lms.params()[1:]}")
+        app.page.wait_for_function("() => document.getElementById('lang').value === 'fr_FR'", timeout=30_000)
+        assert app.page.text_content("#start") == "Démarrer"
+
+
+# ── Psychophysiology: USB trigger box (Web Serial) and LSL bridge ───────────
+
+
+def _session_rows(app: OpenMATBPage) -> list[dict]:
+    return list(csv.DictReader(io.StringIO(app.downloads[0].path().read_text(encoding="utf-8"))))
+
+
+# Web Serial API of Chrome, mocked: one Arduino-like port, allowed once chosen
+FAKE_SERIAL: str = """
+window.__serial = { writes: [], opened: null, closed: false, granted: [] };
+const fakePort = {
+    getInfo() { return { usbVendorId: 0x2341, usbProductId: 0x0043 }; },
+    writable: null,
+    async open(options) {
+        window.__serial.opened = options;
+        this.writable = { getWriter: () => ({
+            async write(bytes) { window.__serial.writes.push([performance.now(), ...bytes]); },
+            releaseLock() {},
+        }) };
+    },
+    async close() { window.__serial.closed = true; this.writable = null; },
+};
+Object.defineProperty(navigator, "serial", { configurable: true, value: {
+    async getPorts() { return window.__serial.granted; },
+    async requestPort() { window.__serial.granted = [fakePort]; return fakePort; },
+} });
+"""
+TRIGGER_SCENARIO: str = """0:00:00;sysmon;start
+0:00:00;parallelport;start
+0:00:01;parallelport;trigger;5
+0:00:02;parallelport;trigger;9
+0:00:03;parallelport;trigger;7
+0:00:04;parallelport;stop
+0:00:04;sysmon;stop
+"""
+
+
+class TestTriggerBox:
+    def test_triggers_are_written_to_the_serial_port(self, page_factory):
+        app = page_factory()
+        app.page.context.add_init_script(FAKE_SERIAL)
+        app.prepare(TRIGGER_SCENARIO, config={"web_serial_trigger": "True", "web_serial_baudrate": "9600"})
+        app.page.click("#start")  # No port chosen yet
+        app.page.wait_for_selector("#config-error:not([hidden])", timeout=10_000)
+        assert "Choose the port of the trigger box" in app.page.text_content("#config-error")
+        assert app.page.is_visible("#trigger-options") and app.page.is_visible("#menu")
+        app.page.click("#trigger-choose")
+        app.page.wait_for_function("() => document.getElementById('trigger-port').textContent === 'USB 2341:0043'")
+        app.page.click("#start")
+        assert _end_items(app) == ["ok: Downloaded on this computer", "ok: Trigger box: 6 values written"]
+        serial = app.page.evaluate("() => window.__serial")
+        assert serial["opened"] == {"baudRate": 9600} and serial["closed"]
+        # Each value, then its reset after delayms (5 ms)
+        assert [w[1] for w in serial["writes"]] == [5, 0, 9, 0, 7, 0]
+        times = [w[0] for w in serial["writes"]]
+        gaps = [round(b - a, 1) for a, b in zip(times, times[1:])]
+        assert all(gap >= 4 for gap in gaps), gaps  # Held even if written in the same update
+        # The session file has the same values
+        values = [r["value"] for r in _session_rows(app) if r["module"] == "parallelport" and r["type"] == "state"]
+        assert values == ["5", "0", "9", "0", "7", "0"]
+
+    def test_values_are_held_in_order(self, page_factory):
+        """write(value, holdMs): a value stays holdMs before the next one, whenever the next one is written."""
+        app = page_factory()
+        app.open_menu()
+        writes = app.page.evaluate(
+            """async () => {
+                const { SerialTrigger } = await import("./serial_trigger.js");
+                const writes = [];
+                const trigger = new SerialTrigger({});
+                trigger.writer = { write: async (bytes) => writes.push([performance.now(), bytes[0]]) };
+                const start = performance.now();
+                trigger.write(5, 5);
+                trigger.write(0, 5);
+                trigger.write(7, 20);
+                trigger.write(0, 0);
+                trigger.write(300, 0);
+                await trigger.queue;
+                return writes.map(([time, value]) => [time - start, value]);
+            }"""
+        )
+        assert [value for _, value in writes] == [5, 0, 7, 0, 300 & 0xFF]
+        times = [time for time, _ in writes]
+        assert times[0] < 4
+        assert times[1] >= 4 and times[2] >= 9 and times[3] >= 29 and times[4] >= times[3]
+
+    def test_without_web_serial(self, page_factory):
+        """Firefox and Safari have no Web Serial API: the session does not start without its triggers."""
+        app = page_factory()
+        app.page.context.add_init_script("Object.defineProperty(navigator, 'serial', { value: undefined });")
+        app.prepare(OUTPUT_SCENARIO, config={"web_serial_trigger": "True"})
+        app.page.click("#start")
+        app.page.wait_for_selector("#config-error:not([hidden])", timeout=10_000)
+        assert "cannot use serial ports" in app.page.text_content("#config-error")
+        assert app.page.is_visible("#menu")
+
+
+class RecordingOutlet:
+    """LSL outlet of web/lsl_bridge.py, mocked: records the markers, their LSL time and when they arrived."""
+
+    def __init__(self) -> None:
+        self.samples: list[tuple[list[str], float, float]] = []
+
+    def push_sample(self, sample: list[str], timestamp: float) -> None:
+        self.samples.append((sample, timestamp, time.perf_counter()))
+
+
+@pytest.fixture
+def lsl_bridge():
+    """web/lsl_bridge.py running (in a thread), with time.perf_counter as LSL clock (pylsl.local_clock is the
+    same kind of monotonic clock)."""
+    import asyncio
+    import importlib.util
+    import threading
+    from types import SimpleNamespace
+
+    spec = importlib.util.spec_from_file_location("lsl_bridge", ROOT / "web" / "lsl_bridge.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    outlet = RecordingOutlet()
+    bridge = module.Bridge(outlet, time.perf_counter, log=lambda line: None)
+    ready = threading.Event()
+    running: dict = {}
+
+    def serve() -> None:  # In its own thread: Playwright runs an event loop in this one
+        loop = asyncio.new_event_loop()
+        server = loop.run_until_complete(asyncio.start_server(bridge.handle, "127.0.0.1", 0))
+        running.update(loop=loop, port=server.sockets[0].getsockname()[1])
+        ready.set()
+        loop.run_forever()
+
+    threading.Thread(target=serve, daemon=True).start()
+    assert ready.wait(10)
+    yield SimpleNamespace(url=f"ws://127.0.0.1:{running['port']}", outlet=outlet, bridge=bridge)
+    running["loop"].call_soon_threadsafe(running["loop"].stop)
+
+
+LSL_SCENARIO: str = """0:00:00;sysmon;start
+0:00:00;labstreaminglayer;start
+0:00:01;labstreaminglayer;marker;hello
+0:00:02;labstreaminglayer;marker;world
+0:00:03;labstreaminglayer;stop
+0:00:03;sysmon;stop
+"""
+
+
+class TestLslBridge:
+    def test_markers_in_lsl_time(self, page_factory, lsl_bridge):
+        app = page_factory()
+        app.start(LSL_SCENARIO, config={"web_lsl_bridge": lsl_bridge.url})
+        assert _end_items(app) == ["ok: Downloaded on this computer", "ok: LSL bridge: 2 markers sent"]
+        samples = lsl_bridge.outlet.samples
+        assert [sample for sample, _, _ in samples] == [["hello"], ["world"]]
+        for _, timestamp, received in samples:
+            assert 0 <= received - timestamp < 0.05  # Stamped when pushed in the page, before the WebSocket
+        assert samples[1][1] - samples[0][1] == pytest.approx(1.0, abs=0.05)  # 1 s apart in the scenario
+
+        rows = _session_rows(app)
+        offsets = [float(r["value"]) for r in rows if r["type"] == "lsl_offset"]
+        assert offsets  # To convert every row of the session file: LSL time = logtime - lsl_offset
+        events = {r["value"]: float(r["logtime"]) for r in rows if r["type"] == "event" and r["address"] == "marker"}
+        for (value,), timestamp, _ in samples:
+            assert events[value] - offsets[-1] == pytest.approx(timestamp, abs=0.03)
+        # The Unix time of logtime 0
+        [time_origin] = [float(r["value"]) for r in rows if r["type"] == "timeorigin"]
+        assert abs(time_origin + float(rows[-1]["logtime"]) - time.time()) < 60
+
+    def test_bridge_not_running(self, page_factory):
+        app = page_factory()
+        app.prepare(OUTPUT_SCENARIO, config={"web_lsl_bridge": "ws://127.0.0.1:9"})
+        app.page.click("#start")
+        app.page.wait_for_selector("#config-error:not([hidden])", timeout=10_000)
+        assert "the LSL bridge does not answer at ws://127.0.0.1:9" in app.page.text_content("#config-error")
+        assert app.page.is_visible("#menu")
 
 
 # ── Demo (?demo=1, the Demo tab of the website) ─────────────────────────────

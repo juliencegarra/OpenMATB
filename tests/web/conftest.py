@@ -125,9 +125,10 @@ class OpenMATBPage:
         self.page.goto(f"{self.url}/index.html?lang=en_EN{params}")
         self.page.wait_for_function("() => window.openmatb !== undefined", timeout=BOOT_TIMEOUT_MS)
 
-    def prepare(self, scenario: str, config: dict[str, str] | None = None) -> None:
-        """Open the start page with the scenario and config.ini values of the test, ready to click Start."""
-        self.page.goto(f"{self.url}/index.html?lang=en_EN&mode=scenario&scenario={self.SCENARIO}")
+    def prepare(self, scenario: str, config: dict[str, str] | None = None, params: str = "") -> None:
+        """Open the start page with the scenario and config.ini values of the test, ready to click Start.
+        params: other parameters of the page address ("&name=value...")."""
+        self.page.goto(f"{self.url}/index.html?lang=en_EN&mode=scenario&scenario={self.SCENARIO}{params}")
         self.page.wait_for_selector("#start:not([disabled])", timeout=BOOT_TIMEOUT_MS)
         self.write_file(f"/app/includes/scenarios/{self.SCENARIO}", scenario)
         self.write_file("/app/config.ini", _config({"display_session_number": "False", **(config or {})}))
@@ -135,8 +136,8 @@ class OpenMATBPage:
         self.python("import _openmatb_probe")
         self.page.uncheck("#fullscreen")
 
-    def start(self, scenario: str, config: dict[str, str] | None = None) -> None:
-        self.prepare(scenario, config)
+    def start(self, scenario: str, config: dict[str, str] | None = None, params: str = "") -> None:
+        self.prepare(scenario, config, params)
         self.page.click("#start")
         self.wait_until(lambda s: s["started"] and len(s["updates"]) > 0, timeout=30)
 

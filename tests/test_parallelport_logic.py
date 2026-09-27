@@ -325,3 +325,39 @@ class TestParallelportInit:
         msg = errors.add_error.call_args[0][0]
         assert "device busy" in msg
         assert pp._port is None
+
+
+class TestInTheBrowser:
+    """The parallel port is replaced by the USB trigger box of the page (web_serial_trigger in config.ini)."""
+
+    def make(self, trigger_box):
+        import plugins.parallelport as pp_module
+
+        errors = MagicMock()
+
+        def plugin_init(self, *args, **kwargs):
+            self.parameters = {"taskupdatetime": 5}
+
+        with (
+            patch.object(AbstractPlugin, "__init__", plugin_init),
+            patch.object(pp_module, "IS_WEB", True),
+            patch.object(pp_module, "web_serial_trigger", side_effect=lambda hold_ms: trigger_box(hold_ms)),
+            patch.object(pp_module, "get_errors", return_value=errors),
+            patch.object(builtins, "_", lambda s: s, create=True),
+        ):
+            return Parallelport(), errors
+
+    def test_uses_the_trigger_box(self):
+        holds = []
+        box = MagicMock()
+        pp, errors = self.make(lambda hold_ms: holds.append(hold_ms) or box)
+        errors.add_error.assert_not_called()
+        assert pp._port is box
+        pp.parameters["delayms"] = 12
+        assert holds[0]() == 12  # The trigger box holds each value for delayms
+
+    def test_without_trigger_box(self):
+        pp, errors = self.make(lambda hold_ms: None)
+        assert pp._port is None
+        assert "web_serial_trigger" in errors.add_error.call_args[0][0]
+        pp.compute_next_plugin_state()  # Nothing sent, no error

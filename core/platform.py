@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 import sys
 from pathlib import Path
+from time import perf_counter
 from typing import Any, Callable
 from urllib.parse import parse_qs
 
@@ -221,7 +222,10 @@ def browser_environment() -> list[tuple[str, str]]:
 
     user_agent: str = str(js.navigator.userAgent)
     browser, system = describe_browser(user_agent)
-    return [("browser", browser), ("os", system), ("useragent", user_agent)]
+    # logtime is performance.now() (perf_counter() in the browser), in seconds since timeOrigin, a Unix time: the
+    # Unix time of a row is timeorigin + logtime (with the precision of the computer clock)
+    time_origin: str = f"{float(js.performance.timeOrigin) / 1000:.4f}"
+    return [("browser", browser), ("os", system), ("useragent", user_agent), ("timeorigin", time_origin)]
 
 
 def viewport_size() -> tuple[int, int] | None:
@@ -262,3 +266,60 @@ def notify_page(event_name: str, detail: str = "") -> None:
 
     init = to_js({"detail": detail}, dict_converter=js.Object.fromEntries)
     js.document.dispatchEvent(js.CustomEvent.new(event_name, init))
+
+
+def _page_object(name: str) -> Any | None:
+    """An object set on the page (window.<name>) by web/openmatb.js, or None."""
+    import js
+    from pyodide.ffi import jsnull
+
+    value: Any = getattr(js.window, name, None)
+    return None if value is None or value is jsnull else value
+
+
+class WebSerialTrigger:
+    """The USB trigger box opened by the page (web/serial_trigger.js, web_serial_trigger in config.ini): the
+    parallelport plugin uses it in place of a parallel port. hold_ms(): how long a value must stay before the next
+    one (the delayms of the plugin), kept by the page even when the value and its reset come in the same update."""
+
+    def __init__(self, trigger: Any, hold_ms: Callable[[], int]) -> None:
+        self._trigger: Any = trigger
+        self._hold_ms: Callable[[], int] = hold_ms
+
+    def setData(self, value: int) -> None:  # Same method as pyparallel's Parallel
+        self._trigger.write(int(value), int(self._hold_ms()))
+
+
+def web_serial_trigger(hold_ms: Callable[[], int]) -> WebSerialTrigger | None:
+    """The trigger box of the page, or None (not enabled, or desktop)."""
+    if not IS_WEB:
+        return None
+    trigger: Any | None = _page_object("openmatbSerialTrigger")
+    return None if trigger is None else WebSerialTrigger(trigger, hold_ms)
+
+
+class WebLslOutlet:
+    """LSL marker outlet of the browser: the markers go through the page (web/lsl_bridge.js) to web/lsl_bridge.py,
+    which pushes them to the LSL stream. Each marker carries its browser time: perf_counter() is performance.now()
+    in the browser, the bridge converts it to LSL time."""
+
+    def __init__(self, bridge: Any) -> None:
+        self._bridge: Any = bridge
+
+    def push_sample(self, sample: list[str], timestamp: float | None = None) -> None:
+        self._bridge.push(str(sample[0]), perf_counter() if timestamp is None else timestamp)
+
+    def clock_offset(self) -> float | None:
+        """Browser time - LSL time (seconds), measured by the bridge; None until measured."""
+        from pyodide.ffi import jsnull
+
+        offset: Any = self._bridge.offset
+        return None if offset is None or offset is jsnull else float(offset)
+
+
+def web_lsl_outlet() -> WebLslOutlet | None:
+    """The LSL bridge connected by the page, or None (web_lsl_bridge not set, or desktop)."""
+    if not IS_WEB:
+        return None
+    bridge: Any | None = _page_object("openmatbLsl")
+    return None if bridge is None else WebLslOutlet(bridge)

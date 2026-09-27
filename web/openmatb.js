@@ -8,9 +8,13 @@
 
 import { installPygletEmscripten } from "./pyglet_emscripten.js";
 import {
-    SessionOutput, checkDataPipe, downloadText, gunzipIfNeeded, loadJatos, sessionOutputSettings, sessionRelativePath,
+    SessionOutput, checkDataPipe, downloadText, gunzipIfNeeded, loadJatos, readConfigValue, sessionOutputSettings,
+    sessionRelativePath,
 } from "./session_output.js";
 import { connectScorm } from "./scorm.js";
+import { Cmi5Session, cmi5LaunchParameters, preferredLanguage } from "./cmi5.js";
+import { SerialTrigger, describePort } from "./serial_trigger.js";
+import { LslBridge } from "./lsl_bridge.js";
 
 // Set by web/build.py: pyodide.mjs on the Pyodide CDN, or its copy shipped with the page (--pyodide local)
 const PYODIDE_MODULE = new URL(document.querySelector('meta[name="pyodide-module"]').content, location.href).href;
@@ -46,6 +50,10 @@ const TEXTS = {
         sent_jatos: "Sent to JATOS",
         sent_datapipe: "Sent to DataPipe",
         sent_scorm: "Activity completed in the learning platform (LMS)",
+        sent_cmi5: "Activity completed in the learning platform (LMS)",
+        sent_cmi5_not_recorded: "Not recorded as completed: the learning platform (LMS) opened the activity in "
+            + "browse or review mode",
+        back_to_course: "Back to the course…",
         sent_none: "Not sent anywhere (web_session_output=none)",
         demo_not_recorded: "This was a demo: the session was not recorded.",
         restart_demo: "Restart the demo",
@@ -73,6 +81,16 @@ const TEXTS = {
         wasm_mime: "Slow loading",
         wasm_mime_detail: "The server does not send the .wasm files as application/wasm "
             + "(Moodle: Site administration > Server > File types).",
+        trigger_box: "Trigger box (parallelport plugin)",
+        no_port: "No port chosen.",
+        choose_port: "Choose the port",
+        serial_unsupported: "web_serial_trigger: this browser cannot use serial ports (use Chrome or Edge)",
+        choose_port_first: "Choose the port of the trigger box",
+        port_not_opened: "The port of the trigger box cannot be opened:",
+        sent_trigger: "Trigger box: {count} values written",
+        failed_trigger: "Trigger box: {count} values not written:",
+        sent_lsl: "LSL bridge: {count} markers sent",
+        failed_lsl: "LSL bridge: {count} markers not sent (bridge disconnected)",
     },
     fr_FR: {
         language: "Langue",
@@ -96,6 +114,10 @@ const TEXTS = {
         sent_jatos: "Envoyé à JATOS",
         sent_datapipe: "Envoyé à DataPipe",
         sent_scorm: "Activité terminée dans la plateforme de formation (LMS)",
+        sent_cmi5: "Activité terminée dans la plateforme de formation (LMS)",
+        sent_cmi5_not_recorded: "Non enregistrée comme terminée : la plateforme de formation (LMS) a ouvert "
+            + "l'activité en mode consultation ou révision",
+        back_to_course: "Retour au cours…",
         sent_none: "Envoyé nulle part (web_session_output=none)",
         demo_not_recorded: "C'était une démonstration : la session n'a pas été enregistrée.",
         restart_demo: "Relancer la démo",
@@ -123,6 +145,17 @@ const TEXTS = {
         wasm_mime: "Chargement lent",
         wasm_mime_detail: "Le serveur n'envoie pas les fichiers .wasm en application/wasm "
             + "(Moodle : Administration du site > Serveur > Types de fichiers).",
+        trigger_box: "Boîtier de triggers (plugin parallelport)",
+        no_port: "Aucun port choisi.",
+        choose_port: "Choisir le port",
+        serial_unsupported: "web_serial_trigger : ce navigateur ne peut pas utiliser les ports série "
+            + "(utilisez Chrome ou Edge)",
+        choose_port_first: "Choisissez le port du boîtier de triggers",
+        port_not_opened: "Le port du boîtier de triggers ne peut pas être ouvert :",
+        sent_trigger: "Boîtier de triggers : {count} valeurs écrites",
+        failed_trigger: "Boîtier de triggers : {count} valeurs non écrites :",
+        sent_lsl: "Pont LSL : {count} marqueurs envoyés",
+        failed_lsl: "Pont LSL : {count} marqueurs non envoyés (pont déconnecté)",
     },
 };
 
@@ -162,6 +195,112 @@ function translatePage() {
     if (statusKey) {
         status(statusKey);
     }
+}
+
+// ---- Psychophysiology: USB trigger box (parallelport plugin) and LSL bridge (labstreaminglayer plugin) ----
+// Opened when a scenario starts, then used from Python (core/platform.py): window.openmatbSerialTrigger and
+// window.openmatbLsl
+
+const serialTrigger = SerialTrigger.supported() ? new SerialTrigger() : null;
+
+function deviceSettings(configText) {
+    return {
+        serialTrigger: /^true$/i.test(readConfigValue(configText, "web_serial_trigger") || ""),
+        baudRate: Number(readConfigValue(configText, "web_serial_baudrate")) || 115200,
+        lslBridge: readConfigValue(configText, "web_lsl_bridge") || "",
+    };
+}
+
+function showTriggerPort() {
+    const label = $("trigger-port");
+    if (serialTrigger?.port) {
+        delete label.dataset.i18n;
+        label.textContent = describePort(serialTrigger.port);
+    } else {
+        label.dataset.i18n = "no_port";
+        label.textContent = t("no_port");
+    }
+}
+
+// Once config.ini is loaded: the port of the trigger box (allowed in a previous visit). Returns the errors.
+async function showDevices(configText) {
+    const devices = deviceSettings(configText);
+    $("trigger-options").hidden = !devices.serialTrigger;
+    if (!devices.serialTrigger) {
+        return [];
+    }
+    if (!serialTrigger) {
+        return [t("serial_unsupported")];
+    }
+    await serialTrigger.restore().catch(console.warn);
+    showTriggerPort();
+    return [];
+}
+
+$("trigger-choose").addEventListener("click", async () => {
+    try {
+        await serialTrigger.choose(); // Needs the click
+    } catch (error) {
+        console.warn("[OpenMATB] No serial port chosen:", error);
+    }
+    showTriggerPort();
+});
+
+// When a scenario starts: returns the errors (the session must not start without its devices)
+async function openDevices(devices) {
+    const errors = [];
+    if (devices.serialTrigger) {
+        if (!serialTrigger) {
+            errors.push(t("serial_unsupported"));
+        } else if (!serialTrigger.port) {
+            errors.push(t("choose_port_first"));
+        } else {
+            try {
+                await serialTrigger.open(devices.baudRate);
+                window.openmatbSerialTrigger = serialTrigger;
+            } catch (error) {
+                errors.push(`${t("port_not_opened")} ${error.message || error}`);
+            }
+        }
+    }
+    if (devices.lslBridge && !window.openmatbLsl) {
+        const bridge = new LslBridge(devices.lslBridge);
+        try {
+            await bridge.connect();
+            window.openmatbLsl = bridge;
+        } catch (error) {
+            errors.push(String(error.message || error));
+        }
+    }
+    return errors;
+}
+
+// End of the session: the last trigger values and markers, for the end page
+async function closeDevices() {
+    const results = [];
+    const trigger = window.openmatbSerialTrigger;
+    if (trigger) {
+        await trigger.close();
+        const failed = trigger.errors.length;
+        results.push({
+            destination: "trigger",
+            ok: !failed,
+            text: failed
+                ? `${t("failed_trigger").replace("{count}", failed)} ${trigger.errors[0]}`
+                : t("sent_trigger").replace("{count}", trigger.written),
+        });
+    }
+    const bridge = window.openmatbLsl;
+    if (bridge) {
+        bridge.close();
+        const lost = bridge.queue.length;
+        results.push({
+            destination: "lsl",
+            ok: !lost,
+            text: t(lost ? "failed_lsl" : "sent_lsl").replace("{count}", lost || bridge.sent),
+        });
+    }
+    return results;
 }
 
 // Browsers reveal a joystick only after one of its buttons is pressed (core/joystick.py reads it)
@@ -238,14 +377,53 @@ if (DEMO) {
     $("back").textContent = t("restart_demo");
 }
 
-// Run by an LMS (SCORM package): the LMS records the completion, participants only run the scenario
-const scorm = connectScorm();
-if (scorm) {
+// Run by an LMS (SCORM or cmi5 package): the LMS records the completion, participants only run the scenario
+function runByLms() {
     $("mode").value = "scenario";
     $("mode").hidden = true;
     document.querySelector('label[for="mode"]').hidden = true;
     $("back").hidden = true; // The LMS takes over at the end
+}
+
+const scorm = connectScorm();
+if (scorm) {
+    runByLms();
     window.addEventListener("pagehide", () => scorm.terminate());
+}
+
+// Launched by a cmi5 LMS: xAPI statements sent to its LRS (initialized, completed, terminated). lmsErrors: the launch
+// was refused (e.g. the page was reloaded: the LMS gives its token only once), the session must not start.
+const cmi5Launch = cmi5LaunchParameters();
+const cmi5 = cmi5Launch ? new Cmi5Session(cmi5Launch) : null;
+const lmsErrors = [];
+const cmi5Ready = (async () => {
+    if (!cmi5) {
+        return;
+    }
+    runByLms();
+    try {
+        await cmi5.initialize();
+    } catch (error) {
+        console.error(error);
+        lmsErrors.push(String(error.message || error));
+        return;
+    }
+    window.addEventListener("pagehide", () => cmi5.terminate({ keepalive: true }).catch(console.error));
+    if (!new URLSearchParams(location.search).get("lang")) {
+        const language = preferredLanguage(await cmi5.languagePreference(), Object.keys(TEXTS));
+        if (language) {
+            $("lang").value = language;
+            translatePage();
+        }
+    }
+})();
+
+// cmi5: after the "terminated" statement, the LMS takes over (its return address, or it closes the window itself)
+async function returnToCourse() {
+    await cmi5.terminate().catch(console.error);
+    if (cmi5.returnURL) {
+        location.href = cmi5.returnURL;
+    }
 }
 
 async function loadFonts() {
@@ -311,8 +489,11 @@ async function boot() {
     window.openmatb = { pyodide }; // for debugging from the browser console
     storage = bridge;
     status("ready");
+    await cmi5Ready;
     const outputErrors = sessionOutputSettings(readAppConfig(pyodide)).errors;
-    $("start").disabled = !checkBrowser(pyodide) || !showConfigErrors(outputErrors);
+    const deviceErrors = DEMO ? [] : await showDevices(readAppConfig(pyodide));
+    const errors = [...lmsErrors, ...outputErrors, ...deviceErrors];
+    $("start").disabled = !checkBrowser(pyodide) || !showConfigErrors(errors);
     return pyodide;
 }
 
@@ -334,7 +515,7 @@ function showConfigErrors(errors) {
 // Session file destinations (web_session_output in config.ini), set when a scenario is started
 let sessionOutput = null;
 const DESTINATION_NAMES = {
-    download: "download", webdav: "WebDAV", jatos: "JATOS", datapipe: "DataPipe", scorm: "LMS",
+    download: "download", webdav: "WebDAV", jatos: "JATOS", datapipe: "DataPipe", scorm: "LMS", cmi5: "LMS",
 };
 
 async function importSession(pyodide, file, bytes) {
@@ -467,6 +648,7 @@ $("start").addEventListener("click", async () => {
     // Where the session file will go. config.ini is read again: it may have been changed since the loading
     if ($("mode").value !== "replay") {
         const settings = sessionOutputSettings(readAppConfig(pyodide));
+        settings.errors.unshift(...lmsErrors);
         let jatos;
         try {
             if (settings.destinations.includes("jatos")) {
@@ -482,6 +664,11 @@ $("start").addEventListener("click", async () => {
             } catch (error) {
                 settings.errors.push(String(error.message || error));
             }
+        }
+        // Last: the trigger box and the LSL bridge are opened only if the session can start
+        if (!settings.errors.length && !DEMO) {
+            await showDevices(readAppConfig(pyodide)); // The port may have to be chosen
+            settings.errors.push(...await openDevices(deviceSettings(readAppConfig(pyodide))));
         }
         if (!showConfigErrors(settings.errors)) {
             if (document.fullscreenElement) {
@@ -518,7 +705,8 @@ $("back").addEventListener("click", backToMenu);
 // Dispatched when OpenMATB closes (end of scenario, replay closed or selection cancelled)
 document.addEventListener("openmatb-exit", () => {
     if ($("end").hidden) {
-        backToMenu();
+        // cmi5: reloading the page would fail (the LMS gives its token only once)
+        cmi5 ? returnToCourse() : backToMenu();
     }
 });
 
@@ -551,7 +739,7 @@ document.addEventListener("openmatb-end", async (event) => {
     // JATOS (like an LMS) takes over at the end: going back to the menu would reload the page and leave the study
     // run unfinished
     const inJatos = Boolean(sessionOutput?.settings.destinations.includes("jatos"));
-    $("back").hidden = inJatos || Boolean(scorm);
+    $("back").hidden = inJatos || Boolean(scorm || cmi5);
     $("end").hidden = false;
 
     const pyodide = await ready;
@@ -565,16 +753,29 @@ document.addEventListener("openmatb-end", async (event) => {
     }
     const output = sessionOutput || new SessionOutput(sessionOutputSettings(""));
     const results = await output.finish(relativePath, readSessionFile(pyodide, event.detail));
+    results.push(...await closeDevices());
     if (scorm) {
         const ok = scorm.complete(relativePath);
         results.push(ok ? { destination: "scorm", ok } : { destination: "scorm", ok, error: "see the console" });
     }
-    $("end-destinations").replaceChildren(...results.map((result) => destinationItem(
-        result.ok
+    if (cmi5) {
+        try {
+            const recorded = await cmi5.complete(relativePath);
+            results.push({ destination: recorded ? "cmi5" : "cmi5_not_recorded", ok: recorded || undefined });
+        } catch (error) {
+            console.error(error);
+            results.push({ destination: "cmi5", ok: false, error: String(error.message || error) });
+        }
+    }
+    const resultText = (result) => {
+        if (result.text) {
+            return result.text;
+        }
+        return result.ok !== false
             ? t(`sent_${result.destination}`)
-            : `${t("not_sent").replace("{destination}", DESTINATION_NAMES[result.destination])} ${result.error}`,
-        result.ok,
-    )));
+            : `${t("not_sent").replace("{destination}", DESTINATION_NAMES[result.destination])} ${result.error}`;
+    };
+    $("end-destinations").replaceChildren(...results.map((result) => destinationItem(resultText(result), result.ok)));
     // JATOS: end the study run (JATOS end page, or the redirection set in JATOS, e.g. to Prolific)
     if (results.some((result) => result.destination === "jatos" && result.ok)) {
         $("end-destinations").append(destinationItem(t("ending_study")));
@@ -589,6 +790,12 @@ document.addEventListener("openmatb-end", async (event) => {
                 `${t("study_not_ended")} ${error?.message || error?.responseText || error}`, false,
             ));
         }
+    }
+    if (cmi5) {
+        $("end-destinations").append(destinationItem(t("back_to_course")));
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Time to read where the file went
+        await returnToCourse();
+        return;
     }
     $("back").hidden = Boolean(scorm); // JATOS did not take over
 });

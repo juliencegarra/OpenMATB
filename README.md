@@ -92,7 +92,7 @@ Differences with the desktop version:
 - **Session files** are downloaded at the end of the session by default, or sent to a server (see [Collecting the session files](#collecting-the-session-files)). They are also kept in the browser storage (IndexedDB), so they can be replayed later from the same browser. A session file can also be imported from the start page to be replayed. In replay mode, the start page lists the sessions kept in the browser: each one can be downloaded again or deleted, and all of them can be deleted at once.
 - **The scenario is paused** when the page is hidden (tab change, minimized window), because browsers slow down hidden pages. The `visibility` entries of the session file record when it happened.
 - **Joysticks** (e.g. flight joysticks) are read with the browser Gamepad API: the main stick axes control the tracking task and buttons are available as `JOY_BTN_n`. Browsers reveal a joystick only once one of its buttons has been pressed: the start page shows the detected joystick.
-- The **parallel port** and **Lab Streaming Layer** are not available.
+- The **parallel port** is replaced by a USB trigger box, and **Lab Streaming Layer** goes through a bridge (see [Psychophysiology in the browser](#psychophysiology-in-the-browser-triggers-lsl-clocks)).
 - **Sound** starts after the first click (the "Start" button), as required by browsers.
 - **Timing**: response times are measured with the browser clock (`performance.now`), whose resolution browsers reduce (to about 0.1 ms in Chrome, 1 ms in Firefox), and the display is refreshed by the browser (`requestAnimationFrame`). Take it into account for time-critical experiments.
 - **Browsers**: use **Chrome or Edge** for experiments. They are tested with Firefox and Safari's engine (WebKit) too, but **Firefox pauses the page for 0.1 to 1 s every few seconds** (garbage collection, notably when the user has not interacted for a few seconds), which delays updates and responses. Timing studies of online experiment platforms also found Firefox the most variable browser ([Anwyl-Irvine et al., 2021](https://doi.org/10.3758/s13428-020-01501-5)). The start page displays a notice in Firefox; `web_browser_check` in `config.ini` sets this check: `warn` (default), `block` (Firefox cannot start) or `off`. It can also be set in the URL: `?browsercheck=block`.
@@ -165,6 +165,64 @@ lesson location (`cmi.core.lesson_location`, `cmi.location` in SCORM 2004), to m
 **The session file itself is not stored in the LMS**: SCORM only keeps a few kB per learner, while a session file is a
 tens of MB (about 70 MB per hour). It goes where `web_session_output` says, e.g. `webdav` or `datapipe`, which must accept requests from the
 LMS site (CORS). Open the activity in a new window if the LMS frame prevents the fullscreen or the joystick.
+
+#### Running OpenMATB from a cmi5 LMS (xAPI)
+
+[cmi5](https://aicc.github.io/CMI-5_Spec_Current/) is the successor of SCORM: the LMS launches the page with the
+address of its Learning Record Store (LRS), and the page sends it xAPI statements. It is supported by Moodle (cmi5
+plugin), SCORM Cloud, Rustici Engine, Cornerstone, Docebo...
+
+```bash
+python web/build.py --cmi5         # web/openmatb_cmi5.zip (cmi5.xml + web/dist + Pyodide)
+```
+
+Import the zip file as a cmi5 course (one assignable unit, `moveOn="Completed"`). As with SCORM, set `config.ini`
+before building, and the start page only offers to run the scenario. The LRS receives:
+
+- `initialized` when the page opens;
+- `completed` at the end of the session, with its duration and the name of the session file as a context extension
+  (`https://github.com/juliencegarra/OpenMATB/xapi/extensions/session-file`), to match each learner with their file.
+  It is not sent when the LMS opens the activity in `Browse` or `Review` mode (cmi5 forbids it);
+- `terminated` at the end of the session, or when the page is closed; then the page goes back to the course
+  (`returnURL` of the LMS).
+
+If the learner did not choose a language (`?lang=`), the language preference of their LMS profile
+(`cmi5LearnerPreferences`) is used. The LMS gives its access token only once: a reloaded page cannot record anything
+and says so instead of starting (launch the activity again from the LMS). The session file itself goes where
+`web_session_output` says, as with SCORM.
+
+#### Psychophysiology in the browser (triggers, LSL, clocks)
+
+Browsers cannot reach a parallel port or Lab Streaming Layer directly. The web version offers instead:
+
+- **USB trigger box** (`parallelport` plugin, **Chrome or Edge**): with `web_serial_trigger=True`, the values of the
+  plugin are written as one byte to a serial port (Web Serial API), which the box outputs on its 8 lines until the next
+  value, as a parallel port does: Brain Products TriggerBox, BioSemi USB trigger interface, Neurospec MMBT-S, an
+  Arduino... The scenarios do not change (`parallelport;trigger;5`, `delayms`). The port is chosen once on the start
+  page ("Choose the port"), and the browser remembers the permission; `web_serial_baudrate` sets its speed (ignored
+  by most USB boxes). Each value stays at least `delayms` before the next one, even though the browser runs the
+  scenario every 8 to 16 ms (the value and its reset would otherwise be written together). The session does not
+  start if the port is not chosen or cannot be opened; the end page shows how many values were written.
+- **Lab Streaming Layer**, through a bridge (`labstreaminglayer` plugin): run on the participant's computer
+
+  ```bash
+  pip install pylsl
+  python web/lsl_bridge.py           # ws://127.0.0.1:8766 (--origin https://your.site to accept only your pages)
+  ```
+
+  and set `web_lsl_bridge=ws://127.0.0.1:8766`. The bridge creates the same `OpenMATB` marker stream as the desktop
+  version (`marker` and `streamsession` work the same), recorded with LabRecorder. It only needs the Python standard
+  library and `pylsl`. The session does not start if the bridge does not answer. Markers sent while the bridge is
+  briefly disconnected are kept and sent, with their original time, when it is back. Chrome may ask the permission
+  to access the devices of the local network (a page from a web server connecting to `127.0.0.1`): allow it.
+- **Clocks**: the `logtime` column of a web session file is `performance.now()` in seconds (the page clock, 0.1 ms
+  resolution in Chrome). The `timeorigin` entry is the Unix time of `logtime` 0, so the Unix time of a row is
+  `timeorigin + logtime` (with the accuracy of the computer clock). With the LSL bridge, each marker carries its page
+  time and the bridge stamps it in LSL time: it measures the offset between both clocks like NTP (it sends its time,
+  the page answers at once, the exchange with the shortest round trip wins; typically well below 1 ms on the same
+  computer), so neither the WebSocket nor the browser loop delays the recorded times. The offset is logged in the
+  session file (`lsl_offset` entries, when it changes by 0.1 ms or more), so that any row can be put in LSL time:
+  `logtime - lsl_offset`, e.g. to align the whole session file with an XDF recording.
 
 ### Use of compiled source (coming soon)
 

@@ -10,7 +10,7 @@ from typing import Any, Callable
 from core import validation
 from core.error import get_errors
 from core.logger import get_logger
-from core.platform import IS_WEB
+from core.platform import IS_WEB, web_serial_trigger
 from plugins.abstractplugin import AbstractPlugin
 
 
@@ -33,7 +33,15 @@ class Parallelport(AbstractPlugin):
         self._awaiting_triggers: list[int] = []
 
         if IS_WEB:
-            get_errors().add_error(_("The parallel port is not available in the browser. Skipping parallel plugin"))
+            # A USB trigger box chosen on the start page (web_serial_trigger in config.ini) instead
+            self._port = web_serial_trigger(hold_ms=lambda: self.parameters["delayms"])
+            if self._port is None:
+                get_errors().add_error(
+                    _(
+                        "The parallel port is not available in the browser: set web_serial_trigger=True in "
+                        "config.ini to use a USB trigger box. Skipping parallel plugin"
+                    )
+                )
             return
 
         platform = sys.platform

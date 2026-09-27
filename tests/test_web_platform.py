@@ -71,6 +71,7 @@ def js():
         URL=MagicMock(name="URL"),
         CustomEvent=MagicMock(name="CustomEvent"),
         Object=SimpleNamespace(fromEntries=dict),
+        performance=SimpleNamespace(timeOrigin=1790493792783.4),
     )
     ffi = _module("pyodide.ffi", create_proxy=lambda f: f, to_js=lambda v, **kw: v, jsnull=JsNull())
     pyodide = _module("pyodide", ffi=ffi)
@@ -355,10 +356,48 @@ class TestBrowserEnvironment:
             ("browser", "Firefox 156.0"),
             ("os", "Linux"),
             ("useragent", js.navigator.userAgent),
+            ("timeorigin", "1790493792.7834"),  # Unix time (s) of logtime 0: performance.timeOrigin
         ]
 
     def test_nothing_on_desktop(self):
         assert platform.browser_environment() == []
+
+
+class TestPsychophysiologyDevices:
+    """The trigger box (Web Serial) and the LSL bridge, set on the page by web/openmatb.js."""
+
+    def test_trigger_box_writes_with_the_hold_time(self, js):
+        js.window.openmatbSerialTrigger = MagicMock(name="SerialTrigger")
+        parameters = {"delayms": 5}
+        port = platform.web_serial_trigger(hold_ms=lambda: parameters["delayms"])
+        port.setData(3)
+        parameters["delayms"] = 20  # Read at each write
+        port.setData(0)
+        assert js.window.openmatbSerialTrigger.write.call_args_list == [((3, 5),), ((0, 20),)]
+
+    def test_no_trigger_box(self, js):
+        assert platform.web_serial_trigger(hold_ms=lambda: 5) is None
+        js.window.openmatbSerialTrigger = sys.modules["pyodide.ffi"].jsnull
+        assert platform.web_serial_trigger(hold_ms=lambda: 5) is None
+
+    def test_lsl_markers_carry_their_browser_time(self, js):
+        js.window.openmatbLsl = MagicMock(name="LslBridge")
+        outlet = platform.web_lsl_outlet()
+        with patch.object(platform, "perf_counter", return_value=12.5):
+            outlet.push_sample(["sysmon;failure"])
+        outlet.push_sample(["row"], timestamp=3.25)
+        assert js.window.openmatbLsl.push.call_args_list == [(("sysmon;failure", 12.5),), (("row", 3.25),)]
+
+    def test_lsl_clock_offset(self, js):
+        js.window.openmatbLsl = SimpleNamespace(offset=sys.modules["pyodide.ffi"].jsnull)
+        outlet = platform.web_lsl_outlet()
+        assert outlet.clock_offset() is None  # Not measured yet
+        js.window.openmatbLsl.offset = -1234.5678
+        assert outlet.clock_offset() == -1234.5678
+
+    def test_nothing_on_desktop(self):
+        assert platform.web_serial_trigger(hold_ms=lambda: 5) is None
+        assert platform.web_lsl_outlet() is None
 
 
 class TestPageHelpers:
@@ -734,6 +773,33 @@ class TestScormPackage:
             manifest = archive.read("imsmanifest.xml").decode("utf-8")
         assert '<file href="index.html"/>' in manifest
         assert '<file href="pyodide/pyodide-module.js"/>' in manifest
+
+    def test_cmi5_course_structure(self, build_module):
+        import xml.etree.ElementTree as ET
+
+        ns = {"cs": build_module.CMI5_NAMESPACE}
+        root = ET.fromstring(build_module.cmi5_course_structure("MATB <pilot>", "1.4.0-dev").encode("utf-8"))
+        assert root.tag == f"{{{ns['cs']}}}courseStructure"
+        course = root.find("cs:course", ns)
+        assert course.get("id") == build_module.CMI5_COURSE_ID
+        assert course.findtext("cs:title/cs:langstring", namespaces=ns) == "MATB <pilot>"
+        [au] = root.findall("cs:au", ns)
+        assert au.get("id") == build_module.CMI5_AU_ID
+        # Completed at the end of a session: OpenMATB has no pass / fail score
+        assert au.get("moveOn") == "Completed" and au.get("launchMethod") == "AnyWindow"
+        assert au.findtext("cs:url", namespaces=ns) == "index.html"
+        assert "1.4.0-dev" in au.findtext("cs:description/cs:langstring", namespaces=ns)
+
+    def test_cmi5_package(self, build_module, tmp_path, monkeypatch):
+        dist = tmp_path / "dist"
+        dist.mkdir()
+        (dist / "index.html").write_text("<html></html>", encoding="utf-8")
+        monkeypatch.setattr(build_module, "DIST", dist)
+        monkeypatch.setattr(build_module, "WEB", tmp_path)
+        package = build_module.build_cmi5_package()
+        assert package == tmp_path / "openmatb_cmi5.zip"
+        with zipfile.ZipFile(package) as archive:
+            assert sorted(archive.namelist()) == ["cmi5.xml", "index.html"]
 
     def test_pyodide_packages_with_their_dependencies(self, build_module):
         lock = {

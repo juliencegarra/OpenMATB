@@ -8,3 +8,4 @@ audio_matb
 .venv*/
 web/dist/
 web/openmatb_scorm_*.zip
+web/openmatb_cmi5.zip

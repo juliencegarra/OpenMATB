@@ -385,11 +385,11 @@ msgstr "No files found"
 msgid "(empty)"
 msgstr "(empty)"
 
-msgid "The parallel port is not available in the browser. Skipping parallel plugin"
-msgstr "The parallel port is not available in the browser. Skipping parallel plugin"
+msgid "The parallel port is not available in the browser: set web_serial_trigger=True in config.ini to use a USB trigger box. Skipping parallel plugin"
+msgstr "The parallel port is not available in the browser: set web_serial_trigger=True in config.ini to use a USB trigger box. Skipping parallel plugin"
 
-msgid "Lab streaming layer is not available in the browser. No marker will be sent"
-msgstr "Lab streaming layer is not available in the browser. No marker will be sent"
+msgid "Lab streaming layer is not available in the browser without the LSL bridge (web_lsl_bridge in config.ini). No marker will be sent"
+msgstr "Lab streaming layer is not available in the browser without the LSL bridge (web_lsl_bridge in config.ini). No marker will be sent"
 
 msgid "Python pylsl module is missing. No marker will be sent"
 msgstr "Python pylsl module is missing. No marker will be sent"
