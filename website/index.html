@@ -159,6 +159,7 @@ a:hover { text-decoration: underline; }
   margin-bottom: 24px;
 }
 .hero-img:hover { box-shadow: var(--card-shadow-hover); transform: scale(1.005); }
+img[data-lightbox] { cursor: zoom-in; }
 
 /* ── Tables ─────────────────────────────────────────── */
 .table-wrap { overflow-x: auto; margin-bottom: 20px; border-radius: var(--radius); box-shadow: var(--card-shadow); }
@@ -624,7 +625,7 @@ python main.py</code></pre>
   <li><code>scenario_generator.py</code> &mdash; command-line scenario generator for progressive difficulty</li>
   <li><code>scenario_generator_ui.py</code> &mdash; graphical interface for scenario creation</li>
 </ul>
-<img src="img/scenariogeneratorui.png" alt="OpenMATB Scenario Generator UI" class="hero-img" style="max-width:700px;cursor:pointer;" onclick="openLightbox(this)">
+<img src="img/scenariogeneratorui.png" alt="OpenMATB Scenario Generator UI" class="hero-img" style="max-width:700px;" data-lightbox>
 <p>Scenario validation errors are written to <code>last_scenario_errors.log</code> in the root directory.</p>
 
 <h3>Syntax</h3>
@@ -1246,7 +1247,7 @@ time;plugin;parameter;value</code></pre>
 <h2>Replay Participants</h2>
 <p class="lead">Replay any recorded session from CSV log files, with full input visualization and seeking controls.</p>
 
-<img src="img/replay.png" alt="OpenMATB Replay mode" class="hero-img" style="cursor:pointer;" onclick="openLightbox(this)">
+<img src="img/replay.png" alt="OpenMATB Replay mode" class="hero-img" data-lightbox>
 
 <h3>Overview</h3>
 <div class="card">
