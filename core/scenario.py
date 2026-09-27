@@ -169,7 +169,8 @@ class Scenario:
         # Rule 1 bis - Blocking plugins should have their input file
         # defined before they start
         for plug_name in self.get_plugins_name_list():
-            if self.plugins[plug_name].blocking is True:
+            plugin = self.plugins[plug_name]
+            if plugin.blocking is True and getattr(plugin, "needs_input_file", True):
                 plug_events = self.get_plugin_events(plug_name)
                 for i, e in enumerate(plug_events):
                     if "start" in e.command:

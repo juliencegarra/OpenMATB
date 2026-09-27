@@ -589,6 +589,9 @@ class BlockingPlugin(AbstractPlugin):
         # (Useful for the LSL plugin, which has a starting instruction, but
         #  should not be stopped)
         self.stop_on_end: bool = True
+        # The slides come from a file (filename command required before start). Not for the LSL plugin,
+        # whose only slide (pauseatstart) is written by the plugin itself
+        self.needs_input_file: bool = True
 
     def create_widgets(self) -> None:
         super().create_widgets()

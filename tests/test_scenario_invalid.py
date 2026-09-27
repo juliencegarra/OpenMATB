@@ -124,6 +124,22 @@ class TestRule1StartStop:
             errors = s.check_events()
         assert not any("stop command" in e for e in errors)
 
+    def test_blocking_start_needs_a_filename(self):
+        plugin = _make_plugin(blocking=True, methods=["start"])
+        s = _make_scenario(plugins={"myplugin": plugin}, events=[Event(1, 0, "myplugin", ["start"])])
+        with patch("core.scenario.REPLAY_MODE", False):
+            errors = s.check_events()
+        assert any("without a preceding filename" in e for e in errors)
+
+    def test_blocking_plugin_without_input_file(self):
+        """The LSL plugin blocks (pauseatstart slide) but has no input file."""
+        plugin = _make_plugin(blocking=True, methods=["start"])
+        plugin.needs_input_file = False
+        s = _make_scenario(plugins={"myplugin": plugin}, events=[Event(1, 0, "myplugin", ["start"])])
+        with patch("core.scenario.REPLAY_MODE", False):
+            errors = s.check_events()
+        assert not any("without a preceding filename" in e for e in errors)
+
     def test_start_and_stop_present(self):
         """Plugin with both start and stop yields no Rule 1 errors."""
         plugin = _make_plugin(methods=["start", "stop"])
