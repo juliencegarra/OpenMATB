@@ -35,6 +35,7 @@ class Labstreaminglayer(Instructions):
         self.stream_info: Any | None = None
         self.stream_outlet: Any | None = None
         self.stop_on_end: bool = False
+        self.needs_input_file = False  # No filename command needed before start
 
         self.lsl_wait_msg: str = _("Please enable the OpenMATB stream into your LabRecorder.")
 
