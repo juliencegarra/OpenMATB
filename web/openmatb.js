@@ -70,6 +70,8 @@ const TEXTS = {
             + "prefer Chrome or Edge.",
         browser_block: "This experiment requires Chrome or Edge: Firefox pauses for 0.1 to 1 s every few seconds, "
             + "which makes timing unreliable.",
+        wasm_mime: "Slower loading: the server does not send the .wasm files as application/wasm "
+            + "(Moodle: Site administration > Server > File types).",
     },
     fr_FR: {
         language: "Langue",
@@ -117,6 +119,8 @@ const TEXTS = {
             + "privilégiez Chrome ou Edge.",
         browser_block: "Cette expérience nécessite Chrome ou Edge : Firefox s'interrompt 0,1 à 1 s toutes les "
             + "quelques secondes, ce qui rend la mesure du temps peu fiable.",
+        wasm_mime: "Chargement plus lent : le serveur n'envoie pas les fichiers .wasm en application/wasm "
+            + "(Moodle : Administration du site > Serveur > Types de fichiers).",
     },
 };
 
@@ -261,6 +265,7 @@ function allowWasmWithoutMimeType() {
             if (mimeType === "application/wasm") {
                 return streaming.call(WebAssembly, response, ...args);
             }
+            $("wasm-mime").hidden = false;
             return WebAssembly[bytesName](await response.arrayBuffer(), ...args);
         };
     }
