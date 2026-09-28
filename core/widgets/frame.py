@@ -62,6 +62,8 @@ class Frame(AbstractWidget):
     def _update_border_rects(self) -> None:
         """Recompute border rectangle positions from border_thickness."""
         c = self.container
+        if c.w <= 0 or c.h <= 0:  # Nothing to draw (the border parts would have a negative size)
+            return
         t = self.border_thickness
 
         # Top: full width, sits at top of container
