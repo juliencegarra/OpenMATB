@@ -517,7 +517,7 @@ class TestScreenshot:
     def test_saved_logged_and_downloaded(self, mock_logger, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         w = _make_window()
-        with patch("core.window.get_screenshot") as grab, patch("core.window.download_file") as download:
+        with patch("core.pyglet_compat.get_screenshot") as grab, patch("core.window.download_file") as download:
             w.save_screenshot()
         path = grab.return_value.save.call_args[0][0]
         assert path.startswith("screenshot_") and path.endswith(".png")

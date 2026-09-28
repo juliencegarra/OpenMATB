@@ -12,6 +12,7 @@ from pyglet.text import Label
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.constants import Group as G
+from core.pyglet_compat import ITALIC
 from core.widgets import AbstractWidget
 
 
@@ -77,7 +78,7 @@ class Timeline(AbstractWidget):
             anchor_x="center",
             anchor_y="center",
             color=C["BLACK"],
-            style="italic",
+            **ITALIC,
             group=G(1),
         )
 

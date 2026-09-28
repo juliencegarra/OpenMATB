@@ -8,19 +8,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-import pyglet.font
 from pyglet import image
-from pyglet.config import Config
 from pyglet.display import get_display
 from pyglet.graphics import Batch
-from pyglet.graphics.framebuffer import get_screenshot
 from pyglet.shapes import Rectangle
 from pyglet.text.formats.html import HTMLDecoder
 from pyglet.text.layout import TextLayout
 from pyglet.window import Window
 from pyglet.window import key as winkey
 
-from core import timing
+from core import pyglet_compat, timing
 from core.constants import COLORS as C
 from core.constants import (
     HEADLESS_MODE,
@@ -40,7 +37,7 @@ from core.utils import get_conf_value
 
 def _set_html_default_font() -> None:
     # HTML labels default to "Times New Roman": use the configured font, or the platform default one
-    font_name: str = get_conf_value("Openmatb", "font_name") or pyglet.font.manager.get_platform_default_name()
+    font_name: str | None = get_conf_value("Openmatb", "font_name") or pyglet_compat.default_font_name()
     HTMLDecoder.default_style["font_name"] = font_name
 
 
@@ -69,16 +66,6 @@ def _snap_text_to_pixels() -> None:
     TextLayout._openmatb_snapped = True
 
 
-def _antialiased_configs() -> list[Config]:
-    # Preferred config: 4x multisampling antialiasing (MSAA) for smooth edges, then a plain fallback
-    msaa: Config = Config()
-    msaa.opengl.sample_buffers = 1
-    msaa.opengl.samples = 4
-    msaa.opengl.double_buffer = True
-    msaa.webgl.antialias = True
-    return [msaa, Config()]
-
-
 class Window(Window):
     # Static variable
     MainWindow: Window | None = None
@@ -104,11 +91,11 @@ class Window(Window):
             width=self._width,
             height=self._height,
             vsync=True,
-            config=_antialiased_configs(),
+            config=pyglet_compat.window_config(screen),
             *args,
             **kwargs,
         )
-        self.context.set_clear_color(0, 0, 0, 1)
+        pyglet_compat.set_clear_color(self, 0, 0, 0, 1)
 
         if not IS_WEB:
             img_path: Any = P["IMG"]
@@ -117,7 +104,7 @@ class Window(Window):
             self.set_icon(logo16, logo32)
             self.set_size_and_location(screen)  # Postpone multiple monitor support
 
-        self.set_mouse_cursor_visible(REPLAY_MODE)
+        pyglet_compat.set_mouse_cursor_visible(self, REPLAY_MODE)
 
         if HEADLESS_MODE:
             self.set_visible(False)
@@ -241,13 +228,13 @@ class Window(Window):
     def save_screenshot(self) -> None:
         timestamp: str = datetime.now().strftime("%Y%m%d_%H%M%S")
         filepath = Path(f"screenshot_{timestamp}.png")
-        get_screenshot().save(str(filepath))  # pyglet 3 (pyglet 2: image.get_buffer_manager())
+        pyglet_compat.get_screenshot().save(str(filepath))
         get_logger().log_manual_entry(str(filepath), key="screenshot")
         download_file(filepath, "image/png")  # Browser: the file is in the page storage, hand it to the user
 
     def on_draw(self) -> None:
         timing.flip()  # This frame displays the stimuli started since the last one
-        self.set_mouse_cursor_visible(self.is_mouse_necessary())
+        pyglet_compat.set_mouse_cursor_visible(self, self.is_mouse_necessary())
         self.clear()
         self.batch.draw()
         if getattr(self, "_screenshot_requested", False):

@@ -646,7 +646,8 @@ class TestWebBuild:
         assert "session_output.js" in imported
 
     def test_wheels_match_requirements(self, build_module):
-        """web/build.py pins must stay in sync with requirements.txt."""
+        """web/build.py pins must stay in sync with requirements.txt, except pyglet: 3 in the browser, 2 on desktop
+        (core/pyglet_compat.py)."""
         requirements = {
             line.split("==")[0].lower(): line.strip()
             for line in (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines()
@@ -654,7 +655,11 @@ class TestWebBuild:
         }
         for wheel in build_module.WHEELS:
             name = wheel.split("==")[0].lower()
-            assert requirements.get(name, "").split(";")[0].strip() == wheel
+            if name == "pyglet":
+                assert wheel.startswith("pyglet==3.")
+                assert requirements["pyglet"].startswith("pyglet==2.")
+            else:
+                assert requirements.get(name, "").split(";")[0].strip() == wheel
 
     @pytest.mark.parametrize(
         "path,excluded",

@@ -22,14 +22,14 @@ Those aspects are detailed in:
 Cegarra, J., Valéry, B., Avril, E., Calmettes, C., & Navarro, J. (2020) OpenMATB: A Multi-Attribute Task Battery promoting task customization, software extensibility and experiment replicability. *Behavior Research Methods*, 52, 1980–1990. https://doi.org/10.3758/s13428-020-01364-w
 
 
-Contact : <a href="mailto:julien.cegarra@univ-jfc.fr">julien.cegarra AT univ-jfc.fr</a>; <a href="mailto:benoit.valery@univ-jfc.fr">benoit.valery AT univ-jfc.fr</a> 
+Contact : <a href="mailto:julien.cegarra@univ-jfc.fr">julien.cegarra AT univ-jfc.fr</a>
 
 
 ## Requirements
 
 The last version requires Python 3.10 and only depends on the following third-part libraries:
 
-- [pyglet](https://github.com/pyglet/pyglet) (version 3, currently a development release pinned in `requirements.txt`)
+- [pyglet](https://github.com/pyglet/pyglet) (version 2 on desktop, pinned in `requirements.txt`; the web version uses pyglet 3, currently a development release, see `core/pyglet_compat.py`)
 - [pyparallel](https://github.com/pyserial/pyparallel)
 - [rstr](https://github.com/leapfrogonline/rstr)
 - [pylsl](https://github.com/chkothe/pylsl)

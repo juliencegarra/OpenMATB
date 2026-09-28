@@ -16,9 +16,10 @@ from pathlib import Path
 from typing import Any
 
 import pyglet.clock
-from pyglet.media import AudioPlayer, SourceGroup, load_audio
+from pyglet.media import SourceGroup
 
 from core.platform import IS_WEB
+from core.pyglet_compat import AudioPlayer, load_audio
 
 _cache: dict[str, Any] = dict()
 
