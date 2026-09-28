@@ -5,12 +5,12 @@
 """Run OpenMATB in a real desktop window with the installed pyglet, for tests/test_desktop_smoke.py.
 
     python tests/desktop/smoke.py OUT_DIR SCENARIO_PATH   run a scenario
-    python tests/desktop/smoke.py OUT_DIR -r SESSION_ID   replay a session of OUT_DIR/sessions (for REPLAY_DURATION)
+    python tests/desktop/smoke.py OUT_DIR -r SESSION_ID   replay a session of OUT_DIR/sessions to its end
 
 The session files are in OUT_DIR/sessions. The dialogs are answered with Space, sysmon failures with their key
 (RESPONSE_DELAY after they appear). At SCREENSHOT_AT seconds, the window is captured to OUT_DIR/screenshot_run.png
 (or _replay). OUT_DIR/result_run.json (or _replay) gives the pyglet version, the last session file, the number of
-colors of the screenshot and the keys answered.
+colors of the screenshot, the keys answered, and what the tasks gave (sysmon responses, pump states).
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from pathlib import Path
 
 ROOT: Path = Path(__file__).resolve().parents[2]
 SCREENSHOT_AT: float = 8.0
-REPLAY_DURATION: float = 10.0
+REPLAY_DURATION: float = 60.0  # At most (the replay exits at its end)
 RESPONSE_DELAY: float = 1.0
 
 out: Path = Path(sys.argv[1]).resolve()
@@ -73,6 +73,27 @@ def press(symbol: int) -> None:
 def answer_dialogs(dt: float) -> None:
     if window() is not None and window().modal_dialog is not None:
         press(pyglet.window.key.SPACE)
+    elif not replay and schedulers and schedulers[-1].get_active_blocking_plugin() is not None:
+        press(pyglet.window.key.SPACE)  # Next page of the instructions
+
+
+def record_results() -> None:
+    """What the tasks gave (their performance), to compare a session with its replay."""
+    plugins = schedulers[-1].plugins
+    if "sysmon" in plugins:
+        result["sysmon_detections"] = getattr(plugins["sysmon"], "performance", {}).get("signal_detection", [])
+    if "resman" in plugins:
+        result["pumps"] = {k: v["state"] for k, v in plugins["resman"].parameters["pump"].items()}
+
+
+def exit_at_the_end(dt: float) -> None:
+    """Replay: exit once played to its end (or after REPLAY_DURATION)."""
+    scheduler = schedulers[-1] if schedulers else None
+    at_end = scheduler is not None and scheduler.replay_time >= scheduler.logreader.session_duration - 0.05
+    if at_end or dt < 0:
+        pyglet.clock.unschedule(exit_at_the_end)
+        result["replay_time"] = scheduler.replay_time if scheduler is not None else None
+        pyglet.app.exit()
 
 
 seen: dict[str, float] = {}
@@ -103,11 +124,14 @@ pyglet.clock.schedule_interval(answer_dialogs, 0.25)
 pyglet.clock.schedule_once(screenshot, SCREENSHOT_AT)
 if replay:
     pyglet.clock.schedule_once(lambda dt: press(pyglet.window.key.SPACE), 1.0)  # Play
-    pyglet.clock.schedule_once(lambda dt: pyglet.app.exit(), REPLAY_DURATION)
+    pyglet.clock.schedule_interval(exit_at_the_end, 0.25)
+    pyglet.clock.schedule_once(lambda dt: exit_at_the_end(-1), REPLAY_DURATION)
 else:
     pyglet.clock.schedule_interval(answer_failures, 0.1)
 
 runpy.run_path(str(ROOT / "main.py"), run_name="__main__")
+if schedulers:
+    record_results()
 
 sessions: list[Path] = sorted((out / "sessions").glob("**/*.csv"))
 result["session"] = str(sessions[-1]) if sessions else None

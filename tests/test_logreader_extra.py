@@ -231,6 +231,23 @@ class TestRowClassification:
         assert [r["address"] for r in lr.joystick_inputs] == ["joystick_x"]
         assert [r["address"] for r in lr.mouse_inputs] == ["x"]
 
+    def test_joystick_axes_and_buttons(self, tmp_path):
+        """The axes of the joystick (x, y) and of an agent ("joystick": "x,y") are joystick inputs, shown on the
+        joystick view (not in the keyboard history); the joystick buttons (module Joystick) are replayed as keys."""
+        lr = _reader(
+            tmp_path,
+            [
+                (100.0, 0, "event", "track", "self", "start"),
+                (100.1, 0.1, "input", "joystick", "x", "0.25"),
+                (100.2, 0.2, "input", "joystick", "y", "-0.5"),
+                (100.3, 0.3, "input", "agent", "joystick", "1.0,-1.0"),
+                (100.4, 0.4, "input", "Joystick", "JOY_BTN_2", "press"),
+                (100.5, 0.5, "input", "agent", "F1", "press"),
+            ],
+        )
+        assert [r["address"] for r in lr.joystick_inputs] == ["x", "y", "joystick"]
+        assert [r["address"] for r in lr.keyboard_inputs] == ["JOY_BTN_2", "F1"]
+
     def test_all_inputs_kept_except_ignored_plugins(self, lr):
         """Every input row is kept in inputs, except those of ignored plugins."""
         assert len(lr.inputs) == 6

@@ -359,6 +359,9 @@ class ReplayScheduler(Scheduler):
 
     def pause_if_end_reached(self) -> None:
         if self.replay_time >= self.logreader.session_duration and not self.is_paused:
+            # An update executes one event: at a faster speed, the end is reached before the last simultaneous
+            # events (e.g. the stop of every task) were all executed
+            self.execute_due_events()
             self.pause_playback()
 
     def pause_playback(self) -> None:
@@ -481,6 +484,8 @@ class ReplayScheduler(Scheduler):
         self._last_mouse_x = None
         self._last_mouse_y = None
         self._click_held = False
+        self._last_joy_x = None
+        self._last_joy_y = None
         if self._click_marker is not None:
             self._click_marker.visible = False
             self._click_marker = None
@@ -503,7 +508,13 @@ class ReplayScheduler(Scheduler):
             if idx not in self._executed_key_indices:
                 self._executed_key_indices.add(idx)
                 input: dict[str, Any] = self.logreader.keyboard_inputs[idx]
+                human: bool = input.get("module") != "agent"
                 for _plugin_name, plugin in self.plugins.items():
+                    # In the session, the keys of a human did nothing on a task under the automatic solver
+                    # (unless its agent accepts them): the replay must not execute them either
+                    if human and plugin.parameters.get("automaticsolver"):
+                        if not getattr(getattr(plugin, "agent", None), "allows_human_input", False):
+                            continue
                     plugin.do_on_key(input["address"], input["value"], True)
 
                 cmd: str = f"{input['address']} ({input['value']})"
@@ -634,20 +645,24 @@ class ReplayScheduler(Scheduler):
         self.mouse_label.set_text(label)
 
     def display_joystick_inputs(self) -> None:
-        x: float | None = None
-        y: float | None = None
+        # The last position is kept: the joystick logs an axis only when it changes
+        x: float | None = getattr(self, "_last_joy_x", None)
+        y: float | None = getattr(self, "_last_joy_y", None)
         lo: int = bisect_right(self._joy_logtimes, self.replay_time - CLOCK_STEP)
         hi: int = bisect_right(self._joy_logtimes, self.replay_time)
 
         for idx in range(lo, hi):
             joy_input: dict[str, Any] = self.logreader.joystick_inputs[idx]
+            address: str = joy_input["address"]
 
-            # X case
-            if "_x" in joy_input["address"]:
+            if address == "joystick":  # An agent: "x,y"
+                x, y = (float(v) for v in str(joy_input["value"]).split(","))
+            elif address in ("x", "joystick_x") or address.endswith("_x"):
                 x = float(joy_input["value"])
-            elif "_y" in joy_input["address"]:
+            elif address in ("y", "joystick_y") or address.endswith("_y"):
                 y = float(joy_input["value"])
 
+        self._last_joy_x, self._last_joy_y = x, y
         if x is not None and y is not None:
             rel_x, rel_y = self.replay_reticle.proportional_to_relative((x, y))
             self.replay_reticle.set_cursor_position(rel_x, rel_y)

@@ -113,11 +113,19 @@ class TestCheckPluginsAlive:
 class TestPauseIfEndReached:
     def test_pauses_at_end(self):
         """Pauses playback when replay time reaches session duration."""
-        rs = _make_replay(replay_time=300, is_paused=False)
+        rs = _make_replay(replay_time=300, is_paused=False, events=[])
         rs.logreader.session_duration = 300
         rs.pause_if_end_reached()
         assert rs.is_paused is True
         rs.playpause.update_button_sprite.assert_called_with(True)
+
+    def test_the_events_due_are_executed_before_the_pause(self):
+        """At a faster speed, the end can be reached with simultaneous events still queued (one per update)."""
+        rs = _make_replay(replay_time=300, is_paused=False, execute_due_events=MagicMock())
+        rs.logreader.session_duration = 300
+        rs.pause_if_end_reached()
+        rs.execute_due_events.assert_called_once()
+        assert rs.is_paused is True
 
     def test_no_pause_before_end(self):
         """No action while time is before end."""
@@ -769,6 +777,27 @@ class TestEmulateKeyboardInputs:
         assert rs.keys_history == ["SPACE (press)", "F1 (press)"]
         rs.key_widget.set_text.assert_called_with("<strong>Keyboard history:\n</strong>SPACE (press)<br>F1 (press)")
 
+    def test_human_keys_do_nothing_on_a_task_under_the_automatic_solver(self):
+        """In the session, a human key did nothing on an automated task: the replay must not execute it (an agent
+        key is). Otherwise a key pressed during an automated period resolved a failure in the replay only."""
+        lr = _logreader(keyboard=[(0.95, "F5", "press"), (1.0, "F1", "press")])
+        lr.keyboard_inputs[0]["module"] = "keyboard"
+        lr.keyboard_inputs[1]["module"] = "agent"
+        automated = MagicMock(parameters={"automaticsolver": True}, agent=MagicMock(allows_human_input=False))
+        manual = MagicMock(parameters={"automaticsolver": False})
+        rs = _make_loaded_replay(lr, replay_time=1.0, plugins={"sysmon": automated, "resman": manual})
+        rs.emulate_keyboard_inputs()
+        assert [c.args for c in automated.do_on_key.call_args_list] == [("F1", "press", True)]
+        assert [c.args for c in manual.do_on_key.call_args_list] == [("F5", "press", True), ("F1", "press", True)]
+
+    def test_human_keys_when_the_agent_accepts_them(self):
+        lr = _logreader(keyboard=[(1.0, "F5", "press")])
+        lr.keyboard_inputs[0]["module"] = "keyboard"
+        cooperative = MagicMock(parameters={"automaticsolver": True}, agent=MagicMock(allows_human_input=True))
+        rs = _make_loaded_replay(lr, replay_time=1.0, plugins={"sysmon": cooperative})
+        rs.emulate_keyboard_inputs()
+        cooperative.do_on_key.assert_called_once_with("F5", "press", True)
+
     def test_history_skips_repeats_and_keeps_30_entries(self):
         keys = [(i * 0.001, f"K{i // 2}", "press") for i in range(80)]  # Each key twice in a row
         rs = _make_loaded_replay(_logreader(keyboard=keys), replay_time=0.08)
@@ -934,6 +963,25 @@ class TestJoystickInputs:
         rs = _make_loaded_replay(lr, replay_time=1.0)
         rs.display_joystick_inputs()
         rs.replay_reticle.set_cursor_position.assert_not_called()
+
+    def test_joystick_axes_x_and_y(self):
+        """The joystick logs its axes as x and y (module joystick), each one only when it changes."""
+        lr = _logreader(joystick=[(0.95, "x", "0.1"), (0.97, "y", "0.2"), (1.95, "x", "0.4")])
+        rs = _make_loaded_replay(lr, replay_time=1.0)
+        rs.replay_reticle.proportional_to_relative.return_value = (5, 6)
+        rs.display_joystick_inputs()
+        rs.replay_reticle.proportional_to_relative.assert_called_with((0.1, 0.2))
+        rs.replay_time = 2.0  # Only x changed: y keeps its last value
+        rs.display_joystick_inputs()
+        rs.replay_reticle.proportional_to_relative.assert_called_with((0.4, 0.2))
+
+    def test_agent_joystick(self):
+        """An agent logs its joystick as one "x,y" input (it was replayed as a key, in the keyboard history)."""
+        lr = _logreader(joystick=[(1.0, "joystick", "1.0,-1.0")])
+        rs = _make_loaded_replay(lr, replay_time=1.0)
+        rs.replay_reticle.proportional_to_relative.return_value = (5, 6)
+        rs.display_joystick_inputs()
+        rs.replay_reticle.proportional_to_relative.assert_called_once_with((1.0, -1.0))
 
 
 class TestOnKeyPressReplayOthers:

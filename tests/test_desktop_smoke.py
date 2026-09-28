@@ -32,6 +32,8 @@ SCENARIO: str = """0:00:00;resman;start
 0:00:03;sysmon;scales-1-failure;True
 0:00:04;sysmon;lights-1-failure;True
 0:00:05;resman;pump-1-state;failure
+0:00:06;instructions;filename;instructions_example_en.txt
+0:00:06;instructions;start
 0:00:12;resman;pump-1-state;off
 0:00:14;sysmon;stop
 0:00:14;resman;stop
@@ -77,10 +79,14 @@ class TestDesktopSmoke:
         assert all(1000 <= rt < 1500 for rt in response_times), response_times  # Answered 1 s after the failure
         assert any(r["module"] == "resman" and r["type"] == "performance" for r in rows)
 
-    def test_session_is_replayed(self, run):
-        out, _result = run
-        result = _run(out, "-r", "1")
-        assert result["screenshot_colors"] > 50
+    def test_session_is_replayed_with_the_same_results(self, run):
+        """Played to its end, the replay gives what the session gave (it replays its inputs)."""
+        out, session = run
+        replay = _run(out, "-r", "1")
+        assert replay["screenshot_colors"] > 50
+        assert replay["replay_time"] is not None
+        assert replay["sysmon_detections"] == session["sysmon_detections"] == ["HIT", "HIT"]
+        assert replay["pumps"] == session["pumps"]
 
 
 AUTOMATIC_SCENARIO: str = """0:00:00;sysmon;automaticsolver;True
@@ -106,15 +112,15 @@ class TestDesktopAutomaticSolver:
     joystick, logged as agent inputs; the replay replays these inputs instead of running the agent again."""
 
     @pytest.fixture(scope="class")
-    def automatic(self, tmp_path_factory) -> tuple[Path, list[dict]]:
+    def automatic(self, tmp_path_factory) -> tuple[Path, list[dict], dict]:
         out: Path = tmp_path_factory.mktemp("automatic")
         scenario: Path = out / "automatic.txt"
         scenario.write_text(AUTOMATIC_SCENARIO, encoding="utf-8")
         result = _run(out, str(scenario))
-        return out, list(csv.DictReader(open(result["session"], encoding="utf-8")))
+        return out, list(csv.DictReader(open(result["session"], encoding="utf-8"))), result
 
     def test_the_agent_resolves_every_task(self, automatic):
-        _out, rows = automatic
+        _out, rows, _result = automatic
         perf = [r for r in rows if r["type"] == "performance"]
         sysmon = [r["value"] for r in perf if r["module"] == "sysmon" and r["address"] == "signal_detection"]
         assert sysmon == ["HIT", "HIT"]
@@ -126,6 +132,10 @@ class TestDesktopAutomaticSolver:
         assert {"F1", "F5", "joystick"} <= agent_inputs
         assert any(a.startswith("NUM_") for a in agent_inputs)  # Resources management pumps
 
-    def test_the_session_is_replayed(self, automatic):
-        out, _rows = automatic
-        assert _run(out, "-r", "1")["screenshot_colors"] > 50
+    def test_the_session_is_replayed_with_the_same_results(self, automatic):
+        """The agent inputs are replayed from the log (the agent does not act again): same results."""
+        out, _rows, session = automatic
+        replay = _run(out, "-r", "1")
+        assert replay["screenshot_colors"] > 50
+        assert replay["sysmon_detections"] == session["sysmon_detections"] == ["HIT", "HIT"]
+        assert replay["pumps"] == session["pumps"]

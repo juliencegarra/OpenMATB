@@ -138,10 +138,12 @@ class LogReader:
             # Input case
             elif row["type"] == "input":
                 self.inputs.append(row)
-                if row["module"] in ("keyboard", "agent", "mouse_key"):
-                    self.keyboard_inputs.append(row)
-                elif "joystick" in row["address"]:
+                # The joystick axes: of the joystick (x, y), or of an agent (address "joystick", value "x,y")
+                if row["module"] == "joystick" or "joystick" in row["address"]:
                     self.joystick_inputs.append(row)
+                # The keys: keyboard, agent, mouse clicks on a task, joystick buttons (module "Joystick")
+                elif row["module"] in ("keyboard", "agent", "mouse_key", "Joystick"):
+                    self.keyboard_inputs.append(row)
                 elif row["module"] == "mouse":
                     self.mouse_inputs.append(row)
 
