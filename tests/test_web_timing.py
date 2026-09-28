@@ -51,10 +51,10 @@ def _pyglet_3_wheel() -> str | None:
 
 def _import_real_pyglet_clock():
     """Import the real pyglet 3 clock while conftest mocks pyglet, without leaking it to other tests."""
+    wheel: str | None = _pyglet_3_wheel()  # May skip the module: before sys.modules is changed
     saved = {k: v for k, v in sys.modules.items() if k == "pyglet" or k.startswith("pyglet.")}
     for name in ("pyglet", "pyglet.event", "pyglet.clock"):
         sys.modules.pop(name, None)
-    wheel: str | None = _pyglet_3_wheel()
     if wheel is not None:
         sys.path.insert(0, wheel)  # A wheel is a zip: its pure Python modules can be imported from it
     try:
