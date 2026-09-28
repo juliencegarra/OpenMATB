@@ -108,7 +108,3 @@ class Schedule(AbstractWidget):
             )
             seg.opacity = color[3]
             self.vertex[f"seg_{time_mode}_{i}"] = seg
-
-    def update(self) -> None:
-        if self.visible:
-            self.change_top_bound_color()

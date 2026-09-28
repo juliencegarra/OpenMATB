@@ -101,33 +101,30 @@ class Scheduling(AbstractPlugin):
                 # See if we should show the plugin timeline
                 self.widgets[wdgt_adress].show()
 
+                elapsed: int = self.get_elapsed_time_sec()
+                # Limit the time interval with relative 0 and displayed duration (minutes)
+                max_sec: int = self.parameters["minduration"] * 60
+
                 for time_mode, abs_time_pts in self.planning[plugin_name].items():
-                    self.colors["line"]
                     rel: list[list[int]] = self.relative_planning[plugin_name][time_mode]
-                    # Limit the time interval with relative 0 and displayed duration (minutes)
-                    max_sec: int = self.parameters["minduration"] * 60
 
-                    # For each time pair (start, end)
+                    # For each time pair (start, end), take elapsed time into account
                     for start, end in self.grouped(abs_time_pts, 2):
-                        # Set the color of the top bound for each displayed plugin
-                        if start <= self.get_elapsed_time_sec() < end:
-                            if time_mode != "running":
-                                self.widgets[wdgt_adress].set_top_bound_color(self.colors[time_mode])
+                        rel_start: int = max(start - elapsed, 0)
+                        rel_end: int = min(end - elapsed, max_sec)
 
-                        # Take elapsed time into account
-                        rel.append([start - self.get_elapsed_time_sec(), end - self.get_elapsed_time_sec()])
-                        rel_pair: list[int] = rel[-1]
-
-                        rel_pair[0] = 0 if rel_pair[0] < 0 else rel_pair[0]  # start
-                        rel_pair[1] = max_sec if rel_pair[1] > max_sec else rel_pair[1]  # end
-
-                        # If a segment has expired (end < 0), do not map the segment
-                        if rel_pair[1] < 0:
-                            del self.relative_planning[plugin_name][time_mode][-1]
+                        # Do not map segments that have expired or start beyond the displayed window
+                        if rel_start < rel_end:
+                            rel.append([rel_start, rel_end])
 
                     color: tuple[int, ...] = self.colors[time_mode]
-                    rel_plan: list[list[int]] = self.relative_planning[plugin_name][time_mode]
-                    self.widgets[wdgt_adress].map_segment(time_mode, rel_plan, max_sec, color)
+                    self.widgets[wdgt_adress].map_segment(time_mode, rel, max_sec, color)
+
+                # The top bound is green during a manual segment, and back to the line color otherwise
+                manual_pts: list[int] = self.planning[plugin_name]["manual"]
+                is_manual: bool = any(start <= elapsed < end for start, end in self.grouped(manual_pts, 2))
+                bound_color: tuple[int, ...] = self.colors["manual"] if is_manual else self.colors["line"]
+                self.widgets[wdgt_adress].set_top_bound_color(bound_color)
 
             # See if we should hide the plugin timeline
             else:
@@ -164,8 +161,6 @@ class Scheduling(AbstractPlugin):
         # Retrieve last event time_sec for reversed chronometer
         self.maximum_time_sec = events[-1].time_sec
 
-        [e.time_sec for e in events if e.plugin == "scheduling" if "start" in e.command[0]][0]
-
         # For each task...
         for task in self.planning:
             # 1. ...compute running segments
@@ -186,35 +181,45 @@ class Scheduling(AbstractPlugin):
             if len(self.planning[task]["running"]) % 2 == 1:
                 del self.planning[task]["running"][-1]
 
-            # 2. ...compute manual segments
+            # 2. ...retrieve automation switches
             auto_events: list[tuple[int, Any]] = [
                 (e.time_sec, e.command[1]) for e in events if e.plugin == task and e.command[0] in auto_labels
             ]
 
-            # If some automation events are specified, compute manual segments accordingly
-            if len(auto_events) > 0:
-                while (
-                    len(auto_events) > 0 and auto_events[0][1] is False
-                ):  # Be sure to begin with an (automaticsolver, True)
-                    del auto_events[0]
+            # 3. ...compute manual segments: running segments minus automated periods
+            self.planning[task]["manual"] = self.subtract_periods(
+                self.planning[task]["running"], self.get_automated_periods(auto_events)
+            )
 
-                if len(auto_events) == 0:
+    @staticmethod
+    def get_automated_periods(auto_events: list[tuple[int, Any]]) -> list[tuple[float, float]]:
+        # Automation is off by default. Only state changes matter (e.g. True -> True is ignored)
+        # An automation that is never switched off lasts until the end of the scenario
+        periods: list[tuple[float, float]] = list()
+        auto_start: float | None = None
+        for time_sec, value in auto_events:
+            if value is True and auto_start is None:
+                auto_start = time_sec
+            elif value is False and auto_start is not None:
+                periods.append((auto_start, time_sec))
+                auto_start = None
+        if auto_start is not None:
+            periods.append((auto_start, float("inf")))
+        return periods
+
+    def subtract_periods(self, time_pts: list[int], periods: list[tuple[float, float]]) -> list[int]:
+        # Remove the periods from each (start, end) segment, return the remaining flat time points
+        result: list[int] = list()
+        for start, end in self.grouped(time_pts, 2):
+            cursor = start
+            for p_start, p_end in periods:
+                if p_end <= cursor or p_start >= end:
                     continue
-
-                stop_times: list[int] = [e[0] for e in start_stop_events if e[1] == "stop"]
-                start_times: list[int] = [e[0] for e in start_stop_events if e[1] == "start"]
-                if not stop_times or not start_times:
-                    continue
-
-                stop_time: int = stop_times[0]
-                start_time: int = start_times[0]
-
-                self.planning[task]["manual"].append(start_time)
-                for ae in auto_events:
-                    self.planning[task]["manual"].append(ae[0])
-                if len(self.planning[task]["manual"]) % 2 == 1:
-                    self.planning[task]["manual"].append(stop_time)
-
-            # Else, running segments are all manual segments
-            else:
-                self.planning[task]["manual"] = self.planning[task]["running"]
+                if p_start > cursor:
+                    result.extend([cursor, p_start])
+                cursor = max(cursor, p_end)
+                if cursor >= end:
+                    break
+            if cursor < end:
+                result.extend([cursor, end])
+        return result
