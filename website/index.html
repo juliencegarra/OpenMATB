@@ -500,8 +500,8 @@ a.cite-link:hover { color: var(--blue-800); border-color: var(--blue-700); text-
 <tbody>
 <tr><td><strong>Windows</strong> &mdash; installer</td><td>Lab computers; no Python needed, Start menu shortcut</td><td><span class="badge badge-green">Stable</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-Setup.exe">OpenMATB-Setup.exe</a></td></tr>
 <tr><td><strong>Windows</strong> &mdash; portable</td><td>No installation rights: unzip and run <code>OpenMATB.exe</code> (e.g. from a USB key)</td><td><span class="badge badge-green">Stable</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-Portable.zip">OpenMATB-Portable.zip</a></td></tr>
-<tr><td><strong>Source code</strong> <span class="badge badge-blue">Recommended</span><br>Windows, macOS, Linux</td><td>Python 3.9+, all the features (see Quick Start below)</td><td><span class="badge badge-green">Stable</span></td><td><a href="https://github.com/juliencegarra/OpenMATB" target="_blank" rel="noopener">GitHub</a></td></tr>
-<tr><td><strong>Web</strong> &mdash; online</td><td>Try it now in your browser, nothing to install</td><td><span class="badge badge-orange">Experimental</span></td><td><a href="#demo">&#9654;&nbsp;Demo</a></td></tr>
+<tr><td><strong>Source code</strong> <span class="badge badge-blue">Recommended</span><br>Windows, macOS, Linux</td><td>Python 3.10+, all the features (see Quick Start below)</td><td><span class="badge badge-green">Stable</span></td><td><a href="https://github.com/juliencegarra/OpenMATB" target="_blank" rel="noopener">GitHub</a></td></tr>
+<tr><td><strong>Web</strong> &mdash; online</td><td>Try it now in your browser, nothing to install: the demo, or the full version (every scenario, replay)</td><td><span class="badge badge-orange">Experimental</span></td><td><a href="#demo">&#9654;&nbsp;Demo</a> &middot; <a href="app/index.html" target="_blank" rel="noopener">Full version&nbsp;&#8599;</a></td></tr>
 <tr><td><strong>Web</strong> &mdash; your server</td><td>Static site to host on a lab web server (session files downloaded or sent to WebDAV / DataPipe)</td><td><span class="badge badge-orange">Experimental</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-Web.zip">OpenMATB-Web.zip</a></td></tr>
 <tr><td><strong>Web</strong> &mdash; JATOS study</td><td>Online studies: import into <a href="https://www.jatos.org" target="_blank" rel="noopener">JATOS</a> (Import Study), e.g. with Prolific; session files saved in the results</td><td><span class="badge badge-orange">Experimental</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-JATOS.jzip">OpenMATB-JATOS.jzip</a></td></tr>
 <tr><td><strong>Web</strong> &mdash; SCORM</td><td>Learning platforms (Moodle, Canvas, Blackboard&hellip;): completion and time recorded by the LMS</td><td><span class="badge badge-orange">Experimental</span></td><td><a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-SCORM-1.2.zip">SCORM&nbsp;1.2</a> &middot; <a href="https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-SCORM-2004.zip">SCORM&nbsp;2004</a></td></tr>
@@ -1342,7 +1342,7 @@ time;plugin;parameter;value</code></pre>
 
 <div class="card">
 <p>Since version 1.5, the web version is part of OpenMATB (the <code>web/</code> folder, documented in <a href="https://github.com/juliencegarra/OpenMATB/blob/master/WEB.md" target="_blank" rel="noopener"><code>WEB.md</code></a>). It runs the same scenario files, plugins and logs as the desktop version, and is a static site that can be hosted on any web server (GitHub Pages, a lab server, JATOS, an LMS&hellip;).</p>
-<p>The start page lets participants choose the language, run a scenario or replay a session. These choices can also be given in the URL: <code style="white-space:nowrap">?lang=fr_FR</code>, <code style="white-space:nowrap">?scenario=basic.txt</code>, <code style="white-space:nowrap">?mode=replay</code>, <code style="white-space:nowrap">?session=12</code>.</p>
+<p>The start page lets participants choose the language, run a scenario or replay a session (try the <a href="app/index.html" target="_blank" rel="noopener">full web version&nbsp;&#8599;</a> of this site). These choices can also be given in the URL: <code style="white-space:nowrap">?lang=fr_FR</code>, <code style="white-space:nowrap">?scenario=basic.txt</code>, <code style="white-space:nowrap">?mode=replay</code>, <code style="white-space:nowrap">?session=12</code>.</p>
 </div>
 
 <h3>Build and Host</h3>
@@ -1624,6 +1624,9 @@ python web/build.py --cmi5               # also build a cmi5 package for an LMS 
   <button type="button" id="demo-stop" hidden>Stop the demo</button>
   <a href="app/index.html?demo=1" target="_blank" rel="noopener">Open in a new window &#8599;</a>
 </div>
+
+<h3>Full Web Version</h3>
+<p>The <a href="app/index.html" target="_blank" rel="noopener">full web version&nbsp;&#8599;</a> opens the start page of OpenMATB: choose the language, run any scenario shipped with OpenMATB (with the questionnaires and instructions), or replay a session. The session file is downloaded at the end, and kept in your browser to be replayed later; nothing is sent to a server. To run your own scenarios or collect the files of participants, host your own copy (see the Web Version tab).</p>
 
 <h3>Before You Start</h3>
 <div class="card-grid">
