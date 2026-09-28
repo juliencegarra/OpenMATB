@@ -10,6 +10,7 @@ from typing import Any
 import pyglet.app
 import pyglet.clock
 
+from core import timing
 from core.clock import Clock
 from core.constants import REPLAY_MODE, SYSTEM_PSEUDO_PLUGIN
 from core.error import get_errors
@@ -72,6 +73,7 @@ class Scheduler:
         self.pause_scenario_time: bool = False
         self.mouse_control_enabled: bool = False
         self.scenario_time = 0
+        timing.reset()
 
         # Cursor into the sorted events list — advances monotonically
         self._event_cursor: int = 0
@@ -91,6 +93,7 @@ class Scheduler:
             if not self._dialog_paused:
                 self.execute_plugins_methods(self.get_active_plugins(), ["pause"])
                 self._dialog_paused = True
+            timing.set_tick(self.scenario_time, running=False)
             return
 
         if self._dialog_paused:
@@ -115,6 +118,7 @@ class Scheduler:
         if not self.is_scenario_time_paused():
             self.scenario_time += dt
             get_logger().set_scenario_time(self.scenario_time)
+        timing.set_tick(self.scenario_time, running=not self.is_scenario_time_paused())
 
     def update_active_plugins(self) -> None:
         for p in self.get_active_plugins():

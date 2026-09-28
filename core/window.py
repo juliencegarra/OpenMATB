@@ -20,6 +20,7 @@ from pyglet.text.layout import TextLayout
 from pyglet.window import Window
 from pyglet.window import key as winkey
 
+from core import timing
 from core.constants import COLORS as C
 from core.constants import (
     HEADLESS_MODE,
@@ -245,6 +246,7 @@ class Window(Window):
         download_file(filepath, "image/png")  # Browser: the file is in the page storage, hand it to the user
 
     def on_draw(self) -> None:
+        timing.flip()  # This frame displays the stimuli started since the last one
         self.set_mouse_cursor_visible(self.is_mouse_necessary())
         self.clear()
         self.batch.draw()

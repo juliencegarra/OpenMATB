@@ -82,6 +82,65 @@ def compute_next_plugin_state(self) -> bool:
     return done
 
 
+# Response times of sysmon (TestResponseTimeGain): the timestamp of the requestAnimationFrame of the first frame
+# drawing each failure (its onset), and each human response time computed both ways: the old one (difference of
+# scenario times, rounded to the ticks) and the new one (core/timing.py)
+PROBE.update({"frame": None, "onsets": [], "responses": []})
+
+try:
+    from pyglet.app.async_app import RequestAnimationFrameDrawSource  # Browser only
+
+    _on_animation_frame = RequestAnimationFrameDrawSource._on_animation_frame
+
+    def on_animation_frame(self, timestamp: float) -> None:
+        PROBE["frame"] = float(timestamp)
+        _on_animation_frame(self, timestamp)
+
+    RequestAnimationFrameDrawSource._on_animation_frame = on_animation_frame
+except ImportError:
+    pass
+
+_on_draw = Window.on_draw
+
+
+def on_draw(self) -> None:
+    s = PROBE["scheduler"]
+    sysmon = s.plugins.get("sysmon") if s is not None else None
+    if sysmon is not None:
+        shown = {(o["key"], o["start"]) for o in PROBE["onsets"]}
+        for gauge in sysmon.get_gauges_on_failure():
+            if (gauge["key"], gauge["_response_start"]) not in shown:
+                PROBE["onsets"].append(
+                    {"key": gauge["key"], "start": gauge["_response_start"], "frame": PROBE["frame"], "draw": now_ms()}
+                )
+    _on_draw(self)
+
+
+Window.on_draw = on_draw
+
+from plugins.sysmon import Sysmon  # noqa: E402
+
+_stop_failure = Sysmon.stop_failure
+
+
+def stop_failure(self, gauge, success: bool = False, resolved_by: str = "") -> None:
+    old = self._response_elapsed_ms(gauge["_response_start"])
+    start = gauge["_response_start"]
+    _stop_failure(self, gauge, success, resolved_by)
+    if resolved_by == "human":
+        PROBE["responses"].append(
+            {
+                "key": gauge["key"],
+                "start": start,
+                "old": old,
+                "new": self.performance["response_time"][-1],
+                "handled": now_ms(),
+            }
+        )
+
+
+Sysmon.stop_failure = stop_failure
+
 AbstractPlugin.compute_next_plugin_state = compute_next_plugin_state  # Plugins call it with super()
 scheduler_module.Scheduler.execute_one_event = execute_one_event
 scheduler_module.Scheduler.update = update  # Scheduler.__init__ schedules self.update
@@ -101,6 +160,8 @@ def state() -> str:
             "events": PROBE["events"],
             "steps": PROBE["steps"],
             "keys": PROBE["keys"],
+            "onsets": PROBE["onsets"],
+            "responses": PROBE["responses"],
             "now": now_ms(),
         }
     )

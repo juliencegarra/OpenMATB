@@ -244,7 +244,7 @@ class Sysmon(AbstractPlugin):
                     gauge["side"] = choice([-1, 1], self.alias, self.scenario_time, int(add))
                 gauge["_zone"] = gauge["side"]
         gauge["failure"] = False
-        gauge["_response_start"] = self.scenario_time
+        self.start_response_timer(gauge)
 
         # Schedule failure timing
         delay: int = (
@@ -277,7 +277,7 @@ class Sysmon(AbstractPlugin):
         if ft == "positive":
             sdt_string: str
             rt: int | float
-            sdt_string, rt = "HIT", self._response_elapsed_ms(gauge["_response_start"])
+            sdt_string, rt = "HIT", self.response_time_ms(gauge, human=resolved_by == "human")
         else:
             sdt_string, rt = "MISS", float("nan")
         sdt_string = "HIT" if ft == "positive" else "MISS"

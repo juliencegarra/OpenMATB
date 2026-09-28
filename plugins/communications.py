@@ -403,7 +403,8 @@ class Communications(AbstractPlugin):
             # Start response timer as soon as auditory prompting has ended
             if not radio["is_prompting"]:
                 if radio["_response_start"] is None:
-                    radio["_response_start"] = self.scenario_time
+                    # Starts when the prompt has ended (not displayed): only the response end is the input event
+                    self.start_response_timer(radio, on_flip=False)
 
                 # Record potential target miss
                 if self._response_elapsed_ms(radio["_response_start"]) >= self.parameters["maxresponsedelay"]:
@@ -542,7 +543,7 @@ class Communications(AbstractPlugin):
             target_frequency = measure_radio["targetfreq"]
             target_radio_name = measure_radio["name"]
             deviation = round(responded_radio["currentfreq"] - target_frequency, 1)
-            rt = self._response_elapsed_ms(measure_radio["_response_start"])
+            rt = self.response_time_ms(measure_radio, human=not emulate)
         else:
             deviation = rt = target_frequency = target_radio_name = float("nan")
 

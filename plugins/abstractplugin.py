@@ -10,7 +10,7 @@ from typing import Any
 
 from pyglet.window import key as winkey
 
-from core import validation
+from core import timing, validation
 from core.constants import BFLIM, HEADLESS_MODE, PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
@@ -486,6 +486,30 @@ class AbstractPlugin:
         if start is None:
             return 0.0
         return (self.scenario_time - start) * 1000
+
+    def start_response_timer(self, item: dict[str, Any], on_flip: bool = True) -> None:
+        """Start the response timer of item (a gauge, a radio...): item["_response_start"] is the scenario time
+        (for the timeouts), item["_onset"] the scenario time of the first frame displaying the stimulus."""
+        item["_response_start"] = self.scenario_time
+        item["_onset"] = None
+        if not on_flip:
+            return
+
+        def set_onset(real_time: float) -> None:
+            if item["_response_start"] is not None and item["_onset"] is None:
+                item["_onset"] = timing.scenario_time_at(real_time)
+
+        timing.call_on_flip(set_onset)
+
+    def response_time_ms(self, item: dict[str, Any], human: bool) -> float:
+        """Response time (ms) to item. For a human input: from the stimulus onset (or its start) to the input
+        event (see core/timing.py). Otherwise (agent, automatic solver, replay): in scenario time."""
+        start: float | None = item["_response_start"]
+        response: float | None = timing.scenario_time_at(timing.input_time()) if human else None
+        if start is None or response is None:
+            return self._response_elapsed_ms(start)
+        onset: float | None = item.get("_onset")
+        return (response - (onset if onset is not None else start)) * 1000
 
     def keep_value_between(self, value: float, down: float, up: float) -> float:
         return max(min(value, up), down)

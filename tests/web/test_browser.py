@@ -1628,3 +1628,125 @@ class TestStoredSessions:
         menu.page.click("#delete-all")
         menu.page.wait_for_selector("#sessions-empty:not([hidden])", timeout=10_000)
         assert _stored_sessions(menu) == []
+
+
+# Response times: sysmon failures every 2 s, on each gauge in turn, answered 250-600 ms after they appear
+RESPONSE_TIME_SCENARIO: str = (
+    "0:00:00;sysmon;start\n"
+    + "".join(
+        f"0:00:{2 + i * 2:02d};sysmon;{gauge}-failure;True\n"
+        for i, gauge in enumerate(["scales-1", "scales-2", "scales-3", "scales-4", "lights-1", "lights-2"] * 2)
+    )
+    + "0:00:27;sysmon;stop\n"
+)
+# Page kept busy: 20 ms of computation every 40 ms (a slow computer, a heavy page): the keys wait to be handled
+BUSY_PAGE_JS: str = """() => { window.__busy = setInterval(() => {
+    const end = performance.now() + 20; while (performance.now() < end) {} }, 40); }"""
+KEYDOWN_TIMES_JS: str = """() => { window.__keydowns = [];
+    window.addEventListener("keydown", (e) => window.__keydowns.push([e.key, e.timeStamp]), {capture: true}); }"""
+RESPONSE_TIME_STATE: str = """
+import json, _openmatb_probe as probe
+s = probe.PROBE["scheduler"]
+json.dumps({"failures": [g["key"] for g in s.plugins["sysmon"].get_gauges_on_failure()]})
+"""
+
+
+def _errors_summary(errors: list[float]) -> str:
+    return (
+        f"mean {statistics.mean(errors):+6.1f}  SD {statistics.stdev(errors):5.1f}  "
+        f"max |error| {max(abs(e) for e in errors):5.1f} ms"
+    )
+
+
+class TestResponseTimeGain:
+    """Accuracy of the sysmon response times, before (difference of scenario times) and after (core/timing.py).
+
+    Reference response time of each failure: from the drawing of the first frame showing it (performance.now()
+    when the page draws the frame: the image cannot be displayed earlier), to the timestamp of the keydown event
+    given by the browser (event.timeStamp). The timestamp of the requestAnimationFrame (the start of the frame) is
+    not used: when the page is busy, the frame is drawn up to 20 ms after it (printed). The screen and keyboard
+    latencies are not included (unknown, the same before and after). Run with -s to see the errors.
+
+    Playwright's keys are timestamped when the page processes them, not when a keyboard sends them: the gain of
+    event.timeStamp (a key pressed while the page is busy) is not measured here."""
+
+    @pytest.mark.parametrize("load", ["idle", "busy"])
+    def test_response_times_follow_the_frame_and_the_key_event(self, page_factory, tolerance, load):
+        import random
+
+        rng = random.Random(1)
+        app = page_factory()
+        app.start(RESPONSE_TIME_SCENARIO)
+        app.page.focus("#pygletCanvas")
+        app.page.evaluate(KEYDOWN_TIMES_JS)
+        if load == "busy":
+            app.page.evaluate(BUSY_PAGE_JS)
+        seen: dict[str, float] = {}
+        delays: dict[str, float] = {}
+        while not app.page.is_visible("#end"):
+            try:
+                failures = json.loads(app.python(RESPONSE_TIME_STATE))["failures"]
+            except Exception:  # The session has just ended
+                break
+            for key in failures:
+                seen.setdefault(key, time.monotonic())
+                delays.setdefault(key, rng.uniform(0.25, 0.6))
+                if time.monotonic() - seen[key] >= delays[key]:
+                    app.page.keyboard.press(key)
+                    del seen[key], delays[key]
+            app.page.wait_for_timeout(10)
+        app.page.wait_for_selector("#end:not([hidden])", timeout=30_000)
+
+        state = app.state()
+        keydowns: list[tuple[str, float]] = app.page.evaluate("() => window.__keydowns")
+        onsets = {(o["key"], o["start"]): o["draw"] for o in state["onsets"]}
+        old_errors, new_errors, handling_delays = [], [], []
+        for response in state["responses"]:
+            onset = onsets[(response["key"], response["start"])]
+            # The key press of this response: the first press of its key after its onset
+            press = next(t for k, t in keydowns if k == response["key"] and t > onset)
+            reference = press - onset
+            old_errors.append(response["old"] - reference)
+            new_errors.append(response["new"] - reference)
+            handling_delays.append(response["handled"] - press)
+        frame_delays = [o["draw"] - o["frame"] for o in state["onsets"]]
+
+        print(f"\n[{ENGINE}, page {load}] errors of {len(new_errors)} response times, against the browser timestamps")
+        print(f"  before (scenario times): {_errors_summary(old_errors)}")
+        print(f"  after  (frame + event) : {_errors_summary(new_errors)}")
+        print(f"  key handled after its event timestamp: {_errors_summary(handling_delays)}")
+        print(f"  frame drawn after its rAF timestamp: {_errors_summary(frame_delays)}")
+
+        assert len(new_errors) == 12
+        assert max(abs(e) for e in new_errors) < 3 * tolerance
+        assert statistics.stdev(new_errors) < statistics.stdev(old_errors)
+
+    def test_response_is_the_key_event_timestamp_when_handled_late(self, page_factory):
+        """A key handled 15 ms after its press (busy page): the response time ends at the press (event.timeStamp)."""
+        app = page_factory()
+        app.start("0:00:00;sysmon;start\n0:00:30;sysmon;stop\n")
+        app.page.focus("#pygletCanvas")
+        # Runs before pyglet's handler (capture on the window), delaying it
+        app.page.evaluate(
+            """() => { window.__keydowns = []; window.addEventListener("keydown", (e) => {
+                window.__keydowns.push(e.timeStamp);
+                const end = performance.now() + 15; while (performance.now() < end) {} }, {capture: true}); }"""
+        )
+        app.python(
+            "import js, _openmatb_probe as probe\n"
+            "from core import timing\n"
+            "from core.window import Window\n"
+            "probe.PROBE['input_times'] = []\n"
+            "def on_key_press(symbol, modifiers):\n"
+            "    probe.PROBE['input_times'].append((timing.input_time() * 1000, float(js.performance.now())))\n"
+            "probe.PROBE['handlers'].append(on_key_press)\n"
+            "Window.MainWindow.push_handlers(on_key_press=on_key_press)\n"
+        )
+        app.page.keyboard.press("F1")
+        app.page.wait_for_timeout(300)
+        [(input_time, handled)] = json.loads(
+            app.python("import json, _openmatb_probe as probe; json.dumps(probe.PROBE['input_times'])")
+        )
+        [pressed] = app.page.evaluate("() => window.__keydowns")
+        assert handled - pressed >= 15
+        assert input_time == pytest.approx(pressed, abs=0.01)
