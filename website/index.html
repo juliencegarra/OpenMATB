@@ -116,6 +116,12 @@ a:hover { text-decoration: underline; }
   box-shadow: 0 4px 14px rgba(0,0,0,.3); transition: transform .15s, background .15s;
 }
 .demo-launch:hover { background: #4ade80; transform: scale(1.04); }
+.demo-launchers { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 14px; }
+.demo-launchers[hidden] { display: none; }
+.demo-launchers .demo-launch { position: static; margin: 0; }
+.demo-launch-full { background: var(--white); text-decoration: none; font-size: 15px; }
+.demo-launch-full:hover { background: var(--grey-100); }
 .demo-actions { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; margin-bottom: 32px; font-size: 14px; }
 .demo-actions button {
   background: none; border: 1px solid var(--grey-300); border-radius: var(--radius-sm); cursor: pointer;
@@ -1617,7 +1623,10 @@ python web/build.py --cmi5               # also build a cmi5 package for an LMS 
 
 <div class="demo-stage" id="demo-stage">
   <img src="img/capture.png" alt="">
-  <button class="demo-launch" id="demo-launch" type="button">&#9654;&nbsp; Launch the demo</button>
+  <div class="demo-launchers" id="demo-launchers">
+    <button class="demo-launch" id="demo-launch" type="button">&#9654;&nbsp; Launch the demo</button>
+    <a class="demo-launch demo-launch-full" href="app/index.html" target="_blank" rel="noopener">&#9654;&nbsp; Launch the full version&nbsp;&#8599;</a>
+  </div>
 </div>
 <div class="demo-actions">
   <button type="button" id="demo-fullscreen" hidden>Fullscreen</button>
@@ -2226,6 +2235,7 @@ python web/build.py --cmi5               # also build a cmi5 package for an LMS 
   // ── Demo (the web version, published under app/) ──
   const demoStage = document.getElementById('demo-stage');
   const demoLaunch = document.getElementById('demo-launch');
+  const demoLaunchers = document.getElementById('demo-launchers');
   const demoFullscreen = document.getElementById('demo-fullscreen');
   const demoStop = document.getElementById('demo-stop');
   let demoFrame = null;
@@ -2237,7 +2247,7 @@ python web/build.py --cmi5               # also build a cmi5 package for an LMS 
     demoFrame.title = 'OpenMATB demo';
     demoFrame.allow = 'fullscreen; gamepad; autoplay';
     demoStage.appendChild(demoFrame);
-    demoLaunch.hidden = true;
+    demoLaunchers.hidden = true;
     demoFullscreen.hidden = demoStop.hidden = false;
     demoFrame.focus();
   }
@@ -2246,7 +2256,7 @@ python web/build.py --cmi5               # also build a cmi5 package for an LMS 
     if (!demoFrame) return;
     demoFrame.remove();
     demoFrame = null;
-    demoLaunch.hidden = false;
+    demoLaunchers.hidden = false;
     demoFullscreen.hidden = demoStop.hidden = true;
   }
 
