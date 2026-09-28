@@ -120,7 +120,7 @@ class LogReader:
 
         # Detect blocking segments and build replay-to-scenario mapping
         self._detect_blocking_segments(all_rows)
-        self._build_replay_mapping()
+        self._build_replay_mapping(all_rows)
 
         # Session duration based on logtime (includes blocking periods)
         self.session_duration = all_rows[-1]["normalized_logtime"]
@@ -147,12 +147,13 @@ class LogReader:
 
             # State case
             elif row["type"] == "state":
-                # Record communications radio frequencies
-                # AND track cursor positions
+                # Record communications radio frequencies, track cursor positions, questionnaire sliders
+                # AND resman tank levels
                 if (
                     "radio_frequency" in row["address"]
                     or "cursor_proportional" in row["address"]
                     or "slider_" in row["address"]
+                    or "fluid_level" in row["address"]
                 ):
                     row["value"] = ast.literal_eval(row["value"])
                     self.states.append(row)
@@ -208,42 +209,42 @@ class LogReader:
         if current_end_lt - current_start_lt > BLOCKING_THRESHOLD:
             self.blocking_segments.append((current_start_lt, current_end_lt, current_st))
 
-    def _build_replay_mapping(self) -> None:
-        """Build breakpoints for replay_time -> scenario_time mapping.
+    def _build_replay_mapping(self, all_rows: list[dict[str, Any]] | None = None) -> None:
+        """Build breakpoints (replay_time, scenario_time) for the replay_time -> scenario_time mapping.
 
-        Between consecutive breakpoints the slope is either 1 (normal) or
-        0 (blocking segment).
+        The breakpoints are the start and end of the blocking segments, and the first row logged at each scenario
+        time: the scenario time does not start with the log (the first rows are written before the scenario
+        starts, while the tasks are created), and it stops for pauses shorter than BLOCKING_THRESHOLD. Without
+        these anchors, the replayed inputs (placed by logtime) were shifted from the events (placed by
+        scenario_time), e.g. by the ~0.2 s of the start.
         """
-        self._bp_replay_times = [0.0]
-        self._bp_scenario_times = [0.0]
-
+        points: list[tuple[float, float]] = [(0.0, 0.0)]
         for lt_start, lt_end, frozen_st in self.blocking_segments:
-            self._bp_replay_times.append(lt_start)
-            self._bp_scenario_times.append(frozen_st)
-            self._bp_replay_times.append(lt_end)
-            self._bp_scenario_times.append(frozen_st)
+            points += [(lt_start, frozen_st), (lt_end, frozen_st)]
+        last_st: float | None = None
+        for row in all_rows or []:
+            if row["scenario_time"] != last_st:
+                points.append((row["normalized_logtime"], row["scenario_time"]))
+                last_st = row["scenario_time"]
+        points.sort()
+        self._bp_replay_times = [lt for lt, _st in points]
+        self._bp_scenario_times = [st for _lt, st in points]
 
     def replay_to_scenario_time(self, replay_time: float) -> float:
         """Convert replay_time (normalized logtime) to scenario_time.
 
-        Uses O(log k) bisect lookup where k = number of blocking segments.
+        From a breakpoint the scenario time advances with the replay time (slope 1), up to the scenario time of
+        the next breakpoint (slope 0 in a blocking segment, whose two ends have the same scenario time).
+        Uses an O(log k) bisect lookup, k being the number of breakpoints.
         """
         idx: int = bisect_right(self._bp_replay_times, replay_time) - 1
         if idx < 0:
             return 0.0
 
-        rt_base: float = self._bp_replay_times[idx]
-        st_base: float = self._bp_scenario_times[idx]
-
-        # Check if we are inside a blocking segment (next breakpoint has
-        # the same scenario_time, meaning slope = 0).
+        scenario_time: float = self._bp_scenario_times[idx] + (replay_time - self._bp_replay_times[idx])
         if idx + 1 < len(self._bp_replay_times):
-            st_next: float = self._bp_scenario_times[idx + 1]
-            if abs(st_base - st_next) < 0.001:
-                return st_base
-
-        # Normal segment: slope = 1
-        return st_base + (replay_time - rt_base)
+            scenario_time = min(scenario_time, self._bp_scenario_times[idx + 1])
+        return scenario_time
 
     def _read_page_events(self, all_rows: list[dict[str, Any]]) -> None:
         """Browser sessions: the browser and its system, the periods when the page was hidden (the scenario is

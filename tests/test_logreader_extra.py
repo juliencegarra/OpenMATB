@@ -156,6 +156,38 @@ class TestEmptyAndTruncatedLogs:
         assert lr.contents == ["0:00:01;sysmon;stop"]
 
 
+class TestReplayMapping:
+    def test_scenario_starting_after_the_log(self, tmp_path):
+        """The first rows are logged before the scenario starts (0.2 s here): the replayed inputs, placed by
+        logtime, must meet the scenario time of the session (not 0.2 s later)."""
+        lr = _reader(
+            tmp_path,
+            [
+                (100.0, 0, "manual", "", "version", "1"),
+                (100.2, 0, "event", "resman", "self", "start"),
+                (100.3, 0.1, "state", "resman", "x", "1"),
+                (102.3, 2.1, "input", "agent", "NUM_2", "press"),
+                (102.4, 2.2, "state", "resman", "x", "1"),
+            ],
+        )
+        assert lr.replay_to_scenario_time(2.3) == pytest.approx(2.1)
+        assert lr.replay_to_scenario_time(0.25) == pytest.approx(0.1)  # Not beyond the first update of the scenario
+
+    def test_short_pause_is_not_added_to_the_scenario_time(self, tmp_path):
+        """A pause shorter than the blocking threshold (0.3 s here) does not shift the rest of the replay."""
+        lr = _reader(
+            tmp_path,
+            [
+                (100.0, 0, "event", "sysmon", "self", "start"),
+                (101.0, 1.0, "state", "sysmon", "x", "1"),
+                (101.3, 1.0, "state", "sysmon", "x", "1"),
+                (101.4, 1.1, "state", "sysmon", "x", "1"),
+                (103.3, 3.0, "input", "keyboard", "F1", "press"),
+            ],
+        )
+        assert lr.replay_to_scenario_time(3.3) == pytest.approx(3.0)
+
+
 # ──── Row classification ────
 
 

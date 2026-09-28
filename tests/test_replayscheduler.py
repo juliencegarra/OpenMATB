@@ -216,7 +216,7 @@ class TestCheckIfMustExit:
 class TestUpdateTimers:
     def test_derives_scenario_time_from_mapping(self):
         """update_timers sets scenario_time from replay_to_scenario_time."""
-        rs = _make_replay(replay_time=10.0)
+        rs = _make_replay(replay_time=10.0, emulate_keyboard_inputs=MagicMock())
         rs.logreader.replay_to_scenario_time.return_value = 5.0
         rs.update_timers(0.1)
         rs.logreader.replay_to_scenario_time.assert_called_once_with(10.0)
@@ -224,11 +224,22 @@ class TestUpdateTimers:
 
     def test_sets_logger_scenario_time(self):
         """update_timers updates logger with derived scenario_time."""
-        rs = _make_replay(replay_time=7.0)
+        rs = _make_replay(replay_time=7.0, emulate_keyboard_inputs=MagicMock())
         rs.logreader.replay_to_scenario_time.return_value = 3.0
         with patch("core.replayscheduler.get_logger") as mock_get_logger:
             rs.update_timers(0.1)
             mock_get_logger.return_value.set_scenario_time.assert_called_once_with(3.0)
+
+    def test_keys_are_replayed_before_the_plugin_steps(self):
+        """The keys due are replayed in update_timers, before the plugins are updated (as in the session)."""
+        rs = _make_replay(replay_time=7.0, emulate_keyboard_inputs=MagicMock())
+        rs.update_timers(0.1)
+        rs.emulate_keyboard_inputs.assert_called_once()
+
+    def test_keys_wait_for_the_queued_events(self):
+        rs = _make_replay(replay_time=7.0, emulate_keyboard_inputs=MagicMock(), events_queue=[MagicMock()])
+        rs.update_timers(0.1)
+        rs.emulate_keyboard_inputs.assert_not_called()
 
 
 class TestCleanupAfterSeek:
@@ -802,6 +813,15 @@ class TestProcessStates:
         rs.process_states()
         assert slider.groove_value == 7
         slider.set_groove_position.assert_called_once()
+
+    def test_resman_tank_level(self):
+        """The simulated tank levels are set back to the logged ones (the replay steps are not at the same times)."""
+        resman = MagicMock()
+        resman.parameters = {"tank": {"a": {"level": 2474}}}
+        lr = _logreader(states=[(1.0, "tank_a, fluid_level", 2494), (1.0, "tank_z, fluid_level", 10)])
+        rs = _make_loaded_replay(lr, replay_time=1.0, plugins={"resman": resman})
+        rs.process_states()
+        assert resman.parameters["tank"]["a"]["level"] == 2494
 
     def test_states_outside_the_step_are_ignored(self):
         track = MagicMock()

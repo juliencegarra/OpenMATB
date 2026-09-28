@@ -280,6 +280,13 @@ class ReplayScheduler(Scheduler):
         self.scenario_time = self.logreader.replay_to_scenario_time(self.replay_time)
         get_logger().set_scenario_time(self.scenario_time)
 
+        # In the session, a key logged before this update was handled before the plugin steps of this update
+        # (a key pressed between two updates, or an agent key sent at the start of a plugin step): replay it
+        # before them too, not after (a resman step lasts 2 s: a pump toggled after it missed a whole step).
+        # Same deferral as in update(): the events still queued come first.
+        if not (len(self.events_queue) > 0 and not self.is_scenario_time_paused()):
+            self.emulate_keyboard_inputs()
+
     def update(self, dt: float) -> None:
         self.pause_if_end_reached()
         self.update_time_string()
@@ -513,6 +520,9 @@ class ReplayScheduler(Scheduler):
         #   - 1. The cursor position in the tracking task
         #   - 2. The frequency of each communications radio
         #   - 3. The value of each slider, in genericscales
+        #   - 4. The level of each resman tank (the replay simulates the tanks, but its plugin steps are not at
+        #        the same times as in the session: a pump toggled just before a step of the session may come
+        #        just after the step of the replay, and change a whole step of flow)
 
         lo: int = bisect_right(self._state_logtimes, self.replay_time - CLOCK_STEP)
         hi: int = bisect_right(self._state_logtimes, self.replay_time)
@@ -540,6 +550,13 @@ class ReplayScheduler(Scheduler):
                 slider: Any = self.plugins["genericscales"].sliders[slider_name]
                 slider.groove_value = state["value"]
                 slider.set_groove_position()
+
+            # 4. Resources management tank levels
+            elif "fluid_level" in state["address"] and "resman" in self.plugins:
+                letter: str = state["address"].split(",")[0].replace("tank_", "")
+                tank: dict[str, Any] | None = self.plugins["resman"].parameters["tank"].get(letter)
+                if tank is not None:
+                    tank["level"] = state["value"]
 
     def _remap_mouse(self, x: int, y: int) -> tuple[int, int]:
         """Remap original full-screen coordinates to the reduced replay area."""
