@@ -348,9 +348,10 @@ class Window(Window):
             Container("bottomleft", 0, b, x3, h / 2),
             Container("bottommid", x3, b, x4 - x3, h / 2),
             Container("bottomright", x4, b, w - x4, h / 2),
-            Container("mediastrip", 0, 0, self._width * (1 + mar), b),
+            # The strips of the replay span the whole window (they were 8 % wider: their end was off-screen)
+            Container("mediastrip", 0, 0, self._width, b),
             Container("inputstrip", w, b, self._width * mar, h),
-            Container("perfstrip", 0, b + h, self._width * (1 + mar), self.height * perf_mar),
+            Container("perfstrip", 0, b + h, self._width, self.height * perf_mar),
         ]
 
     def get_container(self, placement_name: str) -> Container | None:

@@ -664,5 +664,8 @@ class ReplayScheduler(Scheduler):
 
         self._last_joy_x, self._last_joy_y = x, y
         if x is not None and y is not None:
-            rel_x, rel_y = self.replay_reticle.proportional_to_relative((x, y))
+            # The axes are in [-1, 1], y downwards (as the tracking task reads them): the view expects a position
+            # proportional to its size, in [-0.5, 0.5], y upwards (a full axis put the cursor out of the view)
+            proportional: tuple[float, float] = (clamp(x, -1, 1) / 2, -clamp(y, -1, 1) / 2)
+            rel_x, rel_y = self.replay_reticle.proportional_to_relative(proportional)
             self.replay_reticle.set_cursor_position(rel_x, rel_y)

@@ -73,9 +73,10 @@ class PerfOverlay:
 
         l, b, w, h = container.get_lbwh()
         self._label_width: float = 70.0
-        self._sparkline_width: float = w - self._label_width
+        right_margin: float = 6.0  # So that the cursor stays visible at the end (100 %)
+        self._sparkline_width: float = w - self._label_width - right_margin
         self._x_min: float = l + self._label_width
-        self._x_max: float = l + w
+        self._x_max: float = self._x_min + self._sparkline_width
         self._y_bottom: float = b
         self._y_top: float = b + h
 

@@ -955,7 +955,7 @@ class TestJoystickInputs:
         rs = _make_loaded_replay(lr, replay_time=1.0)
         rs.replay_reticle.proportional_to_relative.return_value = (5, 6)
         rs.display_joystick_inputs()
-        rs.replay_reticle.proportional_to_relative.assert_called_once_with((0.3, 0.2))
+        rs.replay_reticle.proportional_to_relative.assert_called_once_with((0.15, -0.1))
         rs.replay_reticle.set_cursor_position.assert_called_once_with(5, 6)
 
     def test_needs_both_axes(self):
@@ -970,10 +970,10 @@ class TestJoystickInputs:
         rs = _make_loaded_replay(lr, replay_time=1.0)
         rs.replay_reticle.proportional_to_relative.return_value = (5, 6)
         rs.display_joystick_inputs()
-        rs.replay_reticle.proportional_to_relative.assert_called_with((0.1, 0.2))
+        rs.replay_reticle.proportional_to_relative.assert_called_with((0.05, -0.1))
         rs.replay_time = 2.0  # Only x changed: y keeps its last value
         rs.display_joystick_inputs()
-        rs.replay_reticle.proportional_to_relative.assert_called_with((0.4, 0.2))
+        rs.replay_reticle.proportional_to_relative.assert_called_with((0.2, -0.1))
 
     def test_agent_joystick(self):
         """An agent logs its joystick as one "x,y" input (it was replayed as a key, in the keyboard history)."""
@@ -981,7 +981,7 @@ class TestJoystickInputs:
         rs = _make_loaded_replay(lr, replay_time=1.0)
         rs.replay_reticle.proportional_to_relative.return_value = (5, 6)
         rs.display_joystick_inputs()
-        rs.replay_reticle.proportional_to_relative.assert_called_once_with((1.0, -1.0))
+        rs.replay_reticle.proportional_to_relative.assert_called_once_with((0.5, 0.5))  # Inside the view
 
 
 class TestOnKeyPressReplayOthers:
