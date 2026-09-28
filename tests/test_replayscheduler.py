@@ -26,6 +26,7 @@ def _make_replay(**kwargs):
     rs.slider = MagicMock()
     rs.clock = MagicMock()
     rs._pointer_marker = None
+    rs.mouse_control_enabled = False
     rs.__dict__.update(kwargs)
     return rs
 
@@ -876,6 +877,54 @@ class TestMousePointer:
             200 - tail[1] * POINTER_SCALE,
         )
         assert all(t.y <= 200 for t in pointer._fill)  # Downwards from the tip (y up in pyglet)
+
+    def test_hidden_and_shown(self):
+        from core.replayscheduler import MousePointer
+
+        pointer = MousePointer(100, 500, batch=None)
+        pointer.visible = False
+        assert not pointer.visible
+        assert not any(shape.visible for shape in pointer._fill + pointer._outline)
+        pointer.visible = True
+        assert all(shape.visible for shape in pointer._fill + pointer._outline)
+
+
+def _plugin_with_slider(visible):
+    from core.widgets import Slider
+
+    slider = object.__new__(Slider)
+    slider.visible = visible
+    plugin = MagicMock()
+    plugin.widgets = {"genericscales_slider_1": slider, "genericscales_title": MagicMock(visible=True)}
+    return plugin
+
+
+class TestSessionMouseVisible:
+    """The mouse was shown in the session only with a scale slider or under mouse control (is_mouse_necessary)."""
+
+    def test_hidden_during_the_tasks(self):
+        rs = _make_replay(plugins={"sysmon": MagicMock(widgets={"sysmon_light": MagicMock(visible=True)})})
+        assert not rs.session_mouse_visible()
+
+    def test_shown_with_a_scale_slider(self):
+        assert _make_replay(plugins={"genericscales": _plugin_with_slider(True)}).session_mouse_visible()
+        assert not _make_replay(plugins={"genericscales": _plugin_with_slider(False)}).session_mouse_visible()
+
+    def test_shown_under_mouse_control(self):
+        assert _make_replay(mouse_control_enabled=True).session_mouse_visible()
+
+    @patch("core.replayscheduler.MousePointer")
+    @patch("core.replayscheduler.Window")
+    def test_the_drawn_pointer_follows_it(self, mock_win, mock_pointer):
+        mock_win.MainWindow.height = 1000
+        mock_pointer.return_value.visible = True
+        lr = _logreader(mouse=[(0.95, "x", "100.0"), (1.0, "y", "200")])
+        rs = _make_loaded_replay(lr, replay_time=1.0, _pointer_marker=None)
+        rs.display_mouse_inputs()
+        assert mock_pointer.return_value.visible is False  # The tasks: the mouse was hidden
+        rs.plugins = {"genericscales": _plugin_with_slider(True)}
+        rs.display_mouse_inputs()
+        assert mock_pointer.return_value.visible is True
 
 
 class TestMouseInputs:

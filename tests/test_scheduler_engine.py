@@ -604,12 +604,12 @@ class TestSystemCommands:
         window.remove_handlers.assert_called_once_with(p.on_mouse_press, p.on_mouse_release, p.on_mouse_drag)
 
     def test_mousecontrol_ignored_in_replay(self, window, mock_logger):
-        """In replay mode, mousecontrol does not alter handlers."""
+        """In replay mode, mousecontrol does not alter handlers; it is noted to show the mouse of the session."""
         sched = _make_scheduler({"p": _make_plugin()})
         window.push_handlers.reset_mock()
         with patch("core.scheduler.REPLAY_MODE", True):
             sched.execute_one_event(Event(1, 0, "system", ["mousecontrol", "true"]))
-        assert sched.mouse_control_enabled is False
+        assert sched.mouse_control_enabled is True
         window.push_handlers.assert_not_called()
 
     def test_unknown_system_command_logged(self, window, mock_logger):

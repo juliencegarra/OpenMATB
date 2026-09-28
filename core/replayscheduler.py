@@ -55,6 +55,15 @@ class MousePointer:
     def _points(self) -> list[tuple[float, float]]:
         return [(self.x + px * POINTER_SCALE, self.y - py * POINTER_SCALE) for px, py in POINTER_OUTLINE]
 
+    @property
+    def visible(self) -> bool:
+        return self._fill[0].visible
+
+    @visible.setter
+    def visible(self, visible: bool) -> None:
+        for shape in self._fill + self._outline:
+            shape.visible = visible
+
     def move_to(self, x: float, y: float) -> None:
         self.x, self.y = x, y
         points: list[tuple[float, float]] = self._points()
@@ -525,6 +534,7 @@ class ReplayScheduler(Scheduler):
         self._click_held = False
         self._last_joy_x = None
         self._last_joy_y = None
+        self.mouse_control_enabled = False  # The events are executed again from the start
         if self._click_marker is not None:
             self._click_marker.visible = False
             self._click_marker = None
@@ -610,6 +620,17 @@ class ReplayScheduler(Scheduler):
                 if tank is not None:
                     tank["level"] = state["value"]
 
+    def session_mouse_visible(self) -> bool:
+        """The mouse was shown in the session only with a scale slider or under mouse control (is_mouse_necessary):
+        the replay window, which always needs the mouse (and has its own slider), cannot say it"""
+        if self.mouse_control_enabled:
+            return True
+        return any(
+            isinstance(widget, Slider) and widget.visible
+            for plugin in self.plugins.values()
+            for widget in plugin.widgets.values()
+        )
+
     def _remap_mouse(self, x: int, y: int) -> tuple[int, int]:
         """Remap the coordinates of the session window to the reduced replay area. The session window may have
         another size than the replay one (e.g. a page of the browser, without its toolbars)."""
@@ -672,6 +693,9 @@ class ReplayScheduler(Scheduler):
                 self._pointer_marker = MousePointer(rx, ry, Window.MainWindow.batch)
             elif (self._pointer_marker.x, self._pointer_marker.y) != (rx, ry):
                 self._pointer_marker.move_to(rx, ry)
+            visible: bool = self.session_mouse_visible()
+            if self._pointer_marker.visible != visible:
+                self._pointer_marker.visible = visible
 
         label: str = "Mouse: "
         if self._last_mouse_x is not None and self._last_mouse_y is not None:

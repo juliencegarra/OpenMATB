@@ -275,9 +275,9 @@ class Scheduler:
                     if "automaticsolver" in self.plugins[p].parameters:
                         self.plugins[p].agent = self.agent
         elif command == "mousecontrol":
+            enabled = event.command[1] in (True, "True", "true")
+            self.mouse_control_enabled = enabled  # The replay shows the mouse of the session with it
             if not REPLAY_MODE:
-                enabled = event.command[1] in (True, "True", "true")
-                self.mouse_control_enabled = enabled
                 Window.MainWindow.mouse_control_active = enabled
                 if enabled:
                     for p in self.plugins:
