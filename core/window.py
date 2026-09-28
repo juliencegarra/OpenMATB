@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -103,6 +104,9 @@ class Window(Window):
             logo32: Any = image.load(str(img_path.joinpath("logo32.png")))
             self.set_icon(logo16, logo32)
             self.set_size_and_location(screen)  # Postpone multiple monitor support
+            if not self._fullscreen and not HEADLESS_MODE and sys.platform == "win32":
+                # A window, not the fullscreen: with the size of the screen, its bottom was under the taskbar
+                self.fit_to_work_area()
 
         pyglet_compat.set_mouse_cursor_visible(self, REPLAY_MODE)
 
@@ -185,6 +189,44 @@ class Window(Window):
             screen = screens[screen_index]
 
         return screen
+
+    def fit_to_work_area(self) -> None:
+        """Windows: fit the window, its frame included, in the work area of its screen (without the taskbar); the
+        tasks are then laid out in its client area. (maximize() kept the size of the screen with pyglet.)"""
+        import ctypes
+        from ctypes import wintypes
+
+        class MONITORINFO(ctypes.Structure):
+            _fields_ = (
+                ("cbSize", wintypes.DWORD),
+                ("rcMonitor", wintypes.RECT),
+                ("rcWork", wintypes.RECT),
+                ("dwFlags", wintypes.DWORD),
+            )
+
+        user32: Any = ctypes.windll.user32
+        info: MONITORINFO = MONITORINFO()
+        info.cbSize = ctypes.sizeof(MONITORINFO)
+        monitor: Any = user32.MonitorFromWindow(self._hwnd, 2)  # MONITOR_DEFAULTTONEAREST
+        outer, client = wintypes.RECT(), wintypes.RECT()
+        if not (
+            user32.GetMonitorInfoW(monitor, ctypes.byref(info))
+            and user32.GetWindowRect(self._hwnd, ctypes.byref(outer))
+            and user32.GetClientRect(self._hwnd, ctypes.byref(client))
+        ):
+            return
+        frame_width: int = (outer.right - outer.left) - client.right  # The two borders
+        frame_height: int = (outer.bottom - outer.top) - client.bottom  # The title bar and the two borders
+        work: wintypes.RECT = info.rcWork
+        width: int = (work.right - work.left) - frame_width
+        height: int = (work.bottom - work.top) - frame_height
+        if width <= 0 or height <= 0:
+            return
+        self.set_size(width, height)
+        # The location is the one of the client area: under the title bar and the top border
+        self.set_location(work.left + frame_width // 2, work.top + frame_height - frame_width // 2)
+        self.dispatch_events()  # The new size, before the tasks are laid out
+        self._width, self._height = self.width, self.height
 
     def set_size_and_location(self, screen: Any) -> None:
         self.switch_to()  # The Window must be active before setting the location
