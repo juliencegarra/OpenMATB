@@ -1,0 +1,47 @@
+name: GitHub Pages
+
+# The website (website/) at the root, and the web version of OpenMATB (web/build.py) under app/, used by the
+# Demo tab of the website. Runs when master is pushed; it can also be run by hand (Actions > GitHub Pages > Run workflow).
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  actions: read  # Required by actions/deploy-pages
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Build the web version
+        run: python web/build.py
+      - name: Assemble the site
+        run: |
+          mkdir -p _site
+          cp -r website/. _site/
+          cp -r web/dist _site/app
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
