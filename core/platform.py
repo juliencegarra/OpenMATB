@@ -257,6 +257,29 @@ def download_file(path: Path, mime: str = "text/csv") -> None:
     js.URL.revokeObjectURL(url)
 
 
+def report_loop_errors() -> None:
+    """Browser: an exception stops pyglet's event loop without any message (its task only keeps it, and forgets it
+    when done): the page just freezes. Print it in the browser console. To call after pyglet.app.run()."""
+    if not IS_WEB:
+        return
+    import traceback
+
+    import js
+    import pyglet.app
+
+    task: Any = getattr(pyglet.app.event_loop, "_run_task", None)
+    if task is None:
+        return
+
+    def report(done_task: Any) -> None:
+        if done_task.cancelled() or done_task.exception() is None:
+            return
+        error: BaseException = done_task.exception()
+        js.console.error("OpenMATB stopped:\n" + "".join(traceback.format_exception(error)))
+
+    task.add_done_callback(report)
+
+
 def notify_page(event_name: str, detail: str = "") -> None:
     """Dispatch a DOM CustomEvent on the page (e.g. 'openmatb-end'). No-op on desktop."""
     if not IS_WEB:

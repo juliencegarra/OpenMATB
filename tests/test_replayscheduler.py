@@ -851,6 +851,23 @@ class TestMouseInputs:
         mock_win.MainWindow.set_mouse_position.assert_called_once_with(*rs._remap_mouse(100, 200))
         rs.mouse_label.set_text.assert_called_once_with("Mouse: 100, 200")
 
+    @patch("core.replayscheduler.Circle")
+    @patch("core.replayscheduler.IS_WEB", True)
+    @patch("core.replayscheduler.Window")
+    def test_browser_draws_the_pointer(self, mock_win, mock_circle):
+        """A page cannot move the mouse pointer (no set_mouse_position: it stopped the replay): it is drawn."""
+        mock_win.MainWindow.height = 1000
+        lr = _logreader(mouse=[(0.95, "x", "100.0"), (1.0, "y", "200")])
+        rs = _make_loaded_replay(lr, replay_time=1.0, _pointer_marker=None)
+        rs.display_mouse_inputs()
+        rx, ry = rs._remap_mouse(100, 200)
+        mock_win.MainWindow.set_mouse_position.assert_not_called()
+        assert (rs._pointer_marker.x, rs._pointer_marker.y) == (rx, ry)
+        rs.replay_time, rs._last_mouse_x = 2.0, 300  # No new input: the last position moves
+        rs.display_mouse_inputs()
+        mock_circle.assert_called_once()  # The same marker is moved
+        assert rs._pointer_marker.x == rs._remap_mouse(300, 200)[0]
+
     @patch("core.replayscheduler.Window")
     def test_no_position_yet(self, mock_win):
         rs = _make_loaded_replay(_logreader(), replay_time=1.0)

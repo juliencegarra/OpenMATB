@@ -19,6 +19,7 @@ from core.container import Container
 from core.logger import get_logger
 from core.logreader import LogReader
 from core.perfoverlay import PerfOverlay
+from core.platform import IS_WEB
 from core.scheduler import Scheduler
 from core.utils import clamp, get_replay_session_id
 from core.widgets import Frame, MuteButton, PlayPause, Reticle, SimpleHTML, Simpletext, Slider
@@ -46,6 +47,7 @@ class ReplayScheduler(Scheduler):
         self._muted: bool = True
         self._click_marker: Circle | None = None
         self._click_held: bool = False
+        self._pointer_marker: Circle | None = None  # Browser: the replayed mouse pointer
         self._last_mouse_x: int | None = None
         self._last_mouse_y: int | None = None
         self._perf_overlay: PerfOverlay | None = None
@@ -610,7 +612,15 @@ class ReplayScheduler(Scheduler):
         # Update cursor position when we have coordinates
         if self._last_mouse_x is not None and self._last_mouse_y is not None:
             rx, ry = self._remap_mouse(self._last_mouse_x, self._last_mouse_y)
-            Window.MainWindow.set_mouse_position(rx, ry)
+            if IS_WEB:
+                # A page cannot move the mouse pointer (the browser window has no set_mouse_position): draw it
+                if self._pointer_marker is None:
+                    self._pointer_marker = Circle(
+                        x=rx, y=ry, radius=5, color=(40, 40, 40), batch=Window.MainWindow.batch, group=G(99)
+                    )
+                self._pointer_marker.x, self._pointer_marker.y = rx, ry
+            else:
+                Window.MainWindow.set_mouse_position(rx, ry)
 
         label: str = "Mouse: "
         if self._last_mouse_x is not None and self._last_mouse_y is not None:

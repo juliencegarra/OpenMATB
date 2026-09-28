@@ -775,6 +775,58 @@ class TestReplay:
         assert end["alive"] == []
 
 
+# A questionnaire answered with the mouse, then the tasks
+MOUSE_REPLAY_SCENARIO: str = (
+    "0:00:00;genericscales;filename;nasatlx_en.txt\n0:00:00;genericscales;start\n"
+    "0:00:00;sysmon;start\n0:00:00;track;start\n"
+    "0:00:04;sysmon;stop\n0:00:04;track;stop\n"
+)
+
+
+class TestReplayWithMouse:
+    def test_a_session_with_mouse_inputs_is_replayed_to_its_end(self, page_factory):
+        """Regression: replaying the mouse moved the pointer (set_mouse_position), which a page cannot do: the
+        exception stopped the replay, frozen on the questionnaire. The pointer is now drawn."""
+        session = page_factory()
+        session.start(MOUSE_REPLAY_SCENARIO)
+        session.page.wait_for_timeout(2000)
+        box = session.page.locator("#pygletCanvas").bounding_box()
+        session.page.mouse.move(box["x"] + box["width"] * 0.5, box["y"] + box["height"] * 0.25)
+        session.page.mouse.down()
+        session.page.mouse.move(box["x"] + box["width"] * 0.3, box["y"] + box["height"] * 0.25, steps=8)
+        session.page.mouse.up()
+        session.page.wait_for_timeout(500)
+        session.page.focus("#pygletCanvas")
+        session.page.keyboard.press("Space")  # Validates the questionnaire
+        session.page.wait_for_selector("#end:not([hidden])", timeout=60_000)
+        session_id = int(session.downloads[0].suggested_filename.split("_")[0])
+
+        replay = session.new_tab()
+        replay.start_replay(session_id)
+        replay.wait_until(lambda s: s["running"], timeout=20)
+        replay.page.focus("#pygletCanvas")
+        replay.page.keyboard.press("Space")  # Play
+        state = replay.wait_until(lambda s: not s["running"] or s["scenario_time"] >= 3.9, timeout=60)
+        assert state["running"], replay.console
+        assert replay.python("import _openmatb_probe as probe; probe.PROBE['scheduler']._pointer_marker is not None")
+
+
+class TestLoopErrors:
+    def test_an_error_stopping_the_loop_is_printed_in_the_console(self, page_factory):
+        """pyglet's loop stops on an exception without any message: core.platform.report_loop_errors prints it."""
+        app = page_factory()
+        app.start("0:00:00;sysmon;start\n0:00:30;sysmon;stop\n")
+        app.python(
+            "import pyglet.clock\n"
+            "def fail(dt):\n"
+            "    raise RuntimeError('error for the test')\n"
+            "pyglet.clock.schedule_once(fail, 0.1)\n"
+        )
+        app.wait_until(lambda s: not s["running"], timeout=10)
+        app.page.wait_for_timeout(200)
+        assert any("OpenMATB stopped" in line and "error for the test" in line for line in app.console), app.console
+
+
 class TestScreenshot:
     def test_f12_downloads_a_png(self, page_factory):
         """F12 saves a screenshot: in the browser it is handed to the user as a download."""

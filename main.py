@@ -35,7 +35,7 @@ language.install()
 # Only after language installation, import core modules (they must be translated)
 from core import ReplayScheduler, Scheduler
 from core.constants import ARGS, PATHS, REPLAY_MODE
-from core.platform import notify_page, setup_web, url_params
+from core.platform import notify_page, report_loop_errors, setup_web, url_params
 from core.selector import FileSelector
 from core.utils import get_conf_value
 from core.window import Window
@@ -88,3 +88,4 @@ class OpenMATB:
 if __name__ == "__main__":
     app: OpenMATB = OpenMATB()
     pyglet.app.run()  # Blocks on desktop, returns immediately in the browser
+    report_loop_errors()  # Browser: an error would otherwise only freeze the page
