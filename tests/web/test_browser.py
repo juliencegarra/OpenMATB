@@ -617,8 +617,9 @@ class TestTextRendering:
 class TestPageResize:
     @pytest.mark.parametrize("width,height", [(1280, 720), (1000, 800), (1600, 900)])
     def test_display_follows_the_page(self, page_factory, width, height):
-        """Leaving fullscreen shrinks the page: the whole interface stays visible and centered, and mouse
-        positions are still converted to the right place."""
+        """Leaving fullscreen shrinks the page: the whole interface stays visible, centered horizontally and at
+        the top (no empty band above the title bar of the tasks), and mouse positions are still converted to the
+        right place."""
         app = page_factory()
         app.page.set_viewport_size({"width": 1600, "height": 900})
         app.start(LONG_SCENARIO)
@@ -640,8 +641,8 @@ class TestPageResize:
         factor = min(width / 1600, height / 900)
         assert box["width"] == pytest.approx(1600 * factor, abs=1)
         assert box["height"] == pytest.approx(900 * factor, abs=1)
-        assert box["left"] == pytest.approx((width - box["width"]) / 2, abs=1)  # Centered
-        assert box["top"] == pytest.approx((height - box["height"]) / 2, abs=1)
+        assert box["left"] == pytest.approx((width - box["width"]) / 2, abs=1)  # Centered horizontally
+        assert box["top"] == pytest.approx(0, abs=1)  # At the top
 
         app.page.mouse.click(box["left"] + box["width"] / 4, box["top"] + box["height"] / 4)
         x, y = app.python("import json, _openmatb_probe as probe; json.dumps(probe.clicks[-1])").strip("[]").split(",")
