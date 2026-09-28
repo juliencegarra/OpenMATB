@@ -87,17 +87,24 @@ class Scheduler:
 
         # Track whether plugins have been paused due to a modal dialog (e.g. pause prompt)
         self._dialog_paused: bool = False
+        # Store the plugins paused by the modal dialog (those which were running when it opened)
+        self._dialog_paused_plugins: list[Any] = list()
 
     def update(self, dt: float) -> None:
         if Window.MainWindow.modal_dialog is not None:
             if not self._dialog_paused:
-                self.execute_plugins_methods(self.get_active_plugins(), ["pause"])
+                # Pause only the running plugins, so that plugins already paused
+                # (e.g. by a blocking plugin) are not resumed when the dialog closes
+                self._dialog_paused_plugins = self.get_plugins_by_states([("alive", True), ("paused", False)])
+                self.execute_plugins_methods(self._dialog_paused_plugins, ["pause"])
                 self._dialog_paused = True
             timing.set_tick(self.scenario_time, running=False)
             return
 
         if self._dialog_paused:
-            self.execute_plugins_methods(self.get_active_plugins(), ["resume"])
+            resumed: list[Any] = [p for p in self._dialog_paused_plugins if p.alive]
+            self.execute_plugins_methods(resumed, ["resume"])
+            self._dialog_paused_plugins = list()
             self._dialog_paused = False
 
         if not get_errors().is_empty():
@@ -149,8 +156,12 @@ class Scheduler:
                     self.joystick.reset_key_change(k)
 
     def check_if_must_exit(self) -> None:
-        # If no active plugin, and no remaining events, close the OpenMATB
-        if len(self.get_active_plugins()) == 0 and len(self.events_queue) == 0:
+        # If no active plugin, and no remaining events (queued or to come), close the OpenMATB
+        if (
+            len(self.get_active_plugins()) == 0
+            and len(self.events_queue) == 0
+            and self._event_cursor >= len(self.events)
+        ):
             self.exit()
 
         # If the windows has been killed, exit the program
