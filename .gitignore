@@ -19,3 +19,6 @@ agents/humanlike_agent.py
 agents/stom_agent.py
 agents/__init__.py.full
 tests/test_humanlike_agent.py
+
+# Visual Studio
+.vs/
