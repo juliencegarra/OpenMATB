@@ -812,6 +812,23 @@ class TestReplayWithMouse:
         assert replay.python("import _openmatb_probe as probe; probe.PROBE['scheduler']._pointer_marker is not None")
 
 
+class TestInstructions:
+    def test_a_page_with_an_image_does_not_stop_openmatb(self, page_factory):
+        """Regression: pyglet 3.0.dev10 reads image.anchor_y for an <img> of an HTML label, and images have no
+        anchor any more: the exception stopped the event loop on the second page of instructions_example_en.txt."""
+        app = page_factory()
+        app.start(
+            "0:00:00;instructions;filename;instructions_example_en.txt\n0:00:00;instructions;start\n"
+            "0:00:00;sysmon;start\n0:00:02;sysmon;stop\n"
+        )
+        app.page.focus("#pygletCanvas")
+        for _ in range(4):  # Every page, then the end of the instructions
+            app.page.wait_for_timeout(700)
+            app.page.keyboard.press("Space")
+        state = app.wait_until(lambda s: not s["running"] or s["scenario_time"] > 1, timeout=10)
+        assert state["running"], app.console
+
+
 class TestLoopErrors:
     def test_an_error_stopping_the_loop_is_printed_in_the_console(self, page_factory):
         """pyglet's loop stops on an exception without any message: core.platform.report_loop_errors prints it."""

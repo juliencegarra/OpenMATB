@@ -19,7 +19,14 @@ PYGLET_3: bool = int(pyglet.version.split(".")[0]) >= 3
 if PYGLET_3:
     from pyglet.config import Config
     from pyglet.graphics.framebuffer import get_screenshot
+    from pyglet.image.base import _AbstractImage
     from pyglet.media import AudioPlayer, load_audio
+
+    # pyglet 3.0.dev10: images have no anchor any more, but an <img> of an HTML label (instructions) still reads
+    # image.anchor_y, and the exception stopped the event loop: images keep the default anchor of pyglet 2 (0, 0)
+    if not hasattr(_AbstractImage, "anchor_y"):
+        _AbstractImage.anchor_x = 0
+        _AbstractImage.anchor_y = 0
 else:
     from pyglet.gl import Config
     from pyglet.media import Player as AudioPlayer
