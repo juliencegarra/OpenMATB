@@ -623,8 +623,8 @@ class BlockingPlugin(AbstractPlugin):
             del slide_content[title_idx[-1]]
 
         # Remove a potential previous title
-        elif "instructions_title" in self.widgets:
-            del self.widgets["instructions_title"]
+        elif self.is_a_widget_name("title"):
+            del self.widgets[self.get_widget_fullname("title")]
 
         # Renew the current slide content
         self.current_slide = "\n".join(slide_content)
