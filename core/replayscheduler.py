@@ -199,7 +199,10 @@ class ReplayScheduler(Scheduler):
     def set_inputs_buttons(self) -> None:
         # Plot the keyboard keys that are available in the present plugins
         input_container: Container = Window.MainWindow.get_container("inputstrip")
-        key_container: Container = input_container.reduce_and_translate(width=0.9, height=0.8, y=0, x=0.5)
+        # Under the joystick view (top), the mouse position and the browser of the session (0.70 to 0.76)
+        key_container: Container = input_container.reduce_and_translate(width=0.9, height=0.66, y=0, x=0.5)
+        # The text is centered in its area: keep the lines that fit in it (about 24 px each), whatever the screen
+        self._max_keys_history: int = max(5, int(key_container.h / 24) - 1)
         self.key_widget: SimpleHTML = SimpleHTML("replay_keys", key_container, "<strong>Keyboard history:\n</strong>")
         self.key_widget.show()
 
@@ -520,7 +523,7 @@ class ReplayScheduler(Scheduler):
                 cmd: str = f"{input['address']} ({input['value']})"
                 if len(self.keys_history) == 0 or cmd != self.keys_history[-1]:
                     self.keys_history.append(cmd)
-                if len(self.keys_history) > 30:
+                if len(self.keys_history) > getattr(self, "_max_keys_history", 30):
                     del self.keys_history[0]
 
         history_str: str = "<strong>Keyboard history:\n</strong>" + "<br>".join(self.keys_history)
@@ -572,11 +575,15 @@ class ReplayScheduler(Scheduler):
                     tank["level"] = state["value"]
 
     def _remap_mouse(self, x: int, y: int) -> tuple[int, int]:
-        """Remap original full-screen coordinates to the reduced replay area."""
-        x_scale: float = 1 - REPLAY_STRIP_PROPORTION
-        y_scale: float = 1 - REPLAY_STRIP_PROPORTION - REPLAY_PERF_STRIP_PROPORTION
-        replay_x: int = int(x * x_scale)
-        replay_y: int = int(y * y_scale + Window.MainWindow.height * REPLAY_STRIP_PROPORTION)
+        """Remap the coordinates of the session window to the reduced replay area. The session window may have
+        another size than the replay one (e.g. a page of the browser, without its toolbars)."""
+        width, height = Window.MainWindow.width, Window.MainWindow.height
+        size: Any = getattr(getattr(self, "logreader", None), "window_size", None)
+        session_width, session_height = size if isinstance(size, tuple) else (width, height)
+        area_width: float = width * (1 - REPLAY_STRIP_PROPORTION)
+        area_height: float = height * (1 - REPLAY_STRIP_PROPORTION - REPLAY_PERF_STRIP_PROPORTION)
+        replay_x: int = int(x / session_width * area_width)
+        replay_y: int = int(y / session_height * area_height + height * REPLAY_STRIP_PROPORTION)
         return replay_x, replay_y
 
     def display_mouse_inputs(self) -> None:

@@ -866,9 +866,23 @@ class TestMouseInputs:
         from core.constants import REPLAY_PERF_STRIP_PROPORTION as PERF
         from core.constants import REPLAY_STRIP_PROPORTION as STRIP
 
-        mock_win.MainWindow.height = 1000
+        mock_win.MainWindow.width, mock_win.MainWindow.height = 1600, 1000
         rs = _make_replay()
+        rs.logreader.window_size = None  # Unknown: the session window is taken as the replay one
         assert rs._remap_mouse(100, 200) == (int(100 * (1 - STRIP)), int(200 * (1 - STRIP - PERF) + 1000 * STRIP))
+
+    @patch("core.replayscheduler.Window")
+    def test_remap_a_session_window_of_another_size(self, mock_win):
+        """A page of the browser (1920x944) replayed in a 1920x1080 window: the heights are scaled by 1080/944."""
+        from core.constants import REPLAY_PERF_STRIP_PROPORTION as PERF
+        from core.constants import REPLAY_STRIP_PROPORTION as STRIP
+
+        mock_win.MainWindow.width, mock_win.MainWindow.height = 1920, 1080
+        rs = _make_replay()
+        rs.logreader.window_size = (1920.0, 944.0)
+        x, y = rs._remap_mouse(960, 472)  # The center of the session window
+        assert x == int(1920 * (1 - STRIP) / 2)
+        assert y == int(1080 * (1 - STRIP - PERF) / 2 + 1080 * STRIP)  # The center of the replay area
 
     @patch("core.replayscheduler.Window")
     def test_moves_the_cursor(self, mock_win):

@@ -72,6 +72,7 @@ class LogReader:
         self.perf_series: dict[str, list[tuple[float, dict[str, str]]]] = {}
         # Browser sessions only (see _read_page_events)
         self.environment: dict[str, str] = {}
+        self.window_size: tuple[float, float] | None = None
         self.hidden_periods: list[tuple[float, float, float]] = []
         self.freezes: list[tuple[float, float]] = []
 
@@ -125,6 +126,7 @@ class LogReader:
         # Session duration based on logtime (includes blocking periods)
         self.session_duration = all_rows[-1]["normalized_logtime"]
         self._read_page_events(all_rows)
+        self.window_size = self._read_window_size(all_rows)
 
         # Second pass: process rows (skip first row as before)
         for row in all_rows[1:]:
@@ -247,6 +249,27 @@ class LogReader:
         if idx + 1 < len(self._bp_replay_times):
             scenario_time = min(scenario_time, self._bp_scenario_times[idx + 1])
         return scenario_time
+
+    @staticmethod
+    def _read_window_size(all_rows: list[dict[str, Any]]) -> tuple[float, float] | None:
+        """Size (width, height) of the window of the session, where its mouse inputs were: logged ("window": "WxH"),
+        or, in older sessions, the extent of the areas of interest of the tasks (each one is (x1, y1, x2, y2))."""
+        width: float = 0
+        height: float = 0
+        for row in all_rows:
+            if row["type"] == "window":
+                try:
+                    w, h = (float(v) for v in str(row["value"]).split("x"))
+                    return w, h
+                except ValueError:
+                    continue
+            if row["type"] == "aoi":
+                try:
+                    x1, y1, x2, y2 = ast.literal_eval(row["value"])
+                except (ValueError, SyntaxError, TypeError):
+                    continue
+                width, height = max(width, x1, x2), max(height, y1, y2)
+        return (width, height) if width > 0 and height > 0 else None
 
     def _read_page_events(self, all_rows: list[dict[str, Any]]) -> None:
         """Browser sessions: the browser and its system, the periods when the page was hidden (the scenario is

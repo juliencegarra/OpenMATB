@@ -39,6 +39,9 @@ class Scheduler:
             get_logger().log_manual_entry(f.read().strip(), key="version")
         for key, value in browser_environment():  # Browser, version and system (timing differs between them)
             get_logger().log_manual_entry(value, key=key)
+        # The size of the window (a page in the browser): the replay places the mouse inputs with it
+        if Window.MainWindow is not None and not REPLAY_MODE:
+            get_logger().log_manual_entry(f"{Window.MainWindow.width}x{Window.MainWindow.height}", key="window")
 
         self.clock: Clock = Clock("main")
         self.scenario_time: float = 0

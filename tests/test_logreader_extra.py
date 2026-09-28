@@ -156,6 +156,30 @@ class TestEmptyAndTruncatedLogs:
         assert lr.contents == ["0:00:01;sysmon;stop"]
 
 
+class TestWindowSize:
+    def test_logged_window_size(self, tmp_path):
+        lr = _reader(
+            tmp_path, [(100.0, 0, "window", "", "", "1920x944"), (101.0, 1, "event", "sysmon", "self", "start")]
+        )
+        assert lr.window_size == (1920.0, 944.0)
+
+    def test_older_sessions_use_the_areas_of_interest(self, tmp_path):
+        """Without "window", the extent of the areas of interest of the tasks gives the window size."""
+        lr = _reader(
+            tmp_path,
+            [
+                (100.0, 0, "aoi", "resman", "foreground", "(575, 424.8, 1631, 0.0)"),
+                (100.1, 0, "aoi", "sysmon", "task_title", "(0, 944.0, 575, 896.8)"),
+                (100.2, 0, "aoi", "resman", "status_title", "(1631, 472.0, 1919, 424.8)"),
+                (101.0, 1, "event", "sysmon", "self", "start"),
+            ],
+        )
+        assert lr.window_size == (1919, 944.0)
+
+    def test_unknown_window_size(self, tmp_path):
+        assert _reader(tmp_path, [(101.0, 1, "event", "sysmon", "self", "start")]).window_size is None
+
+
 class TestReplayMapping:
     def test_scenario_starting_after_the_log(self, tmp_path):
         """The first rows are logged before the scenario starts (0.2 s here): the replayed inputs, placed by

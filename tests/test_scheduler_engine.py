@@ -100,8 +100,8 @@ class TestInit:
         ):
             sched = Scheduler(scenario_path="my.txt")
 
-        mock_logger.log_manual_entry.assert_called_once()
-        assert mock_logger.log_manual_entry.call_args.kwargs == {"key": "version"}
+        keys = [c.kwargs["key"] for c in mock_logger.log_manual_entry.call_args_list]
+        assert keys == ["version", "window"]  # The window size places the mouse inputs in the replay
         clock_cls.assert_called_once_with("main")
         clock_cls.return_value.schedule.assert_called_once_with(sched.update)
         scen_cls.assert_called_once_with(None, scenario_path="my.txt")
