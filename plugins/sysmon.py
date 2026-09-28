@@ -329,8 +329,8 @@ class Sysmon(AbstractPlugin):
         gauge["_feedbacktimer"] = self.parameters["feedbackduration"]
 
     def filter_key(self, keystr: str) -> str | None:
-        # allowanykey may be enabled from a scenario (set_parameter): make SPACE an accepted key whenever the
-        # mode is on. (When the mode is off, a SPACE left in self.keys is ignored by do_on_key.)
+        # allowanykey may be enabled from a scenario (set_parameter): SPACE is accepted too whenever the mode
+        # is on. (When the mode is off, a SPACE left in self.keys is ignored by do_on_key.)
         if self.parameters["allowanykey"]:
             self.keys.add("SPACE")
         return super().filter_key(keystr)
@@ -343,28 +343,29 @@ class Sysmon(AbstractPlugin):
         if state == "press":
             resolver: str = "agent" if emulate else "human"
 
-            # allowanykey mode: SPACE resolves the first active failure
-            if self.parameters["allowanykey"] and key == "SPACE":
-                failures = self.get_gauges_on_failure()
-                if failures:
-                    self.stop_failure(gauge=failures[0], success=True, resolved_by=resolver)
-                return
-
             gauges: list[dict[str, Any]] = self.get_gauges_key_value("key", key)
-            if not gauges:  # An accepted key mapped to no gauge (e.g. SPACE without allowanykey)
+            failures: list[dict[str, Any]] = self.get_gauges_on_failure()
+            if self.parameters["allowanykey"]:
+                # Any sysmon key, or SPACE, signals a failure: the one of the key if it is failing, else the first one
+                if failures:
+                    failing: list[dict[str, Any]] = [g for g in failures if g["key"] == key]
+                    self.stop_failure(gauge=(failing or failures)[0], success=True, resolved_by=resolver)
+                    return
+            elif not gauges:  # An accepted key mapped to no gauge (a SPACE left from allowanykey)
                 return
-            gauge: dict[str, Any] = gauges[0]
-            if key in [g["key"] for g in self.get_gauges_on_failure()]:
-                self.stop_failure(gauge=gauge, success=True, resolved_by=resolver)
-            else:
-                self.log_performance("name", gauge["name"])
-                self.log_performance("signal_detection", "FA")
-                self.log_performance("response_time", float("nan"))
-                self.log_performance("resolved_by", resolver)
+            elif gauges[0] in failures:
+                self.stop_failure(gauge=gauges[0], success=True, resolved_by=resolver)
+                return
 
-                # Set a negative feedback if relevant
-                if self.parameters["feedbacks"]["negative"]["active"] and self._is_scale(gauge):
-                    self.set_scale_feedback(gauge, "negative")
+            # False alarm (no failure on this gauge, or none at all with allowanykey)
+            self.log_performance("name", gauges[0]["name"] if gauges else key)
+            self.log_performance("signal_detection", "FA")
+            self.log_performance("response_time", float("nan"))
+            self.log_performance("resolved_by", resolver)
+
+            # Set a negative feedback if relevant
+            if gauges and self.parameters["feedbacks"]["negative"]["active"] and self._is_scale(gauges[0]):
+                self.set_scale_feedback(gauges[0], "negative")
 
     def do_on_mouse_press(self, x: int, y: int, button: int) -> None:
         if button != winmouse.LEFT:

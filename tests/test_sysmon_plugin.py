@@ -527,16 +527,37 @@ class TestDoOnKey:
         assert _performance(sysmon)["name"] == "F5"
         assert _performance(sysmon)["signal_detection"] == "HIT"
 
-    def test_any_key_mode_without_failure_does_nothing(self, sysmon):
+    def test_any_key_mode_without_failure_is_a_false_alarm(self, sysmon):
         sysmon.parameters["allowanykey"] = True
         sysmon.keys.add("SPACE")
         sysmon.do_on_key("SPACE", "press", False)
-        assert not hasattr(sysmon, "performance")
+        assert _performance(sysmon)["name"] == "SPACE"
+        assert _performance(sysmon)["signal_detection"] == "FA"
 
-    def test_any_key_mode_still_accepts_gauge_keys(self, sysmon):
+    def test_any_key_mode_another_gauge_key_resolves_the_failure(self, sysmon):
+        """The F2 key signals a failure of the F4 gauge."""
+        sysmon.parameters["allowanykey"] = True
+        _scale(sysmon, 4)["side"] = 1
+        sysmon.start_failure(_scale(sysmon, 4))
+        sysmon.do_on_key("F2", "press", False)
+        assert _scale(sysmon, 4)["_onfailure"] is False
+        assert _performance(sysmon)["name"] == "F4"
+        assert _performance(sysmon)["signal_detection"] == "HIT"
+        assert _scale(sysmon, 2)["_feedbacktype"] is None  # No negative feedback on the key's gauge
+
+    def test_any_key_mode_the_key_of_a_failing_gauge_resolves_it(self, sysmon):
+        sysmon.parameters["allowanykey"] = True
+        sysmon.start_failure(_light(sysmon, 1))
+        sysmon.start_failure(_light(sysmon, 2))
+        sysmon.do_on_key("F6", "press", False)
+        assert _light(sysmon, 2)["_onfailure"] is False
+        assert _light(sysmon, 1)["_onfailure"] is True
+
+    def test_any_key_mode_gauge_key_without_failure_is_a_false_alarm(self, sysmon):
         sysmon.parameters["allowanykey"] = True
         sysmon.keys.add("SPACE")
         sysmon.do_on_key("F3", "press", False)
+        assert _performance(sysmon)["name"] == "F3"
         assert _performance(sysmon)["signal_detection"] == "FA"
 
     def test_any_key_mode_set_from_a_scenario_accepts_space(self, sysmon):
@@ -566,12 +587,12 @@ class TestDoOnKey:
     def test_space_is_ignored_once_any_key_mode_is_switched_off(self, sysmon):
         """Turning allowanykey off from a scenario disables the SPACE shortcut again."""
         sysmon.set_parameter("allowanykey", True)
-        sysmon.do_on_key("SPACE", "press", False)
+        sysmon.do_on_key("SPACE", "press", False)  # A false alarm (no failure)
         sysmon.set_parameter("allowanykey", False)
         sysmon.start_failure(_light(sysmon, 1))
         sysmon.do_on_key("SPACE", "press", False)
         assert _light(sysmon, 1)["_onfailure"] is True
-        assert not hasattr(sysmon, "performance")
+        assert sysmon.performance["signal_detection"] == ["FA"]
 
 
 @pytest.mark.usefixtures("no_modal_dialog")

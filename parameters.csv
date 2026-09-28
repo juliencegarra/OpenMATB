@@ -10,7 +10,7 @@ sysmon,alerttimeout,Maximum duration of a failure (ms),(positive integer),10000
 sysmon,automaticsolver,"When True, any failure will be automatically corrected after an `automaticsolverdelay` duration",(boolean),False
 sysmon,automaticsolverdelay,"Delay (ms) between a failure onset and its automatic correction, if `automaticsolver` == True",(positive integer),1000
 sysmon,displayautomationstate,"If True, the current automation state (MANUAL vs AUTO ON) of the task is displayed.",(boolean),True
-sysmon,allowanykey,"If True, the subject can use any system monitoring key, to signal a failure. For instance, he or she could use the F2 key to signal a failure for the F4 gauge.",(boolean),False
+sysmon,allowanykey,"If True, the subject can use any system monitoring key, or SPACE, to signal a failure. For instance, he or she could use the F2 key to signal a failure for the F4 gauge. The key of a failing gauge resolves it; any other key resolves the first failure. Without failure, the key is a false alarm.",(boolean),False
 sysmon,feedbackduration,"Duration (ms) of feedbacks, if enabled",(positive integer),1500
 sysmon,feedbacks-positive-active,Is the positive feedback (correct response) enabled?,(boolean),True
 sysmon,feedbacks-positive-color,Color of the positive feedback if enabled,"`white`, `black`, `green`, `red`, `background`, `lightgrey`, `grey`, `blue`",green
