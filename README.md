@@ -3,9 +3,7 @@
 ![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/juliencegarra/5d551479385698a23440737307999f72/raw/OpenMATB-cobertura-coverage.json)
 
 > [!NOTE]
-> **Experimental web version.** OpenMATB can also run in a web browser, with no installation, thanks to Pyodide and pyglet 3. Chrome or Edge are recommended: Firefox and Safari also work, but Firefox pauses the page for 0.1 to 1 s every few seconds, which affects timing. Joysticks are supported through the browser Gamepad API (press one of the joystick buttons on the start page to detect it). Session files are downloaded, or sent to JATOS, DataPipe (OSF) or a WebDAV folder, and can be replayed in the browser. It is still incomplete: the parallel port and Lab Streaming Layer are not available, and timing relies on the browser clock.
-> It is developed on the [`pyglet3-pyodide-web`](https://github.com/juliencegarra/OpenMATB/tree/pyglet3-pyodide-web) branch. See [Web version](https://github.com/juliencegarra/OpenMATB/tree/pyglet3-pyodide-web#web-version-browser) in its README to build and host it.
- 
+> **Web version.** Since version 1.5, OpenMATB also runs in a web browser, with no installation, thanks to Pyodide and pyglet 3 ([try the demo](https://juliencegarra.github.io/OpenMATB/)). Chrome or Edge are recommended: Firefox and Safari also work, but Firefox pauses the page for 0.1 to 1 s every few seconds, which affects timing. Joysticks are supported through the browser Gamepad API. Session files are downloaded, or sent to JATOS, DataPipe (Google Drive, Dataverse or Zenodo) or a WebDAV folder, and can be replayed in the browser; OpenMATB can also run from an LMS (SCORM, cmi5). A USB trigger box replaces the parallel port, and Lab Streaming Layer goes through a bridge. Response times are measured from the frame showing the stimulus to the browser timestamp of the key; screen and keyboard latencies are not measured. See [WEB.md](WEB.md) to build and host it.
 
 # OpenMATB: An open-source version of the Multi-Attribute Task Battery (MATB)
 
@@ -26,23 +24,23 @@ Those aspects are detailed in:
 Cegarra, J., Valéry, B., Avril, E., Calmettes, C., & Navarro, J. (2020) OpenMATB: A Multi-Attribute Task Battery promoting task customization, software extensibility and experiment replicability. *Behavior Research Methods*, 52, 1980–1990. https://doi.org/10.3758/s13428-020-01364-w
 
 
-Contact : <a href="mailto:julien.cegarra@univ-jfc.fr">julien.cegarra AT univ-jfc.fr</a>; <a href="mailto:benoit.valery@univ-jfc.fr">benoit.valery AT univ-jfc.fr</a> 
+Contact : <a href="mailto:julien.cegarra@univ-jfc.fr">julien.cegarra AT univ-jfc.fr</a>
 
 
 ## Requirements
 
-The last version requires Python 3.9 and only depends on the following third-part libraries:
+The last version requires Python 3.10 and only depends on the following third-part libraries:
 
-- [pyglet](https://github.com/pyglet/pyglet)
+- [pyglet](https://github.com/pyglet/pyglet) (version 2, pinned in `requirements.txt`; the web version uses pyglet 3, see [WEB.md](WEB.md))
 - [pyparallel](https://github.com/pyserial/pyparallel)
 - [rstr](https://github.com/leapfrogonline/rstr)
 - [pylsl](https://github.com/chkothe/pylsl)
 
-The program is compatible with Windows, Mac and Linux systems. To run perfectly, the software requires only a personal computer and a joystick for the tracking task.
+The program is compatible with Windows, Mac and Linux systems. To run perfectly, the software requires only a personal computer and a joystick for the tracking task. It can also run in a web browser (see [WEB.md](WEB.md)).
 
 ## Cross-platform installation
 
-The first thing to do is to [install python 3.9](https://www.python.org/downloads/) (or above) on your computer.
+The first thing to do is to [install python 3.10](https://www.python.org/downloads/) (or above) on your computer.
 
 To execute OpenMATB on most platforms, simply clone the current repository to a given local folder. Then, make sure you installed the correct python libraries with pip. The correct library versions are written in `requirements.txt`. You can use the `-r` flag of `pip` to install everything at once.
 
@@ -52,7 +50,7 @@ To execute OpenMATB on most platforms, simply clone the current repository to a 
 python -m pip install -r requirements.txt
 ```
 
-You can now launch OpenMATB by executing the `main.py` file with python 3.9.
+You can now launch OpenMATB by executing the `main.py` file with python 3.10 (or above).
 
 ```bash
 python main.py
@@ -60,14 +58,14 @@ python main.py
 
 ### Virtual environment
 
-If you want to create a dedicated python installation (so various python projects won’t overlap), you might want to install a virtual environment in your local repository. To do so, follow the instructions detailed on this [related page](https://docs.python.org/3.9/tutorial/venv.html).
+If you want to create a dedicated python installation (so various python projects won’t overlap), you might want to install a virtual environment in your local repository. To do so, follow the instructions detailed on this [related page](https://docs.python.org/3/tutorial/venv.html).
 
-**Warning:** be sure to create the virtual environment into a directory named `.venv`. If you want to use an other name, make sure to change the `main.py` [shebang](https://docs.python.org/3.9/tutorial/appendix.html#tut-scripts) (`#! .venv/bin/python3.9`) that allows its direct execution with the distribution installed in the virtual environment.
+**Warning:** be sure to create the virtual environment into a directory named `.venv`. If you want to use an other name, make sure to change the `main.py` [shebang](https://docs.python.org/3/tutorial/appendix.html#tut-scripts) (`#! .venv/bin/python3`) that allows its direct execution with the distribution installed in the virtual environment.
 
 Once the virtual environment is set, you must activate it to install the required dependencies into it:
 
 - **Under Linux**: `source .venv/bin/activate`
-- **Under Windows**: `.venv\Scripts\activate.bat` (see [this page](https://docs.python.org/3.9/tutorial/venv.html) for more information).
+- **Under Windows**: `.venv\Scripts\activate.bat` (see [this page](https://docs.python.org/3/tutorial/venv.html) for more information).
 
 Now that your virtual environment is activated, just install the dependencies as you would do for a "global" python distribtion.
 
@@ -81,12 +79,14 @@ Finally, you can simply execute the `main.py`. Two possibilities here :
 2. Or you can execute `main.py` and let the shebang finds the virtual distribution for you. In that case, (a) no need to activate the virtual environment, (b) be sure that you made the `main.py` file executable.
 
 
-### Use of compiled source (coming soon)
+### Use of compiled source
 
 If you don't mind not seeing all the source files, you might want to use compiled versions of the software. The good thing here is that you don't have to install neither python nor its dependencies to make OpenMATB working.
 
+- **For Windows**: the [installer](https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-Setup.exe) or the [portable version](https://github.com/juliencegarra/OpenMATB/releases/latest/download/OpenMATB-Portable.zip) of the [latest release](https://github.com/juliencegarra/OpenMATB/releases/latest)
 - **For Linux**: [COMING SOON]()
-- **For Windows**: [COMING SOON]()
+
+The releases also contain the web version, ready to host (static site, JATOS study, SCORM and cmi5 packages, see [WEB.md](WEB.md)).
 
 
 ## Basic example of OpenMATB usage
@@ -148,6 +148,29 @@ For more information about how to use OpenMATB, please refers to [our wiki](http
 ## Major changes
 
 Since the first release of OpenMATB, there has been a lot of changes, the main one of which are listed below.
+
+### Version 1.5
+  **Web version (new)**, see [WEB.md](WEB.md)
+  - OpenMATB runs in a web browser (Pyodide, pyglet 3): same scenarios, plugins, session files and replay
+  - Session files downloaded, or sent to JATOS, DataPipe or a WebDAV folder; static site, JATOS, SCORM and cmi5 packages
+  - Joysticks through the browser Gamepad API, USB trigger box instead of the parallel port, Lab Streaming Layer bridge
+  - The desktop version keeps pyglet 2 (`core/pyglet_compat.py` holds the differences)
+
+  **New Features**
+  - Response times measured from the frame showing the stimulus to the input (the key event timestamp in the browser), instead of between two clock ticks
+  - Agents: the automatic solver (`automaticsolver`) plays the tasks through an agent, with keys and joystick inputs logged as `agent` inputs and replayed; `system;agent;<name>` changes the agent
+  - `allowanykey` in system monitoring: any system monitoring key, or SPACE, signals a failure
+  - Windows installer and portable version, and the web packages, in each release
+
+  **Bug Fixes**
+  - Fix lost questionnaire answers: only the answers of the last page were logged
+  - Fix replay: inputs replayed about 0.2 s late, keys replayed after the plugin steps, agent actions done twice
+  - Fix plugins resumed after a dialog although they were paused by a blocking plugin
+  - Fix early exit during a gap of the scenario
+  - Fix the manual/automatic periods of the scheduling timelines
+  - Fix a strong joystick bouncing on the tracking reticle edge
+  - Fix communications callsigns reusing characters, and a possible endless loop
+  - Fix scenario and instruction files saved in UTF-8 with BOM, and crashes on a malformed scenario line
 
 ### Version 1.3+
   **Replay Mode (new)**
