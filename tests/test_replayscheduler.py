@@ -861,6 +861,23 @@ class TestProcessStates:
         track.reticle.proportional_to_relative.assert_not_called()
 
 
+class TestMousePointer:
+    def test_arrow_with_its_tip_at_the_position(self):
+        """The drawn pointer is an arrow (white triangles, black outline) whose tip is at the mouse position."""
+        from core.replayscheduler import POINTER_OUTLINE, POINTER_SCALE, MousePointer
+
+        pointer = MousePointer(100, 500, batch=None)
+        assert (pointer._outline[0].x, pointer._outline[0].y) == (100, 500)  # The tip
+        assert len(pointer._outline) == len(POINTER_OUTLINE)
+        pointer.move_to(300, 200)
+        tail = POINTER_OUTLINE[3]
+        assert (pointer._outline[3].x, pointer._outline[3].y) == (
+            300 + tail[0] * POINTER_SCALE,
+            200 - tail[1] * POINTER_SCALE,
+        )
+        assert all(t.y <= 200 for t in pointer._fill)  # Downwards from the tip (y up in pyglet)
+
+
 class TestMouseInputs:
     @patch("core.replayscheduler.Window")
     def test_remap_into_the_replay_area(self, mock_win):
@@ -897,9 +914,9 @@ class TestMouseInputs:
         assert (rs._pointer_marker.x, rs._pointer_marker.y) == rs._remap_mouse(100, 200)
         rs.mouse_label.set_text.assert_called_once_with("Mouse: 100, 200")
 
-    @patch("core.replayscheduler.Circle")
+    @patch("core.replayscheduler.MousePointer")
     @patch("core.replayscheduler.Window")
-    def test_the_pointer_is_drawn_not_moved(self, mock_win, mock_circle):
+    def test_the_pointer_is_drawn_not_moved(self, mock_win, mock_pointer):
         """The real mouse pointer is not moved: it kept the user's mouse in the replay (desktop), and a page cannot
         move it (no set_mouse_position in the browser: the replay stopped). The pointer of the session is drawn."""
         mock_win.MainWindow.height = 1000
@@ -908,11 +925,11 @@ class TestMouseInputs:
         rs.display_mouse_inputs()
         rx, ry = rs._remap_mouse(100, 200)
         mock_win.MainWindow.set_mouse_position.assert_not_called()
-        assert (rs._pointer_marker.x, rs._pointer_marker.y) == (rx, ry)
+        mock_pointer.assert_called_once_with(rx, ry, mock_win.MainWindow.batch)
         rs.replay_time, rs._last_mouse_x = 2.0, 300  # No new input: the last position moves
         rs.display_mouse_inputs()
-        mock_circle.assert_called_once()  # The same marker is moved
-        assert rs._pointer_marker.x == rs._remap_mouse(300, 200)[0]
+        mock_pointer.assert_called_once()  # The same pointer is moved
+        mock_pointer.return_value.move_to.assert_called_with(*rs._remap_mouse(300, 200))
 
     @patch("core.replayscheduler.Window")
     def test_no_position_yet(self, mock_win):

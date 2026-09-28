@@ -8,7 +8,7 @@ from bisect import bisect_right
 from time import gmtime, strftime
 from typing import Any
 
-from pyglet.shapes import Circle, Rectangle
+from pyglet.shapes import Circle, Line, Rectangle, Triangle
 from pyglet.window import key
 
 from core.constants import BFLIM, REPLAY_PERF_STRIP_PROPORTION, REPLAY_STRIP_PROPORTION
@@ -31,6 +31,43 @@ HIDDEN_MARK_COLOR: tuple[int, int, int, int] = (240, 160, 60, 200)
 FREEZE_MARK_COLOR: tuple[int, int, int, int] = (220, 50, 50, 230)
 
 
+# The classic mouse pointer (an arrow), in pixels, y downwards from its tip; drawn 1.3 times larger
+POINTER_OUTLINE: tuple[tuple[int, int], ...] = ((0, 0), (0, 17), (4, 13), (7, 20), (9, 19), (6, 12), (12, 12))
+POINTER_TRIANGLES: tuple[tuple[int, int, int], ...] = ((0, 1, 2), (0, 2, 5), (0, 5, 6), (2, 3, 4), (2, 4, 5))
+POINTER_SCALE: float = 1.3
+
+
+class MousePointer:
+    """The mouse pointer of the session, drawn in the replay (white arrow, black outline), its tip at (x, y)."""
+
+    def __init__(self, x: float, y: float, batch: Any) -> None:
+        self._fill: list[Any] = [
+            Triangle(0, 0, 0, 0, 0, 0, color=(255, 255, 255), batch=batch, group=G(99)) for _ in POINTER_TRIANGLES
+        ]
+        n: int = len(POINTER_OUTLINE)
+        self._outline: list[Any] = [
+            Line(0, 0, 0, 0, thickness=1.2, color=(0, 0, 0), batch=batch, group=G(100)) for _ in range(n)
+        ]
+        self.x: float = x
+        self.y: float = y
+        self.move_to(x, y)
+
+    def _points(self) -> list[tuple[float, float]]:
+        return [(self.x + px * POINTER_SCALE, self.y - py * POINTER_SCALE) for px, py in POINTER_OUTLINE]
+
+    def move_to(self, x: float, y: float) -> None:
+        self.x, self.y = x, y
+        points: list[tuple[float, float]] = self._points()
+        for triangle, (a, b, c) in zip(self._fill, POINTER_TRIANGLES):
+            (triangle.x, triangle.y), (triangle.x2, triangle.y2), (triangle.x3, triangle.y3) = (
+                points[a],
+                points[b],
+                points[c],
+            )
+        for i, line in enumerate(self._outline):
+            (line.x, line.y), (line.x2, line.y2) = points[i], points[(i + 1) % len(points)]
+
+
 class ReplayScheduler(Scheduler):
     """
     This class manages events execution in the context of the OpenMATB replay.
@@ -46,7 +83,7 @@ class ReplayScheduler(Scheduler):
         self._muted: bool = True
         self._click_marker: Circle | None = None
         self._click_held: bool = False
-        self._pointer_marker: Circle | None = None  # Browser: the replayed mouse pointer
+        self._pointer_marker: MousePointer | None = None  # The mouse pointer of the session
         self._last_mouse_x: int | None = None
         self._last_mouse_y: int | None = None
         self._perf_overlay: PerfOverlay | None = None
@@ -632,10 +669,9 @@ class ReplayScheduler(Scheduler):
             # The pointer of the session is drawn: moving the real mouse pointer kept it in the replay (the user
             # could not use the play bar), and a page cannot move it (no set_mouse_position in the browser)
             if self._pointer_marker is None:
-                self._pointer_marker = Circle(
-                    x=rx, y=ry, radius=5, color=(40, 40, 40), batch=Window.MainWindow.batch, group=G(99)
-                )
-            self._pointer_marker.x, self._pointer_marker.y = rx, ry
+                self._pointer_marker = MousePointer(rx, ry, Window.MainWindow.batch)
+            elif (self._pointer_marker.x, self._pointer_marker.y) != (rx, ry):
+                self._pointer_marker.move_to(rx, ry)
 
         label: str = "Mouse: "
         if self._last_mouse_x is not None and self._last_mouse_y is not None:
