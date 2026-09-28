@@ -25,6 +25,7 @@ def _make_replay(**kwargs):
     rs.playpause = MagicMock()
     rs.slider = MagicMock()
     rs.clock = MagicMock()
+    rs._pointer_marker = None
     rs.__dict__.update(kwargs)
     return rs
 
@@ -884,21 +885,23 @@ class TestMouseInputs:
         assert x == int(1920 * (1 - STRIP) / 2)
         assert y == int(1080 * (1 - STRIP - PERF) / 2 + 1080 * STRIP)  # The center of the replay area
 
+    @patch("core.replayscheduler.Circle")
     @patch("core.replayscheduler.Window")
-    def test_moves_the_cursor(self, mock_win):
-        mock_win.MainWindow.height = 1000
+    def test_shows_the_position(self, mock_win, mock_circle):
+        mock_win.MainWindow.width, mock_win.MainWindow.height = 1600, 1000
         lr = _logreader(mouse=[(0.95, "x", "100.0"), (1.0, "y", "200")])
-        rs = _make_loaded_replay(lr, replay_time=1.0)
+        rs = _make_loaded_replay(lr, replay_time=1.0, _pointer_marker=None)
+        rs.logreader.window_size = None
         rs.display_mouse_inputs()
         assert (rs._last_mouse_x, rs._last_mouse_y) == (100, 200)
-        mock_win.MainWindow.set_mouse_position.assert_called_once_with(*rs._remap_mouse(100, 200))
+        assert (rs._pointer_marker.x, rs._pointer_marker.y) == rs._remap_mouse(100, 200)
         rs.mouse_label.set_text.assert_called_once_with("Mouse: 100, 200")
 
     @patch("core.replayscheduler.Circle")
-    @patch("core.replayscheduler.IS_WEB", True)
     @patch("core.replayscheduler.Window")
-    def test_browser_draws_the_pointer(self, mock_win, mock_circle):
-        """A page cannot move the mouse pointer (no set_mouse_position: it stopped the replay): it is drawn."""
+    def test_the_pointer_is_drawn_not_moved(self, mock_win, mock_circle):
+        """The real mouse pointer is not moved: it kept the user's mouse in the replay (desktop), and a page cannot
+        move it (no set_mouse_position in the browser: the replay stopped). The pointer of the session is drawn."""
         mock_win.MainWindow.height = 1000
         lr = _logreader(mouse=[(0.95, "x", "100.0"), (1.0, "y", "200")])
         rs = _make_loaded_replay(lr, replay_time=1.0, _pointer_marker=None)
