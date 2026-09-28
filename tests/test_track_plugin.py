@@ -193,17 +193,25 @@ class TestComputeNextPluginState:
         _step(track, in_target=True)
         assert "response_time" not in track.performance
 
-    def test_stale_inputs_are_reset_when_the_solver_is_on(self, track):
-        track.parameters["automaticsolver"] = True
-        track.reticle.cursor_relative = (0.0, 0.0)  # Read by the automatic compensation
-        track.x_input, track.y_input = 2, -2
-        _step(track, in_target=True)
-        assert (track.x_input, track.y_input) == (0, 0)
-
     def test_joystick_input_offsets_the_cursor(self, track):
         track.get_joystick_inputs(5, 0)
         _step(track, in_target=True)
         assert track.cursor_position[0] == pytest.approx(sin(0.010) * 96 + 5)
+
+    def test_stale_inputs_are_reset_when_the_solver_is_on_without_agent(self, track):
+        track.parameters["automaticsolver"] = True
+        track.x_input, track.y_input = 2, -2
+        _step(track, in_target=True)
+        assert (track.x_input, track.y_input) == (0, 0)
+
+    def test_cooperative_agent_keeps_human_inputs(self, track):
+        track.parameters["automaticsolver"] = True
+        track.agent = MagicMock(allows_human_input=True)
+        track.agent.get_automode_string.return_value = "ASSISTED"
+        track.x_input, track.y_input = 2, -2
+        _step(track, in_target=True)
+        assert (track.x_input, track.y_input) == (2, -2)
+        assert track.automode_string == "ASSISTED"
 
 
 class TestReticleLimits:

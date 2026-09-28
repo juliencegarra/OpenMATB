@@ -65,6 +65,8 @@ COLORS: dict[str, tuple[int, int, int, int]] = dict(
     DARKGREY=(50, 50, 50, 255),
     GREY=(200, 200, 200, 255),
     BLUE=(153, 204, 255, 255),
+    CYAN=(0, 190, 255, 255),
+    YELLOW=(255, 220, 50, 255),
 )
 C = COLORS
 
@@ -81,7 +83,7 @@ BFLIM: int = 15
 DEPRECATED: list[str] = ["pumpstatus", "end", "cutofffrequency", "equalproportions"]
 
 SYSTEM_PSEUDO_PLUGIN: str = "system"
-SYSTEM_COMMANDS: list[str] = ["pause", "mousecontrol"]
+SYSTEM_COMMANDS: list[str] = ["pause", "agent", "mousecontrol"]
 
 PATHS: dict[str, Path] = {k.upper(): Path(".", k) for k in ["plugins", "sessions"]}
 PATHS.update(

@@ -41,6 +41,7 @@ class AbstractPlugin:
         self.keys: set[str] = set()  #   Handle the keys that are allowed
         self.display_title: bool = taskplacement != "invisible"
         self.automode_string: str = ""
+        self.agent: Any = None
 
         self.next_refresh_time: float = 0
         self.scenario_time: float = 0
@@ -109,6 +110,12 @@ class AbstractPlugin:
 
             if self.get_widget("overdue") is not None:
                 self.get_widget("overdue").set_visibility(False)
+
+            if self.get_widget("attention") is not None:
+                self.get_widget("attention").set_visibility(False)
+
+            if self.get_widget("fault_icon") is not None:
+                self.get_widget("fault_icon").set_text("")
 
     def hide(self) -> None:
         """
@@ -206,8 +213,18 @@ class AbstractPlugin:
                 self.can_receive_keys = True
 
         if REPLAY_MODE:
+            # Replay always blocks human input but allows emulated keys
             self.can_receive_keys = False
             self.can_execute_keys = True
+        elif self.parameters.get("automaticsolver", False):
+            # Agent is active — allow emulated keys always
+            self.can_execute_keys = True
+            # Allow human input if agent explicitly permits it
+            agent = getattr(self, "agent", None)
+            if agent is not None and agent.allows_human_input:
+                self.can_receive_keys = not self.paused and self.is_visible()
+            else:
+                self.can_receive_keys = False
         else:
             self.can_execute_keys = self.can_receive_keys
 
@@ -238,10 +255,18 @@ class AbstractPlugin:
         if self.next_refresh_time < self.scenario_time - MAX_STEP_CATCH_UP:
             self.next_refresh_time = self.scenario_time + period
 
+        # Let the agent act on this plugin if automaticsolver is enabled
+        # (not in replay: its inputs are replayed from the session file)
+        if self.agent is not None and self.parameters.get("automaticsolver") and not REPLAY_MODE:
+            self.agent.on_plugin_update(self, self.scenario_time)
+
         # Should an automation state (string) be displayed ?
         if self.parameters.get("displayautomationstate"):
             if "automaticsolver" in self.parameters:
-                self.automode_string = _("MANUAL") if not self.parameters["automaticsolver"] else _("AUTO")
+                if self.parameters["automaticsolver"] and self.agent is not None:
+                    self.automode_string = _(self.agent.get_automode_string())
+                else:
+                    self.automode_string = _("MANUAL")
             else:
                 self.automode_string = _("MANUAL")
         else:
@@ -292,6 +317,22 @@ class AbstractPlugin:
         if "widget" in overdue:
             overdue["widget"].set_visibility(overdue["_is_visible"])
             overdue["widget"].set_border_color(overdue["color"])
+
+        if self.get_widget("attention") is not None:
+            show = (
+                self.agent is not None
+                and getattr(self.agent, "show_attention", False)
+                and getattr(self.agent, "_attended_task", None) == self.alias
+            )
+            self.get_widget("attention").set_visibility(show)
+
+        fault_w = self.get_widget("fault_icon")
+        if fault_w is not None:
+            show_fault = (
+                self.agent is not None and getattr(self.agent, "show_attention", False) and self.has_active_fault()
+            )
+            fault_w.set_text("!" if show_fault else "")
+
         return True
 
     def filter_key(self, keystr: str) -> str | None:
@@ -398,6 +439,28 @@ class AbstractPlugin:
                 border_thickness=0.025,
                 border_color=C["RED"],
                 fill_color=None,
+            )
+            self.add_widget(
+                "attention",
+                Frame,
+                container=self.task_container,
+                border_thickness=0.02,
+                border_color=C["CYAN"],
+                fill_color=None,
+                draw_order=3,
+            )
+
+            # Fault indicator — bold red "!" at bottom-right of task area
+            fault_cont = self.task_container.reduce_and_translate(width=0.12, height=0.12, x=1, y=0)
+            self.add_widget(
+                "fault_icon",
+                Simpletext,
+                container=fault_cont,
+                text="!",
+                font_size=F["XLARGE"],
+                color=C["RED"],
+                bold=True,
+                draw_order=self.m_draw + 4,
             )
 
         if self.display_title:

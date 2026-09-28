@@ -82,14 +82,14 @@ class Resman(AbstractPlugin):
             ),
             pump=dict(
                 [
-                    ("1", dict(flow=800, state="off", key="NUM_1", _fromtank="c", _totank="a")),
-                    ("2", dict(flow=600, state="off", key="NUM_2", _fromtank="e", _totank="a")),
-                    ("3", dict(flow=800, state="off", key="NUM_3", _fromtank="d", _totank="b")),
-                    ("4", dict(flow=600, state="off", key="NUM_4", _fromtank="f", _totank="b")),
-                    ("5", dict(flow=600, state="off", key="NUM_5", _fromtank="e", _totank="c")),
-                    ("6", dict(flow=600, state="off", key="NUM_6", _fromtank="f", _totank="d")),
-                    ("7", dict(flow=400, state="off", key="NUM_7", _fromtank="a", _totank="b")),
-                    ("8", dict(flow=400, state="off", key="NUM_8", _fromtank="b", _totank="a")),
+                    ("1", dict(flow=800, state="off", key="NUM_1", _fromtank="c", _totank="a", _hint_color=None)),
+                    ("2", dict(flow=600, state="off", key="NUM_2", _fromtank="e", _totank="a", _hint_color=None)),
+                    ("3", dict(flow=800, state="off", key="NUM_3", _fromtank="d", _totank="b", _hint_color=None)),
+                    ("4", dict(flow=600, state="off", key="NUM_4", _fromtank="f", _totank="b", _hint_color=None)),
+                    ("5", dict(flow=600, state="off", key="NUM_5", _fromtank="e", _totank="c", _hint_color=None)),
+                    ("6", dict(flow=600, state="off", key="NUM_6", _fromtank="f", _totank="d", _hint_color=None)),
+                    ("7", dict(flow=400, state="off", key="NUM_7", _fromtank="a", _totank="b", _hint_color=None)),
+                    ("8", dict(flow=400, state="off", key="NUM_8", _fromtank="b", _totank="a", _hint_color=None)),
                 ]
             ),
         )
@@ -271,29 +271,7 @@ class Resman(AbstractPlugin):
         if self.wait_before_leak > 0:
             self.wait_before_leak -= 1
         else:
-            if self.parameters["automaticsolver"] is True:
-                for _pump_n, this_pump in {p: v for p, v in pumps.items() if v["state"] != "failure"}.items():
-                    from_tank: dict[str, Any] = tanks[this_pump["_fromtank"]]
-                    to_tank: dict[str, Any] = tanks[this_pump["_totank"]]
-
-                    # 0.1. Systematically activate pumps draining non-depletable tanks
-                    if not from_tank["depletable"] and this_pump["state"] == "off":
-                        this_pump["state"] = "on"
-
-                    # 0.2. Activate/deactivate pump whose target tank is too low/high
-                    # "Too" means level is out of a tolerance zone around the target level (2500 +/- 150)
-                    if to_tank["target"] is not None:
-                        if to_tank["level"] <= to_tank["target"] - 50:
-                            this_pump["state"] = "on"
-                        elif to_tank["level"] >= to_tank["target"] + 50:
-                            this_pump["state"] = "off"
-
-                    # 0.3. Equilibrate between the two A/B tanks if sufficient level
-                    if from_tank["target"] is not None and to_tank["target"] is not None:
-                        if from_tank["level"] >= to_tank["target"] >= to_tank["level"]:
-                            this_pump["state"] = "on"
-                        else:
-                            this_pump["state"] = "off"
+            # Automatic solver logic is handled by the agent via on_plugin_update
 
             for _, this_tank in tanks.items():  # 1. Deplete target tanks
                 if this_tank["target"] is not None:
@@ -358,7 +336,10 @@ class Resman(AbstractPlugin):
         pumps: dict[str, dict[str, Any]] = self.parameters["pump"]
 
         for _, this_pump in pumps.items():  # 4. Refresh visual information
-            this_pump["widget"].set_color(self.parameters[f"pumpcolor{this_pump['state']}"])
+            if this_pump["_hint_color"] is not None and this_pump["state"] != "failure":
+                this_pump["widget"].set_color(this_pump["_hint_color"])
+            else:
+                this_pump["widget"].set_color(self.parameters[f"pumpcolor{this_pump['state']}"])
 
             if this_pump.get("statuswidget") is None:  # Pump status not displayed (displaystatus False)
                 continue
@@ -400,6 +381,7 @@ class Resman(AbstractPlugin):
                 return
             if pump_key["state"] != "failure":
                 pump_key["state"] = "on" if pump_key["state"] == "off" else "off"
+                pump_key["_hint_color"] = None  # Clear hint immediately on human action
 
     def do_on_mouse_press(self, x: int, y: int, button: int) -> None:
         if button != winmouse.LEFT:

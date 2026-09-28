@@ -100,6 +100,7 @@ APP_FILES: list[str] = ["main.py", "config.ini", "VERSION"]
 APP_DIRS: dict[str, tuple[str, ...]] = {
     "core": ("*.py",),
     "plugins": ("*.py",),
+    "agents": ("*.py",),
     "locales": ("*.mo",),
     "includes/img": ("*",),
     "includes/instructions": ("*",),

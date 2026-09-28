@@ -98,7 +98,9 @@ class Sysmon(AbstractPlugin):
 
         # and to scale only
         for gauge in self.get_scale_gauges():
-            gauge.update({"_pos": 5, "_zone": 0, "_feedbacktimer": None, "_feedbacktype": None})
+            gauge.update(
+                {"_pos": 5, "_zone": 0, "_feedbacktimer": None, "_feedbacktype": None, "_hint_arrow_color": None}
+            )
 
         self.automode_position: tuple[float, float] = (0.5, 0.05)
         self.scale_zones: dict[int, list[int]] = {1: list(range(3)), 0: list(range(3, 8)), -1: list(range(8, 11))}
@@ -210,6 +212,12 @@ class Sysmon(AbstractPlugin):
         for _scale_n, scale in self.parameters["scales"].items():
             scale["widget"].set_arrow_position(scale["_pos"])
 
+            # Apply agent hint color on arrow if set
+            if scale["_hint_arrow_color"] is not None:
+                scale["widget"].set_arrow_color(scale["_hint_arrow_color"])
+            else:
+                scale["widget"].set_arrow_color(C["BLACK"])
+
             if scale["_feedbacktimer"] is not None:
                 color: tuple[int, ...] = self.parameters["feedbacks"][scale["_feedbacktype"]]["color"]
                 scale["widget"].set_feedback_color(color)
@@ -246,12 +254,13 @@ class Sysmon(AbstractPlugin):
         gauge["failure"] = False
         self.start_response_timer(gauge)
 
-        # Schedule failure timing
-        delay: int = (
-            self.parameters["automaticsolverdelay"]
-            if self.parameters["automaticsolver"]
-            else self.parameters["alerttimeout"]
-        )
+        # Schedule failure timing (with the automatic solver, the agent resolves the failure after
+        # automaticsolverdelay; the alert timeout, or the agent delay, is a safety net)
+        delay: int = self.parameters["alerttimeout"]
+        if self.parameters["automaticsolver"] and self.agent is not None:
+            overrides: dict = self.agent.on_failure_started(self, gauge)
+            if "delay" in overrides:
+                delay = overrides["delay"]
         gauge["_failuretimer"] = delay
 
     def stop_failure(self, gauge: dict[str, Any], success: bool = False, resolved_by: str = "") -> None:

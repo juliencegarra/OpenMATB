@@ -158,6 +158,15 @@ class TestSetScenario:
         assert sched.paused_plugins == []
         assert sched._dialog_paused is False
 
+    def test_agent_assigned_only_to_automaticsolver_plugins(self, window):
+        """The default agent is attached only to plugins declaring automaticsolver."""
+        auto = _make_plugin(parameters={"automaticsolver": False})
+        manual = _make_plugin(parameters={})
+        manual.agent = "untouched"
+        sched = _make_scheduler({"auto": auto, "manual": manual})
+        assert auto.agent is sched.agent
+        assert manual.agent == "untouched"
+
 
 class TestUpdate:
     def _sched(self):
@@ -610,6 +619,30 @@ class TestSystemCommands:
         sched.execute_one_event(e)
         assert e.done == 1
         mock_logger.record_event.assert_called_once_with(e)
+
+    def test_agent_switch(self, window, mock_logger):
+        """system;agent;<name> creates the agent and gives it to automaticsolver plugins."""
+        auto = _make_plugin(parameters={"automaticsolver": True})
+        manual = _make_plugin(parameters={})
+        manual.agent = None
+        sched = _make_scheduler({"auto": auto, "manual": manual})
+        with patch("agents.create_agent") as create:
+            sched.execute_one_event(Event(1, 0, "system", ["agent", "humanlike"]))
+        create.assert_called_once_with("humanlike")
+        assert sched.agent is create.return_value
+        assert auto.agent is create.return_value
+        assert manual.agent is None
+
+    def test_agent_ignored_in_replay(self, window, mock_logger):
+        """In replay mode the agent command is logged but not applied."""
+        sched = _make_scheduler({"p": _make_plugin(parameters={"automaticsolver": True})})
+        previous = sched.agent
+        e = Event(1, 0, "system", ["agent", "humanlike"])
+        with patch("core.scheduler.REPLAY_MODE", True), patch("agents.create_agent") as create:
+            sched.execute_one_event(e)
+        create.assert_not_called()
+        assert sched.agent is previous
+        assert e.done == 1
 
 
 class TestExecutePluginsMethods:

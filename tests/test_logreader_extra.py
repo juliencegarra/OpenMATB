@@ -191,8 +191,8 @@ class TestRowClassification:
         assert lr.contents == ["0:00:00;sysmon;start", "0:00:00;resman;pump-1-state;failure"]
 
     def test_keyboard_like_inputs(self, lr):
-        """keyboard and mouse_key inputs are keyboard inputs (agent inputs too, on master with the agents)."""
-        assert [r["address"] for r in lr.keyboard_inputs] == ["F1", "NUM_1"]
+        """keyboard, agent and mouse_key inputs are keyboard inputs."""
+        assert [r["address"] for r in lr.keyboard_inputs] == ["F1", "F2", "NUM_1"]
 
     def test_joystick_and_mouse_inputs(self, lr):
         """Joystick axes and mouse rows go to their own lists."""

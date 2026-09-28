@@ -105,9 +105,11 @@ class Track(AbstractPlugin):
         # Real joystick: scheduler refreshes x_input/y_input every frame via
         # update_joystick() before this method is called — no reset needed.
         # Agent: only writes when attending track; reset prevents stale force.
+        # Skip reset when agent allows human input (cooperative/assisted modes).
         if self.parameters["automaticsolver"]:
-            self.x_input = 0
-            self.y_input = 0
+            if self.agent is None or not self.agent.allows_human_input:
+                self.x_input = 0
+                self.y_input = 0
 
         if not super().compute_next_plugin_state():
             return
@@ -192,24 +194,16 @@ class Track(AbstractPlugin):
 
                 compx: float = 0
                 compy: float = 0
-                # Potential compensations of cursor movement
-                # If the automode is enabled, apply automatic compensation to the cursor drift
-                if self.parameters["automaticsolver"]:
-                    autocompx: int = 1 if -self.reticle.cursor_relative[0] >= 0 else -1
-                    autocompy: int = 1 if -self.reticle.cursor_relative[1] >= 0 else -1
-                else:
-                    autocompx = 0
-                    autocompy = 0
-
-                # Else if a manual input (joystick) is recorded, apply its offset to the cursor,
-                # as a function of its gain
+                # Apply joystick/agent input offset to the cursor, scaled by joystickforce.
+                # When automaticsolver is active, the agent writes x_input/y_input
+                # via get_joystick_inputs(), using the same code path as a real joystick.
                 if not self.parameters["inverseaxis"]:
                     compx, compy = self.x_input, -self.y_input
                 else:
                     compx, compy = -self.x_input, self.y_input
 
-                compx = autocompx + compx * self.parameters["joystickforce"]
-                compy = autocompy + compy * self.parameters["joystickforce"]
+                compx = compx * self.parameters["joystickforce"]
+                compy = compy * self.parameters["joystickforce"]
 
                 moffx = moffx + compx
                 moffy = moffy + compy

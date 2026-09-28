@@ -81,3 +81,51 @@ class TestDesktopSmoke:
         out, _result = run
         result = _run(out, "-r", "1")
         assert result["screenshot_colors"] > 50
+
+
+AUTOMATIC_SCENARIO: str = """0:00:00;sysmon;automaticsolver;True
+0:00:00;resman;automaticsolver;True
+0:00:00;track;automaticsolver;True
+0:00:00;communications;automaticsolver;True
+0:00:00;resman;start
+0:00:00;track;start
+0:00:00;sysmon;start
+0:00:00;communications;start
+0:00:01;communications;radioprompt;own
+0:00:02;sysmon;scales-1-failure;True
+0:00:03;sysmon;lights-1-failure;True
+0:00:30;sysmon;stop
+0:00:30;resman;stop
+0:00:30;track;stop
+0:00:30;communications;stop
+"""
+
+
+class TestDesktopAutomaticSolver:
+    """automaticsolver on every task: the default agent (agents/default_agent.py) plays them with keys and the
+    joystick, logged as agent inputs; the replay replays these inputs instead of running the agent again."""
+
+    @pytest.fixture(scope="class")
+    def automatic(self, tmp_path_factory) -> tuple[Path, list[dict]]:
+        out: Path = tmp_path_factory.mktemp("automatic")
+        scenario: Path = out / "automatic.txt"
+        scenario.write_text(AUTOMATIC_SCENARIO, encoding="utf-8")
+        result = _run(out, str(scenario))
+        return out, list(csv.DictReader(open(result["session"], encoding="utf-8")))
+
+    def test_the_agent_resolves_every_task(self, automatic):
+        _out, rows = automatic
+        perf = [r for r in rows if r["type"] == "performance"]
+        sysmon = [r["value"] for r in perf if r["module"] == "sysmon" and r["address"] == "signal_detection"]
+        assert sysmon == ["HIT", "HIT"]
+        comms = [r["value"] for r in perf if r["module"] == "communications" and r["address"] == "sdt_value"]
+        assert comms == ["HIT"]
+        resolvers = {r["value"] for r in perf if r["address"] == "resolved_by"}
+        assert resolvers == {"agent"}
+        agent_inputs = {r["address"] for r in rows if r["type"] == "input" and r["module"] == "agent"}
+        assert {"F1", "F5", "joystick"} <= agent_inputs
+        assert any(a.startswith("NUM_") for a in agent_inputs)  # Resources management pumps
+
+    def test_the_session_is_replayed(self, automatic):
+        out, _rows = automatic
+        assert _run(out, "-r", "1")["screenshot_colors"] > 50

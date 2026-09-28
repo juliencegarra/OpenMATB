@@ -407,10 +407,12 @@ class TestRefreshWidgets:
     def test_frequencies_and_colors(self, comms):
         radios = comms.parameters["radios"]
         radios[1].update(_feedbacktimer=500, _feedbacktype="negative")
+        radios[2]["_hint_color"] = (1, 2, 3, 255)
         comms.refresh_widgets()
         radios[0]["widget"].set_frequency_text.assert_called_once_with(radios[0]["currentfreq"])
         radios[0]["widget"].set_feedback_color.assert_called_once_with(C["BACKGROUND"])
         radios[1]["widget"].set_feedback_color.assert_called_once_with(C["RED"])
+        radios[2]["widget"].set_feedback_color.assert_called_once_with((1, 2, 3, 255))
 
     def test_hidden_plugin_is_not_refreshed(self, comms):
         with patch.object(AbstractPlugin, "refresh_widgets", return_value=False):
@@ -526,6 +528,13 @@ class TestDoOnKey:
         comms.can_execute_keys = False
         comms.do_on_key("DOWN", "press", False)
         assert self._active(comms) == "NAV_1"
+
+    @pytest.mark.parametrize("key, delta", [("RIGHT", 0.1), ("LEFT", -0.1)])
+    def test_tune(self, comms, key, delta):
+        radio = comms.get_active_radio_dict()
+        before = radio["currentfreq"]
+        comms.do_on_key(key, "press", False)
+        assert radio["currentfreq"] == pytest.approx(before + delta)
 
 
 class TestDoOnMousePress:

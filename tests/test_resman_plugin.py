@@ -448,6 +448,13 @@ class TestRefreshWidgets:
         _tank(resman, "a")["widget"].set_fluid_level.assert_called_once_with(1234, 4000)
         _tank(resman, "a")["widget"].set_tolerance_color.assert_called_once_with(C["BLACK"])
 
+    def test_hint_color_shown_unless_pump_failed(self, plugin):
+        _pump(plugin, 1)["_hint_color"] = C["BLUE"]
+        _pump(plugin, 2).update(_hint_color=C["BLUE"], state="failure")
+        plugin.refresh_widgets()
+        _pump(plugin, 1)["widget"].set_color.assert_called_once_with(C["BLUE"])
+        _pump(plugin, 2)["widget"].set_color.assert_called_once_with(C["RED"])
+
 
 class TestKeys:
     def test_key_toggles_pump(self, resman, no_modal_dialog):
@@ -457,9 +464,10 @@ class TestKeys:
         assert _pump(resman, 1)["state"] == "off"
 
     def test_failed_pump_cannot_be_toggled(self, resman, no_modal_dialog):
-        _pump(resman, 1).update(state="failure")
+        _pump(resman, 1).update(state="failure", _hint_color=C["BLUE"])
         resman.do_on_key("NUM_1", "press", False)
         assert _pump(resman, 1)["state"] == "failure"
+        assert _pump(resman, 1)["_hint_color"] == C["BLUE"]
 
     def test_release_does_nothing(self, resman, no_modal_dialog):
         resman.do_on_key("NUM_1", "release", False)
@@ -482,6 +490,11 @@ class TestKeys:
         resman.can_execute_keys = False
         resman.do_on_key("NUM_1", "press", False)
         assert _pump(resman, 1)["state"] == "off"
+
+    def test_key_press_clears_hint(self, resman, no_modal_dialog):
+        _pump(resman, 4)["_hint_color"] = C["BLUE"]
+        resman.do_on_key("NUM_4", "press", False)
+        assert _pump(resman, 4)["_hint_color"] is None
 
 
 class TestMouse:

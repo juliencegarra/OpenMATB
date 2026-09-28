@@ -62,6 +62,14 @@ class Scheduler:
         self.events.sort(key=lambda e: (e.time_sec, e.line))
         self.plugins: dict[str, Any] = self.scenario.plugins
 
+        # Create a default agent and assign it to plugins
+        from agents import DefaultAgent
+
+        self.agent: Any = DefaultAgent()
+        for p in self.plugins:
+            if "automaticsolver" in self.plugins[p].parameters:
+                self.plugins[p].agent = self.agent
+
         # Push plugin handles to window
         for p in self.plugins:
             self.plugins[p].joystick = self.joystick
@@ -252,6 +260,17 @@ class Scheduler:
         command: str = event.command[0]
         if command == "pause":
             Window.MainWindow.pause_prompt()
+        elif command == "agent":
+            # In replay mode, agent inputs are replayed from the log —
+            # do not activate the agent or it would produce double inputs.
+            if not REPLAY_MODE:
+                from agents import create_agent
+
+                agent_name: str = event.command[1]
+                self.agent = create_agent(agent_name)
+                for p in self.plugins:
+                    if "automaticsolver" in self.plugins[p].parameters:
+                        self.plugins[p].agent = self.agent
         elif command == "mousecontrol":
             if not REPLAY_MODE:
                 enabled = event.command[1] in (True, "True", "true")

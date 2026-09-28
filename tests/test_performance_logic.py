@@ -20,6 +20,7 @@ def _make_performance(**overrides):
     p.displayed_color = C["GREEN"]
     p.under_critical = None
     p.automode_string = ""
+    p.agent = None
     p.parameters = dict(
         taskupdatetime=50,
         levelmin=0,

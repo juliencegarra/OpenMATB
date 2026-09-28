@@ -117,7 +117,7 @@ class TestLifecycle:
         """start() creates the widgets, logs every parameter, shows and resumes the plugin."""
         assert plugin.alive and plugin.visible and not plugin.paused
         names = set(plugin.widgets)
-        assert {"dummy_foreground", "dummy_overdue", "dummy_task_title"} <= names
+        assert {"dummy_foreground", "dummy_overdue", "dummy_attention", "dummy_fault_icon", "dummy_task_title"} <= names
         logged = {c.args[1]: c.args[2] for c in mock_logger.record_parameter.call_args_list}
         assert logged["title"] == "Dummy task"
         assert logged["taskfeedback-overdue-delayms"] == 2000
@@ -127,6 +127,8 @@ class TestLifecycle:
         """Showing a windowed plugin removes the foreground mask and resets feedback widgets."""
         plugin.get_widget("foreground").hide.assert_called()
         plugin.get_widget("overdue").set_visibility.assert_called_with(False)
+        plugin.get_widget("attention").set_visibility.assert_called_with(False)
+        plugin.get_widget("fault_icon").set_text.assert_called_with("")
 
     def test_show_twice_is_noop(self, plugin):
         """Showing an already visible plugin does nothing."""
@@ -226,6 +228,27 @@ class TestAutomationState:
         plugin.update(1.0)
         assert plugin.automode_string == ""
 
+    def test_agent_string_when_solver_on(self, plugin):
+        """With an active solver the agent acts and gives the automation string."""
+        agent = MagicMock(allows_human_input=False)
+        agent.get_automode_string.return_value = "AUTO ON"
+        plugin.agent = agent
+        plugin.parameters.update(displayautomationstate=True, automaticsolver=True)
+        plugin.update(1.0)
+        agent.on_plugin_update.assert_called_once_with(plugin, 1.0)
+        assert plugin.automode_string == "AUTO ON"
+
+    def test_agent_does_not_act_in_replay(self, plugin):
+        """In replay, the agent inputs are replayed from the session file: the agent must not act again."""
+        agent = MagicMock(allows_human_input=False)
+        agent.get_automode_string.return_value = "AUTO ON"
+        plugin.agent = agent
+        plugin.parameters.update(displayautomationstate=True, automaticsolver=True)
+        with patch("plugins.abstractplugin.REPLAY_MODE", True):
+            plugin.update(1.0)
+        agent.on_plugin_update.assert_not_called()
+        assert plugin.automode_string == "AUTO ON"
+
 
 class TestUpdateSteps:
     def test_steps_are_caught_up(self, plugin):
@@ -264,6 +287,19 @@ class TestInputPermissions:
         with patch.object(abstractplugin, "REPLAY_MODE", True):
             plugin.update_can_receive_key()
         assert not plugin.can_receive_keys and plugin.can_execute_keys and not plugin.can_receive_mouse
+
+    def test_solver_blocks_human_but_executes(self, plugin):
+        """An automatic solver blocks human keys and mouse but executes emulated keys."""
+        plugin.parameters["automaticsolver"] = True
+        plugin.update_can_receive_key()
+        assert not plugin.can_receive_keys and plugin.can_execute_keys and not plugin.can_receive_mouse
+
+    def test_agent_may_allow_human_input(self, plugin):
+        """An agent allowing human input lets keys through while the plugin runs."""
+        plugin.parameters["automaticsolver"] = True
+        plugin.agent = MagicMock(allows_human_input=True)
+        plugin.update_can_receive_key()
+        assert plugin.can_receive_keys and plugin.can_execute_keys
 
 
 class TestKeys:
@@ -593,3 +629,22 @@ class TestSlides:
         q.update(0.1)
         assert q.get_widget("title") is None
         assert title.show.call_count == 1
+
+
+class TestAttentionAndFault:
+    def test_attention_frame_follows_attended_task(self, plugin):
+        plugin.agent = MagicMock(show_attention=True, _attended_task="dummy")
+        plugin.refresh_widgets()
+        plugin.get_widget("attention").set_visibility.assert_called_with(True)
+        plugin.agent._attended_task = "other"
+        plugin.refresh_widgets()
+        plugin.get_widget("attention").set_visibility.assert_called_with(False)
+
+    def test_fault_icon_shown_on_active_fault(self, plugin):
+        plugin.agent = MagicMock(show_attention=True)
+        plugin.fault = True
+        plugin.refresh_widgets()
+        plugin.get_widget("fault_icon").set_text.assert_called_with("!")
+        plugin.agent = None
+        plugin.refresh_widgets()
+        plugin.get_widget("fault_icon").set_text.assert_called_with("")

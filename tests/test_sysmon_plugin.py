@@ -85,6 +85,7 @@ class TestInit:
             assert scale["_zone"] == 0
             assert scale["_feedbacktimer"] is None
             assert scale["_feedbacktype"] is None
+            assert scale["_hint_arrow_color"] is None
         for light in sysmon.get_light_gauges():
             assert "_pos" not in light
             assert "_feedbacktimer" not in light
@@ -337,6 +338,12 @@ class TestRefreshWidgets:
         _light(sysmon, 1)["widget"].set_label.assert_called_once_with("PUMP")
         _scale(sysmon, 4)["widget"].set_label.assert_called_once_with("F4")
 
+    def test_arrow_is_black_unless_an_agent_hint_is_set(self, sysmon):
+        _scale(sysmon, 3)["_hint_arrow_color"] = C["BLUE"]
+        self._refresh(sysmon)
+        _scale(sysmon, 3)["widget"].set_arrow_color.assert_called_once_with(C["BLUE"])
+        _scale(sysmon, 4)["widget"].set_arrow_color.assert_called_once_with(C["BLACK"])
+
 
 class TestStartFailure:
     def test_light_failure_inverts_its_default_state(self, sysmon):
@@ -387,6 +394,23 @@ class TestStartFailure:
         sysmon.start_failure(_light(sysmon, 2))
         sysmon.agent.on_failure_started.assert_not_called()
         assert _light(sysmon, 2)["_failuretimer"] == 10000
+
+    def test_agent_can_shorten_the_failure(self, sysmon):
+        sysmon.parameters["automaticsolver"] = True
+        sysmon.agent = MagicMock()
+        sysmon.agent.on_failure_started.return_value = {"delay": 1200}
+        light = _light(sysmon, 2)
+        sysmon.start_failure(light)
+        sysmon.agent.on_failure_started.assert_called_once_with(sysmon, light)
+        assert light["_failuretimer"] == 1200
+
+    def test_agent_without_delay_keeps_the_alert_timeout(self, sysmon):
+        sysmon.parameters["automaticsolver"] = True
+        sysmon.parameters["alerttimeout"] = 5000
+        sysmon.agent = MagicMock()
+        sysmon.agent.on_failure_started.return_value = {}
+        sysmon.start_failure(_light(sysmon, 2))
+        assert _light(sysmon, 2)["_failuretimer"] == 5000
 
 
 class TestStopFailure:
