@@ -380,6 +380,38 @@ PUMP_PRESSES: list[tuple[float, str, str, str]] = [
 RESPONSE_DELAY_S: float = 0.3
 
 
+# Automatic solver: the default agent (agents/default_agent.py) plays sysmon, resman and track
+AUTOMATIC_SCENARIO: str = """0:00:00;sysmon;automaticsolver;True
+0:00:00;resman;automaticsolver;True
+0:00:00;track;automaticsolver;True
+0:00:00;sysmon;start
+0:00:00;resman;start
+0:00:00;track;start
+0:00:02;sysmon;scales-1-failure;True
+0:00:04;sysmon;lights-1-failure;True
+0:00:10;sysmon;stop
+0:00:10;resman;stop
+0:00:10;track;stop
+"""
+
+
+class TestAutomaticSolver:
+    def test_the_default_agent_plays_the_tasks(self, page_factory):
+        """With automaticsolver, the agent resolves the failures and plays resman and track with inputs logged as
+        agent inputs (replayed from the session file)."""
+        app = page_factory()
+        app.start(AUTOMATIC_SCENARIO)
+        app.page.wait_for_selector("#end:not([hidden])", timeout=60_000)
+        rows = list(csv.DictReader(io.StringIO(app.downloads[0].path().read_text(encoding="utf-8"))))
+        sysmon = [r for r in rows if r["type"] == "performance" and r["module"] == "sysmon"]
+        assert [r["value"] for r in sysmon if r["address"] == "signal_detection"] == ["HIT", "HIT"]
+        assert {r["value"] for r in sysmon if r["address"] == "resolved_by"} == {"agent"}
+        agent_inputs = {r["address"] for r in rows if r["type"] == "input" and r["module"] == "agent"}
+        assert {"F1", "F5", "joystick"} <= agent_inputs
+        assert any(a.startswith("NUM_") for a in agent_inputs)
+        assert app.errors == []
+
+
 class TestKeyResponses:
     def test_responses_are_in_the_session_file(self, page_factory):
         """Each failure is answered with its key 0.3 s after it appears. Before the F5 answer, F5 is released
