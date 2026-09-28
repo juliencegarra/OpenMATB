@@ -16,6 +16,7 @@ The timing measured in a real browser is checked by tests/web/test_browser.py.
 from __future__ import annotations
 
 import importlib
+import importlib.metadata
 import importlib.util
 import random
 import sys
@@ -33,14 +34,34 @@ ROOT: Path = Path(__file__).resolve().parent.parent
 # ── Real pyglet clock + core.clock in browser mode ──────────────────────────
 
 
+def _pyglet_3_wheel() -> str | None:
+    """The browser runs pyglet 3, whose clock keeps the deadlines of the intervals; pyglet 2, installed for the
+    desktop, schedules the next call from the actual one (100 updates per second instead of 120 with browser
+    wake-ups every 2 ms). Import pyglet 3 from the wheel of the web build, unless the installed pyglet is 3."""
+    if importlib.metadata.version("pyglet").startswith("3."):
+        return None
+    wheels = sorted((ROOT / "web" / "dist" / "wheels").glob("pyglet-3.*.whl"))
+    if not wheels:
+        pytest.skip(
+            "pyglet 3 (the browser clock) is needed: build the web version first (python web/build.py)",
+            allow_module_level=True,
+        )
+    return str(wheels[-1])
+
+
 def _import_real_pyglet_clock():
-    """Import the real pyglet.clock while conftest mocks pyglet, without leaking it to other tests."""
+    """Import the real pyglet 3 clock while conftest mocks pyglet, without leaking it to other tests."""
     saved = {k: v for k, v in sys.modules.items() if k == "pyglet" or k.startswith("pyglet.")}
     for name in ("pyglet", "pyglet.event", "pyglet.clock"):
         sys.modules.pop(name, None)
+    wheel: str | None = _pyglet_3_wheel()
+    if wheel is not None:
+        sys.path.insert(0, wheel)  # A wheel is a zip: its pure Python modules can be imported from it
     try:
         return importlib.import_module("pyglet.clock")
     finally:
+        if wheel is not None:
+            sys.path.remove(wheel)
         for name in [k for k in sys.modules if k == "pyglet" or k.startswith("pyglet.")]:
             del sys.modules[name]
         sys.modules.update(saved)

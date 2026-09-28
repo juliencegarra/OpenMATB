@@ -26,6 +26,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -r requirements.txt -r requirements-dev.txt
+      # The browser clock tests (tests/test_web_timing.py) use the pyglet 3 wheel of the web build
+      - name: Build the web version
+        run: python web/build.py
       - run: python -m pytest tests/ -v --cov=core --cov=plugins --cov-report=term-missing --cov-report=xml --junitxml=report.xml
       - name: Publish badges
         if: matrix.python-version == '3.11' && github.event_name == 'push' && github.ref == 'refs/heads/master'

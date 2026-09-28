@@ -467,7 +467,9 @@ class TestKeyResponses:
         ]
         response_times = [float(r["value"]) for r in sysmon if r["address"] == "response_time"]
         hits = [rt for rt, detection in zip(response_times, detections) if detection == "HIT"]
-        assert all(RESPONSE_DELAY_S * 1000 <= rt < 2000 for rt in hits), hits
+        # The response time starts at the frame showing the failure (core/timing.py), up to one frame (~17 ms) after
+        # the update that started it, when this test may already see the failure and start its 0.3 s wait
+        assert all(RESPONSE_DELAY_S * 1000 - 20 <= rt < 2000 for rt in hits), hits
         presses = [r["address"] for r in rows if r["module"] == "keyboard" and r["value"] == "press"]
         assert presses == [
             "NUM_1",
