@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from math import isnan
 from typing import Any, Callable
 
 from core import validation
@@ -93,8 +94,12 @@ class Performance(AbstractPlugin):
                     # Time proportion spent in target for the last 5 seconds
                     frames_n: int = int(5000 / plugin.parameters["taskupdatetime"])
                     if len(plugin.performance["cursor_in_target"]) >= frames_n:
-                        perf_list_track: list[int] = plugin.performance["cursor_in_target"][-frames_n:]
-                        self.performance_levels[p] = sum(perf_list_track) / len(perf_list_track)
+                        # NaN values (no target defined) are left out
+                        perf_list_track: list[int] = [
+                            v for v in plugin.performance["cursor_in_target"][-frames_n:] if not isnan(v)
+                        ]
+                        if perf_list_track:
+                            self.performance_levels[p] = sum(perf_list_track) / len(perf_list_track)
 
                 # Resman
                 elif p == "resman":

@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
-from math import pi, sin
+from math import isnan, pi, sin
 from typing import Any, Callable
 
 from pyglet.window import mouse as winmouse
@@ -119,11 +119,15 @@ class Track(AbstractPlugin):
         if not REPLAY_MODE:
             self.cursor_position = next(self.cursor_path_gen)
 
-        self.cursor_color_key = "cursorcolor" if self.reticle.is_cursor_in_target() else "cursorcoloroutside"
-        self.log_performance("cursor_in_target", self.reticle.is_cursor_in_target())
+        # NaN when no target is defined: logged as such, but treated as in target
+        # (normal cursor color, no response needed)
+        in_target: bool | float = self.reticle.is_cursor_in_target()
+        on_target: bool = isnan(in_target) or bool(in_target)
+        self.cursor_color_key = "cursorcolor" if on_target else "cursorcoloroutside"
+        self.log_performance("cursor_in_target", in_target)
         self.log_performance("center_deviation", self.reticle.return_deviation())
 
-        if not self.reticle.is_cursor_in_target():  # A response is needed
+        if not on_target:  # A response is needed
             if self._response_start is None:
                 self._response_start = self.scenario_time
         else:
