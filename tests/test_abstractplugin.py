@@ -129,6 +129,22 @@ class TestSetParameter:
         p.set_parameter("mykey", "NUM_1")
         assert "NUM_1" in p.keys
 
+    def test_swapped_keys_both_work(self):
+        """Counterbalancing (scales-1-key;F2 then scales-2-key;F1): F2 is still the key of scale 1."""
+        p = _make_plugin()
+        p.parameters["scales"] = {"1": {"key": "F1"}, "2": {"key": "F2"}}
+        p.keys.update({"F1", "F2"})
+        p.set_parameter("scales-1-key", "F2")
+        p.set_parameter("scales-2-key", "F1")
+        assert {"F1", "F2"} <= p.keys
+
+    def test_key_still_used_by_another_parameter_is_kept(self):
+        p = _make_plugin()
+        p.parameters["scales"] = {"1": {"key": "F1"}, "2": {"key": "F1"}}
+        p.keys.add("F1")
+        p.set_parameter("scales-1-key", "F3")
+        assert {"F1", "F3"} <= p.keys
+
 
 class TestComputeNextPluginState:
     def test_returns_false_when_paused(self):

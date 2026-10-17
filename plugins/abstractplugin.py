@@ -504,9 +504,21 @@ class AbstractPlugin:
         # If a key is changed, renew the self.keys list
         if "key" in keys_str:
             self.keys.add(value)
-            if old_value in self.keys and old_value != value:
+            # The old key may still be the key of another item (e.g. two gauges swapping their keys)
+            if old_value in self.keys and old_value != value and old_value not in self._key_parameter_values():
                 self.keys.remove(old_value)
         return dic
+
+    def _key_parameter_values(self, search_dict: dict[str, Any] | None = None, key_prefix: str = "") -> set[Any]:
+        """The values of all the key parameters (whose address contains "key"), e.g. scales-1-key."""
+        values: set[Any] = set()
+        for key, value in (self.parameters if search_dict is None else search_dict).items():
+            address: str = str(key) if len(key_prefix) == 0 else key_prefix + "-" + str(key)
+            if isinstance(value, dict):
+                values |= self._key_parameter_values(value, address)
+            elif "key" in address and isinstance(value, str):
+                values.add(value)
+        return values
 
     def log_all_parameters(self, search_dict: dict[str, Any], key_prefix: str = "") -> None:
         for key, value in search_dict.items():
