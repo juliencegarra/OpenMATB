@@ -34,7 +34,10 @@ class Tank(AbstractWidget):
         self.tolerance_cont: Container | None = None
         self.infoside: str = infoside
         self.tolerance_radius: float = toleranceradius
+        self.tolerance_target: float | None = target
+        self.tolerance_level_max: float = level_max
         self.level: float = level
+        self.fluid_level_max: float = level_max
 
         x1, y1, x2, y2 = self.container.get_x1y1x2y2()
 
@@ -128,9 +131,16 @@ class Tank(AbstractWidget):
         return y2 + (y1 - y2) * (level / level_max)
 
     def set_tolerance_radius(self, radius: float, target: float, level_max: float) -> None:
-        if radius == self.get_tolerance_radius():
+        # The band moves when the target or the maximum changes too (e.g. resman;tank-a-target;2000)
+        if (radius, target, level_max) == (
+            self.get_tolerance_radius(),
+            self.tolerance_target,
+            self.tolerance_level_max,
+        ):
             return
         self.tolerance_radius = radius
+        self.tolerance_target = target
+        self.tolerance_level_max = level_max
         t_left, t_bottom, t_width, t_height = self._get_tolerance_lbwh(radius, target, level_max)
         shape = self.vertex["tolerance"]
         shape.x = t_left
@@ -156,9 +166,10 @@ class Tank(AbstractWidget):
         return (*shape.color[:3], shape.opacity)
 
     def set_fluid_level(self, level: float, level_max: float) -> None:
-        if level == self.get_fluid_level():
+        if level == self.get_fluid_level() and level_max == self.fluid_level_max:
             return
         self.level = level
+        self.fluid_level_max = level_max
         _, _, _, y2 = self.container.get_x1y1x2y2()
         fluid_y: float = self.get_y_of(level, level_max)
         self.vertex["fluid"].height = fluid_y - y2
