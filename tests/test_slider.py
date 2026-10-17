@@ -319,7 +319,7 @@ class TestOnMouseFocusCallback:
         # Click inside the slide container
         cx = int(s.containers["slide"].cx)
         cy = int(s.containers["slide"].cy)
-        with patch("core.widgets.slider.Window"):
+        with patch("core.widgets.slider.Window", MainWindow=MagicMock(modal_dialog=None)):
             s.on_mouse_press(cx, cy, 1, 0)
         cb.assert_called_once_with(2)
 
@@ -327,7 +327,7 @@ class TestOnMouseFocusCallback:
         cb = MagicMock()
         s = self._make_slider_with_callback(callback=cb, rank=0)
         # Click outside the slide container
-        with patch("core.widgets.slider.Window"):
+        with patch("core.widgets.slider.Window", MainWindow=MagicMock(modal_dialog=None)):
             s.on_mouse_press(0, 0, 1, 0)
         cb.assert_not_called()
 
@@ -335,5 +335,40 @@ class TestOnMouseFocusCallback:
         s = self._make_slider_with_callback(callback=None, rank=0)
         cx = int(s.containers["slide"].cx)
         cy = int(s.containers["slide"].cy)
-        with patch("core.widgets.slider.Window"):
+        with patch("core.widgets.slider.Window", MainWindow=MagicMock(modal_dialog=None)):
             s.on_mouse_press(cx, cy, 1, 0)  # should not raise
+
+
+class TestInactiveSlider:
+    """A slider that is hidden (questionnaire ended or page changed) or under the pause dialog ignores the mouse."""
+
+    def _press_and_drag(self, s, modal_dialog=None):
+        cy = int(s.containers["slide"].cy)
+        with patch("core.widgets.slider.Window", MainWindow=MagicMock(modal_dialog=modal_dialog)):
+            s.on_mouse_press(int(s.containers["allgroove"].l), cy, 1, 0)
+            s.on_mouse_drag(int(s.containers["allgroove"].l + s.containers["allgroove"].w), cy, 10, 0, 1, 0)
+
+    def test_hidden_slider_ignores_the_mouse(self):
+        cb = MagicMock()
+        s = TestOnMouseFocusCallback._make_slider_with_callback(callback=cb)
+        s.visible = False
+        self._press_and_drag(s)
+        cb.assert_not_called()
+        assert s.groove_value == 50
+        s.logger.record_state.assert_not_called()
+
+    def test_slider_under_the_pause_dialog_ignores_the_mouse(self):
+        s = TestOnMouseFocusCallback._make_slider_with_callback()
+        self._press_and_drag(s, modal_dialog=MagicMock())
+        assert s.groove_value == 50
+
+    def test_visible_slider_follows_the_mouse(self):
+        s = TestOnMouseFocusCallback._make_slider_with_callback()
+        self._press_and_drag(s)
+        assert s.groove_value != 50
+
+    def test_mouse_handlers_can_be_removed(self):
+        s = TestOnMouseFocusCallback._make_slider_with_callback()
+        with patch("core.widgets.slider.Window") as window:
+            s.remove_mouse_handlers()
+        window.MainWindow.remove_handlers.assert_called_once_with(s.on_mouse_press, s.on_mouse_drag, s.on_mouse_release)

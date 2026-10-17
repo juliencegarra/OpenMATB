@@ -29,6 +29,7 @@ class FakeSlider:
         self.kwargs = kw
         self.selected = False
         self.update = MagicMock()
+        self.remove_mouse_handlers = MagicMock()
         self.show = MagicMock()
         self.hide = MagicMock()
 
@@ -327,6 +328,18 @@ class TestPages:
         _next_page(scales, t=3)
         assert not scales.alive
         assert not scales.is_visible()
+
+    def test_previous_page_sliders_stop_following_the_mouse(self, scales):
+        old_sliders = list(scales.sliders.values())
+        _next_page(scales)
+        assert all(s.remove_mouse_handlers.call_count == 1 for s in old_sliders)
+        scales.sliders["slider_1"].remove_mouse_handlers.assert_not_called()
+
+    def test_sliders_stop_following_the_mouse_at_the_end(self, scales):
+        _next_page(scales)
+        last = scales.sliders["slider_1"]
+        _next_page(scales, t=3)
+        last.remove_mouse_handlers.assert_called_once()
 
     def test_page_without_title_does_not_show_previous_title(self, scales):
         _next_page(scales)

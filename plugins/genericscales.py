@@ -74,6 +74,7 @@ class Genericscales(BlockingPlugin):
 
         # Remove old slider/label widgets from previous slide
         for key in list(self.sliders):
+            self.sliders[key].remove_mouse_handlers()
             fullname: str = self.get_widget_fullname(key)
             self.widgets.pop(fullname, None)
             label_fullname: str = self.get_widget_fullname(key.replace("slider_", "label_"))
@@ -237,4 +238,6 @@ class Genericscales(BlockingPlugin):
         answers: list[tuple[str, Any]] = self._answers + current
         for title, value in answers:
             self.log_performance(title, value)
+        for slider in self.sliders.values():  # The questionnaire has ended: its sliders no longer follow the mouse
+            slider.remove_mouse_handlers()
         super().stop()

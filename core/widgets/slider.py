@@ -180,7 +180,17 @@ class Slider(AbstractWidget):
     def coordinates_in_groove_container(self, x: float, y: float) -> bool:
         return self.containers["allgroove"].contains_xy(x, y)
 
+    def remove_mouse_handlers(self) -> None:
+        """Stop following the mouse (the slider is no longer used: page changed, questionnaire ended)."""
+        Window.MainWindow.remove_handlers(self.on_mouse_press, self.on_mouse_drag, self.on_mouse_release)
+
+    def is_active(self) -> bool:
+        # Hidden (e.g. the questionnaire has ended) or under the pause dialog: the mouse is not for the slider
+        return self.visible and Window.MainWindow.modal_dialog is None
+
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
+        if not self.is_active():
+            return
         if self.containers["slide"].contains_xy(x, y) and self.hover is False:
             self.hover = True
             self.update_cursor_appearance()
@@ -199,7 +209,7 @@ class Slider(AbstractWidget):
             self.update_cursor_appearance()
 
     def on_mouse_drag(self, x: int, y: int, dx: int, dy: int, button: int, modifiers: int) -> None:
-        if self.hover is True:
+        if self.hover is True and self.is_active():
             x_min: float = self.containers["allgroove"].l
             x_max: float = self.containers["allgroove"].l + self.containers["allgroove"].w
             x = min(x_max, max(x_min, x))
