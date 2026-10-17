@@ -312,6 +312,8 @@ class Window(Window):
     def on_key_release(self, symbol: int, modifiers: int) -> None:
         if self.modal_dialog is not None:
             self.modal_dialog.on_key_release(symbol, modifiers)
+            # A key held when the dialog opened is no longer held (e.g. it would go on tuning a radio)
+            self.keyboard[winkey.symbol_string(symbol)] = False
             return
 
         if REPLAY_MODE:
@@ -333,6 +335,9 @@ class Window(Window):
         if self.modal_dialog is None:  # A key release would answer the dialog
             for symbol in held:
                 self.dispatch_event("on_key_release", symbol, 0)
+        else:  # Not dispatched, but these keys are no longer held
+            for symbol in held:
+                self.keyboard[winkey.symbol_string(symbol)] = False
 
     def on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> None:
         if REPLAY_MODE:

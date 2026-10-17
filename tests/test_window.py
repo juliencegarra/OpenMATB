@@ -306,6 +306,25 @@ class TestOnKeyRelease:
         mock_dialog.on_key_release.assert_called_once_with(0x41, 0)
         mock_get_logger.return_value.record_input.assert_not_called()
 
+    @patch("core.window.REPLAY_MODE", False)
+    @patch("core.window.get_logger")
+    def test_key_released_under_a_dialog_is_no_longer_held(self, mock_get_logger):
+        """RIGHT held to tune a radio when a pause dialog opens: once released, it must not tune it any longer."""
+        w = _make_window(modal_dialog=MagicMock())
+        w.keyboard["RIGHT"] = True
+        w.on_key_release(0xFF53, 0)  # RIGHT
+        assert w.keyboard["RIGHT"] is False
+
+    @patch("core.window.REPLAY_MODE", False)
+    def test_focus_lost_under_a_dialog_releases_the_held_keys(self):
+        """In the browser, a tab change opens the pause dialog: the keys held then are no longer held."""
+        w = _make_window(modal_dialog=MagicMock())
+        w._keys_down = {0xFF53}
+        w.keyboard["RIGHT"] = True
+        w.on_deactivate()
+        assert w.keyboard["RIGHT"] is False
+        w.modal_dialog.on_key_release.assert_not_called()  # The release does not answer the dialog
+
     @patch("core.window.REPLAY_MODE", True)
     @patch("core.window.get_logger")
     def test_replay_mode_ignores_release(self, mock_get_logger):
