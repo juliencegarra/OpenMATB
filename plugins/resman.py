@@ -128,8 +128,9 @@ class Resman(AbstractPlugin):
                 self.get_widget("status_foreground").set_visibility(True)
 
     def get_response_timers(self) -> list[float]:
+        # A target given by the scenario (e.g. tank-c-target) has no timer before the next step
         return [
-            self._response_elapsed_ms(t["_response_start"])
+            self._response_elapsed_ms(t.get("_response_start"))
             for l, t in self.parameters["tank"].items()
             if t["target"] is not None
         ]

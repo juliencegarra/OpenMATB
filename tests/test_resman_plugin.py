@@ -359,6 +359,11 @@ class TestTargetOnAnyTank:
         assert "d_deviation" not in perf
         assert len(resman.get_response_timers()) == 3
 
+    def test_new_target_tank_before_the_next_step(self, resman):
+        """The overdue feedback reads the timers at each refresh, before the next step initialises the tank."""
+        resman.set_parameter("tank-c-target", 1000)
+        assert resman.get_response_timers() == [0.0, 0.0, 0.0]
+
     def test_new_target_tank_response_time(self, resman):
         resman.set_parameter("tank-c-target", 1000)
         _tank(resman, "c")["level"] = 500
