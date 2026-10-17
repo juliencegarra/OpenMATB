@@ -565,6 +565,12 @@ class ReplayScheduler(Scheduler):
                 input: dict[str, Any] = self.logreader.keyboard_inputs[idx]
                 human: bool = input.get("module") != "agent"
                 for _plugin_name, plugin in self.plugins.items():
+                    # In the session, the keys of a human did nothing on a paused or hidden task (e.g. the arrows
+                    # of a questionnaire on the paused communications task), nor when key presses were not allowed
+                    if human and (
+                        plugin.paused or not plugin.visible or not plugin.parameters.get("allowkeypress", True)
+                    ):
+                        continue
                     # In the session, the keys of a human did nothing on a task under the automatic solver
                     # (unless its agent accepts them): the replay must not execute them either
                     if human and plugin.parameters.get("automaticsolver"):

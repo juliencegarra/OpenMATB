@@ -779,10 +779,43 @@ class TestRestartScenario:
         assert rs._click_marker is None
 
 
+def _running_task(**kwargs):
+    """A task plugin that is running and visible (it receives the keys of a human)."""
+    return MagicMock(paused=False, visible=True, **kwargs)
+
+
 class TestEmulateKeyboardInputs:
+    def test_human_keys_do_nothing_on_a_paused_or_hidden_task(self):
+        """In the session, a paused or hidden task ignored the keys of a human (e.g. the arrows that moved the sliders
+        of a questionnaire did not tune the paused communications task): the replay must not execute them."""
+        lr = _logreader(keyboard=[(1.0, "RIGHT", "press"), (1.0, "F1", "press")])
+        lr.keyboard_inputs[0]["module"] = "keyboard"
+        lr.keyboard_inputs[1]["module"] = "agent"
+        paused = _running_task(parameters={})
+        paused.paused = True
+        hidden = _running_task(parameters={})
+        hidden.visible = False
+        questionnaire = _running_task(parameters={})
+        rs = _make_loaded_replay(
+            lr, replay_time=1.0, plugins={"communications": paused, "resman": hidden, "genericscales": questionnaire}
+        )
+        rs.emulate_keyboard_inputs()
+        assert [c.args[0] for c in paused.do_on_key.call_args_list] == ["F1"]  # Only the agent key
+        assert [c.args[0] for c in hidden.do_on_key.call_args_list] == ["F1"]
+        assert [c.args[0] for c in questionnaire.do_on_key.call_args_list] == ["RIGHT", "F1"]
+
+    def test_human_keys_do_nothing_when_key_presses_are_not_allowed(self):
+        """instructions;allowkeypress;False: SPACE did not advance the slides in the session."""
+        lr = _logreader(keyboard=[(1.0, "SPACE", "release")])
+        lr.keyboard_inputs[0]["module"] = "keyboard"
+        instructions = _running_task(parameters={"allowkeypress": False})
+        rs = _make_loaded_replay(lr, replay_time=1.0, plugins={"instructions": instructions})
+        rs.emulate_keyboard_inputs()
+        instructions.do_on_key.assert_not_called()
+
     def test_sends_the_keys_of_the_last_step_once(self):
         lr = _logreader(keyboard=[(0.95, "SPACE", "press"), (1.0, "F1", "press"), (1.5, "F2", "press")])
-        plugin = MagicMock()
+        plugin = _running_task()
         rs = _make_loaded_replay(lr, replay_time=1.0, plugins={"sysmon": plugin})
 
         rs.emulate_keyboard_inputs()
@@ -798,7 +831,7 @@ class TestEmulateKeyboardInputs:
     def test_keys_of_a_long_frame_are_sent(self):
         """A frame longer than 0.1 s (a GC pause, a dragged window, a throttled page) does not lose its keys."""
         lr = _logreader(keyboard=[(1.05, "F1", "press"), (1.2, "F2", "press"), (1.3, "F3", "press")])
-        plugin = MagicMock()
+        plugin = _running_task()
         rs = _make_loaded_replay(lr, replay_time=1.1, plugins={"sysmon": plugin})
         rs.emulate_keyboard_inputs()
         rs.replay_time = 1.35  # Next frame, 0.25 s later
@@ -811,8 +844,8 @@ class TestEmulateKeyboardInputs:
         lr = _logreader(keyboard=[(0.95, "F5", "press"), (1.0, "F1", "press")])
         lr.keyboard_inputs[0]["module"] = "keyboard"
         lr.keyboard_inputs[1]["module"] = "agent"
-        automated = MagicMock(parameters={"automaticsolver": True}, agent=MagicMock(allows_human_input=False))
-        manual = MagicMock(parameters={"automaticsolver": False})
+        automated = _running_task(parameters={"automaticsolver": True}, agent=MagicMock(allows_human_input=False))
+        manual = _running_task(parameters={"automaticsolver": False})
         rs = _make_loaded_replay(lr, replay_time=1.0, plugins={"sysmon": automated, "resman": manual})
         rs.emulate_keyboard_inputs()
         assert [c.args for c in automated.do_on_key.call_args_list] == [("F1", "press", True)]
@@ -821,7 +854,7 @@ class TestEmulateKeyboardInputs:
     def test_human_keys_when_the_agent_accepts_them(self):
         lr = _logreader(keyboard=[(1.0, "F5", "press")])
         lr.keyboard_inputs[0]["module"] = "keyboard"
-        cooperative = MagicMock(parameters={"automaticsolver": True}, agent=MagicMock(allows_human_input=True))
+        cooperative = _running_task(parameters={"automaticsolver": True}, agent=MagicMock(allows_human_input=True))
         rs = _make_loaded_replay(lr, replay_time=1.0, plugins={"sysmon": cooperative})
         rs.emulate_keyboard_inputs()
         cooperative.do_on_key.assert_called_once_with("F5", "press", True)
