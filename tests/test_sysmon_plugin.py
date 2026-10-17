@@ -367,13 +367,21 @@ class TestStartFailure:
             sysmon.start_failure(scale)
         # The gauge index makes the seed unique
         mock_choice.assert_called_once_with([-1, 1], "sysmon", 10, 3)
-        assert scale["side"] == 1
         assert scale["_zone"] == 1
 
     def test_drawn_side_is_up_or_down(self, sysmon):
         sysmon.start_failure(_scale(sysmon, 2))
-        assert _scale(sysmon, 2)["side"] in (-1, 1)
-        assert _scale(sysmon, 2)["_zone"] == _scale(sysmon, 2)["side"]
+        assert _scale(sysmon, 2)["_zone"] in (-1, 1)
+
+    def test_side_drawn_again_at_each_failure(self, sysmon):
+        """The drawn side is not kept as the gauge side: the next failure draws a new one."""
+        scale = _scale(sysmon, 3)
+        with patch("plugins.sysmon.choice", side_effect=[1, -1]):
+            sysmon.start_failure(scale)
+            sysmon.stop_failure(scale)
+            sysmon.start_failure(scale)
+        assert scale["side"] == 0
+        assert scale["_zone"] == -1
 
     def test_failure_on_a_failing_gauge_is_ignored(self, sysmon):
         light = _light(sysmon, 1)

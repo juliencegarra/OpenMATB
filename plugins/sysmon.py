@@ -249,8 +249,10 @@ class Sysmon(AbstractPlugin):
                 if gauge["side"] not in [-1, 1]:
                     add: str | None = self.get_gauge_key(gauge)  # Specify a gauge integer to generate
                     # a unique seed
-                    gauge["side"] = choice([-1, 1], self.alias, self.scenario_time, int(add))
-                gauge["_zone"] = gauge["side"]
+                    # The side parameter stays random, so the next failures draw their own side
+                    gauge["_zone"] = choice([-1, 1], self.alias, self.scenario_time, int(add))
+                else:
+                    gauge["_zone"] = gauge["side"]
         gauge["failure"] = False
         self.start_response_timer(gauge)
 
