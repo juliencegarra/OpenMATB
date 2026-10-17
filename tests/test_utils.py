@@ -54,6 +54,16 @@ class TestGetSessionNumbers:
         assert result == [1, 3]
 
     @patch("core.utils.P")
+    def test_other_csv_files_are_ignored(self, mock_paths):
+        """A CSV file that is not a session (e.g. an export) does not hide the session files."""
+        files = []
+        for name in ("1_240101_120000.csv", "summary.csv", "3_240102_130000.csv"):
+            files.append(MagicMock())
+            files[-1].name = name
+        mock_paths.__getitem__ = lambda self, k: MagicMock(glob=MagicMock(return_value=files))
+        assert get_session_numbers() == [1, 3]
+
+    @patch("core.utils.P")
     def test_empty_dir_returns_zero(self, mock_paths):
         """Empty sessions directory returns [0]."""
         mock_paths.__getitem__ = lambda self, k: MagicMock(glob=MagicMock(side_effect=ValueError))

@@ -34,8 +34,13 @@ def clamp(x: float, val_min: float, val_max: float) -> float:
 
 
 def get_session_numbers() -> list[int]:
+    session_numbers: list[int] = list()
     try:
-        session_numbers = [int(s.name.split("_")[0]) for s in P["SESSIONS"].glob("**/*.csv")]
+        for s in P["SESSIONS"].glob("**/*.csv"):
+            try:
+                session_numbers.append(int(s.name.split("_")[0]))
+            except ValueError:  # Not a session file (e.g. an export): the other files are still counted
+                continue
     except (ValueError, IndexError):
         session_numbers = [0]
 
