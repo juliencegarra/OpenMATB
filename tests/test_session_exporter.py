@@ -440,6 +440,15 @@ class TestExtractSysmonTrials:
         assert [t.trial_number for t in trials] == [1, 2, 3]
         assert [t.signal_detection for t in trials] == ["HIT", "MISS", "FA"]
 
+    def test_simultaneous_trials(self) -> None:
+        """Two failures that time out in the same update are two trials."""
+        perf = self._make_triplet(30.0, "F1", "MISS", resolved_by="") + self._make_triplet(
+            30.0, "1", "MISS", resolved_by=""
+        )
+        trials = extract_sysmon_trials("s1", perf, [], [])
+        assert [t.gauge_name for t in trials] == ["F1", "1"]
+        assert [t.trial_number for t in trials] == [1, 2]
+
     def test_filters_non_sysmon(self) -> None:
         perf = self._make_triplet(10.0, "F5", "HIT", "200") + [_perf(10.0, "track", "cursor_in_target", "1")]
         inputs = [_input(10.0, "keyboard", "F5")]

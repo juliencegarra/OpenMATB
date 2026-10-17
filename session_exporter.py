@@ -270,6 +270,16 @@ def _group_by_scenario_time(rows: list[RawRow]) -> list[list[RawRow]]:
     return groups
 
 
+def _split_on_address(group: list[RawRow], first_address: str) -> list[list[RawRow]]:
+    """Split a group of rows into the trials it holds, each one starting with ``first_address``."""
+    trials: list[list[RawRow]] = []
+    for row in group:
+        if row.address == first_address or not trials:
+            trials.append([])
+        trials[-1].append(row)
+    return trials
+
+
 # ── Trial extraction ─────────────────────────────────────────────────────────
 
 
@@ -281,7 +291,8 @@ def extract_sysmon_trials(
         [r for r in perf_rows if r.module == "sysmon"],
         key=lambda r: r.scenario_time,
     )
-    groups = _group_by_scenario_time(sysmon_rows)
+    # Several gauges can end their failure at the same time: each one logs its own rows
+    groups = [trial for group in _group_by_scenario_time(sysmon_rows) for trial in _split_on_address(group, "name")]
 
     trials: list[SysmonTrial] = []
     trial_num: int = 0
