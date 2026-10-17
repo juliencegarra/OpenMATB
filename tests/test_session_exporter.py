@@ -527,6 +527,15 @@ class TestExtractCommsTrials:
             rows.append(_perf(t, "communications", "resolved_by", resolved_by))
         return rows
 
+    def test_simultaneous_trials(self) -> None:
+        """A MISS logged at a step, then a response before the next one: same scenario_time, two trials."""
+        perf = self._make_9tuple(30.0, sdt="MISS", rt="nan", resolved_by="") + self._make_9tuple(
+            30.0, sdt="FA", needed="0", resolved_by="human"
+        )
+        trials = extract_comms_trials("s1", perf, [], [])
+        assert [t.sdt_value for t in trials] == ["MISS", "FA"]
+        assert [t.trial_number for t in trials] == [1, 2]
+
     def test_hit_trial(self) -> None:
         perf = self._make_9tuple(20.0)
         inputs = [_input(20.0, "keyboard", "SPACE")]

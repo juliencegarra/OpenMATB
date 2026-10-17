@@ -270,6 +270,17 @@ def _group_by_scenario_time(rows: list[RawRow]) -> list[list[RawRow]]:
     return groups
 
 
+def _split_on_repeat(group: list[RawRow]) -> list[list[RawRow]]:
+    """Split a group of rows into the trials it holds: a new trial starts when an address is logged again.
+    Unlike _split_on_address, it does not depend on the order of the rows (it changed between versions)."""
+    trials: list[list[RawRow]] = []
+    for row in group:
+        if not trials or any(r.address == row.address for r in trials[-1]):
+            trials.append([])
+        trials[-1].append(row)
+    return trials
+
+
 def _split_on_address(group: list[RawRow], first_address: str) -> list[list[RawRow]]:
     """Split a group of rows into the trials it holds, each one starting with ``first_address``."""
     trials: list[list[RawRow]] = []
@@ -340,7 +351,8 @@ def extract_comms_trials(
         [r for r in perf_rows if r.module == "communications"],
         key=lambda r: r.scenario_time,
     )
-    groups = _group_by_scenario_time(comms_rows)
+    # A trial can end at the same time as another one (e.g. a MISS, then a response before the next step)
+    groups = [trial for group in _group_by_scenario_time(comms_rows) for trial in _split_on_repeat(group)]
 
     trials: list[CommsTrial] = []
     trial_num: int = 0
