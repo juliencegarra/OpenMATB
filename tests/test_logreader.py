@@ -1,6 +1,7 @@
 """Tests for core.logreader - CSV session parsing logic."""
 
 from core.logreader import IGNORE_PLUGINS, LogReader
+from core.validation import is_callsign_or_list_of
 
 
 def _make_logreader(**overrides):
@@ -84,6 +85,30 @@ class TestSessionEventToStr:
         row = {"scenario_time": "150.0", "module": "resman", "address": "pump-1-state", "value": "on"}
         result = lr.session_event_to_str(row)
         assert result == "0:02:30;resman;pump-1-state;on"
+
+    def test_list_value_is_replayed_as_in_a_scenario(self):
+        """A validated list value was logged as a Python list: the replay must validate it again."""
+        lr = _make_logreader()
+        row = {"scenario_time": "0.0", "module": "communications", "address": "othercallsign", "value": "['ABC123']"}
+        result = lr.session_event_to_str(row)
+        assert result == "0:00:00;communications;othercallsign;ABC123"
+        assert is_callsign_or_list_of(result.split(";")[-1]) == (["ABC123"], None)
+
+    def test_list_of_several_values(self):
+        lr = _make_logreader()
+        row = {
+            "scenario_time": "0.0",
+            "module": "scheduling",
+            "address": "displayedplugins",
+            "value": "['sysmon', 'track']",
+        }
+        result = lr.session_event_to_str(row)
+        assert result == "0:00:00;scheduling;displayedplugins;sysmon,track"
+
+    def test_regex_value_is_kept(self):
+        lr = _make_logreader()
+        row = {"scenario_time": "0.0", "module": "communications", "address": "callsignregex", "value": "[A-Z][0-9]"}
+        assert lr.session_event_to_str(row) == "0:00:00;communications;callsignregex;[A-Z][0-9]"
 
 
 # ── reload_session ───────────────────────────────

@@ -137,6 +137,15 @@ class TestRecordEvent:
         assert args[5] == "on"
 
     @patch.object(_logger_module, "perf_counter", return_value=1.0)
+    def test_list_value_logged_as_in_a_scenario(self, _mock_pc):
+        """A validated list value is logged as a scenario writes it, so that the replay can validate it again."""
+        lg = _make_logger(scenario_time=10)
+        lg.write_single_slot = MagicMock()
+        event = Event(1, 60, "scheduling", ["displayedplugins", ["sysmon", "track"]])
+        lg.record_event(event)
+        assert lg.write_single_slot.call_args[0][0][5] == "sysmon,track"
+
+    @patch.object(_logger_module, "perf_counter", return_value=1.0)
     def test_uses_current_scenario_time(self, _mock_pc):
         """Slot uses the logger's current scenario_time."""
         lg = _make_logger(scenario_time=99.5)

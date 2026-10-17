@@ -64,6 +64,10 @@ class Logger:
         elif len(event.command) == 2:
             adress = event.command[0]
             value = event.command[1]
+            # A validated list (e.g. displayedplugins) is logged as a scenario writes it, so that the replay
+            # can validate it again
+            if isinstance(value, list):
+                value = ",".join(str(v) for v in value)
         slot: list[Any] = [perf_counter(), self.scenario_time, "event", event.plugin, adress, value]
         self.write_single_slot(slot)
 

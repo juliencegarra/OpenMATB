@@ -308,13 +308,27 @@ class LogReader:
                 return True
         return False
 
+    @staticmethod
+    def _scenario_value(value: str) -> str:
+        """A list value logged as a Python list by previous versions (e.g. "['sysmon', 'track']") is written back
+        as in a scenario (sysmon,track): otherwise its validation fails in the replay"""
+        if not (value.startswith("[") and value.endswith("]")):
+            return value
+        try:
+            values: Any = ast.literal_eval(value)
+        except (ValueError, SyntaxError):  # E.g. a regex such as [A-Z][0-9]
+            return value
+        if not isinstance(values, list) or not all(isinstance(v, str) for v in values):
+            return value
+        return ",".join(values)
+
     def session_event_to_str(self, event_row: dict[str, Any]) -> str:
         time_sec: int = int(float(event_row["scenario_time"]))
         plugin: str = event_row["module"]
         if event_row["address"] == "self":
             command: str = event_row["value"]
         else:
-            command = ";".join([event_row["address"], event_row["value"]])
+            command = ";".join([event_row["address"], self._scenario_value(event_row["value"])])
 
         event: Event = Event(self.line_n, time_sec, plugin, command)
         self.line_n += 1
