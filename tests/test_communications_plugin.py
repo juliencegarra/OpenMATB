@@ -335,6 +335,25 @@ class TestComputeNextPluginState:
         player.delete.assert_called_once()
         self.prompt.assert_called_once()
 
+    def test_new_regex_keeps_the_callsigns_of_the_scenario(self, comms):
+        """0:00:00;communications;callsignregex;... with owncallsign;AB12 and othercallsign;CD34,EF56."""
+        comms.set_parameter("callsignregex", "[A-Z][A-Z][0-9][0-9]")
+        comms.set_parameter("owncallsign", "AB12")
+        comms.set_parameter("othercallsign", ["CD34", "EF56"])
+        with patch("plugins.communications.xeger", side_effect=_distinct_callsigns()):
+            comms.compute_next_plugin_state()
+        assert comms.parameters["owncallsign"] == "AB12"
+        assert comms.parameters["othercallsign"] == ["CD34", "EF56"]
+
+    def test_new_regex_keeps_only_the_own_callsign_of_the_scenario(self, comms):
+        comms.set_parameter("callsignregex", "[A-Z][A-Z][0-9][0-9]")
+        comms.set_parameter("owncallsign", "AB12")
+        comms.letters, comms.digits = ascii_uppercase, digits
+        with patch("plugins.communications.xeger", side_effect=["CD34", "EF56", "GH78", "IJ90", "KL12"]):
+            comms.compute_next_plugin_state()
+        assert comms.parameters["owncallsign"] == "AB12"
+        assert comms.parameters["othercallsign"] == ["CD34", "EF56", "GH78", "IJ90", "KL12"]
+
     def test_new_regex_regenerates_callsigns(self, comms):
         comms.parameters["callsignregex"] = r"[A-Z][A-Z]\d\d"
         comms.parameters["othercallsign"] = []

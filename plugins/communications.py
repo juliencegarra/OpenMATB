@@ -78,6 +78,8 @@ class Communications(AbstractPlugin):
 
         self.letters: str = ascii_uppercase
         self.digits: str = digits
+        # Callsigns given by the scenario: kept when the callsigns are generated again (new callsignregex)
+        self._scenario_callsigns: set[str] = set()
 
         # Callsign regex must be defined first because it is needed by self.get_callsign()
         self.parameters["callsignregex"] = r"[A-Z][A-Z][A-Z]\d\d\d"
@@ -163,8 +165,16 @@ class Communications(AbstractPlugin):
                 # Browser audio decoding is asynchronous: decode the voice samples in advance
                 load_sound(sample_needed)
 
+    def set_parameter(self, keys_str: str, value: Any) -> dict[str, Any]:
+        if keys_str in ("owncallsign", "othercallsign"):
+            self._scenario_callsigns.add(keys_str)
+        return super().set_parameter(keys_str, value)
+
     def regenerate_callsigns(self) -> None:
-        self.parameters["owncallsign"] = self.get_callsign()
+        if "owncallsign" not in self._scenario_callsigns:
+            self.parameters["owncallsign"] = self.get_callsign()
+        if "othercallsign" in self._scenario_callsigns:
+            return
         self.parameters["othercallsign"] = list()
         for _i in range(self.parameters["othercallsignnumber"]):
             this_callsign: str = self.get_callsign()
