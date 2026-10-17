@@ -44,7 +44,7 @@ class Scenario:
 
         # Convert the scenario content into a list of events #
         # (Squeeze empty and commented [#] lines)
-        for line_n, line_str in enumerate(contents):
+        for line_n, line_str in enumerate(contents, start=1):  # Line numbers of the file, for the error messages
             if len(line_str.strip()) == 0 or line_str.startswith("#"):
                 continue
             try:

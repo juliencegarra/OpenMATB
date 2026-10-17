@@ -114,9 +114,9 @@ class TestLoadScenarioFile:
         mock_logger.log_manual_entry.assert_called_once_with(path, key="scenario_path")
 
     def test_comments_and_blank_lines_skipped(self, tmp_path, fake_plugins, errors, error_file, mock_logger):
-        """Comment and blank lines do not become events, line numbers are kept."""
+        """Comment and blank lines do not become events, line numbers are those of the file (from 1)."""
         s = Scenario(scenario_path=_write(tmp_path, VALID))
-        assert [e.line for e in s.events] == [1, 3, 4, 5, 6, 7]
+        assert [e.line for e in s.events] == [2, 4, 5, 6, 7, 8]
 
     def test_default_path_from_config(self, tmp_path, fake_plugins, errors, error_file, mock_logger):
         """Without explicit path, the file comes from config.ini in the SCENARIOS folder."""
@@ -161,7 +161,7 @@ class TestScenarioErrors:
         s = Scenario(["0:00:00;sysmon;start\n", "0:00:00;sysmonn;start\n"])
         assert s.plugins == {}
         assert "sysmonn" in errors.errors_list[0]
-        assert "(l. 1)" in errors.errors_list[0]
+        assert "(l. 2)" in errors.errors_list[0]  # The 2nd line of the file
         assert Sysmon.instances == 0
         assert not error_file.exists()
 
@@ -176,7 +176,7 @@ class TestScenarioErrors:
         ]
         Scenario(contents)
         report = error_file.read_text(encoding="utf-8")
-        assert "line 1. taskupdatetime" in report
+        assert "line 2. taskupdatetime" in report  # The 2nd line of the file
         assert "does not have a unknownparam parameter" in report
         assert "mousecontrol command requires True/False argument" in report
         assert "(sysmon) plugin does not have a stop command" in report
@@ -220,6 +220,7 @@ class TestScenarioErrors:
         except ValueError:
             raise AssertionError("ValueError escaped from Scenario()") from None
         assert errors.some_fatals
+        assert "line 2 is not formatted" in errors.errors_list[-1]
 
 
 # ──── Plugin reload ────
