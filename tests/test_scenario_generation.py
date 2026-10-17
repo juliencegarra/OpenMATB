@@ -3,8 +3,10 @@
 Direct imports (no AST extraction needed).
 """
 
+import ast
 import random
 import threading
+from dataclasses import fields
 from math import gcd
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -566,3 +568,35 @@ class TestWriteScenarioFile:
             path = write_scenario_file(lines, config)
         assert isinstance(path, Path)
         assert "test_output" in path.name
+
+    def test_custom_scenario_written_first(self, tmp_path):
+        custom = tmp_path / "custom_generator.txt"
+        custom.write_text("0:00:00;sysmon;alerttimeout;5000\n", encoding="utf-8")
+        config = ScenarioConfig(scenario_name="custom", custom_scenario_path=custom)
+        lines = [Event(1, 0, "track", ["start"])]
+        with patch.dict("scenario_generation.PATHS", {"SCENARIOS": tmp_path}):
+            path = write_scenario_file(lines, config)
+        content = path.read_text(encoding="utf-8")
+        assert content.index("0:00:00;sysmon;alerttimeout;5000") < content.index("0:00:00;track;start")
+
+
+class TestCustomScenario:
+    """The CLI adds the scenarios/custom_generator.txt file at the beginning of the generated scenario."""
+
+    def test_cli_config_arguments_exist(self):
+        # scenario_generator.py opens a window at import: its ScenarioConfig call is checked from the source
+        tree = ast.parse(Path("scenario_generator.py").read_text(encoding="utf-8"))
+        calls = [
+            n for n in ast.walk(tree) if isinstance(n, ast.Call) and getattr(n.func, "id", None) == "ScenarioConfig"
+        ]
+        assert len(calls) == 1
+        field_names = {f.name for f in fields(ScenarioConfig)}
+        assert {k.arg for k in calls[0].keywords} <= field_names
+
+    def test_custom_parameters_applied_to_plugins(self, tmp_path):
+        custom = tmp_path / "custom_generator.txt"
+        custom.write_text("# Comment\n\n0:00:00;sysmon;alerttimeout;5000\n0:00:00;sysmon;start\n", encoding="utf-8")
+        sysmon = MagicMock()
+        config = ScenarioConfig(custom_scenario_path=custom)
+        generate_scenario(config, {"sysmon": sysmon})
+        sysmon.set_parameter.assert_called_once_with("alerttimeout", "5000")

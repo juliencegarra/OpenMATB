@@ -49,6 +49,8 @@ class ScenarioConfig:
     average_auditory_prompt_duration: int = 13
     blocks: list[BlockConfig] = field(default_factory=list)
     inter_block_events: list[InterBlockEvent] = field(default_factory=list)
+    # Scenario file whose lines are added at the beginning of the generated scenario
+    custom_scenario_path: Path | None = None
 
 
 # ── Pure helper functions ────────────────────────────────────────────────────
@@ -109,6 +111,21 @@ def choices(l: list[str], k: int, randomize: bool) -> list[str]:
     if randomize:
         shuffle(nl)
     return nl
+
+
+def read_custom_scenario_lines(path: Path) -> list[str]:
+    with open(str(path), "r", encoding="utf-8") as custom_f:
+        return custom_f.read().splitlines()
+
+
+def apply_custom_scenario(path: Path, plugins: dict[str, Any]) -> None:
+    """Set the parameters of the custom scenario on the plugins, so that the generation takes them into account."""
+    for line_str in read_custom_scenario_lines(path):
+        if len(line_str.strip()) == 0 or line_str.startswith("#"):
+            continue
+        event: Event = Event.parse_from_string(0, line_str)
+        if len(event.command) == 2 and plugins.get(event.plugin) is not None:
+            plugins[event.plugin].set_parameter(event.command[0], event.command[1])
 
 
 def get_events_from_scenario(scenario_lines: list[str | Event]) -> list[Event]:
@@ -334,6 +351,9 @@ def generate_scenario(config: ScenarioConfig, plugins: dict[str, Any]) -> list[s
 
     Returns a list of scenario lines (strings for comments, Event objects for events).
     """
+    if config.custom_scenario_path is not None:
+        apply_custom_scenario(config.custom_scenario_path, plugins)
+
     scenario_lines: list[str | Event] = list()
     cumulative_extra_time: int = 0
 
@@ -438,6 +458,13 @@ def write_scenario_file(scenario_lines: list[str | Event], config: ScenarioConfi
         scenario_f.write("# OpenMATB scenario generator\n\n")
         scenario_f.write(f"# Name: {config.scenario_name}\n")
         scenario_f.write(f"# Date: {date_str_2}\n\n")
+
+        if config.custom_scenario_path is not None:
+            scenario_f.write("# Custom scenario commands\n")
+            scenario_f.write(f"# Source: {config.custom_scenario_path!s}\n")
+            for line in read_custom_scenario_lines(config.custom_scenario_path):
+                scenario_f.write(line + "\n")
+            scenario_f.write("# End of custom commands #\n")
 
         # Append the generated lines
         for evt in scenario_lines:
