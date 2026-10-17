@@ -324,6 +324,15 @@ class TestAddScenarioPhase:
         assert sysmon_events[1].command == ["pause"]
         assert sysmon_events[2].command == ["hide"]
 
+    def test_active_track_gets_paused_when_not_desired(self):
+        lines = [Event(1, 0, "track", ["start"])]
+        phase_tuples = (("sysmon", 0.5),)
+        plugins = self._make_plugins()
+        plugins["sysmon"] = MagicMock(parameters={"alerttimeout": 10000, "lights": {"1": {}}, "scales": {"1": {}}})
+        result = add_scenario_phase(lines, phase_tuples, 60, plugins, self._make_config(), 60)
+        track_events = [e for e in get_events_from_scenario(result) if e.plugin == "track"]
+        assert [e.command for e in track_events] == [["start"], ["pause"], ["hide"]]
+
     def test_paused_plugin_gets_resumed(self):
         lines = [
             Event(1, 0, "track", ["start"]),
