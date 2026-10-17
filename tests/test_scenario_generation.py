@@ -4,6 +4,7 @@ Direct imports (no AST extraction needed).
 """
 
 import random
+from math import gcd
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -82,6 +83,14 @@ class TestReduce:
 
     def test_typical_comm_ratio(self):
         assert reduce(50, 100) == (1, 2)
+
+    def test_ratio_from_the_ui_slider(self):
+        # The UI gives the ratio as slider / 100, so 7 % comes back as 7.000000000000001
+        for percent in (7, 14, 28, 29, 55, 56, 57, 58):
+            assert reduce(percent / 100.0 * 100, 100) == (percent // gcd(percent, 100), 100 // gcd(percent, 100))
+
+    def test_zero_ratio(self):
+        assert reduce(0, 100) == (0, 1)
 
 
 class TestChoices:

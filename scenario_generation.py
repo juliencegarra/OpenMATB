@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from math import gcd
 from pathlib import Path
 from random import randint, shuffle
 from time import time
@@ -78,19 +79,11 @@ def get_part_durations(duration_sec: int, part_number: int) -> list[int]:
 
 
 def reduce(p: float, q: float) -> tuple[int, int]:
-    if p == q:
-        return 1, 1
-    x: float = max(p, q)
-    y: float = min(p, q)
-    while True:
-        x %= y
-        if x == 0:
-            break
-        if x < y:
-            temp: float = x
-            x = y
-            y = temp
-    return int(p / y), int(q / y)
+    # Rounded first: a ratio such as 0.07 * 100 gives 7.000000000000001
+    p_int: int = round(p)
+    q_int: int = round(q)
+    divisor: int = gcd(p_int, q_int)
+    return p_int // divisor, q_int // divisor
 
 
 def choices(l: list[str], k: int, randomize: bool) -> list[str]:
