@@ -18,6 +18,7 @@ def _make_replay(**kwargs):
     rs.pause_scenario_time = False
     rs.plugins = {}
     rs.events_queue = []
+    rs._hidden_paused_plugins = []
     rs.logreader = MagicMock()
     rs.logreader.end_sec = 300
     rs.logreader.duration_sec = 300

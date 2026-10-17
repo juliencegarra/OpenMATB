@@ -518,9 +518,7 @@ class ReplayScheduler(Scheduler):
             if not self.logreader.is_in_blocking_segment(self.replay_time):
                 active_blocking.stop()
                 if self.is_scenario_time_paused():
-                    if len(self.paused_plugins) > 0:
-                        self.execute_plugins_methods(self.paused_plugins, methods=["show", "resume"])
-                        self.paused_plugins = list()
+                    self.resume_paused_plugins()
                     self.resume_scenario()
 
         # Case 2: stale modal dialog (system;pause)

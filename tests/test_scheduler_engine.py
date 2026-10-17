@@ -508,6 +508,22 @@ class TestExecuteEvents:
         assert sched.paused_plugins == []
         assert sched.is_scenario_time_paused() is False
 
+    def test_hidden_plugin_stays_hidden_after_a_blocking_plugin(self, window):
+        """The LSL plugin, hidden once its own slide is passed, stays alive and unpaused: it must not be shown
+        again (a fullscreen background over the tasks) when a later instructions plugin ends."""
+        lsl = _make_plugin(alive=True, paused=False)
+        lsl.visible = False
+        task = _make_plugin(alive=True, paused=False)
+        task.visible = True
+        blocker = _make_plugin(alive=True, paused=False, blocking=True)
+        sched = _make_scheduler({"lsl": lsl, "task": task, "blocker": blocker})
+        sched.execute_events()  # The blocking plugin pauses the others
+        blocker.alive, blocker.paused = False, True  # It ends
+        sched.execute_events()
+        task.show.assert_called_once()
+        lsl.show.assert_not_called()
+        lsl.resume.assert_called_once()
+
     def test_resume_without_paused_plugins(self, window):
         """With nothing paused by a blocker, the scenario simply resumes."""
         sched = _make_scheduler({"p": _make_plugin()})

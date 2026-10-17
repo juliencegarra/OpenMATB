@@ -95,6 +95,7 @@ class Scheduler:
 
         # Store the plugins that could be paused by a *blocking* event
         self.paused_plugins: list[Any] = list()
+        self._hidden_paused_plugins: list[Any] = list()  # Paused by a blocking plugin while already hidden
 
         # Track whether plugins have been paused due to a modal dialog (e.g. pause prompt)
         self._dialog_paused: bool = False
@@ -202,14 +203,22 @@ class Scheduler:
                 if not self.is_scenario_time_paused():
                     self.pause_scenario()
                     self.paused_plugins = self.get_active_non_blocking_plugins()
+                    self._hidden_paused_plugins = [p for p in self.paused_plugins if not p.visible]
                     self.execute_plugins_methods(self.paused_plugins, methods=["pause", "hide"])
 
         # In Replay mode: IT IS the play/pause button that manages the scenario resuming
         elif active_blocking_plugin is None:
-            if len(self.paused_plugins) > 0:
-                self.execute_plugins_methods(self.paused_plugins, methods=["show", "resume"])
-                self.paused_plugins = list()
+            self.resume_paused_plugins()
             self.resume_scenario()
+
+    def resume_paused_plugins(self) -> None:
+        """Resume the plugins paused by a blocking plugin. Only those that were visible are shown again: e.g. the
+        LSL plugin, hidden once its own slide is passed, would cover the tasks with its fullscreen background."""
+        shown: list[Any] = [p for p in self.paused_plugins if p not in self._hidden_paused_plugins]
+        self.execute_plugins_methods(shown, methods=["show"])
+        self.execute_plugins_methods(self.paused_plugins, methods=["resume"])
+        self.paused_plugins = list()
+        self._hidden_paused_plugins = list()
 
     def is_scenario_time_paused(self) -> bool:
         return self.pause_scenario_time
