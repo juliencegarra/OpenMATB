@@ -1009,6 +1009,16 @@ class TestBuildTimeseries:
         assert series[1].time_sec == pytest.approx(0.5)
         assert series[2].time_sec == pytest.approx(1.0)
 
+    def test_last_point_kept_despite_rounding(self) -> None:
+        """0.3 / 0.1 is 2.9999999999999996 in floating point: the 0.3 point was dropped."""
+        perf = [
+            _perf(0.0, "track", "cursor_in_target", "1"),
+            _perf(0.3, "track", "cursor_in_target", "0"),
+        ]
+        series = build_timeseries("s", perf, [], 0.1)
+        assert [round(p.time_sec, 6) for p in series] == [0.0, 0.1, 0.2, 0.3]
+        assert series[-1].track_in_target == "0"
+
 
 # ── write_trials ─────────────────────────────────────────────────────────────
 

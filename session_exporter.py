@@ -701,7 +701,7 @@ def build_timeseries(
 
     track_idx: int = 0
     resman_idx: int = 0
-    n_points: int = int(t_max / interval) + 1
+    n_points: int = int(round(t_max / interval, 6)) + 1  # Rounded: 0.3 / 0.1 is 2.9999999999999996
 
     for i in range(n_points):
         t: float = round(i * interval, 6)
