@@ -253,6 +253,15 @@ class TestPromptForANewTarget:
         comms.prompt_for_a_new_target("own", "NAV_1")
         comms.logger.log_manual_entry.assert_called_with("Audio prompt playback failed")
 
+    def test_session_goes_on_after_a_playback_failure(self, comms):
+        """Without a player, the next step must not crash: the target is given, without sound."""
+        self.player.side_effect = RuntimeError("no audio device")
+        comms.prompt_for_a_new_target("own", "NAV_1")
+        comms.scenario_time += 1
+        comms.compute_next_plugin_state()
+        assert _radio(comms, "NAV_1")["is_prompting"] is False
+        assert _radio(comms, "NAV_1")["targetfreq"] is not None
+
 
 class TestModulateFrequency:
     @pytest.mark.parametrize("key, delta", [("LEFT", -0.1), ("RIGHT", 0.1)])

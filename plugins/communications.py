@@ -432,7 +432,8 @@ class Communications(AbstractPlugin):
                 if self._response_elapsed_ms(radio["_response_start"]) >= self.parameters["maxresponsedelay"]:
                     self.record_target_missing(radio)
 
-            elif self.player.source is None:  # If the radio prompt has just ended
+            # If the radio prompt has just ended (or could not be played: no player)
+            elif not hasattr(self, "player") or self.player.source is None:
                 radio["is_prompting"] = False
                 self.logger.log_manual_entry(f"Target {radio['name']}:{radio['targetfreq']}")
 
