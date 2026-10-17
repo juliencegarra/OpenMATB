@@ -576,6 +576,16 @@ class TestSlides:
         ins.on_key_release(key.ENTER, 0)
         assert ins.go_to_next_slide is False
 
+    def test_response_key_advances(self, make_instructions):
+        """instructions;response-key;ENTER (documented): ENTER advances, SPACE no longer does."""
+        ins = make_instructions(SLIDES)
+        ins.set_parameter("response-key", "ENTER")
+        ins.update(0.0)
+        ins.on_key_release(key.SPACE, 0)
+        assert ins.go_to_next_slide is False
+        ins.on_key_release(key.ENTER, 0)
+        assert ins.go_to_next_slide is True
+
     def test_stops_after_last_slide(self, make_instructions):
         ins = make_instructions("only\n")
         ins.update(0.0)

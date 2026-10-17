@@ -733,8 +733,8 @@ class BlockingPlugin(AbstractPlugin):
         if keystr is None:
             return
 
-        # Waiting for the key release to advance one slide at the time
-        if keystr.lower() == "space" and state == "release":
+        # Waiting for the key release (of the response key, SPACE by default) to advance one slide at the time
+        if keystr.lower() == self.parameters["response"]["key"].lower() and state == "release":
             self.go_to_next_slide = True
 
         return keystr

@@ -299,7 +299,7 @@ def gs_with_keys(mock_window):
     obj.question_interspace = 0.05
     obj.top_to_top = 0.15
     obj.m_draw = 1
-    obj.parameters = {"showvalue": False}
+    obj.parameters = {"showvalue": False, "response": {"text": "Press SPACE to validate", "key": "SPACE"}}
     obj.verbose = False
     obj.selected_slider_index = 0
     obj.keys = {"SPACE", "UP", "DOWN", "LEFT", "RIGHT"}
