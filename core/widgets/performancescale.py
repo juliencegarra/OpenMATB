@@ -35,8 +35,12 @@ class Performancescale(AbstractWidget):
         self._draw_scale()
 
     def _draw_scale(self) -> None:
-        tick_inter: int = int((self.level_max - self.level_min) / (self.tick_number - 1))
-        tick_values: list[int] = list(reversed(range(self.level_min, self.level_max + 1, tick_inter)))
+        # From the top tick (level_max) to the bottom one (level_min). The values are rounded, not truncated:
+        # 4 ticks on 0-100 are 100, 67, 33, 0. A single tick is level_max, at the top
+        intervals: int = max(self.tick_number - 1, 1)
+        tick_values: list[int] = [
+            round(self.level_max - (self.level_max - self.level_min) * i / intervals) for i in range(self.tick_number)
+        ]
 
         x1, y1, x2, y2 = self.container.get_x1y1x2y2()
 
@@ -68,7 +72,7 @@ class Performancescale(AbstractWidget):
         x: float = self.container.l + self.container.w + self.container.w * 0.1
 
         for i in range(self.tick_number):
-            y: float = self.container.b + self.container.h - (self.container.h / (self.tick_number - 1)) * i
+            y: float = self.container.b + self.container.h - (self.container.h / intervals) * i
             w: float = self.tick_width
             self.vertex[f"tick_{tick_values[i]}"] = Line(
                 self.container.x2 - w,

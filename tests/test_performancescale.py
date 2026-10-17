@@ -121,6 +121,17 @@ class TestSetTickNumber:
         tick_labels = [k for k in scale.vertex if k.startswith("tick_") and k.endswith("_label")]
         assert len(tick_labels) == 11
 
+    def test_tick_values_that_do_not_divide_the_range(self, scale):
+        """4 ticks on 0-100: the top tick is 100 (not 99), at the top of the scale."""
+        scale.set_tick_number(4)
+        labels = {k: v for k, v in scale.vertex.items() if k.startswith("tick_") and k.endswith("_label")}
+        assert sorted(labels) == sorted(["tick_100_label", "tick_67_label", "tick_33_label", "tick_0_label"])
+        assert labels["tick_100_label"].y == scale.container.b + scale.container.h
+
+    def test_single_tick(self, scale):
+        scale.set_tick_number(1)
+        assert [k for k in scale.vertex if k.startswith("tick_") and k.endswith("_label")] == ["tick_100_label"]
+
     def test_tick_values_correct_after_change(self, scale):
         """After changing tick_number to 3, labels should match."""
         scale.set_tick_number(3)
