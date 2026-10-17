@@ -4,6 +4,7 @@ Direct imports (no AST extraction needed).
 """
 
 import random
+import threading
 from math import gcd
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -139,6 +140,23 @@ class TestGetPartDurations:
         parts = get_part_durations(30, 1)
         assert len(parts) == 1
         assert sum(parts) == 30
+
+    @staticmethod
+    def _parts_within_timeout(duration_sec, part_number):
+        # The bugged versions never return: run them in a thread to keep the test suite alive
+        result = []
+        thread = threading.Thread(
+            target=lambda: result.append(get_part_durations(duration_sec, part_number)), daemon=True
+        )
+        thread.start()
+        thread.join(timeout=2)
+        assert not thread.is_alive(), "get_part_durations did not return"
+        return result[0]
+
+    def test_no_rest(self):
+        # The events fill the whole block (e.g. 5 comms of 14 s in a 70 s block)
+        parts = self._parts_within_timeout(0, 6)
+        assert parts == [0] * 6
 
 
 class TestGetEventsFromScenario:

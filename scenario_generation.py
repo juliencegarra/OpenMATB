@@ -70,6 +70,10 @@ def part_duration_sec(duration_sec: int, part_left: int, duration_list: list[int
 
 
 def get_part_durations(duration_sec: int, part_number: int) -> list[int]:
+    # No time left to share: part_duration_sec would return no part at all
+    if duration_sec == 0:
+        return [0] * part_number
+
     while True:
         parts: list[int] = part_duration_sec(duration_sec, part_number)
         if len(parts) == part_number:
