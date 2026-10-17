@@ -197,6 +197,22 @@ class TestScenarioErrors:
         assert "deprecated" in errors.errors_list[0]
         assert not errors.some_fatals
 
+    def test_deprecated_plugins_are_warned_and_dropped(self, fake_plugins, errors, error_file, mock_logger):
+        """As in Parasuraman_et_al_1993/low_reliability_block.txt: pumpstatus and end are no longer plugins."""
+        s = Scenario(
+            [
+                "0:00:00;sysmon;start\n",
+                "0:00:00;pumpstatus;start\n",
+                "0:00:01;sysmon;stop\n",
+                "0:00:01;pumpstatus;stop\n",
+                "0:00:02;end\n",
+            ]
+        )
+        assert set(s.plugins) == {"sysmon"}
+        assert [e.plugin for e in s.events] == ["sysmon", "sysmon"]
+        assert len([m for m in errors.errors_list if "deprecated" in m]) == 3
+        assert not errors.some_fatals
+
     def test_blocking_plugin_needs_filename(self, fake_plugins, errors, error_file, mock_logger):
         """A blocking plugin started without filename is reported; with it, it is valid."""
         Scenario(["0:00:00;instructions;start\n"])

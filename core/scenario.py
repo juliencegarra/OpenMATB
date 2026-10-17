@@ -56,6 +56,10 @@ class Scenario:
                     fatal=True,
                 )
 
+        # Drop the deprecated events (e.g. the former pumpstatus plugin), with a warning, before the plugin names
+        # are checked: they are no longer plugins
+        self.events = self.events_retrocompatibility()
+
         # Next load the scheduled plugins into the class, so we can check potential errors
         # But first, check that only available plugins are mentioned
         for event in self.events:
@@ -71,7 +75,6 @@ class Scenario:
 
         self.plugins = {name: getattr(plugins, name.capitalize())() for name in self.get_plugins_name_list()}
 
-        self.events = self.events_retrocompatibility()  # Apply retrocompatiblity to events
         event_errors: list[str] = self.check_events()  # Check that events are properly expressed
 
         with open(P["SCENARIO_ERRORS"], "w", encoding="utf-8") as errorf:
