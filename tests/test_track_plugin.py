@@ -141,6 +141,21 @@ class TestComputeNextPluginState:
         assert second[0] == pytest.approx(sin(0.010) * 96)
         assert second[1] == pytest.approx(sin(0.012) * 96)
 
+    @pytest.mark.parametrize("visible", [True, False])
+    def test_performance_measured_on_the_new_cursor_position(self, track, visible):
+        """The reticle gets the position just computed before the performance is read (not at the next refresh,
+        which does not happen while the task is hidden)."""
+        track.visible = visible
+        track.cursor_path_gen = iter([(30.0, 40.0)])
+        track.parameters["targetproportion"] = 0.5
+        track.compute_next_plugin_state()
+        calls = [c[0] for c in track.reticle.mock_calls]
+        assert track.reticle.set_cursor_position.call_args.args == (30.0, 40.0)
+        track.reticle.set_target_proportion.assert_called_with(0.5)
+        assert calls.index("set_cursor_position") < calls.index("is_cursor_in_target")
+        assert calls.index("set_target_proportion") < calls.index("is_cursor_in_target")
+        assert calls.index("set_cursor_position") < calls.index("return_deviation")
+
     def test_no_update_while_paused(self, track):
         track.paused = True
         position = track.cursor_position

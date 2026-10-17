@@ -119,6 +119,11 @@ class Track(AbstractPlugin):
         if not REPLAY_MODE:
             self.cursor_position = next(self.cursor_path_gen)
 
+        # The performance is read from the reticle: give it the position (and target) of this step, not those of
+        # the last refresh (one step late, and never refreshed while the task is hidden)
+        self.reticle.set_cursor_position(*self.cursor_position)
+        self.reticle.set_target_proportion(self.parameters["targetproportion"])
+
         # NaN when no target is defined: logged as such, but treated as in target
         # (normal cursor color, no response needed)
         in_target: bool | float = self.reticle.is_cursor_in_target()
