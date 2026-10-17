@@ -272,7 +272,25 @@ class TestComputeNextState:
     def test_target_tanks_leak_the_others_do_not(self, resman):
         _step(resman, 3)
         levels = {k: t["level"] for k, t in resman.parameters["tank"].items()}
-        assert levels == dict(a=2500 - 3 * 26, b=2500 - 3 * 26, c=1000, d=1000, e=3000, f=3000)
+        # 800 per minute, 2 s steps: 26.67 per step, the fractions are carried over (26 + 27 + 27)
+        assert levels == dict(a=2500 - 80, b=2500 - 80, c=1000, d=1000, e=3000, f=3000)
+
+    def test_nominal_flows_per_minute(self, resman):
+        """Over one minute, the leaks and the pumps transfer their per-minute values (780 and 390 before)."""
+        _pump(resman, 1)["state"] = "on"  # c -> a, 800 per minute
+        _pump(resman, 7)["state"] = "on"  # a -> b, 400 per minute
+        _step(resman, 30)  # 30 steps of 2 s
+        assert _tank(resman, "c")["level"] == 1000 - 800
+        assert _tank(resman, "a")["level"] == 2500 - 800 + 800 - 400
+        assert _tank(resman, "b")["level"] == 2500 - 800 + 400
+
+    def test_nominal_flows_with_short_steps(self, resman):
+        """With 100 ms steps, a 400 per minute pump moves 0.67 per step: it used to move nothing."""
+        resman.parameters["taskupdatetime"] = 100
+        _tank(resman, "a")["lossperminute"] = _tank(resman, "b")["lossperminute"] = 0
+        _pump(resman, 7)["state"] = "on"
+        _step(resman, 600)  # One minute
+        assert (_tank(resman, "a")["level"], _tank(resman, "b")["level"]) == (2500 - 400, 2500 + 400)
 
     def test_pump_on_transfers_its_flow(self, resman):
         _pump(resman, 1)["state"] = "on"  # c -> a, 800 per minute

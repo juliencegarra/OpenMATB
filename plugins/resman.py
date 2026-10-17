@@ -258,6 +258,15 @@ class Resman(AbstractPlugin):
             ch = max(tri_ys) - min(tri_ys) + 2 * margin
             this_pump["_click_container"] = Container(f"pump_{pump_number}_click", cl, cb, cw, ch)
 
+    @staticmethod
+    def _whole_units(item: dict[str, Any], rest_key: str, amount: float) -> int:
+        """The whole units of amount to move during this step. The levels are integers: the fraction is carried
+        over to the next steps (truncating it lost e.g. 20 of the 800 units per minute with 2 s steps)."""
+        total: float = item.get(rest_key, 0.0) + amount
+        whole: int = int(total)
+        item[rest_key] = total - whole
+        return whole
+
     def compute_next_plugin_state(self) -> None:
         if not super().compute_next_plugin_state():
             return
@@ -276,7 +285,8 @@ class Resman(AbstractPlugin):
 
             for _, this_tank in tanks.items():  # 1. Deplete target tanks
                 if this_tank["target"] is not None:
-                    this_tank["level"] -= min(int(this_tank["lossperminute"] * time_resolution), this_tank["level"])
+                    loss: int = self._whole_units(this_tank, "_loss_rest", this_tank["lossperminute"] * time_resolution)
+                    this_tank["level"] -= min(loss, this_tank["level"])
 
             for _pump_n, this_pump in pumps.items():  # 2. For each pump
                 if this_pump["state"] == "on":  # 2.a Transfer flow if pump is ON
@@ -284,13 +294,14 @@ class Resman(AbstractPlugin):
                     totank: dict[str, Any] = tanks[this_pump["_totank"]]
 
                     # Compute (available) volume
-                    volume: float = min(int(this_pump["flow"]) * time_resolution, fromtank["level"])
+                    flow: int = self._whole_units(this_pump, "_flow_rest", int(this_pump["flow"]) * time_resolution)
+                    volume: int = min(flow, fromtank["level"])
 
                     if fromtank["depletable"]:  # Drain it from tank (if its capacity is limited)...
-                        fromtank["level"] -= int(volume)
+                        fromtank["level"] -= volume
 
                         # ...to tank (if it's not full)
-                    totank["level"] += min(int(volume), totank["max"] - totank["level"])
+                    totank["level"] += min(volume, totank["max"] - totank["level"])
 
         # The following is always executed (independent on wait_before_leak)
         for tank_l, this_tank in tanks.items():  # 3. For each tank
