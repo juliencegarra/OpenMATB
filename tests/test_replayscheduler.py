@@ -904,6 +904,15 @@ class TestProcessStates:
         assert slider.groove_value == 7
         slider.set_groove_position.assert_called_once()
 
+    def test_slider_of_a_page_already_replaced(self):
+        """slider_3 moved just before the SPACE that shows a page with one slider: its state is re-read after."""
+        slider = MagicMock()
+        scales = MagicMock(sliders={"slider_1": slider})
+        lr = _logreader(states=[(0.95, "slider_3, value", 7), (1.0, "slider_1, value", 2)])
+        rs = _make_loaded_replay(lr, replay_time=1.0, plugins={"genericscales": scales})
+        rs.process_states()  # Raised KeyError: 'slider_3'
+        assert slider.groove_value == 2
+
     def test_resman_tank_level(self):
         """The simulated tank levels are set back to the logged ones (the replay steps are not at the same times)."""
         resman = MagicMock()

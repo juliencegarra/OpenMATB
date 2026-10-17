@@ -621,7 +621,9 @@ class ReplayScheduler(Scheduler):
             # 3. Genericscales slider values
             elif "slider_" in state["address"] and "genericscales" in self.plugins:
                 slider_name: str = state["address"].replace(", value", "")
-                slider: Any = self.plugins["genericscales"].sliders[slider_name]
+                slider: Any = self.plugins["genericscales"].sliders.get(slider_name)
+                if slider is None:  # A slider of a page already replaced (the states of the last step are re-read)
+                    continue
                 slider.groove_value = state["value"]
                 slider.set_groove_position()
 
