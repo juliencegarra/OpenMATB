@@ -637,7 +637,7 @@ class BlockingPlugin(AbstractPlugin):
                 lines = [l for l in lines if len(l.strip()) > 0]
 
             for line in lines:
-                if "#" not in line:
+                if not line.lstrip().startswith("#"):  # A comment (a # inside a line is text, e.g. a colour)
                     if "<newpage>" in line:
                         self.slides.append("")  # New slide
                     else:

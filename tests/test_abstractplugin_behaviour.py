@@ -521,6 +521,11 @@ class TestSlides:
         assert ins.slides == ["<h1>Welcome</h1>\nFirst page\n", "Second page\n\n", "<h1>End</h1>\nBye\n"]
         assert ins.go_to_next_slide is True
 
+    def test_lines_with_a_hash_that_are_not_comments_are_kept(self, make_instructions):
+        """Only the lines starting with # are comments: an HTML colour or entity is part of the text."""
+        ins = make_instructions('<font color="#ff0000">Warning</font>\nCaf&#233;\n  # an indented comment\n')
+        assert ins.slides == ['<font color="#ff0000">Warning</font>\nCaf&#233;\n']
+
     def test_empty_lines_can_be_ignored(self, mock_logger, window, widgets, tmp_path):
         ins = Instructions()
         ins.ignore_empty_lines = True
