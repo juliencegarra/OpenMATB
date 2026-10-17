@@ -194,6 +194,21 @@ class TestGetParametersValue:
         assert exists is False
         assert val is None
 
+    def test_address_of_a_group_of_parameters(self):
+        """resman;pump-1;on (state forgotten) is not a parameter: it raised KeyError when the scenario was checked."""
+        mock_plugin = MagicMock()
+        mock_plugin.parameters = {"pump": {"1": {"state": "off", "flow": 800}}}
+        s = _make_scenario(plugins={"resman": mock_plugin})
+        assert s.get_parameters_value("resman", ["pump-1", "on"]) == (None, False)
+        assert s.get_parameters_value("resman", ["pump", "on"]) == (None, False)
+        assert s.get_parameters_value("resman", ["pump-1-state", "on"]) == ("off", True)
+
+    def test_address_below_a_value(self):
+        mock_plugin = MagicMock()
+        mock_plugin.parameters = {"title": "Test"}
+        s = _make_scenario(plugins={"sysmon": mock_plugin})
+        assert s.get_parameters_value("sysmon", ["title-x", "val"]) == (None, False)
+
 
 class TestGetValidationDict:
     def test_does_not_pollute_global_dict(self):

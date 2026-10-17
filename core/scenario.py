@@ -132,16 +132,14 @@ class Scenario:
         parameter_address: list[str] = command[0].split("-")
 
         for entry in parameter_address:  # Is this parameter existing ?
-            if current_level is not None and entry in current_level:
-                if isinstance(current_level[entry], dict):
-                    current_level = current_level[entry]
-            else:  # Entry not found
-                current_level = None
+            if not isinstance(current_level, dict) or entry not in current_level:  # Entry not found
+                return None, False
+            current_level = current_level[entry]
 
-        if current_level is None:
+        # The address must end on a value, not on a group of parameters (e.g. pump-1 instead of pump-1-state)
+        if isinstance(current_level, dict):
             return None, False
-        else:
-            return current_level[parameter_address[-1]], True
+        return current_level, True
 
     def get_plugin_methods(self, plugin: str) -> list[str]:
         return [f for f in dir(self.plugins[plugin]) if callable(getattr(self.plugins[plugin], f))]
