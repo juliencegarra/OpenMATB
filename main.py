@@ -45,7 +45,7 @@ from core import ReplayScheduler, Scheduler
 from core.constants import ARGS, PATHS, REPLAY_MODE
 from core.platform import notify_page, report_loop_errors, setup_web, url_params
 from core.selector import FileSelector
-from core.utils import get_conf_value
+from core.utils import get_conf_value, get_replay_session_path
 from core.window import Window
 
 
@@ -61,7 +61,7 @@ class OpenMATB:
         if REPLAY_MODE:
             # Skip the selector when a replay session is given (-r <session> or ?session=)
             if isinstance(ARGS.replay, str) or "session" in url_params():
-                self.start(None)
+                self.start(get_replay_session_path())  # -r <path>, else the session ID (-r 12, ?session=12)
             else:
                 self.selector = FileSelector(Window.MainWindow, "replay")
                 self.selector.open(self.on_selected)

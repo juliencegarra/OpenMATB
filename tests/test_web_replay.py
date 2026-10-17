@@ -9,6 +9,7 @@ visibility) that the replay must ignore. The complete replay is tested in a brow
 from __future__ import annotations
 
 import importlib
+from argparse import Namespace
 from pathlib import Path
 from unittest.mock import patch
 
@@ -71,7 +72,7 @@ class TestSessionIdFromThePage:
             patch.object(utils_module, "url_params", return_value={"mode": "replay"}),
             patch.object(utils_module, "has_conf_value", return_value=False),
             patch.object(utils_module, "find_the_last_session_number", return_value=4),
-            patch.object(utils_module.sys, "argv", ["main.py"]),
+            patch.object(utils_module, "ARGS", Namespace(replay=True)),
         ):
             assert utils_module.get_replay_session_id() == 4
 

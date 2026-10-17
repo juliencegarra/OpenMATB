@@ -2,13 +2,15 @@
 
 import configparser
 import sys
+from argparse import Namespace
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
 from core import validation
 from core.constants import PATHS as P
-from core.utils import get_conf_value, get_replay_session_id
+from core.utils import get_conf_value, get_replay_session_id, get_replay_session_path
 
 
 def _config(**values):
@@ -59,8 +61,25 @@ class TestConfigValues:
 
 class TestReplaySessionId:
     def test_command_line_first(self):
-        with patch.object(sys, "argv", ["main.py", "replay", "12"]):
+        with patch("core.utils.ARGS", Namespace(replay="12")):
             assert get_replay_session_id() == 12
+
+    def test_command_line_with_other_options(self):
+        """main.py --headless -r 5: the session is the -r argument, not the second word of the command line."""
+        with (
+            patch("core.utils.ARGS", Namespace(replay="5")),
+            patch.object(sys, "argv", ["main.py", "--headless", "-r", "5"]),
+        ):
+            assert get_replay_session_id() == 5
+
+    def test_session_path_on_the_command_line(self):
+        """main.py -r sessions/2026-09-26/12_260926_101500.csv (the documented "session path")."""
+        with patch("core.utils.ARGS", Namespace(replay="sessions/2026-09-26/12_260926_101500.csv")):
+            assert get_replay_session_path() == Path("sessions/2026-09-26/12_260926_101500.csv")
+        with patch("core.utils.ARGS", Namespace(replay="12")):
+            assert get_replay_session_path() is None
+        with patch("core.utils.ARGS", Namespace(replay=True)):  # -r alone
+            assert get_replay_session_path() is None
 
     def test_then_config(self):
         config = configparser.ConfigParser()
@@ -70,7 +89,7 @@ class TestReplaySessionId:
 
     def test_else_the_last_session(self):
         with (
-            patch.object(sys, "argv", ["main.py"]),
+            patch("core.utils.ARGS", Namespace(replay=True)),
             patch("core.utils.CONFIG", configparser.ConfigParser()),
             patch("core.utils.find_the_last_session_number", return_value=42),
         ):

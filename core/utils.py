@@ -2,12 +2,12 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 import ast
-import sys
+from pathlib import Path
 from typing import Any, Optional
 
 from pyglet import font
 
-from core.constants import CONFIG
+from core.constants import ARGS, CONFIG
 from core.constants import PATHS as P
 from core.platform import url_params
 
@@ -143,11 +143,18 @@ def get_conf_value(section: str, key: str, val_type: Optional[type] = None) -> A
         return value
 
 
+def get_replay_session_path() -> Path | None:
+    """The session file given to -r on the command line (-r <path>), None for a session ID (-r 12) or none"""
+    if isinstance(ARGS.replay, str) and not ARGS.replay.isdigit():
+        return Path(ARGS.replay)
+    return None
+
+
 def get_replay_session_id() -> int:
     if url_params().get("session"):
         return int(url_params()["session"])
-    elif len(sys.argv) > 2:
-        return int(sys.argv[2])
+    elif isinstance(ARGS.replay, str) and ARGS.replay.isdigit():  # -r 12
+        return int(ARGS.replay)
     elif has_conf_value("Replay", "replay_session_id"):
         return int(get_conf_value("Replay", "replay_session_id"))
     else:
