@@ -19,6 +19,7 @@ from core.container import Container
 from core.logger import get_logger
 from core.logreader import LogReader
 from core.perfoverlay import PerfOverlay
+from core.pseudorandom import set_replay_session_id
 from core.scheduler import Scheduler
 from core.utils import clamp, get_replay_session_id
 from core.widgets import Frame, MuteButton, PlayPause, Reticle, SimpleHTML, Simpletext, Slider
@@ -124,6 +125,8 @@ class ReplayScheduler(Scheduler):
                 self.logreader = LogReader(session_path=self._session_path)
             else:
                 self.logreader = LogReader(replay_session_id)
+            # The plugins draw their pseudorandom values from the seeds of the replayed session
+            set_replay_session_id(self.logreader.replay_session_id)
             # Pre-compute sorted time arrays for O(log n) bisect lookup
             self._key_times: list[float] = [float(i["scenario_time"]) for i in self.logreader.keyboard_inputs]
             self._joy_times: list[float] = [float(i["scenario_time"]) for i in self.logreader.joystick_inputs]

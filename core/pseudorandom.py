@@ -18,9 +18,20 @@ plugins_using_seed: list[str] = ["communications", "sysmon"]  # Used to convert 
 # a unique integer
 
 
+# In replay, the seeds are those of the replayed session (set by the replay scheduler once the session is loaded)
+_replay_session_id: int | None = None
+
+
+def set_replay_session_id(session_id: int | None) -> None:
+    global _replay_session_id
+    _replay_session_id = session_id
+
+
 def _get_session_id() -> int:
     if not REPLAY_MODE:
         return get_logger().session_id
+    if _replay_session_id is not None:
+        return _replay_session_id
     return find_the_last_session_number()
 
 

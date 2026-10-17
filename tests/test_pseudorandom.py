@@ -27,6 +27,26 @@ class TestPluginAliasToInt:
             plugin_alias_to_int("unknown_plugin")
 
 
+class TestReplaySeed:
+    def test_replay_uses_the_seeds_of_the_replayed_session(self, mock_logger):
+        """Replaying session 4 among 10 sessions draws the same values as session 4 did."""
+        import core.pseudorandom as pseudorandom
+
+        mock_logger.session_id = 4
+        with patch.object(pseudorandom, "REPLAY_MODE", False):
+            session_seed = pseudorandom.set_seed("sysmon", 100)
+
+        with (
+            patch.object(pseudorandom, "REPLAY_MODE", True),
+            patch.object(pseudorandom, "find_the_last_session_number", return_value=10),
+        ):
+            pseudorandom.set_replay_session_id(4)
+            try:
+                assert pseudorandom.set_seed("sysmon", 100) == session_seed
+            finally:
+                pseudorandom.set_replay_session_id(None)
+
+
 class TestSetSeed:
     def test_deterministic(self):
         """Same inputs should produce the same seed."""

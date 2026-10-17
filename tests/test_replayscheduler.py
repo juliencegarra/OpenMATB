@@ -498,6 +498,18 @@ class TestSetScenario:
         mock_lr.assert_called_once()
         mock_overlay.assert_called_once()
 
+    @patch("core.replayscheduler.set_replay_session_id")
+    @patch("core.replayscheduler.Scheduler.set_scenario")
+    @patch("core.replayscheduler.LogReader")
+    @patch("core.replayscheduler.Window")
+    def test_pseudorandom_seeds_of_the_replayed_session(self, mock_win, mock_lr, _set_scenario, mock_set_id):
+        lr = _logreader()
+        lr.replay_session_id = 4
+        mock_lr.return_value = lr
+        rs = _make_replay(logreader=None, _session_path="4_250101_120000.csv", _perf_overlay=None)
+        rs.set_scenario()
+        mock_set_id.assert_called_once_with(4)
+
     @patch("core.replayscheduler.PerfOverlay")
     @patch("core.replayscheduler.Scheduler.set_scenario")
     @patch("core.replayscheduler.LogReader")
