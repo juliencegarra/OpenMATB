@@ -158,6 +158,18 @@ class TestGetPartDurations:
         parts = self._parts_within_timeout(0, 6)
         assert parts == [0] * 6
 
+    def test_half_second_rest(self):
+        # A 1.5 s refractory duration gives one 11.5 s sysmon failure in a 60 s block: 48.5 s left
+        random.seed(42)
+        parts = self._parts_within_timeout(48.5, 2)
+        assert len(parts) == 2
+        assert sum(parts) == 48.5
+
+    def test_rest_below_one_second(self):
+        parts = self._parts_within_timeout(0.5, 3)
+        assert len(parts) == 3
+        assert sum(parts) == 0.5
+
 
 class TestGetEventsFromScenario:
     """Test filtering Event objects from mixed lists."""
@@ -483,6 +495,18 @@ class TestGenerateScenario:
         assert len(comments) == 2
         assert "Block" in comments[0]
         assert "Block" in comments[1]
+
+    def test_half_second_refractory_duration(self):
+        """The UI refractory slider has a 0.5 s step."""
+        random.seed(1)
+        config = ScenarioConfig(
+            events_refractory_duration=1.5,
+            blocks=[BlockConfig(60, {"sysmon": 0.25, "communications": 0.5})],
+        )
+        result = generate_scenario(config, self._make_full_plugins())
+        failures = [e for e in get_events_from_scenario(result) if e.plugin == "sysmon" and len(e.command) == 2]
+        assert len(failures) == 2  # One light and one scale failure of 11.5 s
+        assert all(0 <= e.time_sec <= 60 for e in failures)
 
     def test_multiple_blocks_timing(self):
         """Start times are cumulative across blocks."""

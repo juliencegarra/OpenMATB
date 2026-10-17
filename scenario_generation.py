@@ -69,15 +69,21 @@ def part_duration_sec(duration_sec: int, part_left: int, duration_list: list[int
     return part_duration_sec(duration_sec - n, part_left - 1, duration_list + [n])
 
 
-def get_part_durations(duration_sec: int, part_number: int) -> list[int]:
-    # No time left to share: part_duration_sec would return no part at all
-    if duration_sec == 0:
-        return [0] * part_number
+def get_part_durations(duration_sec: float, part_number: int) -> list[float]:
+    # part_duration_sec draws whole seconds: the fraction (e.g. with a 1.5 s refractory duration)
+    # is added to one part
+    whole_sec: int = int(duration_sec)
+    fraction_sec: float = duration_sec - whole_sec
 
-    while True:
-        parts: list[int] = part_duration_sec(duration_sec, part_number)
-        if len(parts) == part_number:
-            break
+    # No time left to share: part_duration_sec would return no part at all
+    if whole_sec == 0:
+        parts: list[float] = [0] * part_number
+    else:
+        while True:
+            parts = part_duration_sec(whole_sec, part_number)
+            if len(parts) == part_number:
+                break
+    parts[0] += fraction_sec
     shuffle(parts)
     return parts
 
