@@ -165,6 +165,7 @@ class Communications(AbstractPlugin):
 
     def regenerate_callsigns(self) -> None:
         self.parameters["owncallsign"] = self.get_callsign()
+        self.parameters["othercallsign"] = list()
         for _i in range(self.parameters["othercallsignnumber"]):
             this_callsign: str = self.get_callsign()
             while this_callsign in [self.parameters["owncallsign"]] + self.parameters["othercallsign"]:

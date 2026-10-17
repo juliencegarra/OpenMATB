@@ -329,6 +329,15 @@ class TestComputeNextPluginState:
         assert comms.parameters["othercallsign"] == ["CD34"]
         assert comms.old_regex == r"[A-Z][A-Z]\d\d"
 
+    def test_new_regex_replaces_the_other_callsigns(self, comms):
+        old_callsigns = list(comms.parameters["othercallsign"])
+        assert len(old_callsigns) == 5
+        comms.parameters["callsignregex"] = "[A-Z][A-Z][0-9][0-9]"
+        comms.letters, comms.digits = ascii_uppercase, digits
+        with patch("plugins.communications.xeger", side_effect=["AB01", "CD23", "EF45", "GH67", "IJ89", "KL01"]):
+            comms.compute_next_plugin_state()
+        assert comms.parameters["othercallsign"] == ["CD23", "EF45", "GH67", "IJ89", "KL01"]
+
     def test_keys_tune_only_when_allowed(self, comms):
         comms.modulate_frequency = MagicMock()
         comms.can_receive_keys = False
