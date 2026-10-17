@@ -167,6 +167,17 @@ class TestFileReading:
         gs.update(1)
         assert list(gs.sliders) == ["slider_2"]
 
+    def test_clicked_slider_after_a_line_that_is_not_a_scale(self, make_scales):
+        """The rank given to a slider is its position among the sliders, as in nasatlx_fr.txt (<note> line first)."""
+        gs = make_scales("<note>A note</note>\nQ1;Question 1;A/B;0/20/10\nQ2;Question 2;A/B;0/20/10\n")
+        gs.start()
+        gs.update(1)
+        last = list(gs.sliders.values())[-1]
+        gs._on_slider_mouse_focus(last.rank)  # The participant clicks on the last slider
+        assert _selected(gs) == [False, True]
+        _press(gs, key.RIGHT)
+        assert last.value == 11
+
 
 class TestFirstPage:
     def test_one_slider_per_scale(self, scales):

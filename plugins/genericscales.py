@@ -172,7 +172,7 @@ class Genericscales(BlockingPlugin):
                     value_min=value_min,
                     value_max=value_max,
                     value_default=value_default,
-                    rank=l,
+                    rank=len(self.sliders),  # Position among the sliders (not among the lines of the page)
                     draw_order=self.m_draw + 3,
                     interactive=not REPLAY_MODE,
                     showvalue=self.parameters["showvalue"],
