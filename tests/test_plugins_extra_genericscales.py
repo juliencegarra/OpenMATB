@@ -167,6 +167,38 @@ class TestFileReading:
         gs.update(1)
         assert list(gs.sliders) == ["slider_2"]
 
+    def test_scale_without_short_title(self, make_scales):
+        """The format documented in questionnaire_example_en.txt: Question;minimumName/maximumName;min/max/default."""
+        gs = make_scales("How demanding was the task?;Low/High;0/10/5\n")
+        gs.start()
+        gs.update(1)
+        [slider] = gs.sliders.values()
+        assert (slider.title, slider.label_min, slider.label_max) == ("How demanding was the task?", "Low", "High")
+        assert (slider.value_min, slider.value_max, slider.value) == (0, 10, 5)
+        assert "genericscales_title_1" not in gs.widgets
+
+    def test_negative_values(self, make_scales):
+        gs = make_scales("Valence;How did you feel?;Bad/Good;-5/5/0\n")
+        gs.start()
+        gs.update(1)
+        [slider] = gs.sliders.values()
+        assert (slider.value_min, slider.value_max, slider.value) == (-5, 5, 0)
+
+    @pytest.mark.parametrize(
+        "line",
+        [
+            "Effort;How hard; mentally?;Low/High;0/10/5",  # A ; in the question
+            "Effort;How hard?;Low/High;0/10/",  # A missing value
+            "Effort;How hard?;Low/Medium/High;0/10/5",  # Three labels
+        ],
+    )
+    def test_malformed_scale_is_skipped(self, make_scales, line):
+        """A malformed line is not a scale: the questionnaire goes on (it raised ValueError during the session)."""
+        gs = make_scales(line + "\nQ;Question;A/B;1/7/4\n")
+        gs.start()
+        gs.update(1)
+        assert [s.title for s in gs.sliders.values()] == ["Q"]
+
     def test_clicked_slider_after_a_line_that_is_not_a_scale(self, make_scales):
         """The rank given to a slider is its position among the sliders, as in nasatlx_fr.txt (<note> line first)."""
         gs = make_scales("<note>A note</note>\nQ1;Question 1;A/B;0/20/10\nQ2;Question 2;A/B;0/20/10\n")

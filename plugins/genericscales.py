@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from re import match as regex_match
+from re import fullmatch as regex_fullmatch
 from typing import Any
 
 from pyglet.text import Label as PygletLabel
@@ -16,6 +16,10 @@ from core.container import Container
 from core.utils import get_conf_value
 from core.widgets import Simpletext, Slider
 from plugins.abstractplugin import BlockingPlugin
+
+# [Short title;]Question;minimumName/maximumName;minimumValue/maximumValue/defaultValue. A line that does not
+# match it (e.g. a ; in the question, a missing value) is not a scale, instead of raising during the session
+SCALE_PATTERN: str = r"(?:([^;]*);)?([^;]*);([^;/]*)/([^;/]*);(-?\d+)/(-?\d+)/(-?\d+)"
 
 
 class Genericscales(BlockingPlugin):
@@ -42,7 +46,7 @@ class Genericscales(BlockingPlugin):
         self._first_page: bool = True
         self.ignore_empty_lines: bool = True
 
-        self.regex_scale_pattern: str = r"(.*);(.*)/(.*);(\d*)/(\d*)/(\d*)"
+        self.regex_scale_pattern: str = SCALE_PATTERN
         self.question_height_ratio: float = 0.1  # question + response slider
         self.question_interspace: float = 0.05  # Space to leave between two questions
         self.top_to_top: float = self.question_interspace + self.question_height_ratio
@@ -94,19 +98,18 @@ class Genericscales(BlockingPlugin):
                 height=height_in_prop, y=1 - (1 / (len(scale_list))) * l
             )
 
-            if regex_match(self.regex_scale_pattern, scale):
-                title: str
+            scale_match = regex_fullmatch(self.regex_scale_pattern, scale)
+            if scale_match is not None:
+                title: str | None
                 label: str
-                limit_labels: str
-                values: str
-                title, label, limit_labels, values = scale.strip().split(";")
                 label_min: str
                 label_max: str
-                label_min, label_max = limit_labels.split("/")
+                title, label, label_min, label_max, *values = scale_match.groups()
+                title = label if title is None else title  # Without short title, the question is the title
                 value_min: int
                 value_max: int
                 value_default: int
-                value_min, value_max, value_default = [int(v) for v in values.split("/")]
+                value_min, value_max, value_default = [int(v) for v in values]
 
                 show_title: bool = title != label
 

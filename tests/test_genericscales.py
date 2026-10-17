@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from core.container import Container
+from plugins.genericscales import SCALE_PATTERN
 
 # ── Helpers ──────────────────────────────────────
 
@@ -48,7 +49,7 @@ def gs():
     obj._first_page = True
     obj.widgets = {}
     obj.container = Container("fullscreen", 0, 0, 1920, 1080)
-    obj.regex_scale_pattern = r"(.*);(.*)/(.*);(\d*)/(\d*)/(\d*)"
+    obj.regex_scale_pattern = SCALE_PATTERN
     obj.question_height_ratio = 0.1
     obj.question_interspace = 0.05
     obj.top_to_top = 0.15
@@ -293,7 +294,7 @@ def gs_with_keys(mock_window):
     obj._first_page = True
     obj.widgets = {}
     obj.container = Container("fullscreen", 0, 0, 1920, 1080)
-    obj.regex_scale_pattern = r"(.*);(.*)/(.*);(\d*)/(\d*)/(\d*)"
+    obj.regex_scale_pattern = SCALE_PATTERN
     obj.question_height_ratio = 0.1
     obj.question_interspace = 0.05
     obj.top_to_top = 0.15
