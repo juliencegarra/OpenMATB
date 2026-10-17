@@ -131,7 +131,9 @@ class Performancescale(AbstractWidget):
 
     def get_y_of(self, level: int) -> float:
         _, y1, _, y2 = self.container.get_x1y1x2y2()
-        return y2 + (y1 - y2) * (level / self.level_max)
+        # Proportion between the bottom (level_min) and top (level_max) ticks, kept in the scale
+        proportion: float = (level - self.level_min) / (self.level_max - self.level_min)
+        return y2 + (y1 - y2) * min(max(proportion, 0), 1)
 
     def set_performance_level(self, level: int) -> None:
         if level == self.get_performance_level():

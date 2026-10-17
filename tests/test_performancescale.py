@@ -150,6 +150,15 @@ class TestSetLevelMin:
             ["tick_20_label", "tick_40_label", "tick_60_label", "tick_80_label", "tick_100_label"]
         )
 
+    def test_bar_follows_the_ticks(self, scale):
+        """With level_min=20 the bottom tick is 20: a level of 20 is at the bottom, 60 halfway."""
+        scale.set_level_min(20)
+        _, y1, _, y2 = scale.container.get_x1y1x2y2()
+        assert scale.get_y_of(20) == y2
+        assert scale.get_y_of(60) == pytest.approx((y1 + y2) / 2)
+        assert scale.get_y_of(100) == y1
+        assert scale.get_y_of(10) == y2  # Below the scale: kept in it
+
 
 # ── set_level_max ───────────────────────────────
 
