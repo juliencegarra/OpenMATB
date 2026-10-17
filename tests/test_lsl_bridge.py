@@ -173,6 +173,39 @@ class TestBridge:
         assert bridge.markers == 1
         assert any("Page connected" in line for line in logs)
 
+    def test_reloaded_page_does_not_use_the_offset_of_the_previous_one(self, bridge_module):
+        """performance.now() starts again from 0 on each page load: the offset of a page is its own."""
+
+        async def page(port, browser_offset, syncs):
+            reader, writer, _ = await _connect(port)
+            for _ in range(syncs):
+                sync = await _message(bridge_module, reader)
+                _send(writer, {"type": "sync", "id": sync["id"], "browser": clock.time + browser_offset})
+                offset = await _message(bridge_module, reader)
+            _send(writer, {"type": "marker", "value": "marker", "time": 9000.0})
+            writer.write(client_frame(b"", opcode=0x8))
+            await bridge_module.read_frame(reader)
+            writer.close()
+            return offset
+
+        async def scenario(port):
+            await page(port, 100.0, 3)  # The previous participant
+            return await page(port, 250.0, 1)  # The page is reloaded for the next one
+
+        clock = FakeClock()
+        outlet = FakeOutlet()
+        bridge = bridge_module.Bridge(outlet, clock, log=lambda line: None)
+
+        async def main():
+            server = await asyncio.start_server(bridge.handle, "127.0.0.1", 0)
+            async with server:
+                return await asyncio.wait_for(scenario(server.sockets[0].getsockname()[1]), timeout=10)
+
+        offset = asyncio.run(main())
+        assert offset["offset"] == pytest.approx(250.0, abs=offset["rtt"])
+        timestamp = outlet.samples[-1][1]
+        assert timestamp == pytest.approx(9000.0 - 250.0, abs=offset["rtt"])
+
     def test_marker_before_the_first_sync(self, bridge_module):
         """No offset yet: the marker is stamped when it is received."""
 

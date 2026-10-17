@@ -134,7 +134,6 @@ class Bridge:
         self.clock = clock
         self.origins = origins or []
         self.log = log
-        self.sync = ClockSync()  # Shared by the connections: same computer, same clocks
         self.markers: int = 0
 
     async def handle(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
@@ -170,6 +169,8 @@ class Bridge:
 
     async def session(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         sent: dict[int, float] = {}  # Sync exchange id -> LSL time when sent
+        # One per page: performance.now() starts again from 0 on each page load (a reload, the next participant)
+        sync: ClockSync = ClockSync()
 
         def send(message: dict) -> None:
             writer.write(encode_frame(json.dumps(message).encode()))
@@ -203,18 +204,18 @@ class Bridge:
                 message: dict = json.loads(fragments.decode("utf-8"))
                 fragments = b""
                 if message.get("type") == "sync" and message.get("id") in sent:
-                    self.sync.add(sent.pop(message["id"]), float(message["browser"]), received)
-                    rtt, offset = self.sync.best()
+                    sync.add(sent.pop(message["id"]), float(message["browser"]), received)
+                    rtt, offset = sync.best()
                     send({"type": "offset", "offset": offset, "rtt": rtt})
                 elif message.get("type") == "marker":
-                    self.push(str(message["value"]), message.get("time"), received)
+                    self.push(sync, str(message["value"]), message.get("time"), received)
         finally:
             syncing.cancel()
             self.log(f"Page disconnected ({self.markers} markers pushed)")
 
-    def push(self, value: str, browser_time: float | None, received: float) -> None:
+    def push(self, sync: ClockSync, value: str, browser_time: float | None, received: float) -> None:
         """Stamp the marker in LSL time from its browser time (its reception time if the offset is not known)."""
-        timestamp: float | None = self.sync.to_lsl(float(browser_time)) if browser_time is not None else None
+        timestamp: float | None = sync.to_lsl(float(browser_time)) if browser_time is not None else None
         self.outlet.push_sample([value], timestamp if timestamp is not None else received)
         self.markers += 1
 
