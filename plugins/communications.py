@@ -386,12 +386,13 @@ class Communications(AbstractPlugin):
                 radio_name_to_prompt = choice(self.parameters["promptlist"], self.alias, self.scenario_time, 1)
 
             if radio_name_to_prompt is not None:
-                # If a new prompt is incoming and a prompt is still playing
+                # If a new prompt is incoming and a prompt (own or other) is still playing
                 # Pause and stop this prompt
-                prompting_radio_list: list[dict[str, Any]] | None = self.get_radios_by_key_value("is_prompting", True)
-                if prompting_radio_list is not None and len(prompting_radio_list) > 0:
+                if hasattr(self, "player"):
                     self.player.delete()
                     del self.player
+                prompting_radio_list: list[dict[str, Any]] | None = self.get_radios_by_key_value("is_prompting", True)
+                if prompting_radio_list is not None and len(prompting_radio_list) > 0:
                     prompting_radio: dict[str, Any] = prompting_radio_list[0]
                     prompting_radio["is_prompting"] = False
                     self.logger.log_manual_entry(f"Target {prompting_radio['name']}:{prompting_radio['targetfreq']}")

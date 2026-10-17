@@ -327,6 +327,14 @@ class TestComputeNextPluginState:
         assert radio["is_prompting"] is False
         comms.logger.log_manual_entry.assert_any_call("Target NAV_1:115.0")
 
+    def test_new_prompt_interrupts_a_distractor_prompt(self, comms):
+        """A distractor (other) prompt does not set is_prompting: an own prompt used to play over it."""
+        player = comms.player = MagicMock(source=MagicMock())  # Still playing
+        comms.parameters["radioprompt"] = "own"
+        comms.compute_next_plugin_state()
+        player.delete.assert_called_once()
+        self.prompt.assert_called_once()
+
     def test_new_regex_regenerates_callsigns(self, comms):
         comms.parameters["callsignregex"] = r"[A-Z][A-Z]\d\d"
         comms.parameters["othercallsign"] = []
