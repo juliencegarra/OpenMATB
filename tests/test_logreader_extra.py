@@ -155,6 +155,24 @@ class TestEmptyAndTruncatedLogs:
         )
         assert lr.contents == ["0:00:01;sysmon;stop"]
 
+    @pytest.mark.parametrize(
+        "last_row",
+        ['12.0,2.0,state,track,"reticle, cursor_proportional","(0.1, -0', "12.0,2.0,state,track,radio_frequency"],
+    )
+    def test_state_row_truncated_in_its_value(self, tmp_path, last_row):
+        """The cut most often lands in a track cursor state (the most frequent rows): it is ignored too."""
+        lr = _reader(
+            tmp_path,
+            [
+                (10.0, 0, "event", "sysmon", "self", "start"),
+                (10.5, 0.5, "state", "track", "reticle, cursor_proportional", "(0.1, -0.2)"),
+                (11.0, 1, "event", "sysmon", "self", "stop"),
+                last_row,
+            ],
+        )
+        assert lr.contents == ["0:00:01;sysmon;stop"]
+        assert [s["value"] for s in lr.states] == [(0.1, -0.2)]
+
 
 class TestWindowSize:
     def test_logged_window_size(self, tmp_path):

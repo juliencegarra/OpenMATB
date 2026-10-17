@@ -159,7 +159,10 @@ class LogReader:
                     or "slider_" in row["address"]
                     or "fluid_level" in row["address"]
                 ):
-                    row["value"] = ast.literal_eval(row["value"])
+                    try:
+                        row["value"] = ast.literal_eval(row["value"])
+                    except (ValueError, SyntaxError):  # A last row cut in its value (crash while writing it)
+                        continue
                     self.states.append(row)
 
             # Performance case
