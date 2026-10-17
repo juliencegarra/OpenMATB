@@ -217,6 +217,12 @@ class TestIsInList:
         assert val is None
         assert err is not None
 
+    def test_several_not_in_list(self):
+        """Every wrong value is reported (e.g. displayedplugins;sysmon,trak,resmn)."""
+        val, err = is_in_list("sysmon,trak,resmn", ["sysmon", "track", "resman"])
+        assert val is None
+        assert "trak" in err and "resmn" in err
+
     def test_bool_in_list(self):
         """'True' in list is eval'd to boolean."""
         val, err = is_in_list("True", ["True", "False"])

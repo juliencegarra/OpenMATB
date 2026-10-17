@@ -117,10 +117,7 @@ def is_in_list(x: str, li: list[str]) -> ValidationResult:
                 x = x[0]
             return x, None
     else:
-        return None, _("should be comprised in %s (not %s)") % (
-            li,
-            *errors,
-        )
+        return None, _("should be comprised in %s (not %s)") % (li, ", ".join(errors))
 
 
 def is_a_regex(x: str) -> ValidationResult:
