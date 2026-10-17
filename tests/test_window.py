@@ -204,6 +204,23 @@ class TestExit:
         assert w.alive is False
 
 
+class TestOnClose:
+    def test_close_button_ends_the_session(self):
+        """The X button (or Alt+F4) goes through exit(): the scheduler stops the tasks and logs the end."""
+        w = _make_window(alive=True)
+        with patch("core.window.pyglet_clock") as clock:
+            w.on_close()
+        assert w.alive is False
+        # Without a scheduler (e.g. the file selector), the window is closed a moment later anyway
+        clock.schedule_once.assert_called_once()
+        close_now = clock.schedule_once.call_args.args[0]
+        w.close = MagicMock()
+        with patch("core.window.pyglet_app") as app:
+            close_now(1.0)
+        w.close.assert_called_once()
+        app.exit.assert_called_once()
+
+
 class TestOnKeyPress:
     @patch("core.window.REPLAY_MODE", False)
     @patch("core.window.get_logger")

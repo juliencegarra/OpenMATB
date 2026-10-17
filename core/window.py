@@ -9,6 +9,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from pyglet import app as pyglet_app
+from pyglet import clock as pyglet_clock
 from pyglet import image
 from pyglet.display import get_display
 from pyglet.graphics import Batch
@@ -366,6 +368,18 @@ class Window(Window):
 
     def exit(self) -> None:
         self.alive = False
+
+    def on_close(self) -> None:
+        # The X button or Alt+F4: end the session like the exit prompt. The scheduler stops the running tasks and
+        # logs the end at its next update, then closes the window (the default handler closed it at once, and
+        # the session ended without its stop events nor its end row)
+        self.exit()
+        # Without a scheduler (e.g. the file selector), the window is closed a moment later anyway
+        pyglet_clock.schedule_once(self._close_now, 1.0)
+
+    def _close_now(self, dt: float) -> None:
+        self.close()  # Nothing if the scheduler has already closed it
+        pyglet_app.exit()
 
     def get_container_list(self) -> list[Container]:
         mar: float = REPLAY_STRIP_PROPORTION if REPLAY_MODE else 0
