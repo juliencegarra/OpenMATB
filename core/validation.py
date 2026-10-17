@@ -145,7 +145,10 @@ def is_joystick_key(x: str) -> ValidationResult:
             return x, None
         else:
             return None, _("should be an acceptable joystick key value (not %s). See documentation.") % x
-    return None, None
+    # No joystick plugged (or replay): a joystick key is accepted from its name only
+    if re.fullmatch(r"JOY_(BTN_\d+|HAT_(LEFT|UP|RIGHT|DOWN))", x):
+        return x, None
+    return None, _("should be an acceptable joystick key value (not %s). See documentation.") % x
 
 
 def is_key(x: str) -> ValidationResult:

@@ -1,5 +1,7 @@
 """Tests for core.validation - Input validation functions."""
 
+from unittest.mock import patch
+
 from core.validation import (
     is_a_regex,
     is_boolean,
@@ -290,12 +292,10 @@ class TestIsKey:
 
     def test_invalid_key(self):
         """Invalid key returns None."""
-        val, _err = is_key("NONEXISTENT")
-        # When no joystick is connected, is_joystick_key returns (None, None)
-        # which means is_key returns the error message from keyboard check
-        # only when joystick also returns an error (jmsg is not None)
-        # With joykey=None, jmsg=None, so is_key returns (None, None)
+        with patch("core.validation.joykey", None):  # No joystick plugged
+            val, err = is_key("NONEXISTENT")
         assert val is None
+        assert "NONEXISTENT" in err
 
 
 class TestIsTaskLocation:

@@ -79,8 +79,16 @@ class TestReplaySessionId:
 
 class TestJoystickKeys:
     def test_no_joystick_plugged(self):
+        # A scenario made for a joystick still loads without it (or in replay)
         with patch.object(validation, "joykey", None):
-            assert validation.is_joystick_key("JOY_1") == (None, None)
+            assert validation.is_joystick_key("JOY_BTN_3") == ("JOY_BTN_3", None)
+            assert validation.is_joystick_key("JOY_HAT_LEFT") == ("JOY_HAT_LEFT", None)
+
+    def test_no_joystick_plugged_wrong_key(self):
+        """A mistyped key is not silently accepted as None when no joystick is plugged."""
+        with patch.object(validation, "joykey", None):
+            value, msg = validation.is_key("ENTRE")
+        assert value is None and "ENTRE" in msg
 
     def test_joystick_key(self):
         with patch.object(validation, "joykey", ["JOY_1", "JOY_2"]):
