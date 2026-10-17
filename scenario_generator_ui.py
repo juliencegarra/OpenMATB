@@ -1829,6 +1829,8 @@ class ScenarioGeneratorUI:
                     block.sliders[name].value = config.plugins[name] * 100
                 else:
                     block.toggles[name].value = False
+            for plugin_name, param_name, param_value in config.extra_events:
+                block.advanced_params.setdefault(plugin_name, {})[param_name] = param_value
         if insert_at is not None:
             self.blocks.insert(insert_at, block)
         else:
