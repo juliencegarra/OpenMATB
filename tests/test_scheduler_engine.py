@@ -597,6 +597,16 @@ class TestExecuteOneEvent:
         assert e.done == 1
         mock_logger.record_event.assert_called_once_with(e)
 
+    def test_system_pause_opens_no_dialog_in_replay(self, window, mock_logger):
+        """The replay maps the frozen scenario time of the pause: a real dialog froze the replay (and dropped its
+        keys), and stopped a seek at the pause."""
+        sched = _make_scheduler({"p": _make_plugin()})
+        e = Event(1, 0, "system", "pause")
+        with patch("core.scheduler.REPLAY_MODE", True):
+            sched.execute_one_event(e)
+        window.pause_prompt.assert_not_called()
+        assert e.done == 1
+
 
 class TestSystemCommands:
     @pytest.mark.parametrize("value", [True, "True", "true"])

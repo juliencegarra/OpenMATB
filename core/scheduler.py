@@ -271,7 +271,9 @@ class Scheduler:
     def _execute_system_command(self, event: Event) -> None:
         command: str = event.command[0]
         if command == "pause":
-            Window.MainWindow.pause_prompt()
+            # In replay, the frozen scenario time of the pause is already mapped (the log reader)
+            if not REPLAY_MODE:
+                Window.MainWindow.pause_prompt()
         elif command == "agent":
             # In replay mode, agent inputs are replayed from the log —
             # do not activate the agent or it would produce double inputs.
