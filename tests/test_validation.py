@@ -141,6 +141,17 @@ class TestIsColor:
         assert val == (0, 255, 0, 255)
         assert err is None
 
+    def test_short_hex(self):
+        """Short hex '#0f0' is accepted by the regex, and parses to (0,255,0,255)."""
+        val, err = is_color("#0f0")
+        assert val == (0, 255, 0, 255)
+        assert err is None
+
+    def test_short_hex_mixed_case(self):
+        val, err = is_color("#a1C")
+        assert val == (170, 17, 204, 255)
+        assert err is None
+
     def test_named_color(self):
         """Named color 'WHITE' resolves to RGBA tuple."""
         val, err = is_color("WHITE")

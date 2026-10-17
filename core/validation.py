@@ -63,6 +63,8 @@ def is_color(x: str) -> ValidationResult:  # Can be an hexadecimal value, a cons
     m: Optional[re.Match[str]] = re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", x)
     if m is not None:
         x = x.lstrip("#")
+        if len(x) == 3:  # Short form: #0f0 is #00ff00
+            x = "".join(c * 2 for c in x)
         rgba: tuple[int, ...] = tuple(list(int(x[i : i + 2], 16) for i in (0, 2, 4)) + [255])
         return rgba, None
     elif x in list(C.keys()):
