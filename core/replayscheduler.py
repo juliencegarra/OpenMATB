@@ -89,6 +89,7 @@ class ReplayScheduler(Scheduler):
         self.target_time: float = 0
         self.replay_time: float = 0
         self._executed_key_indices: set[int] = set()
+        self._next_key_index: int = 0  # The keys before it have been sent
         self.keys_history: list[str] = []
         self._muted: bool = True
         self._click_marker: Circle | None = None
@@ -531,6 +532,7 @@ class ReplayScheduler(Scheduler):
         self.clock.unschedule(self.update)
 
         self._executed_key_indices = set()
+        self._next_key_index = 0
         self.keys_history = []
         self._last_mouse_x = None
         self._last_mouse_y = None
@@ -553,8 +555,11 @@ class ReplayScheduler(Scheduler):
         self.clock.schedule(self.update)
 
     def emulate_keyboard_inputs(self) -> None:
-        lo: int = bisect_right(self._key_logtimes, self.replay_time - CLOCK_STEP)
+        # Every key not sent yet, not only those of the last CLOCK_STEP: a frame may last longer (a GC pause, a
+        # dragged window, a throttled page), or the keys may have been deferred by queued events
+        lo: int = self._next_key_index
         hi: int = bisect_right(self._key_logtimes, self.replay_time)
+        self._next_key_index = max(lo, hi)
 
         for idx in range(lo, hi):
             if idx not in self._executed_key_indices:

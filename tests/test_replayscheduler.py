@@ -425,6 +425,7 @@ def _make_loaded_replay(logreader, **kwargs):
     rs._mouse_logtimes = [i["normalized_logtime"] for i in logreader.mouse_inputs]
     rs._state_logtimes = [i["normalized_logtime"] for i in logreader.states]
     rs._executed_key_indices = set()
+    rs._next_key_index = 0
     rs.keys_history = []
     rs.key_widget = MagicMock()
     rs.mouse_label = MagicMock()
@@ -750,6 +751,7 @@ class TestRestartScenario:
             replay_time=50,
             scenario_time=40,
             _executed_key_indices={1, 2},
+            _next_key_index=3,
             keys_history=["SPACE (press)"],
             _last_mouse_x=10,
             _last_mouse_y=20,
@@ -768,6 +770,7 @@ class TestRestartScenario:
         rs.set_scenario.assert_called_once()
         assert (rs.replay_time, rs.scenario_time, rs.slider.groove_value) == (0, 0, 0)
         assert rs._executed_key_indices == set()
+        assert rs._next_key_index == 0  # The keys are sent again from the start
         assert rs.keys_history == []
         assert rs._last_mouse_x is None and rs._last_mouse_y is None
         assert rs._click_held is False
@@ -790,6 +793,16 @@ class TestEmulateKeyboardInputs:
         ]
         assert rs.keys_history == ["SPACE (press)", "F1 (press)"]
         rs.key_widget.set_text.assert_called_with("<strong>Keyboard history:\n</strong>SPACE (press)<br>F1 (press)")
+
+    def test_keys_of_a_long_frame_are_sent(self):
+        """A frame longer than 0.1 s (a GC pause, a dragged window, a throttled page) does not lose its keys."""
+        lr = _logreader(keyboard=[(1.05, "F1", "press"), (1.2, "F2", "press"), (1.3, "F3", "press")])
+        plugin = MagicMock()
+        rs = _make_loaded_replay(lr, replay_time=1.1, plugins={"sysmon": plugin})
+        rs.emulate_keyboard_inputs()
+        rs.replay_time = 1.35  # Next frame, 0.25 s later
+        rs.emulate_keyboard_inputs()
+        assert [c.args[0] for c in plugin.do_on_key.call_args_list] == ["F1", "F2", "F3"]
 
     def test_human_keys_do_nothing_on_a_task_under_the_automatic_solver(self):
         """In the session, a human key did nothing on an automated task: the replay must not execute it (an agent
