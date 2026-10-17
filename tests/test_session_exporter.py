@@ -741,6 +741,22 @@ class TestComputeSummary:
         assert s.track_n_excursions == 2
         assert s.track_mean_excursion_rt_sec == pytest.approx(3.0)
 
+    def test_track_steps_caught_up_in_one_update(self) -> None:
+        """Several 20 ms steps run in one update (e.g. in the browser) log the same scenario_time: each one counts."""
+        perf = [
+            _perf(1.0, "track", "cursor_in_target", "0"),
+            _perf(1.0, "track", "center_deviation", "50.0"),
+            _perf(1.0, "track", "cursor_in_target", "1"),
+            _perf(1.0, "track", "center_deviation", "5.0"),
+            _perf(1.0, "track", "response_time", "200"),
+            _perf(1.02, "track", "cursor_in_target", "1"),
+            _perf(1.02, "track", "center_deviation", "4.0"),
+        ]
+        s = compute_summary("s", perf, [], [], [])
+        assert s.track_proportion_in_target == pytest.approx(2 / 3)
+        assert s.track_mean_deviation == pytest.approx(59 / 3)
+        assert s.track_n_excursions == 1
+
     def test_track_excludes_auto_periods(self) -> None:
         perf = [
             _perf(1.0, "track", "cursor_in_target", "0"),

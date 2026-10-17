@@ -487,7 +487,11 @@ def compute_summary(
     deviation_vals: list[float] = []
     track_excursion_rts: list[float] = []
 
-    for group in _group_by_scenario_time(track_rows):
+    # The steps caught up in one update (several 20 ms steps per frame) share a scenario_time: split them
+    track_steps = [
+        step for group in _group_by_scenario_time(track_rows) for step in _split_on_address(group, "cursor_in_target")
+    ]
+    for group in track_steps:
         data: dict[str, str] = {r.address: r.value for r in group}
 
         if "cursor_in_target" in data:
