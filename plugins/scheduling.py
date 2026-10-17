@@ -26,8 +26,8 @@ class Scheduling(AbstractPlugin):
             "minduration": validation.is_positive_integer,
             "displaychronometer": validation.is_boolean,
             "reversechronometer": validation.is_boolean,
-            "displayedplugins": (validation.is_in_list, ["sysmon", "track", "resman", "communications"]),
-            "labels": (validation.is_in_list, ["S", "T", "C", "R"]),
+            "displayedplugins": (validation.is_sublist_of, ["sysmon", "track", "resman", "communications"]),
+            "labels": (validation.is_sublist_of, ["S", "T", "C", "R"]),
         }
 
         self.parameters.update(
@@ -76,7 +76,9 @@ class Scheduling(AbstractPlugin):
                 self.task_container.w * 0.17,
                 self.task_container.h * 0.7,
             )
-            self.add_widget(name, Schedule, container=planning_container, label=self.parameters["labels"][p])
+            labels: list[str] = self.parameters["labels"]
+            label: str = labels[p] if p < len(labels) else ""  # Fewer labels than plannings
+            self.add_widget(name, Schedule, container=planning_container, label=label)
 
     def refresh_widgets(self) -> None:
         if not super().refresh_widgets():

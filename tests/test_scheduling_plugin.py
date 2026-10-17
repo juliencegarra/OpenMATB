@@ -68,6 +68,19 @@ def _segments(scheduling, task, time_mode):
     return calls[-1].args[1]
 
 
+class TestLabels:
+    @pytest.mark.parametrize("labels", ["S", "S,T"])
+    def test_fewer_labels_than_plannings(self, scheduling, labels):
+        """scheduling;labels;S: a list, and the plannings without label get none (IndexError before)."""
+        validator, allowed = scheduling.validation_dict["labels"]
+        value, error = validator(labels, allowed)
+        assert error is None
+        scheduling.parameters["labels"] = value
+        _create_widgets(scheduling)
+        given = [scheduling.widgets[f"scheduling_{task}"].kwargs["label"] for task in TASKS]
+        assert given == labels.split(",") + [""] * (4 - len(labels.split(",")))
+
+
 class TestInit:
     def test_default_parameters(self, scheduling):
         p = scheduling.parameters
@@ -425,6 +438,16 @@ class TestRefreshWidgets:
         for task in TASKS:
             loaded.widgets[f"scheduling_{task}"].show.assert_called()
             loaded.widgets[f"scheduling_{task}"].hide.assert_not_called()
+
+    def test_a_single_displayed_plugin(self, loaded):
+        """scheduling;displayedplugins;track: a list of one plugin (it was kept as the string "track")."""
+        validator, allowed = loaded.validation_dict["displayedplugins"]
+        value, error = validator("track", allowed)
+        assert error is None
+        loaded.parameters["displayedplugins"] = value
+        _refresh(loaded)
+        assert set(loaded.relative_planning) == {"track"}
+        loaded.widgets["scheduling_sysmon"].hide.assert_called_once()
 
     def test_timelines_of_undisplayed_tasks_are_hidden(self, loaded):
         loaded.parameters["displayedplugins"] = ["sysmon", "track"]
