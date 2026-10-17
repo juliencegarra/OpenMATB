@@ -294,10 +294,11 @@ class TestComputeNextPluginState:
         for radio in comms.parameters["radios"].values():
             radio["targetfreq"] = 120.0
         comms.parameters["radioprompt"] = "own"
-        comms.log_manual_entry = MagicMock()
         comms.compute_next_plugin_state()
         self.prompt.assert_not_called()
-        comms.log_manual_entry.assert_called_once_with("Error. Could not trigger prompt", key="manual")
+        comms.logger.log_manual_entry.assert_called_once_with("Error. Could not trigger prompt", key="manual")
+        # The prompt is dropped, not tried again at each update
+        assert comms.parameters["radioprompt"] == ""
 
     def test_other_prompt(self, comms):
         comms.parameters["radioprompt"] = "other"

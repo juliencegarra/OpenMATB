@@ -397,7 +397,8 @@ class Communications(AbstractPlugin):
 
                 self.prompt_for_a_new_target(self.parameters["radioprompt"].lower(), radio_name_to_prompt)
             else:
-                self.log_manual_entry("Error. Could not trigger prompt", key="manual")
+                self.parameters["radioprompt"] = ""
+                self.logger.log_manual_entry("Error. Could not trigger prompt", key="manual")
 
         if self.can_receive_keys:
             self.modulate_frequency()
