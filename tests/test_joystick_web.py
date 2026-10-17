@@ -98,3 +98,13 @@ class TestJoystickWithWebDevice:
         assert (joystick.x, joystick.y) == (-0.3, 0.7)
         assert joystick.keys["JOY_BTN_1"] is True
         assert joystick.key_change["JOY_BTN_1"] == "press"
+
+    def test_button_release_is_the_state_the_scheduler_dispatches(self):
+        """The scheduler calls on_joy_key_release for a "release" change."""
+        device, state = _device([_gamepad([0, 0], [True] + [False] * 11)])
+        with patch.object(joystick_module, "get_logger"):
+            joystick = Joystick(device)
+            joystick.update()
+            state["gamepads"] = [_gamepad([0, 0], [False] * 12)]
+            joystick.update()
+        assert joystick.key_change["JOY_BTN_1"] == "release"

@@ -148,7 +148,7 @@ class Joystick:
                 self.key_change[key] = "press"
                 get_logger().record_input("Joystick", key, "press")
             elif previous_state[key] is True and self.keys[key] is False:  # Released
-                self.key_change[key] = "released"
+                self.key_change[key] = "release"
                 get_logger().record_input("Joystick", key, "release")
 
 
