@@ -62,7 +62,7 @@ class Communications(AbstractPlugin):
             "airbandminvariationMhz": validation.is_positive_integer,
             "airbandmaxvariationMhz": validation.is_positive_integer,
             "radioprompt": (validation.is_in_list, ["own", "other"]),
-            "promptlist": (validation.is_in_list, ["NAV_1", "NAV_2", "COM_1", "COM_2"]),
+            "promptlist": (validation.is_sublist_of, ["NAV_1", "NAV_2", "COM_1", "COM_2"]),
             "maxresponsedelay": validation.is_positive_integer,
             "callsignregex": validation.is_a_regex,
             "keys-selectradioup": validation.is_key,

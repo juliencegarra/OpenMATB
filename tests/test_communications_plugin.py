@@ -307,6 +307,15 @@ class TestComputeNextPluginState:
         assert self.prompt.call_args.args[0] == "other"
         assert radio_name in comms.parameters["promptlist"]
 
+    def test_other_prompt_with_a_single_radio_in_the_promptlist(self, comms):
+        """A scenario can restrict the distractor prompts to one radio (communications;promptlist;NAV_1)."""
+        value, error = comms.validation_dict["promptlist"][0]("NAV_1", *comms.validation_dict["promptlist"][1:])
+        assert error is None
+        comms.set_parameter("promptlist", value)
+        comms.parameters["radioprompt"] = "other"
+        comms.compute_next_plugin_state()
+        self.prompt.assert_called_once_with("other", "NAV_1")
+
     def test_new_prompt_interrupts_the_current_one(self, comms):
         radio = _radio(comms, "NAV_1")
         radio.update(targetfreq=115.0, is_prompting=True)

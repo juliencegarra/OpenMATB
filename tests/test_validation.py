@@ -16,6 +16,7 @@ from core.validation import (
     is_positive_float,
     is_positive_integer,
     is_string,
+    is_sublist_of,
     is_task_location,
 )
 
@@ -241,6 +242,18 @@ class TestIsInList:
         val, err = is_in_list("True", ["True", "False"])
         assert val is True  # eval('True') -> True
         assert err is None
+
+
+class TestIsSublistOf:
+    def test_single_value_is_a_list(self):
+        assert is_sublist_of("a", ["a", "b"]) == (["a"], None)
+
+    def test_several_values(self):
+        assert is_sublist_of("a,b", ["a", "b"]) == (["a", "b"], None)
+
+    def test_wrong_value(self):
+        value, error = is_sublist_of("c", ["a", "b"])
+        assert value is None and "c" in error
 
 
 class TestIsARegex:

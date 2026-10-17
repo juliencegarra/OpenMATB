@@ -139,6 +139,14 @@ def is_keyboard_key(x: str) -> ValidationResult:
         return None, _("should be an acceptable keyboard key value (not %s). See documentation.") % x
 
 
+def is_sublist_of(x: str, li: list[str]) -> ValidationResult:
+    """Like is_in_list, but a single value is also a list (e.g. a list of radios reduced to one)"""
+    value, error = is_in_list(x, li)
+    if error is None and not isinstance(value, list):
+        value = [value]
+    return value, error
+
+
 def is_joystick_key(x: str) -> ValidationResult:
     if joykey is not None:  # Means that the joystick is plugged
         if x in joykey:
