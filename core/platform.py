@@ -133,8 +133,9 @@ def _patch_pyglet_webgl() -> None:
 
     PersistentBufferView.data = property(fresh_data, set_data)
 
-    # 2. The WEBGL_multi_draw path passes ctypes pointers instead of offsets ("countsOffset out of bounds"):
-    # draw each range with drawElements/drawArrays instead
+    # 2. The WEBGL_multi_draw path calls multiDrawArraysWEBGL without its mode argument, so every argument is
+    # shifted ("countsOffset out of bounds"): draw each range with drawElements/drawArrays instead.
+    # Fixed upstream in pyglet#1517, after 3.0.dev10
     for domain in (vertexdomain.WebGLVertexDomain, vertexdomain.WebGLIndexedVertexDomain):
         domain._has_multi_draw_extension = lambda self, ctx: False
 
