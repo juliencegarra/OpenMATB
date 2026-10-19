@@ -73,23 +73,25 @@ class AbstractWidget:
             self.visible = False
 
     def _show_all_vertices(self) -> None:
-        """Re-show: set .visible=True on shapes and labels, restore the batch if it was removed."""
+        """Re-show: set .visible=True on shapes and labels, restore the batch if it was removed.
+
+        A label removed from the batch (batch = None) draws into a batch of its own: its batch is never None."""
         batch = Window.MainWindow.batch
         for v_def in self.vertex.values():
             if isinstance(v_def, (ShapeBase, Label, HTMLLabel)):
-                if v_def.batch is None:
+                if v_def.batch is not batch:
                     v_def.batch = batch
                 v_def.visible = True
             elif isinstance(v_def, sprite.Sprite):
-                if v_def.batch is None:
+                if v_def.batch is not batch:
                     v_def.batch = batch
 
     def _hide_all_vertices(self) -> None:
         """Hide: set .visible=False on shapes and labels, which stay in the batch.
 
-        Labels are not removed from the batch to hide them: pyglet 3 then cleans up the groups left empty, and
-        removes an equal group of other labels by mistake (groups with the same order and state are equal). Those
-        labels were no longer drawn, e.g. the task titles after a fullscreen questionnaire at the start."""
+        Labels used to be removed from the batch to hide them, but a label removed from the batch gets a batch of its
+        own, so the check of _show_all_vertices never put them back: e.g. the task titles were no longer drawn after a
+        fullscreen questionnaire at the start."""
         for v_def in self.vertex.values():
             if isinstance(v_def, (ShapeBase, Label, HTMLLabel)):
                 v_def.visible = False

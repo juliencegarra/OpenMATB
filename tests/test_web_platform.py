@@ -215,7 +215,7 @@ class TestSetupWeb:
 
     def test_vertex_buffer_view_is_refreshed_when_the_memory_grows(self, web_modules):
         """A detached JS view (wasm memory growth, e.g. loading sounds) made drawing fail and stopped the loop."""
-        buffers = [SimpleNamespace(data=_js_view(), release=MagicMock()) for _ in range(2)]
+        buffers = [SimpleNamespace(data=_js_view(), release=MagicMock(), nbytes=64) for _ in range(2)]
         proxy = MagicMock()
         proxy.getBuffer.side_effect = buffers
         view = web_modules.View(proxy)
@@ -228,11 +228,11 @@ class TestSetupWeb:
         assert view.data is buffers[1].data  # No new view while it stays attached
         assert proxy.getBuffer.call_count == 2
 
-    def test_empty_but_attached_view_is_kept(self, web_modules):
-        """A zero-length view of a live memory is not detached."""
-        empty = SimpleNamespace(byteLength=0, buffer=SimpleNamespace(byteLength=1024))
+    def test_view_of_an_empty_buffer_is_kept(self, web_modules):
+        """The view of an empty buffer is empty, with an empty ArrayBuffer (Pyodide): it is not detached."""
+        empty = SimpleNamespace(byteLength=0, buffer=SimpleNamespace(byteLength=0))
         proxy = MagicMock()
-        proxy.getBuffer.return_value = SimpleNamespace(data=empty, release=MagicMock())
+        proxy.getBuffer.return_value = SimpleNamespace(data=empty, release=MagicMock(), nbytes=0)
         view = web_modules.View(proxy)
         assert view.data is empty
         assert proxy.getBuffer.call_count == 1
