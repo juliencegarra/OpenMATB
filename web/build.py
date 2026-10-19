@@ -53,14 +53,14 @@ PAGE_MODULES: tuple[str, ...] = (
     "lsl_bridge.js",
 )
 
-PYODIDE_VERSION: str = "0.29.4"
+PYODIDE_VERSION: str = "314.0.7"
 PYODIDE_CDN: str = f"https://cdn.jsdelivr.net/pyodide/v{PYODIDE_VERSION}/full/"
 # What the page needs to run Pyodide from web/dist/pyodide (--pyodide local): CDN name -> local name, plus the
-# packages it loads. The ES module is renamed .js: many servers (Python's on Windows, some LMSs) serve .mjs as
-# text/plain, which browsers refuse for a module.
+# packages it loads. The ES modules are renamed .js: many servers (Python's on Windows, some LMSs) serve .mjs as
+# text/plain, which browsers refuse for a module (the page gives the renamed pyodide.asm module to loadPyodide).
 PYODIDE_FILES: dict[str, str] = {
     "pyodide.mjs": "pyodide-module.js",
-    "pyodide.asm.js": "pyodide.asm.js",
+    "pyodide.asm.mjs": "pyodide.asm.js",
     "pyodide.asm.wasm": "pyodide.asm.wasm",
     "python_stdlib.zip": "python_stdlib.zip",
     "pyodide-lock.json": "pyodide-lock.json",

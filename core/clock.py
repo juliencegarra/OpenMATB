@@ -28,7 +28,7 @@ class Clock(pyglet.clock.Clock):
         if IS_WEB:
             pyglet.clock.schedule_interval(self.advance, WEB_UPDATE_INTERVAL)
             # The browser loop sleeps while nothing is scheduled, and this may run in a browser event handler (the
-            # scenario selection), outside the loop: wake it up
+            # scenario selection), outside the loop: wake it up (proposed upstream in pyglet#1529)
             pyglet.app.platform_event_loop.notify()
         else:
             pyglet.clock.schedule(self.advance)

@@ -6,6 +6,9 @@
 
 The browser version needs pyglet 3 (only a development version for now); the desktop version keeps the released
 pyglet 2. Everything that differs between them is here: remove this module when the desktop moves to pyglet 3.
+
+The desktop then needs a pyglet 3 with pyglet#1528: before it, consecutive tabs in a multiline label (instructions,
+questionnaires) crash on Windows.
 """
 
 from __future__ import annotations
@@ -23,7 +26,8 @@ if PYGLET_3:
     from pyglet.media import AudioPlayer, load_audio
 
     # pyglet 3.0.dev10: images have no anchor any more, but an <img> of an HTML label (instructions) still reads
-    # image.anchor_y, and the exception stopped the event loop: images keep the default anchor of pyglet 2 (0, 0)
+    # image.anchor_y, and the exception stopped the event loop: images keep the default anchor of pyglet 2 (0, 0).
+    # Proposed upstream in pyglet#1527
     if not hasattr(_AbstractImage, "anchor_y"):
         _AbstractImage.anchor_x = 0
         _AbstractImage.anchor_y = 0

@@ -454,12 +454,22 @@ function allowWasmWithoutMimeType() {
     }
 }
 
+// Pyodide shipped with the page (--pyodide local): its pyodide.asm.mjs module is renamed pyodide.asm.js (PYODIDE_FILES
+// of web/build.py), which loadPyodide would not find: import it here and give it to loadPyodide
+async function pyodideOptions() {
+    if (!PYODIDE_MODULE.endsWith("/pyodide-module.js")) {
+        return {};
+    }
+    const { default: createPyodideModule } = await import(new URL("pyodide.asm.js", PYODIDE_MODULE).href);
+    return { createPyodideModule };
+}
+
 async function boot() {
     status("loading_python");
     allowWasmWithoutMimeType();
     await loadFonts();
     const { loadPyodide } = await import(PYODIDE_MODULE);
-    const pyodide = await loadPyodide();
+    const pyodide = await loadPyodide(await pyodideOptions());
     // Mounts /data (IndexedDB, where sessions are kept). The /cache mount (OPFS) is optional: Safari refuses
     // OPFS in private browsing, which made the loading fail. OpenMATB does not use it: keep /cache in memory then.
     const bridge = await installPygletEmscripten(pyodide, { cachePath: null });
