@@ -121,8 +121,10 @@ def _patch_pyglet_webgl() -> None:
     # 1. Vertex buffers keep a zero-copy JavaScript view of the WebAssembly memory. When the memory grows
     # (e.g. while sounds are loaded) the view is detached ("Cannot perform Construct on a detached
     # ArrayBuffer"). The Python buffer itself does not move: take a new view when needed.
+    # A detached view is empty while its buffer is not (the view of an empty buffer is always empty).
+    # Proposed upstream in pyglet#1525
     def fresh_data(self: Any) -> Any:
-        if self._openmatb_data.byteLength == 0 and self._openmatb_data.buffer.byteLength == 0:  # Detached
+        if self._openmatb_data.byteLength == 0 and self._buffer.nbytes:  # Detached
             self._buffer.release()
             self._buffer = self._proxy.getBuffer("u8")
             self._openmatb_data = self._buffer.data
