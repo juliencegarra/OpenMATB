@@ -434,6 +434,16 @@ async function loadFonts() {
     }
 }
 
+// Pyodide uses JSPI (WebAssembly.Suspending) when the browser has it, as Chrome and Edge do since version 137. On some
+// Windows computers it makes the tab crash silently (STATUS_ACCESS_VIOLATION), a bug of Pyodide still open:
+// https://github.com/pyodide/pyodide/issues/6106 (seen with Pyodide 0.28, not reproduced here). OpenMATB never waits
+// for a JavaScript promise from synchronous Python code (run_sync), which is what JSPI is for: hide it from Pyodide.
+// To remove when this issue is fixed.
+function disableJspi() {
+    delete WebAssembly.Suspending;
+    delete WebAssembly.promising;
+}
+
 // LMSs (Moodle...) serve the .wasm files with a generic MIME type, which the streaming compilation refuses
 // ("Incorrect response MIME type. Expected 'application/wasm'"): compile them from their bytes instead
 function allowWasmWithoutMimeType() {
@@ -454,19 +464,21 @@ function allowWasmWithoutMimeType() {
     }
 }
 
-// Pyodide shipped with the page (--pyodide local): its pyodide.asm.mjs module is renamed pyodide.asm.js (PYODIDE_FILES
-// of web/build.py), which loadPyodide would not find: import it here and give it to loadPyodide
+// Options of loadPyodide. Pyodide shipped with the page (--pyodide local): its pyodide.asm.mjs module is renamed
+// pyodide.asm.js (PYODIDE_FILES of web/build.py), which loadPyodide would not find: import it here and give it
 async function pyodideOptions() {
-    if (!PYODIDE_MODULE.endsWith("/pyodide-module.js")) {
-        return {};
+    const options = { enableRunUntilComplete: false }; // It uses JSPI (see disableJspi)
+    if (PYODIDE_MODULE.endsWith("/pyodide-module.js")) {
+        const { default: createPyodideModule } = await import(new URL("pyodide.asm.js", PYODIDE_MODULE).href);
+        options.createPyodideModule = createPyodideModule;
     }
-    const { default: createPyodideModule } = await import(new URL("pyodide.asm.js", PYODIDE_MODULE).href);
-    return { createPyodideModule };
+    return options;
 }
 
 async function boot() {
     status("loading_python");
     allowWasmWithoutMimeType();
+    disableJspi();
     await loadFonts();
     const { loadPyodide } = await import(PYODIDE_MODULE);
     const pyodide = await loadPyodide(await pyodideOptions());
