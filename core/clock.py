@@ -8,7 +8,8 @@ import pyglet.clock
 from core.platform import IS_WEB
 
 # In the browser, pyglet.clock.schedule() (every loop iteration) makes pyglet's asyncio loop spin
-# without yielding and crashes Pyodide (pyglet 3.0.dev10): use a short fixed interval instead
+# (about 50,000 calls per second): Pyodide 0.29 crashes within seconds ("table index is out of bounds"),
+# 314.0.7 no longer does, but it keeps a CPU core busy. Use a short fixed interval instead
 WEB_UPDATE_INTERVAL: float = 1 / 120
 
 
@@ -26,7 +27,8 @@ class Clock(pyglet.clock.Clock):
         pyglet.clock.Clock.__init__(self, time_function=self.get_time)
         if IS_WEB:
             pyglet.clock.schedule_interval(self.advance, WEB_UPDATE_INTERVAL)
-            # The browser loop sleeps while nothing is scheduled: wake it up
+            # The browser loop sleeps while nothing is scheduled, and this may run in a browser event handler (the
+            # scenario selection), outside the loop: wake it up
             pyglet.app.platform_event_loop.notify()
         else:
             pyglet.clock.schedule(self.advance)
