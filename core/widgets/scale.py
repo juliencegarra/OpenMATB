@@ -190,7 +190,7 @@ class Scale(AbstractWidget):
 
     def set_label(self, label: str) -> None:
         label_to_upper: str = label.upper()
-        if label == self.get_label():
+        if label_to_upper == self.get_label():  # The text is upper-cased: e.g. Temp was set (and logged) each frame
             return
         self.vertex["label"].text = label_to_upper
         self.logger.record_state(self.name, "label", label_to_upper)

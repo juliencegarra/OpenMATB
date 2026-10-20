@@ -100,4 +100,4 @@ PATHS["SCENARIO_ERRORS"] = Path(".", "last_scenario_errors.log")
 
 # Read the configuration file
 CONFIG: configparser.ConfigParser = configparser.ConfigParser()
-CONFIG.read(PATHS["PLUGINS"].parent.joinpath("config.ini"))
+CONFIG.read(PATHS["PLUGINS"].parent.joinpath("config.ini"), encoding="utf-8")  # As main.py (not the locale one)

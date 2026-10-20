@@ -48,11 +48,15 @@ class TestConfigValues:
             assert get_conf_value("Openmatb", "font_name") == "Arial"
         mock_font.have_font.assert_called_once_with("Arial")
 
-    def test_unavailable_font(self):
+    def test_unavailable_font(self, mock_errors):
+        """A non-fatal error, and the default font (None) is used, as the message says."""
+        from core.utils import _warned_conf_values
+
+        _warned_conf_values.clear()
         with patch("core.utils.CONFIG", _config(font_name="NoSuchFont")), patch("core.utils.font") as mock_font:
             mock_font.have_font.return_value = False
-            with pytest.raises(TypeError, match="font"):
-                get_conf_value("Openmatb", "font_name")
+            assert get_conf_value("Openmatb", "font_name") is None
+        assert "font" in mock_errors.add_error.call_args.args[0]
 
     def test_other_values_are_strings(self):
         with patch("core.utils.CONFIG", _config(language="fr_FR")):

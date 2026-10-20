@@ -149,14 +149,18 @@ class TestGetConfValue:
         with patch("core.utils.CONFIG", config):
             assert get_conf_value("General", "fullscreen") is False
 
-    def test_boolean_invalid_raises(self):
-        """Non-boolean string raises TypeError for boolean keys."""
-        from core.utils import get_conf_value
+    def test_boolean_invalid_defaults_to_false(self, mock_errors):
+        """A non-boolean string is a non-fatal error, and False is used (as the message says)."""
+        from core.utils import _warned_conf_values, get_conf_value
 
+        _warned_conf_values.clear()
         config = configparser.ConfigParser()
-        config.read_dict({"General": {"fullscreen": "maybe"}})
-        with patch("core.utils.CONFIG", config), pytest.raises(TypeError):
-            get_conf_value("General", "fullscreen")
+        config.read_dict({"General": {"fullscreen": "maybe", "highlight_aoi": "yes"}})
+        with patch("core.utils.CONFIG", config):
+            assert get_conf_value("General", "fullscreen") is False
+            assert get_conf_value("General", "highlight_aoi") is True
+        mock_errors.add_error.assert_called_once()
+        assert mock_errors.add_error.call_args.kwargs == {"fatal": False}
 
     def test_integer_value(self):
         """Integer string parses to int for integer keys."""

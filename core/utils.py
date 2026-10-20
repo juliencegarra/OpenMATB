@@ -80,6 +80,19 @@ def has_conf_value(section: str, key: str) -> bool:
     return CONFIG.has_option(section, key)
 
 
+_warned_conf_values: set[str] = set()
+
+
+def _warn_conf_value(message: str) -> None:
+    """A non-fatal error, once (the values are read by each widget): the session goes on with the default"""
+    if message in _warned_conf_values:
+        return
+    _warned_conf_values.add(message)
+    from core.error import get_errors  # Late import: core.error imports the window, which reads the config
+
+    get_errors().add_error(message, fatal=False)
+
+
 def get_conf_value(section: str, key: str, val_type: Optional[type] = None) -> Any:
     try:
         value: str = CONFIG[section][key]
@@ -90,15 +103,16 @@ def get_conf_value(section: str, key: str, val_type: Optional[type] = None) -> A
 
     # Boolean boolean values
     if key in ["fullscreen", "highlight_aoi", "hide_on_pause", "display_session_number"]:
-        if value.strip().lower() == "true":
-            return True
-        elif value.strip().lower() == "false":
-            return False
-        else:
-            raise TypeError(
-                _("In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False")
-                % (key, value)
-            )
+        # The booleans of configparser (true/false, yes/no, on/off, 1/0)
+        boolean: bool | None = CONFIG.BOOLEAN_STATES.get(value.strip().lower())
+        if boolean is not None:
+            return boolean
+        # As the message says (it raised, and nothing caught it: the session did not start)
+        _warn_conf_value(
+            _("In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False")
+            % (key, value)
+        )
+        return False
 
     # Integer values
     elif key in ["screen_index"]:
@@ -136,7 +150,8 @@ def get_conf_value(section: str, key: str, val_type: Optional[type] = None) -> A
             if len(value) == 0:
                 return
             elif not font.have_font(value):
-                raise TypeError(_("In config.ini, the specified font is not available. A default font will be used."))
+                _warn_conf_value(_("In config.ini, the specified font is not available. A default font will be used."))
+                return None
             else:
                 return value
 

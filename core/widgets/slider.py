@@ -252,7 +252,9 @@ class Slider(AbstractWidget):
         step_size: float = (self.value_max - self.value_min) / 20
         current_step: int = round((self.groove_value - self.value_min) / step_size)
         new_value: float = self.value_min + (current_step + steps) * step_size
-        new_value = max(self.value_min, min(self.value_max, new_value))
+        # Between the bounds, whatever their order (a reversed scale, e.g. 100/0/50, stuck at one end)
+        low, high = sorted((self.value_min, self.value_max))
+        new_value = max(low, min(high, new_value))
         ratio: float = (new_value - self.value_min) / (self.value_max - self.value_min)
         self.update_groove_value(ratio)
 
