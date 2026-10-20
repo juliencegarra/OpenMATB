@@ -393,9 +393,37 @@ class TestStartFailure:
         sysmon.logger.log.assert_called_once_with("[sysmon] Failure ignored on 'F5': already on failure")
         assert light["on"] is False
         assert light["failure"] is False
-        # The timers are nevertheless restarted
-        assert light["_response_start"] == 15
-        assert light["_failuretimer"] == 10000
+        # The running failure goes on: its response time is from its own onset, and its timeout is not extended
+        assert light["_response_start"] == 10
+        assert light["_failuretimer"] == 500
+
+    def test_ignored_failure_does_not_ask_the_agent(self, sysmon):
+        sysmon.parameters["automaticsolver"] = True
+        sysmon.agent = MagicMock()
+        sysmon.agent.on_failure_started.return_value = {}
+        light = _light(sysmon, 1)
+        sysmon.start_failure(light)
+        sysmon.start_failure(light)
+        sysmon.agent.on_failure_started.assert_called_once()
+
+    def test_automatic_solver_waits_its_delay_after_a_pause(self, sysmon):
+        """The response start is a task time: the solver delay is not consumed by the time the task was paused."""
+        from agents.default_agent import DefaultAgent
+
+        sysmon.parameters["automaticsolver"] = True
+        sysmon.agent = DefaultAgent()
+        sysmon.agent.send_key = MagicMock()
+        sysmon.pause()
+        sysmon.scenario_time = 70  # Paused 60 s (e.g. a generated block without sysmon)
+        sysmon.resume()
+        light = _light(sysmon, 1)
+        sysmon.start_failure(light)
+        sysmon.scenario_time = 70.2  # 200 ms later: automaticsolverdelay is 1000 ms
+        sysmon.agent._update_sysmon(sysmon)
+        sysmon.agent.send_key.assert_not_called()
+        sysmon.scenario_time = 71.1
+        sysmon.agent._update_sysmon(sysmon)
+        sysmon.agent.send_key.assert_called_once_with(sysmon, light["key"])
 
     def test_agent_is_not_asked_without_automatic_solver(self, sysmon):
         sysmon.agent = MagicMock()

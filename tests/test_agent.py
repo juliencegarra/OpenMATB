@@ -352,6 +352,7 @@ class TestDefaultAgentSysmon:
         plugin = MagicMock()
         plugin.alias = "sysmon"
         plugin.scenario_time = 2.0
+        plugin.task_time = 2.0  # The response start is a task time (no pause here)
         plugin.parameters = {"automaticsolverdelay": 1000}
         gauge = {"name": "F1", "_response_start": 1.0, "key": "F1"}  # 1s elapsed = 1000ms
         plugin.get_gauges_on_failure.return_value = [gauge]
@@ -366,6 +367,7 @@ class TestDefaultAgentSysmon:
         plugin = MagicMock()
         plugin.alias = "sysmon"
         plugin.scenario_time = 1.8
+        plugin.task_time = 1.8  # The response start is a task time (no pause here)
         plugin.parameters = {"automaticsolverdelay": 1000}
         gauge = {"name": "F1", "_response_start": 1.0, "key": "F1"}  # 0.8s elapsed = 800ms
         plugin.get_gauges_on_failure.return_value = [gauge]
@@ -393,6 +395,7 @@ class TestDefaultAgentSysmon:
         plugin = MagicMock()
         plugin.alias = "sysmon"
         plugin.scenario_time = 2.0
+        plugin.task_time = 2.0  # The response start is a task time (no pause here)
         plugin.parameters = {"automaticsolverdelay": 1000}
         ready = {"name": "F1", "_response_start": 0.8, "key": "F1"}  # 1.2s elapsed = 1200ms >= 1000
         not_ready = {"name": "F2", "_response_start": 1.5, "key": "F2"}  # 0.5s elapsed = 500ms < 1000

@@ -34,7 +34,7 @@ class DefaultAgent(AbstractAgent):
         for gauge in plugin.get_gauges_on_failure():
             if (
                 gauge["_response_start"] is not None
-                and (plugin.scenario_time - gauge["_response_start"]) * 1000 >= delay
+                and (plugin.task_time - gauge["_response_start"]) * 1000 >= delay  # A task time (without pauses)
             ):
                 self.send_key(plugin, gauge["key"])
 
