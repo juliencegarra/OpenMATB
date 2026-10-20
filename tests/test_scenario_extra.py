@@ -138,6 +138,12 @@ class TestLoadScenarioFile:
         assert not error_file.exists()
         mock_logger.log_manual_entry.assert_not_called()
 
+    def test_folder_is_not_found(self, tmp_path, fake_plugins, errors, error_file, mock_logger):
+        """A folder (a scenario_path without its file name) is reported as not found, it does not raise."""
+        s = Scenario(scenario_path=tmp_path)
+        assert s.events == [] and errors.some_fatals
+        mock_logger.log_manual_entry.assert_not_called()
+
     def test_contents_take_precedence_over_path(self, tmp_path, fake_plugins, errors, error_file, mock_logger):
         """Given contents (replay) are used even if a path is provided."""
         s = Scenario(["0:00:00;sysmon;start\n", "0:00:05;sysmon;stop\n"], scenario_path=tmp_path / "nope.txt")

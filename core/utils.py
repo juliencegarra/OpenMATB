@@ -22,6 +22,7 @@ _CONFIG_DEFAULTS: dict[tuple[str, str], Any] = {
     ("Openmatb", "bottom_bounds"): [0.30, 0.85],
     ("Openmatb", "font_name"): "",
     ("Openmatb", "language"): "en_EN",
+    ("Openmatb", "scenario_path"): "",  # As the empty value of the default config.ini: the scenario selector opens
 }
 
 

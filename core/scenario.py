@@ -39,7 +39,7 @@ class Scenario:
             else:
                 sp = P["SCENARIOS"].joinpath(get_conf_value("Openmatb", "scenario_path"))
 
-            if sp.exists():
+            if sp.is_file():  # A folder (e.g. scenario_path without its file name) raised IsADirectoryError
                 # utf-8-sig: also reads files saved "UTF-8 with BOM" (e.g. by Windows Notepad)
                 with open(sp, "r", encoding="utf-8-sig") as f:
                     contents = f.readlines()

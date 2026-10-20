@@ -275,12 +275,12 @@ class TestGetConfValueDefaults:
         with patch("core.utils.CONFIG", self._empty_config()):
             assert get_conf_value("Openmatb", "fullscreen") is True
 
-    def test_no_default_raises_keyerror(self):
-        """Key without a default raises KeyError."""
+    def test_missing_scenario_path_opens_the_selector(self):
+        """Missing scenario_path is empty, as in the default config.ini (the scenario selector opens)."""
         from core.utils import get_conf_value
 
-        with patch("core.utils.CONFIG", self._empty_config()), pytest.raises(KeyError):
-            get_conf_value("Openmatb", "scenario_path")
+        with patch("core.utils.CONFIG", self._empty_config()):
+            assert get_conf_value("Openmatb", "scenario_path") == ""
 
     def test_unknown_key_raises_keyerror(self):
         """Completely unknown key raises KeyError."""
