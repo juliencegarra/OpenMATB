@@ -13,6 +13,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from core import validation
 from core.event import Event
 from scenario_generation import (
     BlockConfig,
@@ -613,6 +614,19 @@ class TestWriteScenarioFile:
         assert content.index("0:00:00;sysmon;alerttimeout;5000") < content.index("0:00:00;track;start")
 
 
+class TestAdvancedMinDuration:
+    def test_block_minduration_is_not_replaced_by_the_difficulty_one(self, mock_logger):
+        """The advanced parameter of a block was written before the minduration computed from the difficulty."""
+        from plugins.scheduling import Scheduling
+
+        block = BlockConfig(
+            duration_sec=60, plugins={"scheduling": 0.5}, extra_events=[("scheduling", "minduration", 3)]
+        )
+        lines = generate_scenario(ScenarioConfig(blocks=[block]), {"scheduling": Scheduling()})
+        events = sorted((l for l in lines if isinstance(l, Event)), key=lambda e: (e.time_sec, e.line))
+        assert [e.command[1] for e in events if e.command[0] == "minduration"][-1] == 3
+
+
 class TestCustomScenario:
     """The CLI adds the scenarios/custom_generator.txt file at the beginning of the generated scenario."""
 
@@ -630,6 +644,32 @@ class TestCustomScenario:
         custom = tmp_path / "custom_generator.txt"
         custom.write_text("# Comment\n\n0:00:00;sysmon;alerttimeout;5000\n0:00:00;sysmon;start\n", encoding="utf-8")
         sysmon = MagicMock()
+        sysmon.validation_dict = {"alerttimeout": validation.is_positive_integer}
         config = ScenarioConfig(custom_scenario_path=custom)
         generate_scenario(config, {"sysmon": sysmon})
-        sysmon.set_parameter.assert_called_once_with("alerttimeout", "5000")
+        sysmon.set_parameter.assert_called_once_with("alerttimeout", 5000)
+
+    def test_custom_numeric_parameters_are_converted(self, tmp_path, mock_logger):
+        """The values of the custom file are validated as in a scenario: the generation computes with them
+        (a string raised a TypeError, e.g. alerttimeout / 1000)."""
+        from plugins.resman import Resman
+        from plugins.sysmon import Sysmon
+
+        custom = tmp_path / "custom_generator.txt"
+        custom.write_text("0:00:00;sysmon;alerttimeout;5000\n0:00:00;resman;pump-2-flow;700\n", encoding="utf-8")
+        plugins = {"sysmon": Sysmon(), "resman": Resman()}
+        config = ScenarioConfig(
+            custom_scenario_path=custom, blocks=[BlockConfig(duration_sec=60, plugins={"sysmon": 0.5, "resman": 0.5})]
+        )
+        generate_scenario(config, plugins)
+        assert plugins["sysmon"].parameters["alerttimeout"] == 5000
+        assert plugins["resman"].parameters["pump"]["2"]["flow"] == 700
+
+    def test_invalid_custom_value_is_not_applied(self, tmp_path, mock_logger):
+        from plugins.sysmon import Sysmon
+
+        custom = tmp_path / "custom_generator.txt"
+        custom.write_text("0:00:00;sysmon;alerttimeout;abc\n", encoding="utf-8")
+        sysmon = Sysmon()
+        generate_scenario(ScenarioConfig(custom_scenario_path=custom), {"sysmon": sysmon})
+        assert sysmon.parameters["alerttimeout"] == 10000

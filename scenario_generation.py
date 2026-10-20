@@ -124,8 +124,32 @@ def apply_custom_scenario(path: Path, plugins: dict[str, Any]) -> None:
         if len(line_str.strip()) == 0 or line_str.startswith("#"):
             continue
         event: Event = Event.parse_from_string(0, line_str)
-        if len(event.command) == 2 and plugins.get(event.plugin) is not None:
-            plugins[event.plugin].set_parameter(event.command[0], event.command[1])
+        plugin: Any = plugins.get(event.plugin)
+        if len(event.command) == 2 and plugin is not None:
+            name, value = event.command
+            converted: tuple[Any, bool] = _validated_custom_value(plugin, name, value)
+            if converted[1]:
+                plugin.set_parameter(name, converted[0])
+            else:  # The scenario will report it: the generation goes on with the plugin value
+                print(f"Custom scenario: the {event.plugin} {name} value ({value}) is not valid, not applied")
+
+
+def _validated_custom_value(plugin: Any, name: str, value: str) -> tuple[Any, bool]:
+    """The value converted as in a scenario (e.g. alerttimeout 5000 as an integer: the generation computes with
+    it), and whether it is valid"""
+    from core.scenario import base_validation_dict  # Late import: core.scenario imports all the plugins
+
+    validation_dict: dict[str, Any] = {**base_validation_dict, **getattr(plugin, "validation_dict", {})}
+    method: Any = validation_dict.get(name)
+    if method is None:
+        return value, False
+    method_args: list[Any] = list()
+    if isinstance(method, tuple):
+        method, *method_args = method
+    if method.__name__ != "is_string":  # As the scenario does
+        value = value.replace(" ", "")
+    converted, error = method(value, *method_args)
+    return converted, error is None
 
 
 def get_events_from_scenario(scenario_lines: list[str | Event]) -> list[Event]:
@@ -180,6 +204,15 @@ def distribute_events(
 
 
 # ── Phase generation ─────────────────────────────────────────────────────────
+
+
+def _set_by_the_block(scenario_lines: list[str | Event], start_sec: int, plugin_name: str, parameter: str) -> bool:
+    """Whether an advanced parameter of the block (written at its start, before the generated ones) sets this
+    parameter: the value computed from the difficulty, written after it, would replace it"""
+    return any(
+        e.time_sec == start_sec and e.plugin == plugin_name and len(e.command) == 2 and e.command[0] == parameter
+        for e in get_events_from_scenario(scenario_lines)
+    )
 
 
 def add_scenario_phase(
@@ -251,8 +284,9 @@ def add_scenario_phase(
         # ── TRACKING ──
         elif plugin_name == "track":
             print("Tracking | computing events")
-            scenario_lines.append(Event(start_line, start_sec, plugin_name, ["targetproportion", 1 - difficulty]))
-            start_line += 1
+            if not _set_by_the_block(scenario_lines, start_sec, plugin_name, "targetproportion"):
+                scenario_lines.append(Event(start_line, start_sec, plugin_name, ["targetproportion", 1 - difficulty]))
+                start_line += 1
 
         # ── COMMUNICATIONS ──
         elif plugin_name == "communications":
@@ -296,6 +330,8 @@ def add_scenario_phase(
                 k for k, t in plugin.parameters["tank"].items() if t["target"] is not None
             ]
             for letter in target_tank_letters:
+                if _set_by_the_block(scenario_lines, start_sec, plugin_name, f"tank-{letter}-lossperminute"):
+                    continue
                 cmd: list[Any] = [f"tank-{letter}-lossperminute", int(maximum_single_leakage * difficulty)]
                 scenario_lines.append(Event(start_line, start_sec, plugin_name, cmd))
                 start_line += 1
@@ -306,8 +342,9 @@ def add_scenario_phase(
             # Difficulty controls minduration, in minutes: lower difficulty = higher minduration (easier),
             # from 14 to 2 minutes (8, the default, for 0.5)
             min_duration: int = round(12 * (1 - difficulty) + 2)
-            scenario_lines.append(Event(start_line, start_sec, plugin_name, ["minduration", min_duration]))
-            start_line += 1
+            if not _set_by_the_block(scenario_lines, start_sec, plugin_name, "minduration"):
+                scenario_lines.append(Event(start_line, start_sec, plugin_name, ["minduration", min_duration]))
+                start_line += 1
 
     return scenario_lines
 
