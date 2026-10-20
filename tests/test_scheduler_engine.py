@@ -225,6 +225,45 @@ class TestUpdate:
         sched.update_timers.assert_called_once_with(0.2)
 
 
+class TestWindowClosed:
+    def _sched(self):
+        sched = TestUpdate._sched(TestUpdate())
+        return sched
+
+    def test_window_closed_while_a_dialog_is_open_ends_the_session(self, window, errors):
+        """The X button or Alt+F4 with a dialog open (pause, session ID, warning): the update returned at the dialog,
+        and the window was closed a second later without the stop events nor the end of the session."""
+        sched = self._sched()
+        window.modal_dialog = MagicMock()
+        window.alive = False
+        sched.update(0.1)
+        sched.check_if_must_exit.assert_called_once()
+
+    def test_nothing_runs_after_quitting(self, window, errors):
+        """Q in the exit prompt: the next update still ran the timers, the plugins and a scenario event."""
+        sched = self._sched()
+        window.alive = False
+        sched.update(0.1)
+        sched.update_timers.assert_not_called()
+        sched.update_active_plugins.assert_not_called()
+        sched.execute_events.assert_not_called()
+        sched.check_if_must_exit.assert_called_once()
+
+    def test_an_error_dialog_stops_the_update(self, window, errors):
+        """An error dialog (e.g. no joystick found) opened by this update: no event runs behind it (a system;pause
+        replaced it and left its box on screen)."""
+        sched = self._sched()
+        errors.is_empty.return_value = False
+
+        def show():
+            window.modal_dialog = MagicMock()
+
+        errors.show_errors.side_effect = show
+        sched.update(0.1)
+        sched.execute_events.assert_not_called()
+        sched.update_timers.assert_not_called()
+
+
 class TestModalDialogPause:
     def _open_then_close(self, sched, window):
         window.modal_dialog = MagicMock()

@@ -106,6 +106,13 @@ class Scheduler:
         self._dialog_paused_plugins: list[Any] = list()
 
     def update(self, dt: float) -> None:
+        # The window closed (X button, Alt+F4) or Q in the exit prompt: end the session now, even behind a dialog
+        # (the update returned at it, and the window closed without the stop events nor the end of the session),
+        # and run nothing more (one more scenario event was executed after the participant quit)
+        if not Window.MainWindow.alive:
+            self.check_if_must_exit()
+            return
+
         if Window.MainWindow.modal_dialog is not None:
             if not self._dialog_paused:
                 # Pause only the running plugins, so that plugins already paused
@@ -124,6 +131,8 @@ class Scheduler:
 
         if not get_errors().is_empty():
             get_errors().show_errors()
+            if Window.MainWindow.modal_dialog is not None:  # Nothing runs behind it (the next update pauses)
+                return
 
         # Logged before the timers are updated: the row gets the scenario time when the page stopped
         if IS_WEB and dt > WEB_FREEZE_THRESHOLD:
