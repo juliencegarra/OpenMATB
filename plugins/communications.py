@@ -169,7 +169,15 @@ class Communications(AbstractPlugin):
     def set_parameter(self, keys_str: str, value: Any) -> dict[str, Any]:
         if keys_str in ("owncallsign", "othercallsign"):
             self._scenario_callsigns.add(keys_str)
-        return super().set_parameter(keys_str, value)
+        dic: dict[str, Any] = super().set_parameter(keys_str, value)
+        if keys_str in ("airbandminMhz", "airbandmaxMhz"):
+            # The radios were drawn in the former band (108-137 by default): those now outside it are drawn again
+            # in it (put at its limit, they all showed e.g. 118.0, and their targets were all above)
+            low, high = float(self.parameters["airbandminMhz"]), float(self.parameters["airbandmaxMhz"])
+            for r, radio in self.parameters["radios"].items():
+                if not low <= radio["currentfreq"] <= high:
+                    radio["currentfreq"] = self.get_rand_frequency(r)
+        return dic
 
     def regenerate_callsigns(self) -> None:
         if "owncallsign" not in self._scenario_callsigns:

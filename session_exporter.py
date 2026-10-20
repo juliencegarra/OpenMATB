@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import csv
 import math
+import re
 import statistics
 import sys
 from dataclasses import dataclass, field
@@ -155,7 +156,7 @@ def parse_value(raw: str):
     if raw in ("nan", "NaN", ""):
         return float("nan")
     try:
-        if "." in raw:
+        if "." in raw or "e" in raw.lower():  # e.g. 1e-05
             return float(raw)
         return int(raw)
     except (ValueError, TypeError):
@@ -905,7 +906,8 @@ def write_summary(summaries: list[SessionSummary], output_path: Path, sep: str) 
             if col not in seen:
                 seen.add(col)
                 scale_cols.append(col)
-    scale_cols.sort()
+    # Natural order: scale_2 before scale_10
+    scale_cols.sort(key=lambda c: [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", c)])
 
     header: list[str] = SUMMARY_FIXED_COLUMNS + scale_cols
 

@@ -126,7 +126,9 @@ class Performance(AbstractPlugin):
                         self.performance_levels[p] = sum(all_good) / len(all_good)
 
         if len(self.performance_levels) > 0:
-            self.current_level = min([p for _, p in self.performance_levels.items()]) * 100
+            # The worst proportion (0 to 1) on the scale of the bar (levelmin to levelmax, as criticallevel)
+            level_min, level_max = self.parameters["levelmin"], self.parameters["levelmax"]
+            self.current_level = level_min + min(self.performance_levels.values()) * (level_max - level_min)
         else:
             self.current_level = self.parameters["levelmax"]
 
