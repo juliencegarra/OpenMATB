@@ -273,6 +273,21 @@ class TestPromptForANewTarget:
         assert 108.0 <= radio["targetfreq"] <= 137.0
         assert radio["targetfreq"] != radio["currentfreq"]
 
+    def test_pause_of_the_task_is_not_a_response_delay(self, comms, no_modal_dialog):
+        """After a communications;pause longer than maxresponsedelay, the target was missed at once."""
+        radio = _radio(comms, "NAV_2")
+        comms.prompt_for_a_new_target("own", "NAV_2")
+        radio["is_prompting"] = False
+        comms.start_response_timer(radio, on_flip=False)
+        comms.pause()
+        comms.scenario_time += comms.parameters["maxresponsedelay"] / 1000 + 10
+        comms.resume()
+        comms.scenario_time += 1
+        comms.next_refresh_time = 0
+        comms.compute_next_plugin_state()
+        assert radio["targetfreq"] is not None  # Not missed: 1 s of the task only
+        assert comms._response_elapsed_ms(radio["_response_start"]) == pytest.approx(1000)
+
     def test_other_prompt_has_no_target(self, comms):
         comms.prompt_for_a_new_target("other", "COM_1")
         radio = _radio(comms, "COM_1")

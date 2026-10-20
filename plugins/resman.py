@@ -331,7 +331,7 @@ class Resman(AbstractPlugin):
                     if not this_tank["_is_in_tolerance"]:  # If a response is needed
                         tolerance_color = self.parameters["tolerancecoloroutside"]
                         if this_tank["_response_start"] is None:
-                            this_tank["_response_start"] = self.scenario_time
+                            this_tank["_response_start"] = self.task_time
                     elif this_tank["_response_start"] is not None:  # Back in the tolerance zone
                         self.log_performance(
                             f"{tank_l}_response_time", self._response_elapsed_ms(this_tank["_response_start"])

@@ -134,7 +134,7 @@ class Track(AbstractPlugin):
 
         if not on_target:  # A response is needed
             if self._response_start is None:
-                self._response_start = self.scenario_time
+                self._response_start = self.task_time
         else:
             if self._response_start is not None:  # The cursor drift has been recovered
                 self.log_performance("response_time", self._response_elapsed_ms(self._response_start))

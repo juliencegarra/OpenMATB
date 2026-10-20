@@ -45,6 +45,9 @@ class AbstractPlugin:
 
         self.next_refresh_time: float = 0
         self.scenario_time: float = 0
+        # A pause of the task (e.g. sysmon;pause) does not stop the scenario time: the response timers leave it out
+        self._paused_since: float | None = None  # Scenario time of the pause in progress
+        self._paused_duration: float = 0.0  # Scenario time of the previous pauses (s)
 
         #  If True
         self.blocking: bool = False  # :blocks all other plugins when alive
@@ -151,13 +154,29 @@ class AbstractPlugin:
         if self.verbose:
             print("Pause ", self.alias)
         self.paused = True
+        if getattr(self, "_paused_since", None) is None:
+            self._paused_since = self.scenario_time
         self.update_can_receive_key()
 
     def resume(self) -> None:
         if self.verbose:
             print("Resume ", self.alias)
         self.paused = False
+        if getattr(self, "_paused_since", None) is not None:
+            self._paused_duration = self._get_paused_duration()
+            self._paused_since = None
         self.update_can_receive_key()
+
+    def _get_paused_duration(self) -> float:
+        """Scenario time (s) spent paused since the start, the pause in progress included"""
+        since: float | None = getattr(self, "_paused_since", None)
+        duration: float = getattr(self, "_paused_duration", 0.0)
+        return duration + (self.scenario_time - since if since is not None else 0.0)
+
+    @property
+    def task_time(self) -> float:
+        """The scenario time of the task: without its pauses (the response timers are in it)"""
+        return self.scenario_time - self._get_paused_duration()
 
     def start(self) -> None:
         if self.verbose:
@@ -557,30 +576,33 @@ class AbstractPlugin:
         return {f"{prefix}-{i}-{k}": v for i in indices for k, v in validators.items()}
 
     def _response_elapsed_ms(self, start: float | None) -> float:
-        """Return elapsed milliseconds since *start* (a scenario_time), or 0.0 if None."""
+        """Return elapsed milliseconds since *start* (a task_time), or 0.0 if None."""
         if start is None:
             return 0.0
-        return (self.scenario_time - start) * 1000
+        return (self.task_time - start) * 1000
 
     def start_response_timer(self, item: dict[str, Any], on_flip: bool = True) -> None:
-        """Start the response timer of item (a gauge, a radio...): item["_response_start"] is the scenario time
-        (for the timeouts), item["_onset"] the scenario time of the first frame displaying the stimulus."""
-        item["_response_start"] = self.scenario_time
+        """Start the response timer of item (a gauge, a radio...): item["_response_start"] is the task time
+        (for the timeouts), item["_onset"] the task time of the first frame displaying the stimulus."""
+        item["_response_start"] = self.task_time
         item["_onset"] = None
         if not on_flip:
             return
 
         def set_onset(real_time: float) -> None:
             if item["_response_start"] is not None and item["_onset"] is None:
-                item["_onset"] = timing.scenario_time_at(real_time)
+                onset: float | None = timing.scenario_time_at(real_time)
+                item["_onset"] = onset - self._get_paused_duration() if onset is not None else None
 
         timing.call_on_flip(set_onset)
 
     def response_time_ms(self, item: dict[str, Any], human: bool) -> float:
         """Response time (ms) to item. For a human input: from the stimulus onset (or its start) to the input
-        event (see core/timing.py). Otherwise (agent, automatic solver, replay): in scenario time."""
+        event (see core/timing.py). Otherwise (agent, automatic solver, replay): in task time."""
         start: float | None = item["_response_start"]
         response: float | None = timing.scenario_time_at(timing.input_time()) if human else None
+        if response is not None:  # In task time
+            response -= self._get_paused_duration()
         if start is None or response is None:
             return self._response_elapsed_ms(start)
         onset: float | None = item.get("_onset")

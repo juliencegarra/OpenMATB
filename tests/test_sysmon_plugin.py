@@ -499,6 +499,19 @@ class TestDoOnKey:
             "resolved_by": "human",
         }
 
+    def test_response_time_leaves_out_the_pause_of_the_task(self, sysmon):
+        """A sysmon;pause stops the task, not the scenario time: the 50 s of pause were in the response time
+        (51500 ms, beyond the alerttimeout of 10000 ms), and in the timer of the overdue alarm."""
+        sysmon.start_failure(_scale(sysmon, 1))
+        sysmon.scenario_time = 11
+        sysmon.pause()
+        sysmon.scenario_time = 61
+        assert sysmon.get_response_timers()[0] == pytest.approx(1000)  # Frozen during the pause
+        sysmon.resume()
+        sysmon.scenario_time = 61.5
+        sysmon.do_on_key("F1", "press", True)
+        assert _performance(sysmon)["response_time"] == pytest.approx(1500)
+
     def test_emulated_key_is_resolved_by_the_agent(self, sysmon):
         _scale(sysmon, 1)["side"] = 1
         sysmon.start_failure(_scale(sysmon, 1))
