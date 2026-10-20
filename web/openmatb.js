@@ -651,6 +651,11 @@ $("mode").addEventListener("change", () => {
 });
 
 $("start").addEventListener("click", async () => {
+    // Once: a second click during the awaits below ran main.py twice (two schedulers, every row logged twice)
+    if ($("start").disabled) {
+        return;
+    }
+    $("start").disabled = true;
     // Everything that needs the user gesture must happen before the first await
     const wantsFullscreen = $("fullscreen").checked;
     const fullscreen = wantsFullscreen ? document.documentElement.requestFullscreen().catch(() => {}) : null;
@@ -696,6 +701,7 @@ $("start").addEventListener("click", async () => {
             if (document.fullscreenElement) {
                 document.exitFullscreen();
             }
+            $("start").disabled = false;
             return;
         }
         sessionOutput = new SessionOutput(settings, { jatos });

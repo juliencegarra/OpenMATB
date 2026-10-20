@@ -98,16 +98,26 @@ def _patch_pyglet_glyph_baseline() -> None:
 
 def _patch_pyglet_numpad_keys() -> None:
     """pyglet maps browser keys with event.key, which gives "1" or "End" for the numpad 1 key (depending
-    on NumLock), never NUM_1: resman pump keys did not work. Use event.code for numpad keys, as on desktop."""
+    on NumLock), never NUM_1: resman pump keys did not work. Use event.code for numpad keys, as on desktop.
+
+    A key missing from its map (Delete, AltGraph, a dead key, é...) got the string event.code as symbol, and
+    symbol_string() raised on it in every key handler (the key was not logged): it gets a pyglet key, else 0."""
     from pyglet.window import emscripten as web_window
+    from pyglet.window import key as winkey
 
     js_key_to_pyglet = web_window.js_key_to_pyglet
+    named_keys: dict[str, int] = {"AltGraph": winkey.RALT}
 
     def js_key_with_numpad(event: Any) -> tuple[Any, int]:
         symbol, modifiers = js_key_to_pyglet(event)
         code: str = str(event.code)
+        name: str = str(event.key)
         if code.startswith("Numpad") and code in web_window._key_map:
             symbol = web_window._key_map[code]
+        elif name not in web_window._key_map:  # pyglet gave the string event.code
+            symbol = named_keys.get(name, getattr(winkey, name.upper(), 0))
+            if not isinstance(symbol, int):
+                symbol = 0
         return symbol, modifiers
 
     web_window.js_key_to_pyglet = js_key_with_numpad
