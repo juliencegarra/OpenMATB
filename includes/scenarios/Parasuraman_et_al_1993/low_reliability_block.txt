@@ -63,7 +63,7 @@
 
 0:02:58;sysmon;scales-4-failure;down
 0:02:58;sysmon;automaticsolver;False
-0:02:59;sysmon;lights-2-on;False
+0:02:58;sysmon;lights-2-on;False
 
 0:03:26;sysmon;scales-2-failure;down
 0:03:26;sysmon;automaticsolver;False
