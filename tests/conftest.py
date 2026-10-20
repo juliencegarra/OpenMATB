@@ -519,6 +519,16 @@ if "rstr" not in sys.modules:
     sys.modules["rstr"] = rstr_mod
 
 
+# The tests using the real logger (e.g. parallelport, agent inputs) wrote their session files into the sessions
+# folder of the repository: they go to a temporary folder instead
+import tempfile as _tempfile
+from pathlib import Path as _Path
+
+from core.constants import PATHS as _PATHS
+
+_PATHS["SESSIONS"] = _Path(_tempfile.mkdtemp(prefix="openmatb_test_sessions_"))
+
+
 # ──────────────────────────────────────────────
 # 4. Pytest fixtures
 # ──────────────────────────────────────────────
