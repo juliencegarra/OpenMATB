@@ -159,7 +159,9 @@ class Logger:
         return self.slot(*new_list)
 
     def write_row_queue(self, change_dict: dict[str, Any] | None = None) -> None:
-        if not REPLAY_MODE:
+        if REPLAY_MODE:  # Nothing is written: the rows were kept for the whole replay (and again after each seek)
+            self.empty_queue()
+        else:
             if self._ended:  # Late writes after the end of the session are dropped
                 self.empty_queue()
             elif len(self.queue) == 0:

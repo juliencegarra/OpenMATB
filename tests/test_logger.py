@@ -327,6 +327,15 @@ class TestWriteSingleSlot:
         assert lg.queue == []
         lg.writer.writerow.assert_called_once()
 
+    @patch.object(_logger_module, "REPLAY_MODE", True)
+    def test_replay_does_not_keep_the_rows(self):
+        """Nothing is written in replay: the rows were kept in the queue for the whole replay (memory)."""
+        lg = _make_logger()
+        for n in range(100):
+            lg.write_single_slot([float(n), 0, "state", "track", "cursor", "(0, 0)"])
+        assert lg.queue == []
+        lg.writer.writerow.assert_not_called()
+
     @patch.object(_logger_module, "REPLAY_MODE", False)
     def test_written_row_has_correct_fields(self):
         """Written dict has all 6 expected fields."""
