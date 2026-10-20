@@ -839,6 +839,23 @@ class TestComputeSummary:
         assert s.resman_a_mean_deviation == pytest.approx(15.0)
         assert s.resman_b_mean_deviation == pytest.approx(235.0)
 
+    def test_resman_steps_caught_up_in_one_update(self) -> None:
+        """Two steps run in one update (e.g. after a page freeze) share a scenario_time: both are counted."""
+        perf = [
+            _perf(1.0, "resman", "a_in_tolerance", "0"),
+            _perf(1.0, "resman", "a_deviation", "100"),
+            _perf(1.0, "resman", "b_in_tolerance", "1"),
+            _perf(1.0, "resman", "b_deviation", "0"),
+            _perf(1.0, "resman", "a_in_tolerance", "1"),
+            _perf(1.0, "resman", "a_deviation", "20"),
+            _perf(1.0, "resman", "b_in_tolerance", "1"),
+            _perf(1.0, "resman", "b_deviation", "10"),
+        ]
+        s = compute_summary("s", perf, [], [], [])
+        assert s.resman_a_proportion_in_tolerance == pytest.approx(0.5)
+        assert s.resman_a_mean_deviation == pytest.approx(60.0)
+        assert s.resman_b_mean_deviation == pytest.approx(5.0)
+
     def test_resman_excursions(self) -> None:
         perf = [
             _perf(1.0, "resman", "a_response_time", "3000"),

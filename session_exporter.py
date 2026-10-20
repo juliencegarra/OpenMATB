@@ -574,7 +574,9 @@ def compute_summary(
     a_excursion_rts: list[float] = []
     b_excursion_rts: list[float] = []
 
-    for group in _group_by_scenario_time(resman_rows):
+    # The steps caught up in one update (e.g. after a page freeze) share a scenario_time: split them
+    resman_steps = [step for group in _group_by_scenario_time(resman_rows) for step in _split_on_repeat(group)]
+    for group in resman_steps:
         data = {r.address: r.value for r in group}
 
         for prefix, tol_list, dev_list, rt_list in [
