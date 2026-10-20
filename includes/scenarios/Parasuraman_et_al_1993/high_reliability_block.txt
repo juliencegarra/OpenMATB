@@ -30,8 +30,6 @@
 # 1.c. Tracking parameters
 
 0:00:00;track;cursorcolor;#009900
-0:00:00;track;cutofffrequency;0.06
-0:00:00;track;equalproportions;False
 
 
 # 2. Start appropriate tasks

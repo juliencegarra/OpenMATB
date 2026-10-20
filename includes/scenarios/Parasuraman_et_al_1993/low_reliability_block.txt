@@ -30,13 +30,10 @@
 # 1.c. Tracking parameters
 
 0:00:00;track;cursorcolor;#009900
-0:00:00;track;cutofffrequency;0.06
-0:00:00;track;equalproportions;False
 
 
 # 2. Start appropriate tasks
 
-0:00:00;pumpstatus;start
 0:00:00;resman;start
 0:00:00;track;start
 0:00:00;sysmon;start
@@ -122,9 +119,6 @@
 
 # 4. End tasks at 10 minutes
 
-0:10:00;pumpstatus;stop
 0:10:00;resman;stop
 0:10:00;track;stop
 0:10:00;sysmon;stop
-
-0:10:01;end
