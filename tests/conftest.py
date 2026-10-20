@@ -141,6 +141,7 @@ _pyglet_modules = [
     "pyglet.input",
     "pyglet.media",
     "pyglet.image",
+    "pyglet.image.base",
     "pyglet.sprite",
     "pyglet.font",
     "pyglet.text.formats",
