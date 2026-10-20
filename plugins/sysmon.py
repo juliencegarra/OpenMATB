@@ -241,6 +241,9 @@ class Sysmon(AbstractPlugin):
     def start_failure(self, gauge: dict[str, Any]) -> None:
         if gauge["_onfailure"]:
             self.logger.log(f"[{self.alias}] Failure ignored on '{gauge['name']}': already on failure")
+            # The running failure goes on (its response time and timeout were restarted by the ignored one)
+            gauge["failure"] = False
+            return
         else:
             gauge["_onfailure"] = True
             if "default" in gauge:  # Light case
