@@ -45,7 +45,6 @@ class Sysmon(AbstractPlugin):
                     "default": (validation.is_in_list, ["on", "off"]),
                     "oncolor": validation.is_color,
                     "key": validation.is_key,
-                    "onfailure": validation.is_boolean,
                 },
             ),
             **self._indexed_validators(
@@ -56,7 +55,6 @@ class Sysmon(AbstractPlugin):
                     "failure": validation.is_boolean,
                     "side": (validation.is_in_list, ["-1", "0", "1"]),
                     "key": validation.is_key,
-                    "onfailure": validation.is_boolean,
                 },
             ),
         }
