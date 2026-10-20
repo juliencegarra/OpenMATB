@@ -41,6 +41,9 @@ def plugin_alias_to_int(plugin_alias: str) -> int:
 
 def set_seed(plugin_alias: str, scenario_time_sec: float, add: int = 0) -> int:
     # `add` is used in case multiple seeds must be generated at the same time (second precision)
+    # The terms are added: the session N+1 at the time t has the draws of the session N at the time t+1 (no matter in
+    # practice, two sessions differ at the same time). Do not change it: the replay of the former sessions draws the
+    # same values with it
     unique_plugin_int: int = plugin_alias_to_int(plugin_alias)
     seed: int = int(_get_session_id()) + unique_plugin_int + int(scenario_time_sec) + add
     random.seed(seed)
