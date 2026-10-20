@@ -157,6 +157,13 @@ class Track(AbstractPlugin):
             self.x_input = 0
             self.y_input = 0
 
+    def pause(self) -> None:
+        # A release during the pause (questionnaire, pause dialog) does not reach the task: the drag stayed held
+        self._mouse_dragging = False
+        self.x_input = 0
+        self.y_input = 0
+        super().pause()
+
     def do_on_mouse_release(self, x: int, y: int, button: int) -> None:
         if self._mouse_dragging:
             self._mouse_dragging = False

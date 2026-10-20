@@ -340,6 +340,18 @@ class TestMouseDrag:
         assert (track._drag_origin_x, track._drag_origin_y) == (150, 100)
         assert (track.x_input, track.y_input) == (0, 0)
 
+    def test_drag_ends_when_the_task_is_paused(self, track):
+        """A button released during a questionnaire or the pause dialog does not reach the paused task: the drag
+        stayed held, the cursor drifted with the last input, and the joystick was ignored."""
+        track.do_on_mouse_press(150, 100, mouse.LEFT)
+        track.do_on_mouse_drag(250, 100, 100, 0, mouse.LEFT)
+        assert track.x_input > 0
+        track.pause()
+        track.resume()
+        track.get_joystick_inputs(0.0, 0.0)
+        assert track._mouse_dragging is False
+        assert (track.x_input, track.y_input) == (0, 0)
+
     def test_press_outside_the_reticle_is_ignored(self, track):
         track.do_on_mouse_press(10, 10, mouse.LEFT)
         assert track._mouse_dragging is False
