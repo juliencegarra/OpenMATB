@@ -25,7 +25,7 @@ class Schedule(AbstractWidget):
         self.box_radius: float = self.bound_radius * 1.5
 
         self.vertex["letter"] = Label(
-            label[0].upper(),
+            label[:1].upper(),  # A planning without label (fewer labels than plannings) has no letter
             font_size=F["MEDIUM"],
             font_name=self.font_name,
             x=self.container.cx,

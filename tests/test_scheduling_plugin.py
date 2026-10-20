@@ -80,6 +80,13 @@ class TestLabels:
         given = [scheduling.widgets[f"scheduling_{task}"].kwargs["label"] for task in TASKS]
         assert given == labels.split(",") + [""] * (4 - len(labels.split(",")))
 
+    def test_schedule_widget_without_label(self, mock_logger):
+        """The empty label given to the plannings without one is shown as no letter (IndexError before)."""
+        from core.container import Container
+        from core.widgets.schedule import Schedule
+
+        Schedule("scheduling_track", Container("schedule_track", 0, 0, 100, 400), label="")
+
 
 class TestInit:
     def test_default_parameters(self, scheduling):
@@ -156,6 +163,19 @@ class TestOnScenarioLoaded:
             )
         )
         assert scheduling.planning["resman"]["running"] == [0, 100, 150, 400]
+
+    def test_pause_then_stop_is_one_stop(self, scheduling):
+        """pause then stop: the task was already off, it is not a new state change."""
+        scheduling.on_scenario_loaded(
+            _scenario(
+                (0, "sysmon", "start"),
+                (10, "sysmon", "pause"),
+                (20, "sysmon", "stop"),
+                (30, "sysmon", "start"),
+                (40, "sysmon", "stop"),
+            )
+        )
+        assert scheduling.planning["sysmon"]["running"] == [0, 10, 30, 40]
 
     def test_repeated_commands_keep_the_earliest(self, scheduling):
         scheduling.on_scenario_loaded(

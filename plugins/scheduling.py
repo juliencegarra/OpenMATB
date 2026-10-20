@@ -170,11 +170,12 @@ class Scheduling(AbstractPlugin):
                 (e.time_sec, e.command[0]) for e in events if e.plugin == task and e.command[0] in start_stop_labels
             ]
 
-            # Remove redundant consecutive events (e.g. stop -> stop), keep the earliest
+            # Remove redundant consecutive events (e.g. stop -> stop, or pause -> stop), keep the earliest
+            running_states: dict[str, bool] = dict(start=True, resume=True, stop=False, pause=False)
             if start_stop_events:
                 filtered: list[tuple[int, str]] = [start_stop_events[0]]
                 for evt in start_stop_events[1:]:
-                    if evt[1] != filtered[-1][1]:
+                    if running_states[evt[1]] != running_states[filtered[-1][1]]:
                         filtered.append(evt)
                 start_stop_events = filtered
 
