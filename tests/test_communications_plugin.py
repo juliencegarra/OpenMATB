@@ -241,6 +241,38 @@ class TestPromptForANewTarget:
         self.player.assert_called_once_with(self.group.return_value)
         self.player.return_value.play.assert_called_once()
 
+    def _bounded_draws(self, comms):
+        """Make an endless redraw of the target frequency fail, instead of hanging the tests."""
+        draw = comms.get_rand_frequency
+        calls = count()
+
+        def bounded(radio_n):
+            assert next(calls) < 10000, "The target frequency is redrawn endlessly"
+            return draw(radio_n)
+
+        comms.get_rand_frequency = bounded
+
+    def test_prompt_of_a_radio_outside_the_band(self, comms):
+        """A radio drawn in the default band (108-137) before the scenario narrows it (118-137) may have no
+        target in the band at the variation asked (e.g. 111.9): the frequency was redrawn endlessly."""
+        comms.parameters["airbandminMhz"] = 118.0
+        radio = _radio(comms, "NAV_2")
+        radio["currentfreq"] = 110.0
+        self._bounded_draws(comms)
+        comms.prompt_for_a_new_target("own", "NAV_2")
+        assert 118.0 <= radio["targetfreq"] <= 137.0
+        assert 5 < abs(radio["targetfreq"] - radio["currentfreq"]) < 6
+
+    def test_prompt_with_an_impossible_variation(self, comms):
+        """Equal min and max variations (accepted by the validation) leave no target: one is given anyway."""
+        comms.parameters["airbandminvariationMhz"] = 3
+        comms.parameters["airbandmaxvariationMhz"] = 3
+        radio = _radio(comms, "NAV_2")
+        self._bounded_draws(comms)
+        comms.prompt_for_a_new_target("own", "NAV_2")
+        assert 108.0 <= radio["targetfreq"] <= 137.0
+        assert radio["targetfreq"] != radio["currentfreq"]
+
     def test_other_prompt_has_no_target(self, comms):
         comms.prompt_for_a_new_target("other", "COM_1")
         radio = _radio(comms, "COM_1")

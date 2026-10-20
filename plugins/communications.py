@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 from string import ascii_lowercase, ascii_uppercase, digits
 from typing import Any, Callable
@@ -283,14 +284,27 @@ class Communications(AbstractPlugin):
         callsign: str | list[str] = self.parameters[f"{destination}callsign"]
         callsign = choice(callsign, self.alias, self.scenario_time, radio_n) if isinstance(callsign, list) else callsign
 
-        random_frequency: float = self.get_rand_frequency(radio_n)
-        while not (
-            self.parameters["airbandminvariationMhz"]
-            < abs(random_frequency - radio["currentfreq"])
-            < self.parameters["airbandmaxvariationMhz"]
-        ):
-            radio_n += 15
-            random_frequency = self.get_rand_frequency(radio_n)
+        # A radio drawn before the scenario narrowed the band (e.g. 118-137) may be outside it
+        low, high = float(self.parameters["airbandminMhz"]), float(self.parameters["airbandmaxMhz"])
+        radio["currentfreq"] = self.keep_value_between(radio["currentfreq"], down=low, up=high)
+        min_var, max_var = self.parameters["airbandminvariationMhz"], self.parameters["airbandmaxvariationMhz"]
+
+        def is_valid(frequency: float) -> bool:
+            return min_var < abs(frequency - radio["currentfreq"]) < max_var
+
+        # The frequencies that get_rand_frequency can draw (rounded to 0.1 MHz)
+        band: list[float] = [round(k / 10, 1) for k in range(math.ceil(low * 10), math.floor(high * 10) + 1)]
+        if any(is_valid(f) for f in band):
+            random_frequency: float = self.get_rand_frequency(radio_n)
+            while not is_valid(random_frequency):
+                radio_n += 15
+                random_frequency = self.get_rand_frequency(radio_n)
+        else:  # None at this variation (e.g. equal min and max variations): it was redrawn endlessly
+            random_frequency = min(
+                (f for f in band if f != radio["currentfreq"]),
+                key=lambda f: abs(abs(f - radio["currentfreq"]) - (min_var + max_var) / 2),
+                default=radio["currentfreq"],
+            )
 
         if destination == "own":
             radio["targetfreq"] = random_frequency
