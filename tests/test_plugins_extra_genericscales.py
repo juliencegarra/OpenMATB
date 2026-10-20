@@ -329,6 +329,15 @@ class TestPages:
         assert not scales.alive
         assert not scales.is_visible()
 
+    def test_stop_event_after_the_end_does_not_log_again(self, scales):
+        """The generator writes genericscales;stop after start: run once the questionnaire is over, it logged
+        the answers a second time."""
+        _next_page(scales)
+        _next_page(scales, t=3)
+        logged = {name: list(values) for name, values in scales.performance.items()}
+        scales.stop()
+        assert scales.performance == logged
+
     def test_previous_page_sliders_stop_following_the_mouse(self, scales):
         old_sliders = list(scales.sliders.values())
         _next_page(scales)

@@ -232,6 +232,9 @@ class Genericscales(BlockingPlugin):
             slider.update()
 
     def stop(self) -> None:
+        if not self.alive:  # e.g. the genericscales;stop of a scenario, once the questionnaire is over: logged
+            super().stop()
+            return
         self.log_performance("presentation_number", self._presentation_count)
         # No page shown yet in this presentation: the sliders (if any) are those of a previous one
         current: list[tuple[str, Any]] = (
