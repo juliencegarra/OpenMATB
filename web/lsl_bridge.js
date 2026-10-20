@@ -25,6 +25,7 @@ export class LslBridge {
         this.rtt = null; // Round trip of the measure (s): the offset is known to within rtt / 2
         this.sent = 0;
         this.closed = false;
+        this.synced = false; // The bridge of this connection knows the offset (a new one on each connection)
     }
 
     // Resolves once the bridge has measured the clock offset; rejects if it cannot be reached
@@ -46,6 +47,7 @@ export class LslBridge {
     open(onReady = () => {}, onFail = () => {}) {
         const socket = new this.WebSocket(this.url);
         this.socket = socket;
+        this.synced = false;
         socket.onopen = () => socket.send(JSON.stringify({ type: "hello", client: "OpenMATB" }));
         socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
@@ -56,6 +58,7 @@ export class LslBridge {
                 const first = this.offset === null;
                 this.offset = message.offset;
                 this.rtt = message.rtt;
+                this.synced = true;
                 this.flush();
                 if (first) {
                     onReady();
@@ -82,8 +85,10 @@ export class LslBridge {
         this.flush();
     }
 
-    flush() {
-        while (this.connected && this.queue.length) {
+    // Once the bridge knows the offset: after a reconnection, the kept markers were stamped with their reception
+    // time (seconds late). On close, they are all sent anyway.
+    flush(force = false) {
+        while (this.connected && (this.synced || force) && this.queue.length) {
             this.socket.send(JSON.stringify(this.queue.shift()));
             this.sent += 1;
         }
@@ -91,7 +96,7 @@ export class LslBridge {
 
     close() {
         this.closed = true;
-        this.flush();
+        this.flush(true);
         this.socket?.close();
     }
 }
