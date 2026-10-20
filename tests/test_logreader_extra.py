@@ -49,6 +49,14 @@ class TestSessionLookup:
         lr = _reader(tmp_path, [(100.0, 0, "event", "sysmon", "self", "start")], name="42_260101_120000.csv")
         assert lr.replay_session_id == 42
 
+    def test_session_id_row_wins_over_the_file_name(self, tmp_path):
+        """A renamed session file is replayed with its own session ID (the seeds of its pseudorandom draws)."""
+        rows = [(100.0, 0, "version", "", "", "1.4.1"), (100.0, 0, "session_id", "", "", "7")]
+        lr = _reader(tmp_path, rows, name="P03_session.csv")
+        assert lr.replay_session_id == 7
+        lr = _reader(tmp_path, rows, name="42_260101_120000.csv")
+        assert lr.replay_session_id == 7
+
     def test_session_path_with_non_numeric_name(self, tmp_path):
         """A file name without numeric prefix keeps the given ID and still loads."""
         path = _write_log(tmp_path / "mysession.csv", [(100.0, 0, "event", "sysmon", "self", "start")])

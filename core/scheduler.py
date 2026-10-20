@@ -37,6 +37,8 @@ class Scheduler:
     def __init__(self, scenario_path: Path | None = None) -> None:
         with open("VERSION", "r", encoding="utf-8") as f:
             get_logger().log_manual_entry(f.read().strip(), key="version")
+        # The replay draws the same pseudorandom values with it: read from the file, which may be renamed
+        get_logger().log_manual_entry(get_logger().session_id, key="session_id")
         for key, value in browser_environment():  # Browser, version and system (timing differs between them)
             get_logger().log_manual_entry(value, key=key)
         # The size of the window (a page in the browser): the replay places the mouse inputs with it

@@ -125,6 +125,15 @@ class LogReader:
         if not all_rows:
             return
 
+        # The session ID logged at start (newer sessions), else the one of the file name: the seeds of the replay
+        for row in all_rows:
+            if row["type"] == "session_id":
+                try:
+                    self.replay_session_id = int(row["value"])
+                except ValueError:
+                    pass
+                break
+
         # Capture first logtime for normalization
         first_logtime: float = all_rows[0]["logtime"]
         for row in all_rows:
