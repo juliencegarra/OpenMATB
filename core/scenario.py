@@ -17,6 +17,12 @@ from core.logger import get_logger
 from core.utils import get_conf_value
 
 
+def _agent_names() -> list[str]:
+    from agents import AGENT_REGISTRY  # Late import, as in the scheduler (the agents import core)
+
+    return list(AGENT_REGISTRY)
+
+
 class Scenario:
     """
     This object converts scenario to Events, loads the corresponding plugins,
@@ -189,6 +195,9 @@ class Scenario:
                     errors.append(_("Error on line %s. Invalid system command: %s") % (e.line, e.get_command_str()))
                 elif e.command[0] == "agent" and len(e.command) != 2:
                     errors.append(_("Error on line %s. Agent command requires a name argument") % e.line)
+                elif e.command[0] == "agent" and e.command[1] not in _agent_names():
+                    # create_agent raised it during the session
+                    errors.append(_("Error on line %s. Unknown agent: %s") % (e.line, e.command[1]))
                 elif e.command[0] == "mousecontrol" and (
                     len(e.command) != 2 or validation.is_boolean(str(e.command[1]))[1] is not None
                 ):

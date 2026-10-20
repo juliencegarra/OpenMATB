@@ -191,6 +191,13 @@ class TestScenarioErrors:
         assert "line 1. Invalid system command" in report
         assert "line 2. mousecontrol command requires True/False argument" in report
 
+    def test_unknown_agent_is_reported(self, fake_plugins, errors, error_file, mock_logger):
+        """An agent which is not in the registry is a scenario error: create_agent raised during the session."""
+        Scenario(["0:00:00;system;agent;assisted\n", "0:00:00;system;agent;default\n"])
+        report = error_file.read_text(encoding="utf-8")
+        assert "line 1. Unknown agent: assisted" in report
+        assert "line 2" not in report
+
     def test_nested_parameter_with_plugin_validation(self, fake_plugins, errors, error_file, mock_logger):
         """A nested parameter is validated by the plugin validation dict and evaluated."""
         s = Scenario(["0:00:00;sysmon;start\n", "0:00:00;sysmon;sub-level;3\n", "0:00:01;sysmon;stop\n"])
