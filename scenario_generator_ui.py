@@ -1312,9 +1312,9 @@ class UIAdvancedPanel:
         "scheduling": [
             (
                 "minduration",
-                "Min duration (ms)",
+                "Min duration (min)",
                 "slider",
-                {"min_val": 500, "max_val": 10000, "step": 500, "default": 2000, "fmt": "{:.0f}", "suffix": " ms"},
+                {"min_val": 1, "max_val": 20, "step": 1, "default": 8, "fmt": "{:.0f}", "suffix": " min"},
             ),
         ],
     }

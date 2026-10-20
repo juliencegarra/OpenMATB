@@ -11,9 +11,12 @@ from math import gcd
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from core.event import Event
 from scenario_generation import (
     BlockConfig,
+    InterBlockEvent,
     ScenarioConfig,
     add_scenario_phase,
     choices,
@@ -354,6 +357,24 @@ class TestAddScenarioPhase:
         sysmon_events = [e for e in get_events_from_scenario(result) if e.plugin == "sysmon"]
         assert len(sysmon_events) == 0
 
+    @pytest.mark.parametrize("difficulty", [0, 0.5, 1])
+    def test_scheduling_minduration_is_in_minutes(self, difficulty):
+        """The scheduling plugin reads minduration in minutes (8 by default): 3000 drew a 3000 minutes timeline."""
+        result = add_scenario_phase([], (("scheduling", difficulty),), 0, {"scheduling": None}, self._make_config(), 60)
+        [minduration] = [e.command[1] for e in get_events_from_scenario(result) if e.command[0] == "minduration"]
+        assert 1 <= minduration <= 20
+
+    def test_scheduling_minduration_shorter_when_harder(self):
+        """A higher difficulty shows a shorter part of the timeline."""
+
+        def minduration(difficulty):
+            result = add_scenario_phase(
+                [], (("scheduling", difficulty),), 0, {"scheduling": None}, self._make_config(), 60
+            )
+            return [e.command[1] for e in get_events_from_scenario(result) if e.command[0] == "minduration"][0]
+
+        assert minduration(0) > minduration(0.5) > minduration(1)
+
     def test_all_line_numbers_unique(self):
         lines = [Event(1, 0, "sysmon", ["start"])]
         phase_tuples = (("track", 0.5),)
@@ -436,6 +457,18 @@ class TestGenerateScenario:
             },
         }
         return {"track": None, "sysmon": sysmon, "communications": comms, "resman": resman}
+
+    def test_inter_block_event_sets_the_filename(self):
+        """An inter-block instruction gives its file with the filename parameter (instructions;filename;<file>):
+        the file alone was read as an unknown method, and the start had no preceding filename command."""
+        config = ScenarioConfig(
+            blocks=[BlockConfig(60, {"track": 0.5}), BlockConfig(60, {"track": 0.5})],
+            inter_block_events=[InterBlockEvent("instructions", "default_en/track.txt", 1)],
+        )
+        events = get_events_from_scenario(generate_scenario(config, self._make_plugins()))
+        commands = [e.command for e in events if e.plugin == "instructions"]
+        assert commands[0] == ["filename", "default_en/track.txt"]
+        assert commands[1] == ["start"]
 
     def test_track_only_blocks(self):
         """Generate scenario with track-only blocks."""

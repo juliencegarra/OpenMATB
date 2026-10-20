@@ -298,8 +298,9 @@ def add_scenario_phase(
         # ── SCHEDULING ──
         elif plugin_name == "scheduling":
             print("Scheduling | computing events")
-            # Difficulty controls minduration: lower difficulty = higher minduration (easier)
-            min_duration: int = int(5000 * (1 - difficulty) + 500)
+            # Difficulty controls minduration, in minutes: lower difficulty = higher minduration (easier),
+            # from 14 to 2 minutes (8, the default, for 0.5)
+            min_duration: int = round(12 * (1 - difficulty) + 2)
             scenario_lines.append(Event(start_line, start_sec, plugin_name, ["minduration", min_duration]))
             start_line += 1
 
@@ -333,7 +334,7 @@ def _insert_inter_block_events(
         scenario_lines.append(f"Inter-block: {ie.type} ({ie.filename})")
 
         # Add the inter-block start event
-        scenario_lines.append(Event(start_line, current_time, ie.type, [ie.filename]))
+        scenario_lines.append(Event(start_line, current_time, ie.type, ["filename", ie.filename]))
         start_line += 1
         scenario_lines.append(Event(start_line, current_time, ie.type, "start"))
         start_line += 1
