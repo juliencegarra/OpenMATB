@@ -32,7 +32,7 @@ class Resman(AbstractPlugin):
             "pumpcoloroff": validation.is_color,
             "pumpcoloron": validation.is_color,
             "pumpcolorfailure": validation.is_color,
-            "toleranceradius": validation.is_positive_integer,
+            "toleranceradius": validation.is_natural_integer,  # 0: no tolerance area
             "statuslocation": validation.is_task_location,
             "displaystatus": validation.is_boolean,
             "tolerancecolor": validation.is_color,
@@ -283,8 +283,10 @@ class Resman(AbstractPlugin):
         else:
             # Automatic solver logic is handled by the agent via on_plugin_update
 
-            for _, this_tank in tanks.items():  # 1. Deplete target tanks
-                if this_tank["target"] is not None:
+            # 1. Deplete the target tanks, and the others given a leak (e.g. tank-c-lossperminute) except the
+            # tanks of unlimited capacity
+            for _, this_tank in tanks.items():
+                if this_tank["target"] is not None or this_tank["depletable"]:
                     loss: int = self._whole_units(this_tank, "_loss_rest", this_tank["lossperminute"] * time_resolution)
                     this_tank["level"] -= min(loss, this_tank["level"])
 

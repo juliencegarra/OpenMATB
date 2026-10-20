@@ -22,7 +22,7 @@ class Performance(AbstractPlugin):
             "taskfeedback-overdue-color": validation.is_color,
             "taskfeedback-overdue-delayms": validation.is_natural_integer,
             "taskfeedback-overdue-blinkdurationms": validation.is_natural_integer,
-            "levelmin": validation.is_positive_integer,
+            "levelmin": validation.is_natural_integer,  # 0 is the default
             "levelmax": validation.is_positive_integer,
             "ticknumber": validation.is_positive_integer,
             "criticallevel": validation.is_positive_integer,
