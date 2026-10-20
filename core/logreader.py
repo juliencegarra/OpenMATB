@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import ast
 import csv
+import io
 from bisect import bisect_right
 from pathlib import Path
 from typing import Any
@@ -100,16 +101,26 @@ class LogReader:
 
         # First pass: read all rows
         all_rows: list[dict[str, Any]] = []
-        with open(self.session_file_path, newline="", encoding="utf-8") as csvfile:
-            reader: csv.DictReader = csv.DictReader(csvfile)
-            for row in reader:
-                # Skip a row without valid times (e.g. the last row of a session that crashed while writing it)
-                try:
-                    row["logtime"] = float(row["logtime"])
-                    row["scenario_time"] = float(row["scenario_time"])
-                except (TypeError, ValueError):
-                    continue
-                all_rows.append(row)
+        # utf-8-sig: a session file saved again as "CSV UTF-8" (e.g. by Excel) starts with a BOM
+        with open(self.session_file_path, newline="", encoding="utf-8-sig") as csvfile:
+            text: str = csvfile.read()
+        rows: list[dict[str, Any]] = list(csv.DictReader(io.StringIO(text, newline="")))
+        # A session killed while writing (power loss, crash) ends with a row cut anywhere, without its end of line
+        cut_last_row: bool = not text.endswith(("\n", "\r"))
+        for n, row in enumerate(rows):
+            # A cut row keeps its time (the session lasted until then), but its incomplete content is not read
+            # (an invalid scenario event, a mouse click or joystick value raising during the replay...)
+            if (cut_last_row and n == len(rows) - 1) or any(
+                row.get(k) is None for k in ("type", "module", "address", "value")
+            ):
+                row.update(type="", module=row.get("module") or "", address="", value="")
+            # Skip a row without valid times (e.g. the last row of a session that crashed while writing it)
+            try:
+                row["logtime"] = float(row["logtime"])
+                row["scenario_time"] = float(row["scenario_time"])
+            except (TypeError, ValueError):
+                continue
+            all_rows.append(row)
 
         if not all_rows:
             return

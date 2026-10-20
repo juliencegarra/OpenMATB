@@ -173,6 +173,37 @@ class TestEmptyAndTruncatedLogs:
         assert lr.contents == ["0:00:01;sysmon;stop"]
         assert [s["value"] for s in lr.states] == [(0.1, -0.2)]
 
+    @pytest.mark.parametrize(
+        "last_row",
+        [
+            "12.0,2.0,input,keyboard",  # Cut before the address: None in the address and value
+            "12.0,2.0,state,track",
+            "12.0,2.0,event,sysmon",
+            "12.0,2.0,event,sysmon,self,sta",  # Cut in an event value: an invalid scenario line
+            "12.0,2.0,input,mouse,click,press;1",  # Cut in a click value: raised during the replay
+            "12.0,2.0,input,agent,joystick,0.1,",
+        ],
+    )
+    def test_last_row_cut_while_writing_is_ignored(self, tmp_path, last_row):
+        """A hard kill cuts the last row anywhere, without its end of line."""
+        path = _write_log(
+            tmp_path / "12_260101_120000.csv",
+            [(10.0, 0, "event", "sysmon", "self", "start"), (11.0, 1, "event", "sysmon", "self", "stop")],
+        )
+        path.write_text(path.read_text(encoding="utf-8") + last_row, encoding="utf-8")
+        lr = LogReader(session_path=str(path))
+        assert lr.contents == ["0:00:01;sysmon;stop"]
+        assert lr.inputs == []
+
+    def test_file_saved_with_a_bom(self, tmp_path):
+        """A session file saved again as "CSV UTF-8" (e.g. by Excel) starts with a BOM."""
+        path = _write_log(
+            tmp_path / "12_260101_120000.csv",
+            [(10.0, 0, "event", "sysmon", "self", "start"), (11.0, 1, "event", "sysmon", "self", "stop")],
+        )
+        path.write_text(path.read_text(encoding="utf-8"), encoding="utf-8-sig")
+        assert LogReader(session_path=str(path)).contents == ["0:00:01;sysmon;stop"]
+
 
 class TestWindowSize:
     def test_logged_window_size(self, tmp_path):
