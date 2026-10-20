@@ -96,3 +96,21 @@ class TestAdvancedParameters:
             assert validation.is_in_list(idiom, [p.name.lower() for p in P["SOUNDS"].iterdir()])[1] is None
         assert (P["SOUNDS"] / params["voiceidiom"]["default"] / params["voicegender"]["default"]).is_dir()
         assert all(g in ("female", "male") for g in genders)
+
+
+class TestOldPresetFilenames:
+    """The presets saved before held the inter-block file path from the repository root."""
+
+    def test_windows_path_from_root_is_made_relative_to_the_plugin_folder(self):
+        ui = _ui()
+        name = ui._preset_filename("instructions", r"includes\instructions\default_en\welcome_screen.txt")
+        assert name == "default_en/welcome_screen.txt"
+
+    def test_posix_path_from_root_is_made_relative_to_the_plugin_folder(self):
+        ui = _ui()
+        assert ui._preset_filename("genericscales", "includes/questionnaires/nasatlx_en.txt") == "nasatlx_en.txt"
+
+    def test_current_filename_is_kept(self):
+        ui = _ui()
+        assert ui._preset_filename("genericscales", "nasatlx_en.txt") == "nasatlx_en.txt"
+        assert ui._preset_filename("instructions", "default_en/track.txt") == "default_en/track.txt"

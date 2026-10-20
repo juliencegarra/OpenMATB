@@ -14,7 +14,7 @@ import configparser
 import gettext
 import json
 import time as _time
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any, Callable, ClassVar
 
 import pyglet
@@ -2107,7 +2107,17 @@ class ScenarioGeneratorUI:
             w.delete()
         self._inter_block_widgets.clear()
         for ie_data in data.get("inter_block_events", []):
-            self._add_inter_block_widget(ie_data["position"], ie_data["type"], ie_data["filename"])
+            filename = self._preset_filename(ie_data["type"], ie_data["filename"])
+            self._add_inter_block_widget(ie_data["position"], ie_data["type"], filename)
+
+    def _preset_filename(self, event_type: str, filename: str) -> str:
+        """The presets saved before held the path from the repository root (e.g. includes/instructions/a.txt,
+        with backslashes on Windows), which the plugin did not find in its folder: keep only the path in that folder"""
+        folder: str | None = self.INTER_BLOCK_FOLDERS.get(event_type)
+        parts: tuple[str, ...] = PureWindowsPath(filename).parts  # Either separator
+        if folder is not None and parts[:2] == ("includes", P[folder].name):
+            return PurePosixPath(*parts[2:]).as_posix()
+        return filename
 
     # ── Advanced parameters panel ────────────────────────────────────
 
