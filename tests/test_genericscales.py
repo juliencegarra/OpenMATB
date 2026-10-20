@@ -264,6 +264,13 @@ class TestNoTitleLayout:
 class TestMultipleScales:
     """Multiple questions on the same slide should not overlap."""
 
+    def test_scale_with_equal_bounds_is_not_a_scale(self, gs):
+        """Equal minimum and maximum (5/5/5) divided by zero in the slider, when its page showed."""
+        slide = "Effort;Low/High;5/5/5\nQuestion B;Bad/Good;1/10/5"
+        containers = run_make_slide_graphs(gs, slide, {})
+        assert "slider_1" not in containers
+        assert "slider_2" in containers
+
     def test_two_scales_with_titles_no_overlap(self, gs):
         slide = "Title A;Question A;Low/High;0/100/50\nTitle B;Question B;Bad/Good;1/10/5"
         containers = run_make_slide_graphs(

@@ -111,6 +111,8 @@ class Genericscales(BlockingPlugin):
                 value_max: int
                 value_default: int
                 value_min, value_max, value_default = [int(v) for v in values]
+                if value_min == value_max:  # Not a scale either: the slider divided by zero when the page showed
+                    continue
 
                 show_title: bool = title != label
 
