@@ -36,6 +36,16 @@ def load_sound(path: Path) -> Any:
     return _cache[key]
 
 
+def allow_fast_playback(max_speed: float) -> None:
+    """Windows: pyglet creates its XAudio2 voices for a pitch (speed) of 2 at most. Call it before any sound is
+    played (the voices are reused). The other drivers (OpenAL, PulseAudio, the browser) have no such limit."""
+    try:
+        from pyglet.media.drivers.xaudio2.interface import XAudio2Driver
+    except Exception:  # Not on Windows (or another pyglet version)
+        return
+    XAudio2Driver.max_frequency_ratio = max(XAudio2Driver.max_frequency_ratio, float(max_speed))
+
+
 def preload_sounds(folder: Path) -> None:
     """Load every .wav of a folder, so that decoding (asynchronous in the browser) is done in advance."""
     for wav_path in sorted(folder.glob("*.wav")):
@@ -52,6 +62,7 @@ class SequencePlayer:
         self._sources: list[Any] = list(sources)
         self._sequential: bool = sequential
         self._volume: float = 1.0
+        self._pitch: float = 1.0  # The playback speed too (e.g. a replay played faster)
         self._index: int = 0  # Sequential mode: index of the sound being played
         self._playing: bool = False
         self._player: Any = None
@@ -80,6 +91,16 @@ class SequencePlayer:
         self._volume = value
         if self._player is not None:
             self._player.volume = value
+
+    @property
+    def pitch(self) -> float:
+        return self._pitch
+
+    @pitch.setter
+    def pitch(self, value: float) -> None:
+        self._pitch = value
+        if self._player is not None:
+            self._player.pitch = value
 
     def play(self) -> None:
         if not self._sequential:
@@ -119,6 +140,7 @@ class SequencePlayer:
 
         self._player = AudioPlayer()
         self._player.volume = self._volume
+        self._player.pitch = self._pitch
         self._player.push_handlers(on_player_eos=self._on_player_eos)
         self._player.queue(self.source)
         self._player.play()

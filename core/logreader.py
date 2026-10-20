@@ -56,6 +56,8 @@ class LogReader:
                 self.session_file_path = session_file_list[0]
 
         self.contents: list[str] = []
+        # The ends of the communications prompts, as (scenario time, radio name): the replay ends them at these times
+        self.prompt_ends: list[tuple[float, str]] = []
         self.inputs: list[dict[str, Any]] = []
         self.states: list[dict[str, Any]] = []
         self.start_sec: float = 0
@@ -156,6 +158,11 @@ class LogReader:
             # Event case
             if row["type"] == "event":
                 self.contents.append(self.session_event_to_str(row))
+
+            # The end of a communications prompt ("Target COM_2:127.9", since 2023)
+            elif row["type"] == "manual" and str(row["value"]).startswith("Target "):
+                radio_name: str = str(row["value"])[len("Target ") :].split(":")[0]
+                self.prompt_ends.append((row["scenario_time"], radio_name))
 
             # Input case
             elif row["type"] == "input":

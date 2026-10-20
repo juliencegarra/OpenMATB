@@ -461,6 +461,42 @@ class TestComputeNextPluginState:
         comms.compute_next_plugin_state()
         assert radio["is_prompting"] is True
 
+    def test_replay_ends_the_prompt_at_its_logged_end(self, comms):
+        """The audio follows the real time, not the replay one (a seek, a faster replay, a paused replay): the
+        replay ends the prompt when it ended in the session (logged "Target NAV_2:115.0")."""
+        radio = _radio(comms, "NAV_2")
+        radio.update(targetfreq=115.0, is_prompting=True, _prompt_start=10)
+        comms.replay_prompt_ends = [(3.0, "NAV_2"), (14.2, "NAV_2"), (14.0, "COM_1")]
+        comms.player = MagicMock(source="sound")  # Still playing (e.g. at x4)
+        with patch("plugins.communications.REPLAY_MODE", True):
+            comms.scenario_time = 14.1
+            comms.compute_next_plugin_state()
+            assert radio["is_prompting"] is True  # Not the end of a previous prompt, nor of another radio
+            comms.scenario_time = 14.2
+            comms.compute_next_plugin_state()
+        assert radio["is_prompting"] is False
+        comms.player.pause.assert_called_once()  # The sound of the prompt ends with it
+
+    def test_replay_prompt_not_ended_by_the_audio(self, comms):
+        """A seek (no audio progress) or a sound deleted: the prompt still lasts until its logged end."""
+        radio = _radio(comms, "NAV_2")
+        radio.update(targetfreq=115.0, is_prompting=True, _prompt_start=10)
+        comms.replay_prompt_ends = [(14.2, "NAV_2")]
+        comms.player = MagicMock(source=None)
+        with patch("plugins.communications.REPLAY_MODE", True):
+            comms.scenario_time = 11
+            comms.compute_next_plugin_state()
+        assert radio["is_prompting"] is True
+
+    def test_replay_of_a_session_without_logged_ends_follows_the_audio(self, comms):
+        radio = _radio(comms, "NAV_2")
+        radio.update(targetfreq=115.0, is_prompting=True)
+        comms.replay_prompt_ends = []
+        comms.player = MagicMock(source=None)
+        with patch("plugins.communications.REPLAY_MODE", True):
+            comms.compute_next_plugin_state()
+        assert radio["is_prompting"] is False
+
     def test_target_missed_after_the_max_delay(self, comms):
         radio = _radio(comms, "COM_1")
         radio.update(targetfreq=115.0, _response_start=1)

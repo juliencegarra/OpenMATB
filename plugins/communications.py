@@ -85,6 +85,8 @@ class Communications(AbstractPlugin):
         # Callsign regex must be defined first because it is needed by self.get_callsign()
         self.parameters["callsignregex"] = r"[A-Z][A-Z][A-Z]\d\d\d"
         self.old_regex: str = str(self.parameters["callsignregex"])
+        # Replay: the prompt ends of the session, as (scenario time, radio name), given by the replay scheduler
+        self.replay_prompt_ends: list[tuple[float, str]] = list()
         new_par: dict[str, Any] = dict(
             owncallsign="",
             othercallsign=list(),
@@ -123,6 +125,7 @@ class Communications(AbstractPlugin):
                 "targetfreq": None,
                 "pos": r,
                 "_response_start": None,
+                "_prompt_start": None,  # The scenario time of the last prompt of the radio
                 "_hint_color": None,
                 "is_active": False,
                 "is_prompting": False,
@@ -317,6 +320,7 @@ class Communications(AbstractPlugin):
         if destination == "own":
             radio["targetfreq"] = random_frequency
             radio["is_prompting"] = True
+            radio["_prompt_start"] = self.scenario_time
 
         sounds: list[Any] = self.group_audio_files(callsign, radio_name, random_frequency)
 
@@ -325,6 +329,18 @@ class Communications(AbstractPlugin):
             self.player.play()
         except Exception:
             self.logger.log_manual_entry("Audio prompt playback failed")
+
+    def _prompt_has_ended(self, radio: dict[str, Any]) -> bool:
+        replay_ends: list[tuple[float, str]] = getattr(self, "replay_prompt_ends", [])
+        if REPLAY_MODE and len(replay_ends) > 0:
+            # The audio follows the real time, not the replay one (a seek, a faster or paused replay): the prompt
+            # ends when it ended in the session. Its sound ends with it
+            start: float = radio.get("_prompt_start") or 0
+            ended: bool = any(n == radio["name"] and start <= t <= self.scenario_time for t, n in replay_ends)
+            if ended and hasattr(self, "player"):
+                self.player.pause()
+            return ended
+        return not hasattr(self, "player") or self.player.source is None
 
     def get_rand_frequency(self, radio_n: int) -> float:
         return round(
@@ -455,7 +471,7 @@ class Communications(AbstractPlugin):
                     self.record_target_missing(radio)
 
             # If the radio prompt has just ended (or could not be played: no player)
-            elif not hasattr(self, "player") or self.player.source is None:
+            elif self._prompt_has_ended(radio):
                 radio["is_prompting"] = False
                 self.logger.log_manual_entry(f"Target {radio['name']}:{radio['targetfreq']}")
 

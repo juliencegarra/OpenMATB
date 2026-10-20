@@ -58,6 +58,9 @@ class Clock(pyglet.clock.Clock):
         if self._speed < 1:
             self._speed = 1
 
+    def get_speed(self) -> int:
+        return self._speed
+
     def reset_speed(self) -> None:
         self._speed = 1
 

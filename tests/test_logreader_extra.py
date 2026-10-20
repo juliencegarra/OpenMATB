@@ -56,6 +56,17 @@ class TestSessionLookup:
         )
         assert [(r["module"], r["address"]) for r in lr.keyboard_inputs] == [("timeout", "instructions")]
 
+    def test_prompt_ends_are_read(self, tmp_path):
+        lr = _reader(
+            tmp_path,
+            [
+                (10.0, 0, "event", "communications", "self", "start"),
+                (25.5, 15.5, "manual", "", "", "Target COM_2:127.9"),
+                (30.0, 20.0, "manual", "", "", "Audio prompt playback failed"),
+            ],
+        )
+        assert lr.prompt_ends == [(15.5, "COM_2")]
+
     def test_session_id_row_wins_over_the_file_name(self, tmp_path):
         """A renamed session file is replayed with its own session ID (the seeds of its pseudorandom draws)."""
         rows = [(100.0, 0, "version", "", "", "1.4.1"), (100.0, 0, "session_id", "", "", "7")]

@@ -11,6 +11,7 @@ from typing import Any
 from pyglet.shapes import Circle, Line, Rectangle, Triangle
 from pyglet.window import key
 
+from core.audio import allow_fast_playback
 from core.constants import BFLIM, REPLAY_PERF_STRIP_PROPORTION, REPLAY_STRIP_PROPORTION
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
@@ -78,12 +79,17 @@ class MousePointer:
             (line.x, line.y), (line.x2, line.y2) = points[i], points[(i + 1) % len(points)]
 
 
+# Above this replay speed, the prompts are muted: the voice, faster and higher, is no longer understandable
+MAX_AUDIO_SPEED: int = 4
+
+
 class ReplayScheduler(Scheduler):
     """
     This class manages events execution in the context of the OpenMATB replay.
     """
 
     def __init__(self, session_path: str | None = None) -> None:
+        allow_fast_playback(MAX_AUDIO_SPEED)  # Before the first prompt sound
         self.logreader: LogReader | None = None
         self._session_path: str | None = session_path
         self.target_time: float = 0
@@ -140,6 +146,7 @@ class ReplayScheduler(Scheduler):
             self._state_logtimes: list[float] = [i["normalized_logtime"] for i in self.logreader.states]
 
         super().set_scenario(self.logreader.contents)
+        self._give_prompt_ends()
 
         # Create performance overlay if data is available
         if self._perf_overlay is None:
@@ -422,21 +429,39 @@ class ReplayScheduler(Scheduler):
     def pause_playback(self) -> None:
         self.is_paused = True
         self.playpause.update_button_sprite(True)
+        player: Any = self._prompt_player()
+        if player is not None:  # The prompt sound is paused with the replay
+            player.pause()
 
     def resume_playback(self) -> None:
         self.is_paused = False
         self.playpause.update_button_sprite(False)
+        player: Any = self._prompt_player()
+        radios: dict[Any, Any] = self.plugins["communications"].parameters["radios"] if player is not None else {}
+        if any(radio["is_prompting"] for radio in radios.values()):  # Not a prompt that has ended
+            player.play()
 
     def toggle_mute(self) -> None:
         self._muted = not self._muted
         self.mute_button.update_mute_state(self._muted)
         self._enforce_mute()
 
-    def _enforce_mute(self) -> None:
+    def _give_prompt_ends(self) -> None:
+        """The prompts end when they ended in the session: their audio follows the real time, not the replay one"""
         if "communications" in self.plugins:
-            player: Any = getattr(self.plugins["communications"], "player", None)
-            if player is not None:
-                player.volume = 0.0 if self._muted else 1.0
+            self.plugins["communications"].replay_prompt_ends = getattr(self.logreader, "prompt_ends", [])
+
+    def _prompt_player(self) -> Any:
+        return getattr(self.plugins["communications"], "player", None) if "communications" in self.plugins else None
+
+    def _enforce_mute(self) -> None:
+        player: Any = self._prompt_player()
+        if player is not None:
+            # The sound follows the replay speed (it only accompanies the prompt, which ends at its logged time)
+            speed: int = self.clock.get_speed()
+            silent: bool = self._muted or speed > MAX_AUDIO_SPEED or self.clock.isFastForward
+            player.volume = 0.0 if silent else 1.0
+            player.pitch = min(speed, MAX_AUDIO_SPEED)
 
     def toggle_playpause(self) -> None:
         if self.is_paused:

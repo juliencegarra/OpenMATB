@@ -25,7 +25,8 @@ def _make_replay(**kwargs):
     rs.logreader.session_duration = 300
     rs.playpause = MagicMock()
     rs.slider = MagicMock()
-    rs.clock = MagicMock()
+    rs.clock = MagicMock(isFastForward=False)
+    rs.clock.get_speed.return_value = 1
     rs._pointer_marker = None
     rs.mouse_control_enabled = False
     rs.__dict__.update(kwargs)
@@ -628,6 +629,55 @@ class TestMute:
         rs = _make_replay(_muted=False)
         rs.plugins = {"communications": MagicMock(player=None)}
         rs._enforce_mute()
+
+
+class TestPromptAudio:
+    """The sound of a prompt follows the replay: its speed (up to MAX_AUDIO_SPEED), its pauses, its seeks."""
+
+    def _replay(self, **kwargs):
+        player = MagicMock(volume=1.0, pitch=1.0)
+        comms = MagicMock(player=player)
+        comms.parameters = {"radios": {0: {"is_prompting": True}}}
+        rs = _make_replay(_muted=False, playpause=MagicMock(), **kwargs)
+        rs.plugins = {"communications": comms}
+        return rs, player
+
+    def test_played_at_the_replay_speed(self):
+        rs, player = self._replay()
+        rs.clock.get_speed.return_value = 4
+        rs._enforce_mute()
+        assert (player.pitch, player.volume) == (4, 1.0)
+
+    def test_muted_above_the_maximal_speed(self):
+        rs, player = self._replay()
+        rs.clock.get_speed.return_value = 5
+        rs._enforce_mute()
+        assert player.volume == 0.0
+
+    def test_muted_during_a_seek(self):
+        rs, player = self._replay()
+        rs.clock.isFastForward = True
+        rs._enforce_mute()
+        assert player.volume == 0.0
+
+    def test_paused_with_the_replay(self):
+        rs, player = self._replay()
+        rs.pause_playback()
+        player.pause.assert_called_once()
+        rs.resume_playback()
+        player.play.assert_called_once()
+
+    def test_ended_prompt_not_played_again_on_resume(self):
+        rs, player = self._replay()
+        rs.plugins["communications"].parameters["radios"][0]["is_prompting"] = False
+        rs.resume_playback()
+        player.play.assert_not_called()
+
+    def test_communications_get_the_prompt_ends_of_the_session(self):
+        rs, _player = self._replay()
+        rs.logreader.prompt_ends = [(15.5, "COM_2")]
+        rs._give_prompt_ends()
+        assert rs.plugins["communications"].replay_prompt_ends == [(15.5, "COM_2")]
 
 
 class TestTogglePlaypauseAtEnd:
