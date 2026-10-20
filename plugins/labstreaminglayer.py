@@ -112,4 +112,5 @@ class Labstreaminglayer(Instructions):
         self.stream_outlet = None
 
     def get_msg_slide_content(self, str_msg: str) -> str:
-        return f"<title>Lab streaming layer\n{self.lsl_wait_msg}"
+        # An <h1> title, as the instructions: pyglet hid the text after an unclosed <title> (a blank slide)
+        return f"<h1>Lab streaming layer</h1>\n<p>{str_msg}</p>"

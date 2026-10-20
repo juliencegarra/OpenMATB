@@ -176,19 +176,21 @@ class LogReader:
 
     def _index_performance_data(self) -> None:
         """Group performance rows by module and scenario_time into sorted series."""
-        from collections import defaultdict
-
-        # Group by (module, scenario_time) → {address: value}
-        grouped: dict[str, dict[float, dict[str, str]]] = defaultdict(lambda: defaultdict(dict))
-        for row in self.perf_rows:
-            module: str = row["module"]
-            t: float = row["scenario_time"]
-            grouped[module][t][row["address"]] = row["value"]
-
-        # Convert to sorted lists
+        # Group by (module, scenario_time) → {address: value}. An address already in the group starts another one
+        # at the same time: two outcomes of the same step (e.g. two sysmon failures timing out together) made
+        # a single marker
         self.perf_series = {}
-        for module, time_dict in grouped.items():
-            self.perf_series[module] = sorted(time_dict.items(), key=lambda x: x[0])
+        for row in self.perf_rows:
+            series: list[tuple[float, dict[str, str]]] = self.perf_series.setdefault(row["module"], [])
+            t: float = row["scenario_time"]
+            if series and series[-1][0] == t and row["address"] not in series[-1][1]:
+                series[-1][1][row["address"]] = row["value"]
+            else:
+                series.append((t, {row["address"]: row["value"]}))
+
+        # Sorted by time (the order of the rows is kept at the same time)
+        for series in self.perf_series.values():
+            series.sort(key=lambda x: x[0])
 
     def _detect_blocking_segments(self, all_rows: list[dict[str, Any]]) -> None:
         """Identify periods where scenario_time is frozen while logtime advances."""

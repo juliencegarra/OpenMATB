@@ -19,6 +19,7 @@ COLOR_RESMAN_B: tuple[int, int, int] = (80, 200, 220)
 COLOR_HIT: tuple[int, int, int] = (40, 200, 40)
 COLOR_MISS: tuple[int, int, int] = (200, 40, 40)
 COLOR_FA: tuple[int, int, int] = (220, 200, 40)
+COLOR_BAD: tuple[int, int, int] = (240, 130, 30)  # A communications answer on a wrong radio or frequency
 
 # Task display order and labels
 TASK_ORDER: list[str] = ["track", "resman", "sysmon", "communications"]
@@ -220,6 +221,10 @@ class PerfOverlay:
             "HIT": COLOR_HIT,
             "MISS": COLOR_MISS,
             "FA": COLOR_FA,
+            # Without them, a wrong communications answer showed no marker, as if no answer had been given
+            "BAD_RADIO": COLOR_BAD,
+            "BAD_FREQ": COLOR_BAD,
+            "BAD_RADIO_FREQ": COLOR_BAD,
         }
 
         for t, data in series:
