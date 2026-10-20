@@ -64,12 +64,13 @@
 0:01:35;sysmon;resume
 0:01:35;track;resume
 0:01:35;communications;resume
-0:01:40;sysmon;automaticsolver;true
 
 
 0:01:35;scheduling;resume
 0:01:35;instructions;filename;default_en/scheduling.txt
 0:01:35;instructions;start
+
+0:01:40;sysmon;automaticsolver;true
 
 0:01:45;sysmon;show
 0:01:45;track;show
