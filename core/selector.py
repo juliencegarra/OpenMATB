@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import math
 import time as _time
 from datetime import datetime
 from pathlib import Path
@@ -291,7 +292,7 @@ class FileSelector:
         return True
 
     def _row_index_at_y(self, y: int) -> int | None:
-        row: int = int((self._list_top - y) / self._row_height)
+        row: int = math.floor((self._list_top - y) / self._row_height)  # int() gave the row 0 just above the list
         if 0 <= row < self._visible_rows:
             file_idx: int = self._scroll_offset + row
             if file_idx < len(self._files):

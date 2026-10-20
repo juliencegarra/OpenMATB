@@ -221,7 +221,12 @@ def add_scenario_phase(
         # ── SYSMON ──
         if plugin_name == "sysmon":
             print("System monitoring | computing events")
-            failure_duration_sec: float = plugin.parameters["alerttimeout"] / 1000 + config.events_refractory_duration
+            # The last alerttimeout of the scenario (e.g. an advanced parameter of a block), else the plugin one
+            alerttimeout: float = plugin.parameters["alerttimeout"]
+            for e in get_events_from_scenario(scenario_lines):
+                if e.plugin == "sysmon" and len(e.command) == 2 and e.command[0] == "alerttimeout":
+                    alerttimeout = float(e.command[1])
+            failure_duration_sec: float = alerttimeout / 1000 + config.events_refractory_duration
             single_failure_ratio: float = failure_duration_sec / block_duration_sec
             max_events_N: int = int(1 / single_failure_ratio)
             difficulty_events_N: int = int(difficulty / single_failure_ratio)
