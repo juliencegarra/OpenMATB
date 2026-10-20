@@ -28,7 +28,8 @@ class Parallelport(AbstractPlugin):
         self._downvalue: int = 0
         self.parameters.update({"trigger": self._downvalue, "delayms": 5})
 
-        self._triggertimerms: int = 0
+        self._triggertimerms: float = 0  # How long the current value has been sent (ms of scenario time)
+        self._trigger_start: float = 0
         self._last_trigger: int = self._downvalue
         self._awaiting_triggers: list[int] = []
 
@@ -105,6 +106,7 @@ class Parallelport(AbstractPlugin):
     def set_trigger_value(self, value: int) -> None:
         self._port.setData(value)
         self._triggertimerms = 0
+        self._trigger_start = self.scenario_time
         get_logger().record_state(f"{self.alias}_trigger", "value", value)
         self._last_trigger = value
 
@@ -133,11 +135,14 @@ class Parallelport(AbstractPlugin):
             self.set_trigger_value(self._awaiting_triggers[0])  # Make it current
             del self._awaiting_triggers[0]  # And delete it
 
+        # The time the trigger has been sent: in scenario time, not in steps. The steps caught up in one update
+        # (e.g. 3 steps of 5 ms in a 16 ms frame) share their scenario time: counted as steps, the trigger was raised
+        # and lowered in the same update (a pulse of a few microseconds on the port)
+        if self.is_trigger_being_sent():
+            # (rounded to the microsecond: 1.005 - 1.0 s is 4.9999 ms)
+            self._triggertimerms = round((self.scenario_time - self._trigger_start) * 1000, 3)
+
         # If a trigger is currently defined...
         if self.is_trigger_being_sent() and self._triggertimerms >= self.parameters["delayms"]:
             # ... and the delayms has been reached: sent default value to parallel port
             self.set_trigger_value(self._downvalue)
-
-        # Grow timer of not-null trigger
-        if self.is_trigger_being_sent():
-            self._triggertimerms += self.parameters["taskupdatetime"]

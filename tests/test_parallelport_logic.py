@@ -3,6 +3,8 @@
 import builtins
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from plugins.abstractplugin import AbstractPlugin
 from plugins.parallelport import Parallelport
 
@@ -21,6 +23,7 @@ def _make_pp(**overrides):
     pp._downvalue = 0
     pp._last_trigger = 0
     pp._triggertimerms = 0
+    pp._trigger_start = 1.0  # The scenario time the current value was sent
     pp._awaiting_triggers = []
     pp.logger = MagicMock()
     pp.parameters = dict(
@@ -134,37 +137,59 @@ class TestTriggerQueue:
 
 class TestTriggerTimeout:
     def test_resets_after_delay(self):
-        """Trigger is reset to down value after delayms."""
+        """Trigger is reset to down value after delayms (of scenario time)."""
         pp = _make_pp()
         pp._last_trigger = 42
-        pp._triggertimerms = 5  # equals delayms
+        pp._trigger_start = pp.scenario_time - 0.005  # Sent delayms ago
         pp.parameters["trigger"] = 0
         pp.compute_next_plugin_state()
         # Should have sent down value
         pp._port.setData.assert_called_with(0)
 
-    def test_timer_grows_while_active(self):
-        """Timer increments by taskupdatetime each cycle."""
+    def test_timer_is_the_scenario_time_since_the_trigger(self):
+        """The timer is the scenario time elapsed since the value was sent (not a count of steps)."""
         pp = _make_pp()
         pp._last_trigger = 42
-        pp._triggertimerms = 0
+        pp._trigger_start = pp.scenario_time - 0.003
         pp.parameters["trigger"] = 0
         pp.compute_next_plugin_state()
-        assert pp._triggertimerms == 5  # taskupdatetime
+        assert pp._triggertimerms == pytest.approx(3)
 
     def test_not_reset_before_delay(self):
         """Trigger stays active before delayms is reached."""
         pp = _make_pp()
         pp._last_trigger = 42
-        pp._triggertimerms = 2  # < delayms (5)
+        pp._trigger_start = pp.scenario_time - 0.002  # 2 ms < delayms (5)
         pp.parameters["trigger"] = 0
         pp.compute_next_plugin_state()
-        # setData called only for timer increment, not for reset
-        # _last_trigger should still be 42 (timer was 2, now 7, but reset happens first)
-        # Actually let's trace: trigger=0 (no new trigger), no awaiting,
-        # is_trigger_being_sent=True and _triggertimerms(2) < delayms(5) → no reset
-        # then timer grows: 2 + 5 = 7
-        assert pp._triggertimerms == 7
+        pp._port.setData.assert_not_called()
+        assert pp._last_trigger == 42
+
+
+class TestPulseWidth:
+    def test_steps_caught_up_in_one_update_do_not_end_the_pulse(self):
+        """A 16 ms desktop frame runs about 3 steps of 5 ms with the same scenario time: the trigger was raised and
+        lowered in the same update (a pulse of a few microseconds, missed by EEG amplifiers)."""
+        pp = _make_pp()
+        pp.parameters["trigger"] = 7
+        for _ in range(3):  # One update
+            pp.next_refresh_time = pp.scenario_time
+            pp.compute_next_plugin_state()
+        assert [c.args[0] for c in pp._port.setData.call_args_list] == [7]
+
+    def test_pulse_lasts_delayms_of_scenario_time(self):
+        pp = _make_pp()
+        pp.parameters.update(trigger=7, delayms=20)
+        sent = []
+        pp._port.setData.side_effect = lambda value: sent.append((round(pp.scenario_time, 4), value))
+        for frame in range(6):
+            pp.scenario_time = 1.0 + frame / 60
+            for _ in range(3):
+                pp.next_refresh_time = pp.scenario_time
+                pp.compute_next_plugin_state()
+        (up_time, up), (down_time, down) = sent
+        assert (up, down) == (7, 0)
+        assert (down_time - up_time) * 1000 >= 20
 
 
 class TestFullLifecycle:
@@ -178,7 +203,7 @@ class TestFullLifecycle:
         pp.parameters["trigger"] = 99
         pp.compute_next_plugin_state()
         assert pp._last_trigger == 99
-        assert pp._triggertimerms == 5  # grew during this cycle
+        assert pp._triggertimerms == 0  # Sent at this scenario time
         pp._port.reset_mock()
 
         # Step 2: advance time, trigger should be reset (timer=5 >= delayms=5)
