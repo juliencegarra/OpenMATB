@@ -545,6 +545,18 @@ class ReplayScheduler(Scheduler):
         if self._click_marker is not None:
             self._click_marker.visible = False
             self._click_marker = None
+        # The plugins of the previous run are discarded: they must leave nothing on screen (e.g. the background
+        # bands hidden by a questionnaire) nor a prompt playing
+        for plugin in self.plugins.values():
+            if plugin.visible:
+                plugin.hide()
+            player: Any = getattr(plugin, "player", None)
+            if player is not None:
+                player.delete()
+        if self._pointer_marker is not None:  # Shown again at its position by the next mouse row
+            self._pointer_marker.visible = False
+        if getattr(self, "replay_reticle", None) is not None:
+            self.replay_reticle.set_cursor_position(0, 0)
         self.clock.set_time(0)
         self.clock.tick()
         self.scenario_time = 0

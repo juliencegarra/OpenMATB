@@ -779,6 +779,30 @@ class TestRestartScenario:
         assert marker.visible is False
         assert rs._click_marker is None
 
+    def test_the_previous_run_leaves_nothing_on_screen(self):
+        """A seek back from a questionnaire left the background bands hidden, the prompt of the previous run
+        playing, and the session pointer and joystick cursor at their former positions."""
+        questionnaire = MagicMock(visible=True, alive=True)
+        communications = MagicMock(visible=False, alive=True)
+        player = communications.player
+        pointer = MagicMock(visible=True)
+        rs = _make_replay(
+            scenario=MagicMock(),
+            plugins={"genericscales": questionnaire, "communications": communications},
+            _pointer_marker=pointer,
+            replay_reticle=MagicMock(),
+            _click_marker=None,
+        )
+        rs.set_scenario = MagicMock()
+
+        rs.restart_scenario()
+
+        questionnaire.hide.assert_called_once()  # A fullscreen plugin shows the background bands again
+        communications.hide.assert_not_called()
+        player.delete.assert_called_once()
+        assert pointer.visible is False
+        rs.replay_reticle.set_cursor_position.assert_called_once_with(0, 0)
+
 
 def _running_task(**kwargs):
     """A task plugin that is running and visible (it receives the keys of a human)."""
