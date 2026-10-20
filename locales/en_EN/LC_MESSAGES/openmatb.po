@@ -498,14 +498,12 @@ msgstr ""
 "should be an acceptable (keyboard or joystick) key value (not %s). See "
 "documentation."
 
-#: plugins/communications.py:142
+#: plugins/communications.py:150
 #, python-format
 msgid ""
-"Warning: sound path %s does not exist. Check voiceidiom/voicegender "
-"combination."
+"Sound path %s does not exist. Check voiceidiom/voicegender combination."
 msgstr ""
-"Warning: sound path %s does not exist. Check voiceidiom/voicegender "
-"combination."
+"Sound path %s does not exist. Check voiceidiom/voicegender combination."
 
 #: plugins/generictrigger.py:15
 msgid "Generic Trigger"

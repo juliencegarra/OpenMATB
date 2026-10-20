@@ -460,30 +460,28 @@ msgstr "Erreur à la ligne %s. Commande système invalide : %s"
 msgid "Error on line %s. Agent command requires a name argument"
 msgstr "Erreur à la ligne %s. La commande agent nécessite un argument de nom"
 
+#: core/scenario.py:200
+#, python-format
+msgid "Error on line %s. Unknown agent: %s"
+msgstr "Erreur à la ligne %s. Agent inconnu : %s"
+
+#: core/scenario.py:60
+#, python-format
+msgid "Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)"
+msgstr ""
+"Erreur de scénario : la ligne %s n'est pas au format H:MM:SS;plugin;commande "
+"(%s)"
+
+#: core/scenario.py:187
+#, python-format
+msgid "The (%s) plugin has a start command without a preceding filename command."
+msgstr ""
+"Le plugin (%s) a une commande start sans commande filename la précédant."
+
 #: core/scenario.py:194
 #, python-format
 msgid "Error on line %s. mousecontrol command requires True/False argument"
 msgstr "Erreur à la ligne %s. La commande mousecontrol nécessite un argument True/False"
-
-#: core/selector.py:120
-msgid "Select a scenario"
-msgstr "Sélectionner un scénario"
-
-#: core/selector.py:120
-msgid "Select a session"
-msgstr "Sélectionner une session"
-
-#: core/selector.py:135
-msgid "Enter: Select"
-msgstr "Entrée : Sélectionner"
-
-#: core/selector.py:135
-msgid "Esc: Quit"
-msgstr "Échap : Quitter"
-
-#: core/selector.py:135
-msgid "UP/DOWN: Navigate"
-msgstr "HAUT/BAS : Naviguer"
 
 #: core/selector.py:178
 msgid "No files found"
@@ -518,13 +516,12 @@ msgstr ""
 "devrait être une touche (clavier ou joystick) acceptable (et non %s). Voir "
 "la documentation."
 
-#: plugins/communications.py:142
+#: plugins/communications.py:150
 #, python-format
 msgid ""
-"Warning: sound path %s does not exist. Check voiceidiom/voicegender "
-"combination."
+"Sound path %s does not exist. Check voiceidiom/voicegender combination."
 msgstr ""
-"Attention : le chemin audio %s n'existe pas. Vérifiez la combinaison "
+"Le chemin audio %s n'existe pas. Vérifiez la combinaison "
 "voiceidiom/voicegender."
 
 #: plugins/generictrigger.py:15
