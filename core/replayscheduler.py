@@ -360,6 +360,9 @@ class ReplayScheduler(Scheduler):
             # Required: check exit while paused (super().update is not called)
             self.check_if_must_exit()
 
+        # Before the early return below: a prompt started in this update must not be heard in a muted replay
+        self._enforce_mute()
+
         # Defer input emulation while queued events can still be processed.
         # When scenario_time is paused (blocking plugin active), events in the
         # queue cannot fire, so we must allow keyboard emulation to proceed
@@ -371,7 +374,6 @@ class ReplayScheduler(Scheduler):
         self.display_joystick_inputs()
         self.display_mouse_inputs()
         self.process_states()
-        self._enforce_mute()
 
         if self._perf_overlay is not None:
             st: float = self.logreader.replay_to_scenario_time(self.replay_time)
