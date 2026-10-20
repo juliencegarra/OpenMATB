@@ -184,6 +184,13 @@ class TestScenarioErrors:
         assert error_file.name in errors.errors_list[-1]
         assert errors.some_fatals
 
+    def test_invalid_system_events_are_reported(self, fake_plugins, errors, error_file, mock_logger):
+        """A system line without command, or a mousecontrol value which is not a boolean, is a scenario error."""
+        Scenario(["0:00:00;system\n", "0:00:00;system;mousecontrol;maybe\n"])
+        report = error_file.read_text(encoding="utf-8")
+        assert "line 1. Invalid system command" in report
+        assert "line 2. mousecontrol command requires True/False argument" in report
+
     def test_nested_parameter_with_plugin_validation(self, fake_plugins, errors, error_file, mock_logger):
         """A nested parameter is validated by the plugin validation dict and evaluated."""
         s = Scenario(["0:00:00;sysmon;start\n", "0:00:00;sysmon;sub-level;3\n", "0:00:01;sysmon;stop\n"])

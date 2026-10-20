@@ -185,11 +185,13 @@ class Scenario:
         for e in self.events:
             # System pseudo-plugin: validate command and skip plugin checks
             if e.plugin == SYSTEM_PSEUDO_PLUGIN:
-                if e.command[0] not in SYSTEM_COMMANDS:
+                if len(e) == 0 or e.command[0] not in SYSTEM_COMMANDS:
                     errors.append(_("Error on line %s. Invalid system command: %s") % (e.line, e.get_command_str()))
                 elif e.command[0] == "agent" and len(e.command) != 2:
                     errors.append(_("Error on line %s. Agent command requires a name argument") % e.line)
-                elif e.command[0] == "mousecontrol" and len(e.command) != 2:
+                elif e.command[0] == "mousecontrol" and (
+                    len(e.command) != 2 or validation.is_boolean(str(e.command[1]))[1] is not None
+                ):
                     errors.append(_("Error on line %s. mousecontrol command requires True/False argument") % e.line)
                 elif e.command[0] not in ("agent", "mousecontrol") and len(e.command) != 1:
                     errors.append(_("Error on line %s. Invalid system command: %s") % (e.line, e.get_command_str()))

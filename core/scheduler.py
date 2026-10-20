@@ -10,7 +10,7 @@ from typing import Any
 import pyglet.app
 import pyglet.clock
 
-from core import timing
+from core import timing, validation
 from core.clock import Clock
 from core.constants import REPLAY_MODE, SYSTEM_PSEUDO_PLUGIN
 from core.error import get_errors
@@ -83,6 +83,7 @@ class Scheduler:
 
         self.pause_scenario_time: bool = False
         self.mouse_control_enabled: bool = False
+        self._mouse_handlers_pushed: bool = False  # Pushed twice, pyglet would dispatch each click twice
         self.scenario_time = 0
         timing.reset()
 
@@ -286,24 +287,26 @@ class Scheduler:
                     if "automaticsolver" in self.plugins[p].parameters:
                         self.plugins[p].agent = self.agent
         elif command == "mousecontrol":
-            enabled = event.command[1] in (True, "True", "true")
+            # The values accepted by the scenario validation (e.g. TRUE, 1)
+            enabled = validation.is_boolean(str(event.command[1]))[0] is True
             self.mouse_control_enabled = enabled  # The replay shows the mouse of the session with it
             if not REPLAY_MODE:
                 Window.MainWindow.mouse_control_active = enabled
-                if enabled:
+                if enabled and not self._mouse_handlers_pushed:
                     for p in self.plugins:
                         Window.MainWindow.push_handlers(
                             self.plugins[p].on_mouse_press,
                             self.plugins[p].on_mouse_release,
                             self.plugins[p].on_mouse_drag,
                         )
-                else:
+                elif not enabled and self._mouse_handlers_pushed:
                     for p in self.plugins:
                         Window.MainWindow.remove_handlers(
                             self.plugins[p].on_mouse_press,
                             self.plugins[p].on_mouse_release,
                             self.plugins[p].on_mouse_drag,
                         )
+                self._mouse_handlers_pushed = enabled
         event.done = 1
         get_logger().record_event(event)
 

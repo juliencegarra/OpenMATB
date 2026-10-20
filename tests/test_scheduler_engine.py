@@ -624,10 +624,38 @@ class TestSystemCommands:
         """Disabling mouse control removes the plugin mouse handlers."""
         p = _make_plugin()
         sched = _make_scheduler({"p": p})
-        sched.execute_one_event(Event(1, 0, "system", ["mousecontrol", "false"]))
+        sched.execute_one_event(Event(1, 0, "system", ["mousecontrol", "true"]))
+        sched.execute_one_event(Event(2, 10, "system", ["mousecontrol", "false"]))
         assert sched.mouse_control_enabled is False
         assert window.mouse_control_active is False
         window.remove_handlers.assert_called_once_with(p.on_mouse_press, p.on_mouse_release, p.on_mouse_drag)
+
+    def test_mousecontrol_enabled_twice_dispatches_each_click_once(self, window, mock_logger):
+        """A second mousecontrol;True does not push the handlers again: a pump click is not toggled twice,
+        and the following mousecontrol;False removes every handler."""
+        stack = []  # The handler frames of the window, as with pyglet (remove_handlers pops the first match)
+        window.push_handlers.side_effect = lambda *h: stack.insert(0, h)
+        window.remove_handlers.side_effect = lambda *h: stack.remove(h) if h in stack else None
+        p = _make_plugin()
+        sched = _make_scheduler({"p": p})
+
+        def clicks_dispatched():
+            return sum(frame.count(p.on_mouse_press) for frame in stack)
+
+        sched.execute_one_event(Event(1, 0, "system", ["mousecontrol", "True"]))
+        sched.execute_one_event(Event(2, 30, "system", ["mousecontrol", "True"]))
+        assert clicks_dispatched() == 1
+        sched.execute_one_event(Event(3, 60, "system", ["mousecontrol", "False"]))
+        assert clicks_dispatched() == 0
+        assert window.mouse_control_active is False
+
+    @pytest.mark.parametrize("value", ["TRUE", "1"])
+    def test_mousecontrol_accepts_the_booleans_of_the_validation(self, window, mock_logger, value):
+        """The values that the scenario validation accepts as True enable mouse control."""
+        sched = _make_scheduler({"p": _make_plugin()})
+        sched.execute_one_event(Event(1, 0, "system", ["mousecontrol", value]))
+        assert sched.mouse_control_enabled is True
+        assert window.mouse_control_active is True
 
     def test_mousecontrol_ignored_in_replay(self, window, mock_logger):
         """In replay mode, mousecontrol does not alter handlers; it is noted to show the mouse of the session."""
