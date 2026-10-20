@@ -1,11 +1,15 @@
 """Tests for the scenario generator UI logic."""
 
+from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+import pytest
+from pyglet.window import mouse
 
 from core import validation
 from core.constants import PATHS as P
 from scenario_generation import BlockConfig
-from scenario_generator_ui import ScenarioGeneratorUI, UIAdvancedPanel
+from scenario_generator_ui import ScenarioGeneratorUI, UIAdvancedPanel, UIFileSelector
 
 
 def _ui():
@@ -114,3 +118,30 @@ class TestOldPresetFilenames:
         ui = _ui()
         assert ui._preset_filename("genericscales", "nasatlx_en.txt") == "nasatlx_en.txt"
         assert ui._preset_filename("instructions", "default_en/track.txt") == "default_en/track.txt"
+
+
+class TestAdvancedPanelDefaults:
+    # (communications: only the voices, whose defaults depend on the language)
+    @pytest.mark.parametrize("plugin_name", ["sysmon", "resman", "track"])
+    def test_untouched_panel_gives_the_plugin_defaults(self, plugin_name, mock_logger):
+        """Apply without changing a value wrote the panel default: the track joystick force became 5 (not 1) and
+        the cursor red (as when outside the target)."""
+        import plugins
+
+        plugin = getattr(plugins, plugin_name.capitalize())()
+        panel = UIAdvancedPanel(1000, 700, MagicMock(), plugin_name, {}, on_save=MagicMock(), on_cancel=MagicMock())
+        for name, value in panel._get_params().items():
+            if isinstance(value, str) and value.startswith("#"):  # A color, given as in a scenario
+                value = validation.is_color(value)[0]
+            assert value == plugin.parameters[name], name
+
+
+class TestFileSelectorClick:
+    def test_click_on_a_file_name_selects_its_row(self):
+        files = [Path(f"f{i}.txt") for i in range(5)]
+        selector = UIFileSelector(1000, 700, MagicMock(), files, "t", on_select=MagicMock(), on_cancel=MagicMock())
+        baseline = selector._list_top - 1 * selector._row_height  # The second label
+        for y in (baseline - 4, baseline + 6, baseline + 18):  # Its highlight band, text included
+            selector._last_click_index = -1
+            selector.on_mouse_press(selector.panel_x + 50, y, mouse.LEFT, 0)
+            assert selector._selected_index == 1, y

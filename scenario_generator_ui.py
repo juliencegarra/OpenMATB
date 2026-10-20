@@ -13,6 +13,7 @@ from __future__ import annotations
 import configparser
 import gettext
 import json
+import math
 import time as _time
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any, Callable, ClassVar
@@ -1209,7 +1210,8 @@ class UIFileSelector:
             return True
         # Click on list item
         if button == mouse.LEFT and self._files:
-            row = int((self._list_top - my + 5) / self._row_height)
+            # The highlight band of a row goes from 5 px below its label baseline to 19 px above it
+            row = math.floor((self._list_top + self._row_height - 5 - my) / self._row_height)
             if 0 <= row < self._visible_rows:
                 idx = self._scroll_offset + row
                 if idx < len(self._files):
@@ -1301,16 +1303,18 @@ class UIAdvancedPanel:
                 "joystickforce",
                 "Joystick force",
                 "slider",
-                {"min_val": 1, "max_val": 10, "step": 1, "default": 5, "fmt": "{:.0f}", "suffix": ""},
+                # The defaults of the plugin: Apply writes all the values, even those left untouched
+                {"min_val": 1, "max_val": 10, "step": 1, "default": 1, "fmt": "{:.0f}", "suffix": ""},
             ),
             (
                 "cursorcolor",
                 "Cursor color",
                 "radio",
                 {
-                    "options": ["#ff0000", "#00ff00", "#0000ff", "#ffff00"],
-                    "labels": ["Red", "Green", "Blue", "Yellow"],
-                    "default": "#ff0000",
+                    # Black (dark grey) by default, red being the color outside the target
+                    "options": ["#323232", "#00ff00", "#0000ff", "#ffff00"],
+                    "labels": ["Black", "Green", "Blue", "Yellow"],
+                    "default": "#323232",
                 },
             ),
         ],
