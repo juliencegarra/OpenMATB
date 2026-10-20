@@ -157,13 +157,14 @@ instructions,taskupdatetime,Delay between plugin updates (ms),(positive integer)
 instructions,filename,Name of the instructions file to use,(string),(empty)
 instructions,response-text,String chain to prompt the subject to press a continuing key,(string),'Press SPACE to continue’
 instructions,response-key,Keyboard key to continue,(keyboard key),space
-instructions,maxdurationsec,Maximum displaying duration (seconds),(positive integer),0
+instructions,maxdurationsec,"Maximum displaying duration of each page (seconds, 0: no limit)",(positive integer),0
 genericscales,title,"Title of the task, displayed if the plugin is visible",(string),Generic scales
 genericscales,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",fullscreen
 genericscales,taskupdatetime,Delay between plugin updates (ms),(positive integer),15
 genericscales,filename,Name of the instructions file to use,(string),(empty)
 genericscales,response-text,String chain to prompt the subject to press a continuing key,(string),'Press SPACE to validate’
 genericscales,response-key,Keyboard key to continue,(keyboard key),space
+genericscales,maxdurationsec,"Maximum displaying duration of each page (seconds, 0: no limit)",(positive integer),0
 performance,title,"Title of the task, displayed if the plugin is visible",(string),Performance
 performance,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",topright
 performance,taskupdatetime,Delay between plugin updates (ms),(positive integer),50

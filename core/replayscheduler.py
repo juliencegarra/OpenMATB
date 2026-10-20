@@ -580,19 +580,25 @@ class ReplayScheduler(Scheduler):
                 self._executed_key_indices.add(idx)
                 input: dict[str, Any] = self.logreader.keyboard_inputs[idx]
                 human: bool = input.get("module") != "agent"
-                for _plugin_name, plugin in self.plugins.items():
-                    # In the session, the keys of a human did nothing on a paused or hidden task (e.g. the arrows
-                    # of a questionnaire on the paused communications task), nor when key presses were not allowed
-                    if human and (
-                        plugin.paused or not plugin.visible or not plugin.parameters.get("allowkeypress", True)
-                    ):
-                        continue
-                    # In the session, the keys of a human did nothing on a task under the automatic solver
-                    # (unless its agent accepts them): the replay must not execute them either
-                    if human and plugin.parameters.get("automaticsolver"):
-                        if not getattr(getattr(plugin, "agent", None), "allows_human_input", False):
+                # A page ended by maxdurationsec: not a key (it applies even when key presses were not allowed)
+                if input.get("module") == "timeout":
+                    timed_out: Any = self.plugins.get(input["address"])
+                    if timed_out is not None:
+                        timed_out.go_to_next_slide = True
+                else:
+                    for _plugin_name, plugin in self.plugins.items():
+                        # In the session, the keys of a human did nothing on a paused or hidden task (e.g. the arrows
+                        # of a questionnaire on the paused communications task), nor when key presses were not allowed
+                        if human and (
+                            plugin.paused or not plugin.visible or not plugin.parameters.get("allowkeypress", True)
+                        ):
                             continue
-                    plugin.do_on_key(input["address"], input["value"], True)
+                        # In the session, the keys of a human did nothing on a task under the automatic solver
+                        # (unless its agent accepts them): the replay must not execute them either
+                        if human and plugin.parameters.get("automaticsolver"):
+                            if not getattr(getattr(plugin, "agent", None), "allows_human_input", False):
+                                continue
+                        plugin.do_on_key(input["address"], input["value"], True)
 
                 cmd: str = f"{input['address']} ({input['value']})"
                 if len(self.keys_history) == 0 or cmd != self.keys_history[-1]:

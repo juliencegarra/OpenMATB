@@ -810,6 +810,19 @@ def _running_task(**kwargs):
 
 
 class TestEmulateKeyboardInputs:
+    def test_logged_timeout_ends_the_page_of_its_plugin(self):
+        """A page ended by maxdurationsec, even when key presses are not allowed (the timeout is not a key)."""
+        lr = _logreader(keyboard=[(1.0, "instructions", "1")])
+        lr.keyboard_inputs[0]["module"] = "timeout"
+        instructions = _running_task(parameters={"allowkeypress": False})
+        instructions.go_to_next_slide = False
+        other = _running_task(parameters={})
+        rs = _make_loaded_replay(lr, replay_time=2.0, plugins={"instructions": instructions, "sysmon": other})
+        rs.emulate_keyboard_inputs()
+        assert instructions.go_to_next_slide is True
+        instructions.do_on_key.assert_not_called()
+        other.do_on_key.assert_not_called()
+
     def test_human_keys_do_nothing_on_a_paused_or_hidden_task(self):
         """In the session, a paused or hidden task ignored the keys of a human (e.g. the arrows that moved the sliders
         of a questionnaire did not tune the paused communications task): the replay must not execute them."""

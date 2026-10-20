@@ -97,6 +97,58 @@ class TestInstructions:
         assert ins.alive
 
 
+class TestMaxDuration:
+    """maxdurationsec: each page is shown at most that long (real time: the scenario time is paused)."""
+
+    def _run(self, ins, clock, times):
+        for t in times:
+            clock.return_value = t
+            ins.update(1)
+
+    def test_each_page_is_shown_at_most_maxdurationsec(self, make_instructions, mock_logger):
+        ins = make_instructions("<p>First</p>\n<newpage>\n<p>Second</p>\n", maxdurationsec=2, allowkeypress=False)
+        ins.start()
+        with patch("plugins.abstractplugin.perf_counter") as clock:
+            self._run(ins, clock, [100, 101, 101.9])
+            assert "<p>First</p>" in ins.widgets["instructions_instructions"].kwargs["text"]
+            self._run(ins, clock, [102.1, 102.2])
+            assert "<p>Second</p>" in ins.widgets["instructions_instructions"].kwargs["text"]
+            self._run(ins, clock, [104.3, 104.4])
+        assert not ins.alive
+        # Logged, so that the replay ends the pages at the same times, and the analysis knows it
+        timeouts = [c for c in mock_logger.record_input.call_args_list if c.args[0] == "timeout"]
+        assert [c.args for c in timeouts] == [("timeout", "instructions", "1"), ("timeout", "instructions", "2")]
+        assert ins.performance["page_timeout"] == [1, 2]
+
+    def test_no_limit_by_default(self, make_instructions):
+        ins = make_instructions("<p>Only page</p>\n")
+        ins.start()
+        with patch("plugins.abstractplugin.perf_counter") as clock:
+            self._run(ins, clock, [0, 1000, 2000])
+        assert ins.alive
+
+    def test_time_paused_is_not_counted(self, make_instructions):
+        """The pause dialog pauses the plugin: the page is not ended during it."""
+        ins = make_instructions("<p>Only page</p>\n", maxdurationsec=2)
+        ins.start()
+        with patch("plugins.abstractplugin.perf_counter") as clock:
+            self._run(ins, clock, [0, 1])
+            ins.pause()
+            clock.return_value = 30
+            ins.resume()
+            self._run(ins, clock, [30, 30.5])
+            assert ins.alive
+            self._run(ins, clock, [31.1, 31.2])  # The next page (none: the end) at the next update
+        assert not ins.alive
+
+    def test_replay_ends_the_page_with_the_logged_timeout_only(self, make_instructions):
+        ins = make_instructions("<p>Only page</p>\n", maxdurationsec=1)
+        ins.start()
+        with patch("plugins.abstractplugin.REPLAY_MODE", True), patch("plugins.abstractplugin.perf_counter") as clock:
+            self._run(ins, clock, [0, 10, 20])
+        assert ins.alive
+
+
 class TestGenerictrigger:
     def test_default_parameters(self, mock_logger):
         trigger = Generictrigger()

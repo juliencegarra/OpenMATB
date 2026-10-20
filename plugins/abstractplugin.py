@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 
 from pyglet.window import key as winkey
@@ -652,9 +653,33 @@ class BlockingPlugin(AbstractPlugin):
         # whose only slide (pauseatstart) is written by the plugin itself
         self.needs_input_file: bool = True
 
+        # maxdurationsec: the time the current page has been shown, in real time (the scenario time is paused)
+        self._page_number: int = 0
+        self._page_elapsed: float = 0.0
+        self._page_tick: float | None = None
+
+    def pause(self) -> None:
+        self._page_tick = None  # The time paused (e.g. the pause dialog) is not counted
+        super().pause()
+
+    def _check_max_duration(self) -> None:
+        """End the current page once shown maxdurationsec (0: no limit). Logged as a timeout input: the replay
+        ends the page at the same time, instead of a timer of its own"""
+        if REPLAY_MODE or self.parameters.get("maxdurationsec", 0) <= 0 or self.paused or self.go_to_next_slide:
+            return
+        now: float = perf_counter()
+        if self._page_tick is not None:
+            self._page_elapsed += now - self._page_tick
+        self._page_tick = now
+        if self._page_elapsed >= self.parameters["maxdurationsec"]:
+            self.logger.record_input("timeout", self.alias, str(self._page_number))
+            self.log_performance("page_timeout", self._page_number)
+            self.go_to_next_slide = True
+
     def create_widgets(self) -> None:
         super().create_widgets()
         self.go_to_next_slide = True  # So the first slide appears as soon as possible
+        self._page_number = 0  # The pages of this presentation (the plugin may be started again)
 
         # Create an input path if relevant
 
@@ -694,12 +719,18 @@ class BlockingPlugin(AbstractPlugin):
                 del self.slides[0]
                 self.make_slide_graphs()
                 self.show()
+                self._page_number += 1
+                self._page_elapsed, self._page_tick = 0.0, perf_counter()
             else:
                 if self.stop_on_end:
                     self.stop()
                 else:
                     self.hide()
                     self.blocking = False
+                return
+
+        if self.alive:
+            self._check_max_duration()
 
     def make_slide_graphs(self) -> None:
         # Extract the title from the slide string if relevant
