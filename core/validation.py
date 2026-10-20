@@ -7,6 +7,7 @@
 # each scenario parameter value is accepted.
 
 import ast
+import math
 import re
 from typing import Any, Optional
 
@@ -75,7 +76,12 @@ def is_color(x: str) -> ValidationResult:  # Can be an hexadecimal value, a cons
         except (ValueError, TypeError, SyntaxError):
             return None, _("must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)") % x
         else:
-            if (isinstance(x, (tuple, list))) and len(x) == 4 and all([0 <= v <= 255 for v in x]):
+            # Integers only: a string item raised a TypeError on the comparison, and True or 1.5 were accepted
+            if (
+                isinstance(x, (tuple, list))
+                and len(x) == 4
+                and all(isinstance(v, int) and not isinstance(v, bool) and 0 <= v <= 255 for v in x)
+            ):
                 return tuple(x), None
             else:
                 x = str(x)
@@ -83,17 +89,15 @@ def is_color(x: str) -> ValidationResult:  # Can be an hexadecimal value, a cons
 
 
 def is_positive_float(x: str) -> ValidationResult:
-    # Remove a potential floating point and test the other char
+    # An integer (e.g. 118) or an exponent is a float too, but not nan or inf
     msg: str = _("should be a positive float (not %s)") % x
-    is_float: bool = x.replace(".", "", 1).isdigit() and "." in x
-    if is_float:
-        x = float(x)
-        if x > 0:
-            return x, None
-        else:
-            return None, msg
-    else:
+    try:
+        value: float = float(x)
+    except ValueError:
         return None, msg
+    if math.isfinite(value) and value > 0:
+        return value, None
+    return None, msg
 
 
 def is_in_list(x: str, li: list[str]) -> ValidationResult:

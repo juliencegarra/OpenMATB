@@ -90,6 +90,7 @@ class ReplayScheduler(Scheduler):
         self.replay_time: float = 0
         self._executed_key_indices: set[int] = set()
         self._next_key_index: int = 0  # The keys before it have been sent
+        self._next_row_index: dict[str, int] = {}  # Likewise for the states, mouse and joystick inputs
         self.keys_history: list[str] = []
         self._muted: bool = True
         self._click_marker: Circle | None = None
@@ -405,7 +406,7 @@ class ReplayScheduler(Scheduler):
         timesec: float = round(self.replay_time, 2)
 
         t: str = strftime("%H:%M:%S", gmtime(timesec))
-        ms: float = timesec % 1 * 1000
+        ms: int = round(timesec % 1 * 1000)  # %03d truncates: 5.01 % 1 * 1000 is 9.99...
 
         return "%s.%03d" % (t, ms)
 
@@ -531,6 +532,7 @@ class ReplayScheduler(Scheduler):
 
         self._executed_key_indices = set()
         self._next_key_index = 0
+        self._next_row_index = {}
         self.keys_history = []
         self._last_mouse_x = None
         self._last_mouse_y = None
@@ -587,6 +589,15 @@ class ReplayScheduler(Scheduler):
         history_str: str = "<strong>Keyboard history:\n</strong>" + "<br>".join(self.keys_history)
         self.key_widget.set_text(history_str)
 
+    def _rows_to_read(self, name: str, logtimes: list[float]) -> range:
+        """The indices of the rows not read yet, up to the replay time. Not only those of the last CLOCK_STEP: a
+        frame may last longer (a GC pause, a dragged window, a throttled page), or the inputs may have been deferred
+        by queued events (e.g. a lost click release left the click marker held)"""
+        lo: int = self._next_row_index.get(name, 0)
+        hi: int = max(lo, bisect_right(logtimes, self.replay_time))
+        self._next_row_index[name] = hi
+        return range(lo, hi)
+
     def process_states(self) -> None:
         # States are displayed as a function of replay time (logtime-based).
         # It does not matter to display each and every states. Better is to catch
@@ -598,10 +609,7 @@ class ReplayScheduler(Scheduler):
         #        the same times as in the session: a pump toggled just before a step of the session may come
         #        just after the step of the replay, and change a whole step of flow)
 
-        lo: int = bisect_right(self._state_logtimes, self.replay_time - CLOCK_STEP)
-        hi: int = bisect_right(self._state_logtimes, self.replay_time)
-
-        for idx in range(lo, hi):
+        for idx in self._rows_to_read("states", self._state_logtimes):
             state: dict[str, Any] = self.logreader.states[idx]
 
             # 1. Cursor position
@@ -658,10 +666,7 @@ class ReplayScheduler(Scheduler):
         return replay_x, replay_y
 
     def display_mouse_inputs(self) -> None:
-        lo: int = bisect_right(self._mouse_logtimes, self.replay_time - CLOCK_STEP)
-        hi: int = bisect_right(self._mouse_logtimes, self.replay_time)
-
-        for idx in range(lo, hi):
+        for idx in self._rows_to_read("mouse", self._mouse_logtimes):
             mouse_input: dict[str, Any] = self.logreader.mouse_inputs[idx]
             if mouse_input["address"] == "x":
                 self._last_mouse_x = int(float(mouse_input["value"]))
@@ -726,10 +731,7 @@ class ReplayScheduler(Scheduler):
         # The last position is kept: the joystick logs an axis only when it changes
         x: float | None = getattr(self, "_last_joy_x", None)
         y: float | None = getattr(self, "_last_joy_y", None)
-        lo: int = bisect_right(self._joy_logtimes, self.replay_time - CLOCK_STEP)
-        hi: int = bisect_right(self._joy_logtimes, self.replay_time)
-
-        for idx in range(lo, hi):
+        for idx in self._rows_to_read("joystick", self._joy_logtimes):
             joy_input: dict[str, Any] = self.logreader.joystick_inputs[idx]
             address: str = joy_input["address"]
 

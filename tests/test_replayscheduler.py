@@ -427,6 +427,7 @@ def _make_loaded_replay(logreader, **kwargs):
     rs._state_logtimes = [i["normalized_logtime"] for i in logreader.states]
     rs._executed_key_indices = set()
     rs._next_key_index = 0
+    rs._next_row_index = {}
     rs.keys_history = []
     rs.key_widget = MagicMock()
     rs.mouse_label = MagicMock()
@@ -922,10 +923,11 @@ class TestProcessStates:
         rs.process_states()
         assert resman.parameters["tank"]["a"]["level"] == 2494
 
-    def test_states_outside_the_step_are_ignored(self):
+    def test_states_already_read_are_ignored(self):
         track = MagicMock()
         lr = _logreader(states=[(0.5, "cursor_proportional", (0.1, 0.2))])
         rs = _make_loaded_replay(lr, replay_time=1.0, plugins={"track": track})
+        rs._next_row_index = {"states": 1}
         rs.process_states()
         track.reticle.proportional_to_relative.assert_not_called()
 

@@ -187,11 +187,11 @@ class TestIsPositiveFloat:
         assert val == 3.14
         assert err is None
 
-    def test_rejects_integer_string(self):
-        """Integer string without dot is rejected."""
+    def test_accepts_integer_string(self):
+        """An integer string without dot is a float too (e.g. airbandminMhz;118)."""
         val, err = is_positive_float("5")
-        assert val is None  # Must contain a dot
-        assert err is not None
+        assert val == 5.0
+        assert err is None
 
     def test_rejects_zero(self):
         """'0.0' is rejected (must be > 0)."""
