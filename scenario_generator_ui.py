@@ -32,6 +32,7 @@ _locale_path = Path(".", "locales")
 _lang = gettext.translation("openmatb", _locale_path, [_cfg["Openmatb"]["language"]])
 _lang.install()
 
+from core.constants import PATHS as P
 from scenario_generation import (
     BlockConfig,
     InterBlockEvent,
@@ -1093,12 +1094,14 @@ class UIFileSelector:
         title: str,
         on_select: Callable,
         on_cancel: Callable,
+        root: Path | None = None,
     ) -> None:
         self.batch = batch
         self.on_select = on_select
         self.on_cancel = on_cancel
         self._files = files
-        self._display_texts = [str(f.name) for f in files]
+        # With a root, the path in it (default_en/track.txt and default_fr/track.txt have the same name)
+        self._display_texts = [f.relative_to(root).as_posix() if root else str(f.name) for f in files]
         self._selected_index = 0 if files else -1
         self._scroll_offset = 0
         self._last_click_time = 0.0
@@ -1274,13 +1277,15 @@ class UIAdvancedPanel:
                 "voiceidiom",
                 "Voice language",
                 "radio",
-                {"options": ["fr", "en"], "labels": ["French", "English"], "default": "en"},
+                # The folders of includes/sounds (fr and en failed the validation)
+                {"options": ["french", "english"], "labels": ["French", "English"], "default": "english"},
             ),
             (
                 "voicegender",
                 "Voice gender",
                 "radio",
-                {"options": ["female", "male"], "labels": ["Female", "Male"], "default": "female"},
+                # The English voice is male only
+                {"options": ["female", "male"], "labels": ["Female", "Male"], "default": "male"},
             ),
         ],
         "resman": [
@@ -1842,6 +1847,10 @@ class ScenarioGeneratorUI:
             return
         source = self.blocks[index]
         cfg = source.get_block_config()
+        # The copy is inserted after its block (position index + 1): the events after the next blocks follow them
+        for iw in self._inter_block_widgets:
+            if iw.position > index + 1:
+                iw.position += 1
         self._add_block(insert_at=index + 1, config=cfg)
 
     def _move_block(self, index: int, direction: int) -> None:
@@ -1856,6 +1865,11 @@ class ScenarioGeneratorUI:
             return
         block = self.blocks.pop(index)
         block.delete()
+        # The events after the removed block and the next ones move back: their position was kept, and the
+        # generator left out those beyond the last block
+        for iw in self._inter_block_widgets:
+            if iw.position > index:
+                iw.position -= 1
         if self.scroll_offset > 0:
             self.scroll_offset = max(0, self.scroll_offset - 1)
         self._update_scroll()
@@ -2147,43 +2161,40 @@ class ScenarioGeneratorUI:
         # We'll use two separate methods triggered by the insert buttons
         pass
 
-    def _insert_instructions_at(self, position: int) -> None:
-        """Open file selector for instructions file at given position."""
-        include_dir = Path("includes")
-        files = sorted(include_dir.glob("**/*.txt")) + sorted(include_dir.glob("**/*.html"))
+    # The folder of the files of each inter-block event type: the plugins read their filename in it
+    INTER_BLOCK_FOLDERS: ClassVar[dict[str, str]] = {"instructions": "INSTRUCTIONS", "genericscales": "QUESTIONNAIRES"}
+
+    def _open_inter_block_file_selector(self, position: int, event_type: str, title: str) -> None:
+        folder: Path = P[self.INTER_BLOCK_FOLDERS[event_type]]
+        files = sorted(folder.glob("**/*.txt")) + sorted(folder.glob("**/*.html"))
         self._pending_insert_position = position
-        self._pending_insert_type = "instructions"
+        self._pending_insert_type = event_type
         self._overlay = UIFileSelector(
             self.WIN_W,
             self.WIN_H,
             self._overlay_batch,
             files,
-            "Select an instructions file",
+            title,
             on_select=self._on_interblock_file_selected,
             on_cancel=self._close_overlay,
+            root=folder,
         )
+
+    def _insert_instructions_at(self, position: int) -> None:
+        """Open file selector for instructions file at given position."""
+        self._open_inter_block_file_selector(position, "instructions", "Select an instructions file")
 
     def _insert_questionnaire_at(self, position: int) -> None:
         """Open file selector for genericscales file at given position."""
-        include_dir = Path("includes")
-        files = sorted(include_dir.glob("**/*.txt")) + sorted(include_dir.glob("**/*.html"))
-        self._pending_insert_position = position
-        self._pending_insert_type = "genericscales"
-        self._overlay = UIFileSelector(
-            self.WIN_W,
-            self.WIN_H,
-            self._overlay_batch,
-            files,
-            "Select a questionnaire",
-            on_select=self._on_interblock_file_selected,
-            on_cancel=self._close_overlay,
-        )
+        self._open_inter_block_file_selector(position, "genericscales", "Select a questionnaire")
 
     def _on_interblock_file_selected(self, path: Path) -> None:
+        # The path in the folder of the plugin, which reads its filename in it (not the path from includes)
+        folder: Path = P[self.INTER_BLOCK_FOLDERS[self._pending_insert_type]]
         self._add_inter_block_widget(
             self._pending_insert_position,
             self._pending_insert_type,
-            str(path),
+            path.relative_to(folder).as_posix(),
         )
         self._close_overlay()
 
