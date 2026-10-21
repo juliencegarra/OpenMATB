@@ -664,7 +664,6 @@ class TestWebBuild:
     @pytest.mark.parametrize(
         "path,excluded",
         [
-            ("plugins/eyetracker.py", True),
             ("includes/scenarios/generated/a.txt", True),
             ("includes/scenarios/generated", True),
             ("includes/scenarios/generated_by_hand.txt", False),
@@ -684,7 +683,6 @@ class TestWebBuild:
             assert required in names
         assert any(n.startswith("includes/sounds/") and n.endswith(".wav") for n in names)
         assert any(n.startswith("locales/") and n.endswith(".mo") for n in names)
-        assert "plugins/eyetracker.py" not in names
         assert not any("__pycache__" in n or n.endswith(".pyc") for n in names)
         assert not any(n.startswith("includes/scenarios/generated/") for n in names)
 

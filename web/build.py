@@ -108,8 +108,8 @@ APP_DIRS: dict[str, tuple[str, ...]] = {
     "includes/scenarios": ("*.txt",),
     "includes/sounds": ("*.wav",),
 }
-# Not usable in the browser (native libraries) or not part of the task
-EXCLUDED: tuple[str, ...] = ("plugins/eyetracker.py", "includes/scenarios/generated")
+# Not part of the task (the scenarios written by the generator stay on the computer that made them)
+EXCLUDED: tuple[str, ...] = ("includes/scenarios/generated",)
 
 
 def is_excluded(relative: str) -> bool:
