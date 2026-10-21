@@ -70,7 +70,7 @@ export class LslBridge {
                 onFail(); // Not reachable (connection refused)
             } else if (!this.closed) {
                 console.warn(`[OpenMATB] LSL bridge disconnected, reconnecting (${this.queue.length} markers kept)`);
-                setTimeout(() => this.open(), RECONNECT_MS);
+                this.reconnect = setTimeout(() => this.open(), RECONNECT_MS);
             }
         };
     }
@@ -96,6 +96,9 @@ export class LslBridge {
 
     close() {
         this.closed = true;
+        // A reconnection due after the end of the session would send the markers not sent (stamped late, while the
+        // end page says they were lost) and hold the bridge connection
+        clearTimeout(this.reconnect);
         this.flush(true);
         this.socket?.close();
     }
