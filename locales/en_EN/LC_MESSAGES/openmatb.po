@@ -182,8 +182,8 @@ msgstr "should be a boolean (not %s)."
 
 #: core/scenario.py:314
 #, python-format
-msgid "must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
-msgstr "must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
+msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
+msgstr "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
 
 #: core/scenario.py:320
 #, python-format

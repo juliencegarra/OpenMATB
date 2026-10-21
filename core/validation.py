@@ -69,13 +69,16 @@ def is_color(x: str) -> ValidationResult:  # Can be an hexadecimal value, a cons
             x = "".join(c * 2 for c in x)
         rgba: tuple[int, ...] = tuple(list(int(x[i : i + 2], 16) for i in (0, 2, 4)) + [255])
         return rgba, None
-    elif x in list(C.keys()):
-        return C[x], None
+    elif x.upper() in C:  # In any case (the documentation wrote them in lowercase)
+        return C[x.upper()], None
     else:
         try:
             x = ast.literal_eval(x)
         except (ValueError, TypeError, SyntaxError):
-            return None, _("must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)") % x
+            return None, _("must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)") % (
+                ", ".join(C),
+                x,
+            )
         else:
             # Integers only: a string item raised a TypeError on the comparison, and True or 1.5 were accepted
             if (

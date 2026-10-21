@@ -195,10 +195,10 @@ msgstr "devrait être un booléen (et non %s)."
 
 #: core/scenario.py:314
 #, python-format
-msgid "must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
+msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
 msgstr ""
-"devrait être une valeur (R,G,B,a) ou hexadécimale (p.ex., #00ff00) (non pas "
-"%s)."
+"devrait être un nom de couleur (%s), une valeur (R,G,B,a) ou hexadécimale "
+"(p.ex., #00ff00) (non pas %s)."
 
 #: core/scenario.py:320
 #, python-format

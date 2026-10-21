@@ -151,7 +151,7 @@ msgstr ""
 
 #: core/scenario.py:306
 #, python-format
-msgid "must be (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
+msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
 msgstr ""
 
 #: core/scenario.py:312

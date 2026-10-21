@@ -155,6 +155,18 @@ class TestIsColor:
         assert val == (170, 17, 204, 255)
         assert err is None
 
+    def test_named_color_in_any_case(self):
+        """The names were checked in uppercase only: green, as the documentation wrote them, was refused."""
+        from core.constants import COLORS
+
+        for name in ("green", "Green", "GREEN"):
+            assert is_color(name) == (COLORS["GREEN"], None)
+
+    def test_error_gives_the_color_names(self):
+        val, err = is_color("greenish")
+        assert val is None
+        assert "GREEN" in err and "greenish" in err
+
     def test_named_color(self):
         """Named color 'WHITE' resolves to RGBA tuple."""
         val, err = is_color("WHITE")
