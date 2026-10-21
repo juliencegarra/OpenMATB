@@ -30,6 +30,7 @@ class Genericscales(BlockingPlugin):
         self.folder: str = P["QUESTIONNAIRES"]
         # Its file is read in its folder: checked there (not in the folder of the other blocking plugin)
         self.validation_dict["filename"] = (validation.is_available_text_file, self.folder)
+        self.validation_dict["showvalue"] = validation.is_boolean  # Without it, the scenario refused the parameter
         new_par: dict[str, Any] = dict(
             filename=None,
             pointsize=0,

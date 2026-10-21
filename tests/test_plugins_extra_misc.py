@@ -199,3 +199,12 @@ class TestBlockingPluginFolders:
         method, *args = getattr(plugins, plugin_class)().validation_dict["filename"]
         assert method(good, *args) == (good, None)
         assert method(bad, *args)[0] is None
+
+
+def test_genericscales_showvalue_can_be_set_in_a_scenario(mock_logger):
+    """showvalue had no validator: genericscales;showvalue;True made the scenario fail (no verification method)."""
+    from plugins.genericscales import Genericscales
+
+    validator = Genericscales().validation_dict["showvalue"]
+    assert validator("True") == (True, None)
+    assert validator("maybe")[0] is None
