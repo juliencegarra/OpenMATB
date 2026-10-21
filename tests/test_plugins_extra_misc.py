@@ -181,3 +181,21 @@ class TestParallelportStep:
         pp.resume()
         pp.update(1)
         pp._port.setData.assert_called_once_with(8)
+
+
+class TestBlockingPluginFolders:
+    """Each blocking plugin reads its file in its own folder: the scenario checks it there."""
+
+    @pytest.mark.parametrize(
+        "plugin_class, good, bad",
+        [
+            ("Instructions", "default_en/welcome_screen.txt", "nasatlx_en.txt"),
+            ("Genericscales", "nasatlx_en.txt", "default_en/welcome_screen.txt"),
+        ],
+    )
+    def test_filename_is_checked_in_the_plugin_folder(self, plugin_class, good, bad, mock_logger):
+        import plugins
+
+        method, *args = getattr(plugins, plugin_class)().validation_dict["filename"]
+        assert method(good, *args) == (good, None)
+        assert method(bad, *args)[0] is None

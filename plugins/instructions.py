@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from core import validation
 from core.constants import PATHS as P
 from core.widgets import SimpleHTML
 from plugins.abstractplugin import BlockingPlugin
@@ -16,6 +17,8 @@ class Instructions(BlockingPlugin):
         super().__init__()
 
         self.folder: str = P["INSTRUCTIONS"]
+        # Its file is read in its folder: checked there (not in the folder of the other blocking plugin)
+        self.validation_dict["filename"] = (validation.is_available_text_file, self.folder)
         new_par: dict[str, Any] = dict(
             filename=None,
             pointsize=0,

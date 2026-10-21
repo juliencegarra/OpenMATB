@@ -161,3 +161,20 @@ class TestAvailableTextFile:
             assert validation.is_available_text_file("welcome.txt") == ("welcome.txt", None)
             value, msg = validation.is_available_text_file("missing.txt")
         assert value is None and "missing.txt" in msg
+
+    def test_a_folder_or_an_empty_name_is_not_a_file(self, tmp_path):
+        """filename;default_en (a folder) or an empty value crashed when the plugin opened it."""
+        (tmp_path / "default_en").mkdir()
+        with patch.dict(P, {"QUESTIONNAIRES": tmp_path, "INSTRUCTIONS": tmp_path}):
+            assert validation.is_available_text_file("default_en")[0] is None
+            assert validation.is_available_text_file("")[0] is None
+            assert validation.is_available_text_file("default_en", tmp_path)[0] is None
+
+    def test_given_folder_only(self, tmp_path):
+        """A plugin reads its file in its own folder: a file of the other folder is not found at start."""
+        questionnaires, instructions = tmp_path / "q", tmp_path / "i"
+        questionnaires.mkdir()
+        instructions.mkdir()
+        (questionnaires / "nasatlx.txt").touch()
+        assert validation.is_available_text_file("nasatlx.txt", questionnaires) == ("nasatlx.txt", None)
+        assert validation.is_available_text_file("nasatlx.txt", instructions)[0] is None

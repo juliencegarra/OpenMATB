@@ -9,6 +9,7 @@
 import ast
 import math
 import re
+from pathlib import Path
 from typing import Any, Optional
 
 from pyglet.window import key as winkey
@@ -221,10 +222,11 @@ def is_in_unit_interval(x: str) -> ValidationResult:
             return None, msg
 
 
-def is_available_text_file(x: str) -> ValidationResult:
-    # The filename of a blocking plugin is to be found either
-    # in the scenario or the questionnaire folder
-    if any([p.joinpath(x).exists() for p in [P["QUESTIONNAIRES"], P["INSTRUCTIONS"]]]):
+def is_available_text_file(x: str, folder: Any = None) -> ValidationResult:
+    # The filename of a blocking plugin is to be found in its folder (given by the plugin: it reads the file there),
+    # else either in the instructions or the questionnaire folder. A file (not a folder, e.g. an empty value)
+    folders: list[Any] = [Path(folder)] if folder is not None else [P["QUESTIONNAIRES"], P["INSTRUCTIONS"]]
+    if len(str(x).strip()) > 0 and any(p.joinpath(x).is_file() for p in folders):
         return x, None
     else:
         return None, _("should be available either in the Instruction or Questionnaire folder (not %s)") % x

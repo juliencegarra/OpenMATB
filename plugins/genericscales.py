@@ -9,6 +9,7 @@ from typing import Any
 
 from pyglet.text import Label as PygletLabel
 
+from core import validation
 from core.constants import FONT_SIZES as F
 from core.constants import PATHS as P
 from core.constants import REPLAY_MODE
@@ -27,6 +28,8 @@ class Genericscales(BlockingPlugin):
         super().__init__()
 
         self.folder: str = P["QUESTIONNAIRES"]
+        # Its file is read in its folder: checked there (not in the folder of the other blocking plugin)
+        self.validation_dict["filename"] = (validation.is_available_text_file, self.folder)
         new_par: dict[str, Any] = dict(
             filename=None,
             pointsize=0,
