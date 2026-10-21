@@ -138,6 +138,8 @@ logtime,scenario_time,type,module,address,value
 14307.620911,150.071739,manual,,,end
 ```
 
+Since version 1.5, the session file also starts with the `version` and `session_id` rows, and a page of instructions or questionnaire ended by `maxdurationsec` is logged as an `input,timeout,<plugin>,<page number>` row.
+
 Details about how each module logs information are available [here](https://github.com/juliencegarra/OpenMATB/wiki/The-session-log-file).
 
 ## Tutorials
@@ -160,6 +162,10 @@ Since the first release of OpenMATB, there has been a lot of changes, the main o
   - Response times measured from the frame showing the stimulus to the input (the key event timestamp in the browser), instead of between two clock ticks
   - Agents: the automatic solver (`automaticsolver`) plays the tasks through an agent, with keys and joystick inputs logged as `agent` inputs and replayed; `system;agent;<name>` changes the agent
   - `allowanykey` in system monitoring: any system monitoring key, or SPACE, signals a failure
+  - `maxdurationsec` in instructions and questionnaires: each page is shown at most this duration (seconds, real time, pauses excluded; 0: no limit). A page ended this way is logged as a `timeout` input and a `page_timeout` performance, and is ended at the same time in the replay
+  - The session ID is logged at the start of the session file (`session_id` row): a renamed session file is replayed with the pseudorandom values of its session
+  - Replay: the communications prompts end when they ended in the session, and their sound follows the replay speed (up to x4, muted above), its pauses and its seeks
+  - CI: the scenarios of `includes/scenarios` are loaded with the plugins, and any error or warning (e.g. a deprecated command) fails the tests
   - Windows installer and portable version, and the web packages, in each release
 
   **Bug Fixes**
@@ -171,6 +177,20 @@ Since the first release of OpenMATB, there has been a lot of changes, the main o
   - Fix a strong joystick bouncing on the tracking reticle edge
   - Fix communications callsigns reusing characters, and a possible endless loop
   - Fix scenario and instruction files saved in UTF-8 with BOM, and crashes on a malformed scenario line
+  - Fix response times counting the time a task was paused by the scenario (e.g. `sysmon;pause`), and the automatic solver delay after such a pause
+  - Fix a second failure on a gauge already on failure, which restarted the response time and the alert timeout of the running one
+  - Fix questionnaire answers logged again by a `genericscales;stop` after the end of the questionnaire (generated scenarios)
+  - Fix a crash with fewer scheduling `labels` than timelines, and with a questionnaire scale with equal bounds
+  - Fix the replay of a session file cut by a crash, or saved again with a BOM (e.g. by Excel), and its memory growing during the replay
+  - Fix a seek in the replay leaving the previous run on screen (background bands, prompt sound, pointer)
+  - Fix the scenario generator: custom_generator.txt numeric values, the advanced parameters of a block replaced by the computed ones, the track panel defaults, the inter-block file paths (old presets included), and the file selector selecting the row above
+  - Fix a missing `scenario_path` in config.ini (the scenario selector opens), and config.ini read in UTF-8
+  - Fix the parallel port triggers lasting a few microseconds on desktop (raised and lowered in the same update): a trigger now lasts `delayms` of scenario time
+  - Fix closing the window (X button, Alt+F4) while a dialog is open, which lost the end of the session, and a scenario event run after quitting or behind an error dialog
+  - Fix a `labstreaminglayer` started without a stop, which kept the session open (now a scenario error)
+  - Fix the files of instructions and questionnaires checked in the other plugin folder, or a folder accepted as a file
+  - Fix the performance level with `toleranceradius` 0, a blocking plugin placed in a corner, and `inf` in an integer parameter
+  - Fix in the browser a prompt sound played again after a pause, and the LSL bridge reconnecting after the end of the session
 
 ### Version 1.3+
   **Replay Mode (new)**
