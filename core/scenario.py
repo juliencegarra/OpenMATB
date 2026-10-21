@@ -165,7 +165,9 @@ class Scenario:
             if not any(["start" in e.command for e in self.get_plugin_events(plug_name)]):
                 errors.append(_("The (%s) plugin does not have a start command.") % plug_name)
 
-            if self.plugins[plug_name].blocking is False:
+            # A blocking plugin that does not stop at its end (the LSL plugin) stays alive: the session never ended
+            plugin_ends_itself: bool = getattr(self.plugins[plug_name], "stop_on_end", True)
+            if self.plugins[plug_name].blocking is False or not plugin_ends_itself:
                 if not REPLAY_MODE:
                     if not any(["stop" in e.command for e in self.get_plugin_events(plug_name)]):
                         errors.append(_("The (%s) plugin does not have a stop command.") % plug_name)
