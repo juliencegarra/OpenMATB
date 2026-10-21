@@ -27,3 +27,5 @@ tests/test_humanlike_agent.py
 
 # Visual Studio
 .vs/
+# Screenshots taken in the replay (saved at the root)
+screenshot_*.png
