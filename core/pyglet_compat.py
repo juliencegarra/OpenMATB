@@ -27,7 +27,7 @@ if PYGLET_3:
 
     # pyglet 3.0.dev10: images have no anchor any more, but an <img> of an HTML label (instructions) still reads
     # image.anchor_y, and the exception stopped the event loop: images keep the default anchor of pyglet 2 (0, 0).
-    # Proposed upstream in pyglet#1527
+    # Fixed upstream by pyglet#1527 (merged after 3.0.dev11): to remove with the next pyglet 3 release
     if not hasattr(_AbstractImage, "anchor_y"):
         _AbstractImage.anchor_x = 0
         _AbstractImage.anchor_y = 0
