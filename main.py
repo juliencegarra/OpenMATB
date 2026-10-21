@@ -70,7 +70,11 @@ class OpenMATB:
             ini_scenario: str = url_params().get("scenario") or get_conf_value("Openmatb", "scenario_path").strip()
             if ARGS.scenario:
                 scenario_path: Path = Path(ARGS.scenario)
-                self.start(scenario_path if scenario_path.is_absolute() else PATHS["SCENARIOS"] / scenario_path)
+                # Relative to the scenarios folder, unless it is a file from the current folder (e.g. completed by
+                # the shell: includes/scenarios/basic.txt was looked for in includes/scenarios/includes/scenarios)
+                if not scenario_path.is_absolute() and not scenario_path.is_file():
+                    scenario_path = PATHS["SCENARIOS"] / scenario_path
+                self.start(scenario_path)
             elif ini_scenario:
                 self.start(PATHS["SCENARIOS"].joinpath(ini_scenario))
             else:
