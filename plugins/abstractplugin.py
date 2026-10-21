@@ -142,7 +142,8 @@ class AbstractPlugin:
             Window.MainWindow.set_bg_bands_visible(True)
 
         elif self.parameters["taskplacement"] != "invisible":
-            self.get_widget("task_title").hide()
+            if self.get_widget("task_title") is not None:  # None: a blocking plugin placed in a corner (no title)
+                self.get_widget("task_title").hide()
 
             # Resman case (manage status if relevant)
             if self.get_widget("status_title") is not None:

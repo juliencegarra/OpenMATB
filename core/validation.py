@@ -35,7 +35,7 @@ def is_natural_integer(x: str) -> ValidationResult:
     msg: str = _("should be a natural (0 included) integer (not %s).") % x
     try:
         val = int(float(x))
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, OverflowError):  # OverflowError: inf, 1e400 (a typo crashed the loading)
         return None, msg
     else:
         if val >= 0:

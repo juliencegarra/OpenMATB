@@ -109,12 +109,16 @@ class Performance(AbstractPlugin):
                         len(plugin.performance["a_in_tolerance"]) >= frames_n_res
                         and len(plugin.performance["b_in_tolerance"]) >= frames_n_res
                     ):
-                        a_perf_list: list[int] = plugin.performance["a_in_tolerance"][-frames_n_res:]
-                        b_perf_list: list[int] = plugin.performance["b_in_tolerance"][-frames_n_res:]
-
-                        perf: float = (sum(a_perf_list) / len(a_perf_list)) + (sum(b_perf_list) / len(b_perf_list))
-
-                        self.performance_levels[p] = perf / 2
+                        # NaN values (no tolerance area: toleranceradius 0) are left out, as for the tracking
+                        a_perf_list: list[int] = [
+                            v for v in plugin.performance["a_in_tolerance"][-frames_n_res:] if not isnan(v)
+                        ]
+                        b_perf_list: list[int] = [
+                            v for v in plugin.performance["b_in_tolerance"][-frames_n_res:] if not isnan(v)
+                        ]
+                        if a_perf_list and b_perf_list:
+                            perf: float = (sum(a_perf_list) / len(a_perf_list)) + (sum(b_perf_list) / len(b_perf_list))
+                            self.performance_levels[p] = perf / 2
 
                 #       Communications
                 elif p == "communications":
