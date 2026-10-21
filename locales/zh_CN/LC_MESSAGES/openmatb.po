@@ -379,7 +379,7 @@ msgstr "资源管理"
 
 #: plugins/resman.py:189
 msgid "Pump status"
-msgstr "泵状态"
+msgstr "油泵状态"
 
 #: plugins/scheduling.py:19
 msgid "Scheduling"

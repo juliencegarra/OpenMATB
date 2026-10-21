@@ -375,7 +375,7 @@ msgstr "成績"
 
 #: plugins/resman.py:23
 msgid "Resources management"
-msgstr "リソース管理"
+msgstr "燃料管理"
 
 #: plugins/resman.py:189
 msgid "Pump status"

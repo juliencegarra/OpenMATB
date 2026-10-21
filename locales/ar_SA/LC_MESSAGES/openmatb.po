@@ -259,7 +259,7 @@ msgstr "يجب أن يكون تعبيراً نمطياً (regex) صالحاً (�
 
 #: core/validation.py:78
 msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
-msgstr "يجب أن تكون اسم لون (%s) أو قيم (R,G,B,a) أو قيمة سداسية عشرية (مثلاً #00ff00) (وليس %s)"
+msgstr "يجب أن تكون القيمة اسم لون (%s) أو قيم (R,G,B,a) أو قيمة سداسية عشرية (مثلاً #00ff00) (وليس %s)"
 
 #: core/validation.py:92
 msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
