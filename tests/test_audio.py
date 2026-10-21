@@ -36,10 +36,12 @@ class TestSequentialMode:
         try:
             sp.play()
             assert players[-1].queue.call_args[0][0] == "s1"
-            sp._next(0)  # end of s1
+            sp._on_player_eos()  # end of s1
+            sp._next(0)
             assert players[-1].queue.call_args[0][0] == "s2"
             assert sp.source == "s2"
-            sp._next(0)  # end of s2
+            sp._on_player_eos()  # end of s2
+            sp._next(0)
             assert sp.source is None
             assert len(players) == 2
         finally:
@@ -49,9 +51,23 @@ class TestSequentialMode:
         sp, players, patcher = self._make(["s1", "s2"])
         try:
             sp.play()
+            sp._on_player_eos()
             sp._next(0)
             sp.pause()
             players[-1].delete.assert_called_once()
+            sp.play()
+            assert players[-1].queue.call_args[0][0] == "s2"
+        finally:
+            patcher.stop()
+
+    def test_sound_ended_just_before_a_pause_is_not_played_again(self):
+        """Paused in the frame its sound ended (before _next): the same sound was played again on resume."""
+        sp, players, patcher = self._make(["s1", "s2"])
+        try:
+            sp.play()
+            sp._on_player_eos()  # end of s1, _next scheduled for the next frame
+            sp.pause()
+            sp._next(0)
             sp.play()
             assert players[-1].queue.call_args[0][0] == "s2"
         finally:

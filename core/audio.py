@@ -154,6 +154,8 @@ class SequencePlayer:
             self._player = None
 
     def _on_player_eos(self) -> None:
+        # This sound has been played, even if the sequence is paused before _next (it was played again on resume)
+        self._index += 1
         # Don't delete the player inside its own event dispatch
         pyglet.clock.schedule_once(self._next, 0)
 
@@ -161,7 +163,6 @@ class SequencePlayer:
         if not self._playing:
             return
         self._stop_current()
-        self._index += 1
         if self._playing and self.source is not None:
             self._start_current()
         else:
