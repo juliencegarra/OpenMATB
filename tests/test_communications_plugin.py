@@ -186,7 +186,7 @@ class TestPauseResume:
 
 
 class TestHiddenIsSilent:
-    """A hidden task is not heard either (default_en: a prompt cut by hide + pause was heard on a hidden resume)."""
+    """A hidden task is not heard either (guided_tour_en: a prompt cut by hide + pause was heard on a hidden resume)."""
 
     def test_a_prompt_resumed_while_hidden_is_silent(self, comms):
         comms.player = MagicMock(volume=1.0)

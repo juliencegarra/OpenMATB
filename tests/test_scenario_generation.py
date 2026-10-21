@@ -464,11 +464,11 @@ class TestGenerateScenario:
         the file alone was read as an unknown method, and the start had no preceding filename command."""
         config = ScenarioConfig(
             blocks=[BlockConfig(60, {"track": 0.5}), BlockConfig(60, {"track": 0.5})],
-            inter_block_events=[InterBlockEvent("instructions", "default_en/track.txt", 1)],
+            inter_block_events=[InterBlockEvent("instructions", "guided_tour_en/track.txt", 1)],
         )
         events = get_events_from_scenario(generate_scenario(config, self._make_plugins()))
         commands = [e.command for e in events if e.plugin == "instructions"]
-        assert commands[0] == ["filename", "default_en/track.txt"]
+        assert commands[0] == ["filename", "guided_tour_en/track.txt"]
         assert commands[1] == ["start"]
 
     def test_track_only_blocks(self):

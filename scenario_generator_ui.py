@@ -1101,7 +1101,7 @@ class UIFileSelector:
         self.on_select = on_select
         self.on_cancel = on_cancel
         self._files = files
-        # With a root, the path in it (default_en/track.txt and default_fr/track.txt have the same name)
+        # With a root, the path in it (guided_tour_en/track.txt and guided_tour_fr/track.txt have the same name)
         self._display_texts = [f.relative_to(root).as_posix() if root else str(f.name) for f in files]
         self._selected_index = 0 if files else -1
         self._scroll_offset = 0

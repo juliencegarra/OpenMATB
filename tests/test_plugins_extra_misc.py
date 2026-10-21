@@ -189,8 +189,8 @@ class TestBlockingPluginFolders:
     @pytest.mark.parametrize(
         "plugin_class, good, bad",
         [
-            ("Instructions", "default_en/welcome_screen.txt", "nasatlx_en.txt"),
-            ("Genericscales", "nasatlx_en.txt", "default_en/welcome_screen.txt"),
+            ("Instructions", "guided_tour_en/welcome_screen.txt", "nasatlx_en.txt"),
+            ("Genericscales", "nasatlx_en.txt", "guided_tour_en/welcome_screen.txt"),
         ],
     )
     def test_filename_is_checked_in_the_plugin_folder(self, plugin_class, good, bad, mock_logger):

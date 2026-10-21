@@ -69,9 +69,9 @@
 
 0:01:35;sysmon;scales-1-failure;True
 0:01:35;sysmon;lights-2-failure;True
-0:01:45;communications;radioprompt;own
+0:01:40;communications;radioprompt;own
 0:02:00;sysmon;scales-2-failure;True
-0:02:00;communications;radioprompt;own
+0:02:05;communications;radioprompt;own
 0:02:10;resman;pump-3-state;failure
 0:02:20;resman;pump-3-state;off
 
