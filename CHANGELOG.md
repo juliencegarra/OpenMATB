@@ -2,6 +2,16 @@
 
 The main changes of each version of OpenMATB. The releases and their files are on [GitHub](https://github.com/juliencegarra/OpenMATB/releases).
 
+## Unreleased
+  **New Features**
+  - New example scenarios: three workload levels (`workload_levels/`, 5-minute blocks with the NASA-TLX), the multitasking cost (each task alone, then together), a workload peak, a training session, a session synchronized with physiological recordings (resting baseline and LSL markers), and in-task workload ratings (a one-item scale every 2 minutes, closed after 10 s), with participant instructions (`includes/instructions/tasks_en`)
+  - Scenarios with names that tell what they are: `guided_tour_en` and `guided_tour_fr` (formerly `default_en` and `default_fr`), `one_minute_mouse_demo` (formerly `demo`); the manual test scenarios moved to `tests/scenarios` (out of the scenario selection)
+
+  **Bug Fixes**
+  - Fix a hidden communications task heard: a prompt cut by a pause was played again when the task was resumed while still hidden (guided tours). A hidden task is now silent, in the replay too
+  - Fix the guided tours: the communications prompt was cut before its frequency, and the French tour had the English voice; fix the demo prompt cut by the end
+  - Fix a scenario path given on the command line from the current folder (e.g. `includes/scenarios/basic.txt`), looked for in the scenarios folder
+
 ## Version 1.5.2
   **New Features**
   - `maxdurationsec` in instructions and questionnaires: each page is shown at most this duration (seconds, real time, pauses excluded; 0: no limit). A page ended this way is logged as a `timeout` input and a `page_timeout` performance, and is ended at the same time in the replay
