@@ -1,0 +1,6215 @@
+# BidiTest-16.0.0.txt
+# Date: 2024-04-30, 21:48:09 GMT
+# © 2024 Unicode®, Inc.
+# Unicode and the Unicode Logo are registered trademarks of Unicode, Inc. in the U.S. and other countries.
+# For terms of use and license, see https://www.unicode.org/terms_of_use.html
+#
+# Unicode Character Database
+#   For documentation, see https://www.unicode.org/reports/tr44/
+#
+# This file provides a conformance test for UBA (Unicode Bidi Algorithm) implementations.
+# It is designed to be reasonably compact, and yet provide a thorough test of all cases up to
+# a given limit (currently 4). Additionally, it contains some longer cases useful for testing
+#
+# OpenMATB: a sample of this file for tests/test_bidi.py: one test in 100, with its @Levels and @Reorder
+# lines, without the tests with paragraph separators (B): core.bidi gets each paragraph alone.
+#
+# UNICODE LICENSE V3
+#
+# COPYRIGHT AND PERMISSION NOTICE
+#
+# Copyright © 1991-2026 Unicode, Inc.
+#
+# NOTICE TO USER: Carefully read the following legal agreement. BY
+# DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING DATA FILES, AND/OR
+# SOFTWARE, YOU UNEQUIVOCALLY ACCEPT, AND AGREE TO BE BOUND BY, ALL OF THE
+# TERMS AND CONDITIONS OF THIS AGREEMENT. IF YOU DO NOT AGREE, DO NOT
+# DOWNLOAD, INSTALL, COPY, DISTRIBUTE OR USE THE DATA FILES OR SOFTWARE.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of data files and any associated documentation (the "Data Files") or
+# software and any associated documentation (the "Software") to deal in the
+# Data Files or Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, and/or sell
+# copies of the Data Files or Software, and to permit persons to whom the
+# Data Files or Software are furnished to do so, provided that either (a)
+# this copyright and permission notice appear with all copies of the Data
+# Files or Software, or (b) this copyright and permission notice appear in
+# associated Documentation.
+#
+# THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+# KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+# THIRD PARTY RIGHTS.
+#
+# IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS NOTICE
+# BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL DAMAGES,
+# OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+# WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+# ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THE DATA
+# FILES OR SOFTWARE.
+#
+# Except as contained in this notice, the name of a copyright holder shall
+# not be used in advertising or otherwise to promote the sale, use or other
+# dealings in these Data Files or Software without prior written
+# authorization of the copyright holder.
+
+@Levels:	0 x
+@Reorder:	0
+CS PDF; 3
+@Levels:	1 x
+@Reorder:	0
+ON RLE; 4
+@Levels:	x 1
+@Reorder:	1
+LRE FSI; 4
+@Levels:	x 3
+@Reorder:	1
+RLO AL; 5
+@Levels:	x x x
+@Reorder:	
+RLE RLE PDF; 7
+BN LRO RLE; 7
+@Levels:	0 0
+@Reorder:	0 1
+NSM WS; 3
+@Levels:	0 1
+@Reorder:	0 1
+RLI ON; 3
+@Levels:	0 x x
+@Reorder:	0
+EN PDF PDF; 3
+CS RLO RLE; 3
+WS RLE LRE; 3
+RLI LRE PDF; 3
+PDI BN RLE; 3
+@Levels:	1 1
+@Reorder:	1 0
+NSM LRI; 4
+@Levels:	1 2
+@Reorder:	1 0
+LRI L; 4
+@Levels:	1 x x
+@Reorder:	0
+AL BN LRO; 7
+CS RLO BN; 4
+WS RLE RLO; 4
+RLI LRO LRO; 4
+PDI BN BN; 4
+@Levels:	2 x x
+@Reorder:	0
+EN LRE RLE; 4
+@Levels:	x 0 x
+@Reorder:	1
+LRE PDI LRE; 3
+RLO RLI PDF; 3
+BN EN RLE; 3
+@Levels:	x 1 x
+@Reorder:	1
+LRE PDI LRE; 4
+RLE LRI PDF; 4
+RLO RLI RLE; 4
+BN AL LRE; 7
+@Levels:	x 2 x
+@Reorder:	1
+LRE CS PDF; 7
+PDF EN RLE; 4
+@Levels:	x 3 x
+@Reorder:	1
+RLO EN LRE; 4
+@Levels:	x x 0
+@Reorder:	2
+LRE PDF RLI; 3
+RLO LRE PDI; 3
+BN RLE S; 3
+@Levels:	x x 1
+@Reorder:	2
+LRO RLO WS; 4
+RLO PDF ES; 4
+BN LRO S; 4
+@Levels:	x x 2
+@Reorder:	2
+RLE LRO ON; 3
+@Levels:	x x 3
+@Reorder:	2
+LRO RLE ES; 7
+BN RLO AL; 5
+@Levels:	x x 4
+@Reorder:	2
+BN RLE EN; 4
+@Levels:	x x x x
+@Reorder:	
+LRE LRO LRO PDF; 7
+LRE PDF LRE RLE; 7
+LRO LRE BN LRE; 7
+LRO RLO RLO PDF; 7
+RLE LRE RLE RLE; 7
+RLE RLO LRO LRE; 7
+RLE BN BN PDF; 7
+RLO RLE PDF RLE; 7
+RLO BN RLO LRE; 7
+PDF RLE LRO PDF; 7
+PDF BN LRE RLE; 7
+BN LRO BN LRE; 7
+BN PDF RLO PDF; 7
+@Levels:	0 0 x
+@Reorder:	0 1
+L ON RLE; 3
+EN PDI LRE; 3
+ET ES PDF; 3
+CS S RLE; 3
+NSM RLI LRE; 3
+WS L PDF; 3
+ON CS RLE; 3
+RLI LRI LRE; 3
+PDI S PDF; 3
+@Levels:	0 1 x
+@Reorder:	0 1
+NSM R RLE; 2
+PDI R LRE; 2
+@Levels:	0 2 x
+@Reorder:	0 1
+LRI NSM PDF; 3
+@Levels:	0 x 0
+@Reorder:	0 2
+L LRE LRI; 3
+ES LRE LRI; 3
+CS LRE LRI; 3
+S LRE LRI; 3
+ON LRE LRI; 3
+RLI RLE FSI; 3
+PDI BN WS; 3
+@Levels:	0 x 1
+@Reorder:	0 2
+CS RLO EN; 3
+RLI PDF NSM; 3
+@Levels:	0 x 2
+@Reorder:	0 2
+ET LRE L; 3
+WS LRO ET; 3
+PDI LRO NSM; 3
+@Levels:	0 x 4
+@Reorder:	0 2
+LRI LRE NSM; 3
+@Levels:	0 x x x
+@Reorder:	0
+L LRO RLO LRE; 3
+L PDF LRO PDF; 3
+EN LRO LRE RLE; 3
+EN RLO BN LRE; 3
+ES LRE RLO PDF; 3
+ES RLO RLE RLE; 3
+ET LRE LRO LRE; 3
+ET RLE BN PDF; 3
+ET BN PDF RLE; 3
+CS RLE RLO LRE; 3
+CS BN LRO PDF; 3
+NSM RLE LRE RLE; 3
+NSM PDF BN LRE; 3
+S LRO RLO PDF; 3
+S PDF RLE RLE; 3
+WS LRO LRO LRE; 3
+WS RLO BN PDF; 3
+ON LRE PDF RLE; 3
+ON RLO RLO LRE; 3
+LRI LRE LRO PDF; 3
+LRI RLO LRE RLE; 3
+LRI BN BN LRE; 3
+RLI RLE RLO PDF; 3
+RLI BN RLE RLE; 3
+FSI RLE LRO LRE; 3
+FSI PDF BN PDF; 3
+PDI LRO PDF RLE; 3
+PDI PDF RLO LRE; 3
+@Levels:	1 0 x
+@Reorder:	0 1
+R LRI PDF; 2
+@Levels:	1 1 x
+@Reorder:	1 0
+R ES RLE; 5
+AL S LRE; 5
+ES LRI PDF; 4
+CS R RLE; 5
+NSM CS LRE; 4
+S WS PDF; 4
+WS FSI RLE; 4
+LRI LRI LRE; 4
+PDI R PDF; 5
+@Levels:	1 2 x
+@Reorder:	1 0
+AL EN RLE; 7
+WS EN LRE; 4
+FSI CS PDF; 4
+@Levels:	1 4 x
+@Reorder:	1 0
+LRI AN RLE; 4
+@Levels:	1 x 0
+@Reorder:	0 2
+AL PDF ET; 2
+@Levels:	1 x 1
+@Reorder:	2 0
+AL RLE AL; 2
+ES BN LRI; 4
+CS BN LRI; 4
+S BN LRI; 4
+ON BN LRI; 4
+FSI PDF S; 4
+@Levels:	1 x 2
+@Reorder:	2 0
+AL LRO ET; 7
+NSM PDF AN; 4
+FSI BN ON; 4
+@Levels:	1 x 3
+@Reorder:	2 0
+CS LRE R; 5
+LRI RLE NSM; 4
+@Levels:	1 x 4
+@Reorder:	2 0
+ON RLE EN; 4
+@Levels:	1 x 6
+@Reorder:	2 0
+LRI LRE AN; 4
+@Levels:	1 x x x
+@Reorder:	0
+R RLE RLO PDF; 7
+R BN RLE RLE; 7
+AL RLE LRO LRE; 7
+AL PDF BN PDF; 7
+ES LRO PDF RLE; 4
+ES PDF RLO LRE; 4
+ET LRO LRO PDF; 4
+ET PDF LRE RLE; 4
+CS LRE BN LRE; 4
+CS RLO RLO PDF; 4
+NSM LRE RLE RLE; 4
+NSM RLO LRO LRE; 4
+NSM BN BN PDF; 4
+S RLE PDF RLE; 4
+S BN RLO LRE; 4
+WS RLE LRO PDF; 4
+WS BN LRE RLE; 4
+ON LRO BN LRE; 4
+ON PDF RLO PDF; 4
+LRI LRO RLE RLE; 4
+LRI PDF LRO LRE; 4
+RLI LRE BN PDF; 4
+RLI RLO PDF RLE; 4
+FSI LRE RLO LRE; 4
+FSI RLO LRO PDF; 4
+PDI LRE LRE RLE; 4
+PDI RLE BN LRE; 4
+PDI BN RLO PDF; 4
+@Levels:	2 1 x
+@Reorder:	1 0
+L ES RLE; 4
+EN LRI LRE; 4
+@Levels:	2 2 x
+@Reorder:	0 1
+L L PDF; 4
+@Levels:	2 x 0
+@Reorder:	0 2
+AN RLO LRI; 3
+@Levels:	2 x 1
+@Reorder:	2 0
+EN PDF R; 5
+@Levels:	2 x 2
+@Reorder:	0 2
+L LRO AN; 4
+@Levels:	2 x 3
+@Reorder:	0 2
+EN RLO EN; 4
+@Levels:	2 x x x
+@Reorder:	0
+L LRO PDF RLE; 4
+L PDF RLO LRE; 4
+EN LRO LRO PDF; 4
+EN PDF LRE RLE; 4
+AN LRE BN LRE; 7
+AN RLO RLO PDF; 7
+@Levels:	x 0 0
+@Reorder:	1 2
+LRE LRI LRI; 3
+RLO WS S; 3
+PDF NSM NSM; 3
+BN EN LRI; 3
+BN LRI PDI; 3
+@Levels:	x 0 1
+@Reorder:	1 2
+BN PDI AL; 2
+@Levels:	x 0 x x
+@Reorder:	1
+LRE S RLE RLE; 3
+LRE RLI LRO LRE; 3
+LRE PDI BN PDF; 3
+LRO LRI PDF RLE; 3
+LRO PDI RLO LRE; 3
+RLE LRI LRO PDF; 3
+RLE PDI LRE RLE; 3
+RLO WS BN LRE; 3
+RLO FSI RLO PDF; 3
+PDF EN RLE RLE; 3
+PDF CS LRO LRE; 3
+PDF S BN PDF; 3
+PDF LRI PDF RLE; 3
+PDF PDI RLO LRE; 3
+BN ES LRO PDF; 3
+BN NSM LRE RLE; 3
+BN WS BN LRE; 3
+BN RLI RLO PDF; 3
+@Levels:	x 1 0
+@Reorder:	1 2
+RLE ES LRI; 3
+PDF AL ES; 2
+@Levels:	x 1 1
+@Reorder:	2 1
+LRO PDI LRI; 4
+RLE PDI RLI; 4
+RLO WS R; 2
+PDF ET ES; 4
+PDF PDI S; 4
+BN WS ES; 4
+@Levels:	x 1 2
+@Reorder:	2 1
+RLE LRI NSM; 3
+BN LRI NSM; 4
+@Levels:	x 1 x x
+@Reorder:	1
+LRE S LRE LRO; 4
+LRE LRI PDF BN; 4
+LRE PDI RLO RLO; 4
+LRO LRI RLE LRO; 4
+LRO PDI LRE BN; 4
+RLE AL BN RLO; 2
+RLE CS PDF LRO; 3
+RLE WS RLE BN; 4
+RLE RLI LRO RLO; 4
+RLO L LRE LRO; 3
+RLO AL PDF BN; 2
+RLO ET RLO RLO; 3
+RLO NSM RLE LRO; 3
+RLO ON LRE BN; 3
+RLO RLI BN RLO; 4
+PDF R PDF LRO; 7
+PDF ET RLE BN; 4
+PDF S LRO RLO; 4
+PDF LRI LRE LRO; 4
+PDF FSI PDF BN; 4
+BN AL RLO RLO; 7
+BN CS RLE LRO; 4
+BN WS LRE BN; 4
+BN LRI BN RLO; 4
+BN PDI PDF LRO; 4
+@Levels:	x 2 0
+@Reorder:	1 2
+LRO CS PDI; 3
+@Levels:	x 2 1
+@Reorder:	2 1
+LRO L RLI; 4
+PDF AN ET; 4
+@Levels:	x 2 2
+@Reorder:	1 2
+LRE PDI L; 7
+LRO WS EN; 7
+@Levels:	x 2 3
+@Reorder:	1 2
+LRO RLI CS; 7
+@Levels:	x 2 x x
+@Reorder:	1
+LRE EN LRO RLE; 7
+LRE CS LRE LRE; 7
+LRE ON PDF PDF; 7
+LRO AL RLO RLE; 7
+LRO ET RLE LRE; 7
+LRO NSM LRE PDF; 7
+RLE L BN RLE; 3
+PDF L PDF LRE; 4
+BN L RLE PDF; 4
+@Levels:	x 3 0
+@Reorder:	1 2
+LRE AL LRI; 2
+@Levels:	x 3 1
+@Reorder:	2 1
+RLO CS S; 4
+@Levels:	x 3 3
+@Reorder:	2 1
+RLO L EN; 4
+RLO ON EN; 4
+@Levels:	x 3 6
+@Reorder:	2 1
+RLE RLI AN; 4
+@Levels:	x 3 x x
+@Reorder:	1
+RLE R RLO RLO; 5
+RLE ET RLE LRO; 4
+RLE ON LRE BN; 4
+RLO R BN RLO; 5
+RLO ES PDF LRO; 4
+RLO CS RLE BN; 4
+@Levels:	x 4 1
+@Reorder:	2 1
+LRE AN RLI; 4
+@Levels:	x 4 x x
+@Reorder:	1
+RLE L LRE RLE; 4
+RLE AN BN LRE; 4
+@Levels:	x x 0 x
+@Reorder:	2
+LRE RLE RLI PDF; 3
+LRE PDF ON RLE; 3
+LRO LRO S LRE; 3
+LRO RLO FSI PDF; 3
+LRO BN LRI RLE; 3
+RLE RLE WS LRE; 3
+RLE PDF NSM PDF; 3
+RLO LRE RLI RLE; 3
+RLO RLO LRI LRE; 3
+RLO PDF PDI PDF; 3
+PDF LRO FSI RLE; 3
+PDF PDF ET LRE; 3
+PDF BN S PDF; 3
+BN LRO FSI RLE; 3
+BN PDF ET LRE; 3
+BN BN S PDF; 3
+@Levels:	x x 1 x
+@Reorder:	2
+LRE LRO FSI RLE; 4
+LRE PDF ET LRE; 4
+LRO LRE S PDF; 4
+LRO RLE PDI RLE; 4
+LRO PDF RLI LRE; 4
+RLE LRO WS PDF; 4
+RLE PDF R RLE; 7
+RLE BN CS LRE; 3
+RLO LRO WS PDF; 4
+RLO PDF R RLE; 7
+RLO BN ES LRE; 3
+PDF LRE FSI PDF; 4
+PDF RLE LRI RLE; 4
+PDF RLO RLI LRE; 4
+PDF BN R PDF; 7
+BN LRE FSI RLE; 4
+BN RLE LRI LRE; 4
+BN RLO LRI PDF; 4
+BN BN R RLE; 7
+@Levels:	x x 2 x
+@Reorder:	2
+LRE BN EN LRE; 7
+LRO BN CS PDF; 7
+RLE LRO CS RLE; 3
+RLO LRO R LRE; 2
+PDF LRE CS PDF; 7
+PDF PDF EN RLE; 4
+BN LRO ET LRE; 7
+@Levels:	x x 3 x
+@Reorder:	2
+LRE RLE ES PDF; 7
+LRO RLE R RLE; 7
+RLE LRE R LRE; 2
+RLE RLO CS PDF; 3
+RLO RLE NSM RLE; 3
+RLO BN ET LRE; 4
+PDF RLO AL PDF; 5
+BN RLO L RLE; 4
+@Levels:	x x 4 x
+@Reorder:	2
+LRE LRO L LRE; 7
+LRO LRE ES PDF; 7
+LRO RLE AN RLE; 7
+RLE LRO NSM LRE; 4
+RLO LRO L PDF; 4
+BN LRE AN RLE; 7
+@Levels:	x x 5 x
+@Reorder:	2
+RLE RLO L LRE; 4
+RLO RLE CS PDF; 4
+@Levels:	x x 6 x
+@Reorder:	2
+RLE RLE EN RLE; 4
+@Levels:	x x x 0
+@Reorder:	3
+LRE LRO BN S; 3
+LRE PDF RLO FSI; 3
+LRO LRE PDF PDI; 3
+LRO RLO RLO RLI; 3
+LRO BN PDF FSI; 3
+RLE RLE RLO LRI; 3
+RLE PDF BN FSI; 3
+RLO LRO RLO WS; 3
+RLO PDF LRO PDI; 3
+PDF LRE RLO S; 3
+PDF RLE PDF ON; 3
+PDF PDF BN LRI; 3
+BN LRO LRE RLI; 3
+BN RLO RLE PDI; 3
+BN BN PDF L; 3
+@Levels:	x x x 1
+@Reorder:	3
+LRE RLE LRE LRI; 4
+LRE PDF RLO ET; 3
+LRO LRE RLO LRI; 4
+LRO RLO RLE S; 4
+LRO BN LRO RLI; 4
+RLE LRO RLO PDI; 4
+RLE RLO BN S; 4
+RLE BN PDF ET; 4
+RLO LRO PDF CS; 3
+RLO RLO PDF PDI; 4
+RLO BN PDF ES; 4
+PDF LRO PDF S; 4
+PDF RLO BN L; 3
+PDF BN RLE NSM; 3
+BN LRO LRO WS; 4
+BN RLO RLE LRI; 4
+BN PDF BN WS; 4
+@Levels:	x x x 2
+@Reorder:	3
+LRE RLO PDF ON; 7
+LRO PDF BN L; 4
+RLO LRE BN ON; 3
+PDF RLE BN L; 3
+BN RLE LRE ES; 3
+@Levels:	x x x 3
+@Reorder:	3
+LRE RLE BN AL; 7
+LRO BN RLO R; 7
+RLE PDF RLO R; 5
+RLO RLE PDF ON; 4
+PDF LRO RLE NSM; 7
+PDF BN RLO ET; 4
+BN PDF RLE ES; 4
+@Levels:	x x x 4
+@Reorder:	3
+LRE BN LRE CS; 7
+RLE LRE LRE NSM; 3
+RLE RLO PDF EN; 4
+RLO RLE LRO ET; 3
+PDF RLE LRO R; 5
+BN RLE LRO CS; 4
+@Levels:	x x x 5
+@Reorder:	3
+LRE RLO RLE NSM; 7
+RLE LRE RLO R; 5
+RLE BN RLO AN; 4
+RLO BN LRE AL; 5
+BN RLO RLO NSM; 4
+@Levels:	x x x 6
+@Reorder:	3
+LRO RLO RLE AN; 7
+RLO LRE LRE NSM; 4
+BN RLE RLE EN; 4
+@Levels:	x x x 8
+@Reorder:	3
+LRO LRE LRE AN; 7
+@Levels:	0 0 0
+@Reorder:	0 1 2
+L S L; 3
+EN ES CS; 3
+EN FSI WS; 3
+ES S CS; 3
+ET ES ON; 3
+ET FSI PDI; 3
+CS S ON; 3
+NSM ES PDI; 3
+NSM PDI ET; 3
+S S PDI; 3
+WS ET ET; 3
+WS PDI WS; 3
+ON WS ET; 3
+RLI S RLI; 3
+PDI EN CS; 3
+PDI LRI S; 3
+@Levels:	0 0 1
+@Reorder:	0 1 2
+ES NSM AL; 2
+NSM RLI ON; 3
+RLI S ON; 3
+@Levels:	0 0 2
+@Reorder:	0 1 2
+ES LRI EN; 3
+S ES AN; 3
+PDI EN AN; 3
+@Levels:	0 0 x x
+@Reorder:	0 1
+L L BN LRE; 3
+L ET RLO PDF; 3
+L S RLE RLE; 3
+L LRI LRO LRE; 3
+L FSI BN PDF; 3
+EN EN PDF RLE; 3
+EN CS RLO LRE; 3
+EN WS LRO PDF; 3
+EN RLI LRE RLE; 3
+EN PDI BN LRE; 3
+ES ES RLO PDF; 3
+ES NSM RLE RLE; 3
+ES ON LRO LRE; 3
+ES RLI BN PDF; 3
+ET L PDF RLE; 3
+ET ET RLO LRE; 3
+ET S LRO PDF; 3
+ET LRI LRE RLE; 3
+ET FSI BN LRE; 3
+CS EN RLO PDF; 3
+CS CS RLE RLE; 3
+CS WS LRO LRE; 3
+CS LRI BN PDF; 3
+CS PDI PDF RLE; 3
+NSM ES RLO LRE; 3
+NSM NSM LRO PDF; 3
+NSM ON LRE RLE; 3
+NSM RLI BN LRE; 3
+S L RLO PDF; 3
+S ET RLE RLE; 3
+S S LRO LRE; 3
+S ON BN PDF; 3
+S FSI PDF RLE; 3
+WS EN RLO LRE; 3
+WS CS LRO PDF; 3
+WS WS LRE RLE; 3
+WS LRI BN LRE; 3
+WS PDI RLO PDF; 3
+ON ES RLE RLE; 3
+ON NSM LRO LRE; 3
+ON WS BN PDF; 3
+ON RLI PDF RLE; 3
+LRI S RLO LRE; 3
+LRI RLI LRO PDF; 3
+RLI S LRE RLE; 3
+RLI LRI BN LRE; 3
+RLI PDI RLO PDF; 3
+FSI LRI RLE RLE; 3
+FSI PDI LRO LRE; 3
+PDI EN BN PDF; 3
+PDI CS PDF RLE; 3
+PDI WS RLO LRE; 3
+PDI RLI LRO PDF; 3
+@Levels:	0 1 0
+@Reorder:	0 1 2
+L R ET; 3
+CS AL CS; 2
+RLI R FSI; 3
+@Levels:	0 1 1
+@Reorder:	0 2 1
+CS AL AL; 2
+FSI CS R; 3
+@Levels:	0 1 3
+@Reorder:	0 2 1
+RLI RLI AL; 3
+@Levels:	0 1 x x
+@Reorder:	0 1
+EN R RLE RLO; 2
+ES AL LRO LRO; 2
+ET AL BN BN; 2
+NSM R PDF RLO; 2
+S AL RLO LRO; 2
+ON R LRO BN; 2
+RLI AL LRE RLO; 3
+RLI ET BN LRO; 3
+RLI ON RLO BN; 3
+PDI R RLE RLO; 2
+@Levels:	0 2 0
+@Reorder:	0 1 2
+ET AN ON; 3
+LRI NSM PDI; 3
+@Levels:	0 2 1
+@Reorder:	0 2 1
+RLI L ET; 3
+@Levels:	0 2 2
+@Reorder:	0 1 2
+RLI EN ET; 3
+@Levels:	0 2 3
+@Reorder:	0 1 2
+FSI FSI R; 3
+@Levels:	0 2 x x
+@Reorder:	0 1
+EN AN LRE PDF; 3
+ET AN BN RLE; 3
+S AN PDF LRE; 3
+LRI L RLE PDF; 3
+LRI ET LRO RLE; 3
+LRI ON LRE LRE; 3
+RLI EN PDF PDF; 3
+FSI EN RLO RLE; 3
+FSI CS RLE LRE; 3
+PDI AN LRE PDF; 3
+@Levels:	0 3 x x
+@Reorder:	0 1
+LRI AL LRE LRE; 3
+@Levels:	0 4 x x
+@Reorder:	0 1
+LRI AN BN PDF; 3
+@Levels:	0 x 0 x
+@Reorder:	0 2
+L LRO FSI RLE; 3
+L PDF ET LRE; 3
+L BN S PDF; 3
+EN LRO FSI RLE; 3
+EN PDF ET LRE; 3
+EN BN S PDF; 3
+ES LRO FSI RLE; 3
+ES PDF ET LRE; 3
+ES BN S PDF; 3
+ET LRO FSI RLE; 3
+ET PDF ET LRE; 3
+ET BN S PDF; 3
+CS LRO FSI RLE; 3
+CS PDF ET LRE; 3
+CS BN S PDF; 3
+NSM LRO FSI RLE; 3
+NSM PDF ET LRE; 3
+NSM BN S PDF; 3
+S LRO FSI RLE; 3
+S PDF ET LRE; 3
+S BN S PDF; 3
+WS LRO FSI RLE; 3
+WS PDF ET LRE; 3
+WS BN S PDF; 3
+ON LRO FSI RLE; 3
+ON PDF ET LRE; 3
+ON BN S PDF; 3
+LRI LRO FSI RLE; 3
+LRI PDF RLI LRE; 3
+RLI LRO WS PDF; 3
+RLI PDF S RLE; 3
+FSI LRE PDI LRE; 3
+FSI RLO RLI PDF; 3
+PDI LRE LRI RLE; 3
+PDI RLO WS LRE; 3
+PDI PDF FSI PDF; 3
+@Levels:	0 x 1 x
+@Reorder:	0 2
+L RLE ES RLE; 3
+L BN R LRE; 3
+EN RLO CS PDF; 3
+ES RLO EN RLE; 3
+ET RLE ON LRE; 3
+CS RLE AL PDF; 2
+CS PDF AL RLE; 2
+NSM RLO CS LRE; 3
+S RLO AL PDF; 2
+WS RLE NSM RLE; 3
+ON RLE AL LRE; 2
+ON PDF R PDF; 2
+RLI BN ON RLE; 3
+PDI RLO ET LRE; 3
+@Levels:	0 x 2 x
+@Reorder:	0 2
+L LRO L PDF; 3
+EN LRE ES RLE; 3
+EN RLE AN LRE; 3
+ES LRO AN PDF; 3
+ET LRO R RLE; 2
+CS LRE ET LRE; 3
+CS RLE AN PDF; 3
+NSM LRO CS RLE; 3
+S LRO AL LRE; 2
+WS LRE ET PDF; 3
+WS PDF AN RLE; 3
+ON LRO NSM LRE; 3
+LRI BN ES PDF; 3
+RLI LRO ET RLE; 3
+FSI PDF CS LRE; 3
+PDI LRE ON PDF; 3
+@Levels:	0 x 3 x
+@Reorder:	0 2
+L LRE AL RLE; 3
+LRI RLE R LRE; 3
+LRI RLO ON PDF; 3
+RLI RLO EN RLE; 3
+FSI RLO R LRE; 3
+@Levels:	0 x 4 x
+@Reorder:	0 2
+NSM LRE AN PDF; 3
+LRI LRO AN RLE; 3
+FSI LRE CS LRE; 3
+PDI LRE AN PDF; 3
+@Levels:	0 x x 0
+@Reorder:	0 3
+L LRO PDF WS; 3
+L PDF LRE LRI; 3
+EN LRE LRE LRI; 3
+EN RLE RLE FSI; 3
+EN PDF PDF S; 3
+ES LRE PDF S; 3
+ES RLO LRE WS; 3
+ES BN LRO LRI; 3
+ET LRO RLE RLI; 3
+ET RLO PDF NSM; 3
+ET BN PDF PDI; 3
+CS RLE LRE S; 3
+CS PDF RLE LRI; 3
+NSM LRE RLE LRI; 3
+NSM RLE PDF CS; 3
+NSM PDF BN NSM; 3
+S LRE BN PDI; 3
+S RLO RLE WS; 3
+S BN RLO LRI; 3
+WS LRO PDF ET; 3
+WS RLO BN FSI; 3
+WS BN BN FSI; 3
+ON RLE RLE S; 3
+ON PDF PDF ES; 3
+LRI LRE PDF LRI; 3
+LRI RLO RLO S; 3
+RLI LRE LRO FSI; 3
+RLI RLO LRE LRI; 3
+RLI BN BN S; 3
+FSI RLE RLO FSI; 3
+FSI BN RLE LRI; 3
+PDI LRO PDF FSI; 3
+PDI PDF LRO S; 3
+@Levels:	0 x x 1
+@Reorder:	0 3
+L RLE BN R; 3
+EN PDF RLO CS; 3
+ET RLE PDF AL; 2
+CS PDF RLO AN; 3
+S RLE PDF R; 2
+WS PDF RLO ET; 3
+RLI LRE PDF ET; 3
+PDI PDF RLE ON; 3
+@Levels:	0 x x 2
+@Reorder:	0 3
+L PDF LRE ON; 3
+EN PDF LRE CS; 3
+ES PDF LRE ES; 3
+ET PDF LRE L; 3
+CS RLO LRO ON; 3
+NSM RLO LRO CS; 3
+S RLO LRO ET; 3
+WS RLO LRO EN; 3
+ON RLO LRO R; 2
+LRI BN PDF CS; 3
+FSI LRO BN AL; 3
+PDI RLO LRO AN; 3
+@Levels:	0 x x 3
+@Reorder:	0 3
+L RLE RLO AN; 3
+EN RLO RLO ON; 3
+ET LRE BN R; 2
+CS RLE RLE AL; 2
+NSM RLO RLE CS; 3
+WS LRE RLE NSM; 3
+ON LRO RLO R; 2
+LRI BN RLE ET; 3
+RLI BN RLO R; 3
+PDI LRO RLO L; 3
+@Levels:	0 x x 4
+@Reorder:	0 3
+L RLO RLE AN; 3
+ES RLO RLE L; 3
+CS RLE RLE AN; 3
+S RLE RLE L; 3
+ON LRO RLE AN; 3
+LRI BN LRO AL; 3
+FSI LRE LRO AL; 3
+PDI LRE LRE EN; 3
+@Levels:	0 x x 5
+@Reorder:	0 3
+LRI LRE RLO CS; 3
+RLI RLO RLO ES; 3
+@Levels:	0 x x 6
+@Reorder:	0 3
+LRI LRE LRE CS; 3
+FSI RLO RLE EN; 3
+@Levels:	1 0 0
+@Reorder:	0 1 2
+R LRI WS; 2
+AL WS FSI; 2
+@Levels:	1 0 2
+@Reorder:	0 1 2
+AL RLI L; 2
+@Levels:	1 0 x x
+@Reorder:	0 1
+R ET LRO PDF; 2
+R WS LRE RLE; 2
+R LRI BN LRE; 2
+R PDI RLO PDF; 2
+AL ET RLE RLE; 2
+AL WS LRO LRE; 2
+AL LRI BN PDF; 2
+AL PDI PDF RLE; 2
+@Levels:	1 1 1
+@Reorder:	2 1 0
+R AL FSI; 5
+R RLI WS; 5
+AL NSM FSI; 5
+ES ES ES; 4
+ES RLI PDI; 4
+ET S ES; 4
+CS ES S; 4
+CS FSI RLI; 4
+NSM S S; 4
+S ES RLI; 4
+S PDI AL; 5
+WS S RLI; 4
+ON ET AL; 5
+ON PDI NSM; 4
+FSI WS S; 4
+PDI CS FSI; 4
+@Levels:	1 1 2
+@Reorder:	2 1 0
+R NSM EN; 7
+ES LRI ES; 4
+NSM R L; 5
+WS NSM L; 4
+PDI AL AN; 5
+@Levels:	1 1 3
+@Reorder:	2 1 0
+NSM RLI NSM; 4
+@Levels:	1 1 4
+@Reorder:	2 1 0
+ON RLI L; 4
+@Levels:	1 1 x x
+@Reorder:	1 0
+R ES RLE RLE; 5
+R NSM LRO LRE; 7
+R WS BN PDF; 5
+R RLI PDF RLE; 5
+AL R RLO LRE; 7
+AL ET LRO PDF; 5
+AL S LRE RLE; 5
+AL ON BN LRE; 5
+AL FSI RLO PDF; 5
+ES AL RLE RLE; 5
+ES CS LRO LRE; 4
+ES S BN PDF; 4
+ES LRI PDF RLE; 4
+ES PDI RLO LRE; 4
+ET ES LRO PDF; 4
+ET NSM LRE RLE; 4
+ET WS BN LRE; 4
+ET RLI RLO PDF; 4
+CS R RLE RLE; 5
+CS ET LRO LRE; 4
+CS NSM BN PDF; 4
+CS ON PDF RLE; 4
+CS FSI RLO LRE; 4
+NSM AL LRO PDF; 5
+NSM CS LRE RLE; 4
+NSM S BN LRE; 4
+NSM LRI RLO PDF; 4
+NSM PDI RLE RLE; 4
+S ES LRO LRE; 4
+S CS BN PDF; 4
+S WS PDF RLE; 4
+S RLI RLO LRE; 4
+WS R LRO PDF; 5
+WS ET LRE RLE; 4
+WS NSM BN LRE; 4
+WS ON RLO PDF; 4
+WS FSI RLE RLE; 4
+ON AL LRO LRE; 5
+ON ET BN PDF; 4
+ON S PDF RLE; 4
+ON LRI RLO LRE; 4
+ON PDI LRO PDF; 4
+LRI LRI LRE RLE; 4
+LRI FSI BN LRE; 4
+RLI WS RLO PDF; 4
+RLI FSI RLE RLE; 4
+FSI WS LRO LRE; 4
+FSI RLI BN PDF; 4
+PDI R PDF RLE; 5
+PDI ET RLO LRE; 4
+PDI S LRO PDF; 4
+PDI LRI LRE RLE; 4
+PDI FSI BN LRE; 4
+@Levels:	1 2 1
+@Reorder:	2 1 0
+R EN CS; 5
+ET L RLI; 4
+S EN CS; 4
+LRI EN FSI; 4
+PDI AN ET; 4
+@Levels:	1 2 2
+@Reorder:	1 2 0
+WS L EN; 4
+FSI ES ET; 4
+@Levels:	1 2 4
+@Reorder:	1 2 0
+LRI LRI ET; 4
+@Levels:	1 2 x x
+@Reorder:	1 0
+R EN RLE BN; 7
+AL EN LRO RLO; 7
+ES EN LRE LRO; 4
+ET L PDF BN; 4
+CS EN RLO RLO; 4
+NSM EN RLE LRO; 4
+S EN LRE BN; 4
+WS L BN RLO; 4
+ON L PDF LRO; 4
+LRI L RLE BN; 4
+LRI ET LRO RLO; 4
+LRI ON LRE LRO; 4
+FSI EN PDF BN; 4
+FSI CS RLO RLO; 4
+PDI L RLE LRO; 4
+@Levels:	1 3 1
+@Reorder:	2 1 0
+LRI R PDI; 4
+@Levels:	1 3 3
+@Reorder:	2 1 0
+RLI ET ES; 4
+@Levels:	1 3 4
+@Reorder:	2 1 0
+FSI R L; 4
+@Levels:	1 3 x x
+@Reorder:	1 0
+RLI R LRO LRE; 4
+RLI ES BN PDF; 4
+RLI NSM PDF RLE; 4
+FSI AL RLO LRE; 4
+@Levels:	1 4 4
+@Reorder:	1 2 0
+FSI AN NSM; 4
+@Levels:	1 4 x x
+@Reorder:	1 0
+RLI EN PDF RLO; 4
+@Levels:	1 x 0 x
+@Reorder:	0 2
+R LRE RLI LRO; 2
+R RLO WS BN; 2
+R BN ES RLO; 2
+AL LRO WS LRO; 2
+AL RLO PDI BN; 2
+AL BN WS RLO; 2
+@Levels:	1 x 1 x
+@Reorder:	2 0
+R LRO PDI LRO; 5
+R RLO AL BN; 2
+R PDF ET RLO; 5
+R BN WS LRO; 5
+AL LRO FSI BN; 5
+AL RLO AL RLO; 2
+AL PDF ET LRO; 5
+AL BN S BN; 5
+ES LRO FSI RLO; 4
+ES PDF ET LRO; 4
+ES BN S BN; 4
+ET LRO FSI RLO; 4
+ET PDF ET LRO; 4
+ET BN S BN; 4
+CS LRO FSI RLO; 4
+CS PDF ET LRO; 4
+CS BN S BN; 4
+NSM LRO FSI RLO; 4
+NSM PDF ET LRO; 4
+NSM BN S BN; 4
+S LRO FSI RLO; 4
+S PDF ET LRO; 4
+S BN S BN; 4
+WS LRO FSI RLO; 4
+WS PDF ET LRO; 4
+WS BN S BN; 4
+ON LRO FSI RLO; 4
+ON PDF ET LRO; 4
+ON BN S BN; 4
+LRI LRO FSI RLO; 4
+LRI PDF RLI LRO; 4
+RLI LRO WS BN; 4
+RLI PDF S RLO; 4
+FSI LRE PDI LRO; 4
+FSI RLO RLI BN; 4
+PDI LRE LRI RLO; 4
+PDI RLO WS LRO; 4
+PDI PDF FSI BN; 4
+@Levels:	1 x 2 x
+@Reorder:	2 0
+R LRE ES RLO; 7
+R RLE AN LRO; 2
+AL LRO AL BN; 7
+ES LRE L RLO; 4
+ES PDF L LRO; 4
+ET LRO EN BN; 4
+CS LRE ON RLO; 4
+NSM LRE L LRO; 4
+NSM LRO ON BN; 4
+S LRO EN RLO; 4
+WS LRE CS LRO; 4
+WS BN L BN; 4
+ON LRO CS RLO; 4
+LRI BN EN LRO; 4
+FSI BN ET BN; 4
+PDI LRO AN RLO; 4
+@Levels:	1 x 3 x
+@Reorder:	2 0
+R RLE NSM LRO; 5
+AL RLE ES BN; 5
+ES RLE R RLO; 5
+ET LRE R LRO; 5
+ET RLO CS BN; 4
+CS RLO ET RLO; 4
+NSM RLO EN LRO; 4
+S RLO L BN; 4
+WS RLE NSM RLO; 4
+ON RLE ET LRO; 4
+LRI RLE ES BN; 4
+LRI BN R RLO; 4
+FSI RLE ET LRO; 4
+PDI LRE R BN; 5
+PDI RLO NSM RLO; 4
+@Levels:	1 x 4 x
+@Reorder:	2 0
+ET RLE AN LRO; 4
+WS RLE AN BN; 4
+LRI LRO ET RLO; 4
+RLI LRO L LRO; 4
+FSI LRE L BN; 4
+FSI RLE L RLO; 4
+@Levels:	1 x 5 x
+@Reorder:	2 0
+RLI RLE CS LRO; 4
+FSI RLE AL BN; 4
+@Levels:	1 x x 0
+@Reorder:	0 3
+R LRO LRO FSI; 2
+R RLO PDF S; 2
+R BN BN ON; 2
+AL RLE RLE WS; 2
+AL PDF PDF LRI; 2
+@Levels:	1 x x 1
+@Reorder:	3 0
+R LRE BN LRI; 5
+R RLO LRE RLI; 5
+R PDF PDF LRI; 5
+AL LRE RLE FSI; 5
+AL RLE PDF S; 5
+AL PDF RLO AL; 2
+AL BN BN S; 5
+ES RLE LRO WS; 4
+ES PDF RLO RLI; 4
+ET LRE RLO RLI; 4
+ET RLE PDF FSI; 4
+ET PDF BN PDI; 4
+CS LRO LRO S; 4
+CS RLO RLO LRI; 4
+CS BN PDF ET; 4
+NSM LRO PDF RLI; 4
+NSM PDF LRE PDI; 4
+S LRE LRE PDI; 4
+S RLE RLO WS; 4
+S PDF PDF LRI; 4
+WS LRE PDF LRI; 4
+WS RLO LRE FSI; 4
+WS BN LRO PDI; 4
+ON LRO RLO S; 4
+ON RLO PDF ON; 4
+ON BN BN ES; 4
+LRI RLE RLE PDI; 4
+LRI BN LRO RLI; 4
+RLI RLE LRE WS; 4
+RLI PDF PDF PDI; 4
+FSI LRO RLO RLI; 4
+FSI PDF RLE WS; 4
+PDI LRE BN FSI; 4
+PDI RLO RLE S; 4
+PDI BN RLO WS; 4
+@Levels:	1 x x 2
+@Reorder:	3 0
+R PDF LRE ET; 7
+AL RLO LRE NSM; 2
+ES PDF LRE CS; 4
+ET BN LRO ET; 4
+NSM LRO BN EN; 4
+S PDF LRO ET; 4
+WS BN LRO CS; 4
+LRI RLE PDF ES; 4
+PDI LRE BN EN; 4
+@Levels:	1 x x 3
+@Reorder:	3 0
+R LRO RLO EN; 7
+AL LRE RLE R; 7
+AL PDF RLO L; 5
+ES PDF RLO ON; 4
+ET BN RLE ON; 4
+CS BN RLO NSM; 4
+S LRE RLO L; 4
+WS LRE RLO ON; 4
+ON LRO RLE ON; 4
+LRI PDF RLO AL; 4
+FSI RLO PDF R; 4
+PDI PDF RLE AL; 5
+@Levels:	1 x x 4
+@Reorder:	3 0
+R RLO LRE L; 5
+AL RLO LRE NSM; 5
+ES RLO LRO ON; 4
+CS LRE LRE NSM; 4
+NSM LRE RLE AN; 4
+S LRO LRO ET; 4
+WS RLE LRE ON; 4
+ON RLO LRE L; 4
+LRI PDF RLE L; 4
+RLI BN BN EN; 4
+PDI LRE LRE L; 4
+@Levels:	1 x x 5
+@Reorder:	3 0
+R RLE RLO R; 5
+ES RLO RLE NSM; 4
+NSM RLE LRE R; 5
+WS RLE RLO CS; 4
+LRI RLE LRE R; 4
+RLI PDF RLE ET; 4
+FSI PDF LRE AL; 4
+@Levels:	1 x x 6
+@Reorder:	3 0
+CS RLO RLE L; 4
+RLI LRE LRE ON; 4
+FSI LRE BN AN; 4
+@Levels:	1 x x 7
+@Reorder:	3 0
+FSI RLE RLO AL; 4
+@Levels:	2 0 0
+@Reorder:	0 1 2
+AN WS EN; 3
+@Levels:	2 0 x x
+@Reorder:	0 1
+AN L LRE BN; 3
+AN ES BN RLO; 3
+AN S PDF LRO; 3
+AN LRI RLE BN; 3
+AN PDI LRO RLO; 3
+@Levels:	2 1 1
+@Reorder:	2 1 0
+L ET PDI; 4
+EN AL ET; 5
+EN PDI WS; 4
+AN ON ET; 4
+@Levels:	2 1 2
+@Reorder:	2 1 0
+EN FSI CS; 4
+@Levels:	2 1 x x
+@Reorder:	1 0
+L R LRO LRO; 4
+L ES BN BN; 4
+L S PDF RLO; 4
+L LRI RLO LRO; 4
+L PDI LRO BN; 4
+EN ES LRE RLO; 4
+EN S BN LRO; 4
+EN LRI RLO BN; 4
+EN PDI RLE RLO; 4
+AN ES LRO LRO; 4
+AN CS BN BN; 4
+AN ON PDF RLO; 4
+AN FSI RLO LRO; 4
+@Levels:	2 2 1
+@Reorder:	2 0 1
+L AN R; 4
+AN L LRI; 4
+@Levels:	2 2 2
+@Reorder:	0 1 2
+AN L L; 4
+@Levels:	2 2 x x
+@Reorder:	0 1
+L AN LRO RLO; 4
+EN EN LRE LRO; 4
+EN AN PDF BN; 4
+AN L RLO RLO; 4
+AN NSM RLE LRO; 7
+@Levels:	2 x 0 x
+@Reorder:	0 2
+AN RLE S BN; 3
+AN PDF S RLO; 3
+AN BN FSI LRO; 3
+@Levels:	2 x 1 x
+@Reorder:	2 0
+L RLE LRI BN; 4
+L PDF ON RLO; 4
+EN LRE S LRO; 4
+EN RLE FSI BN; 4
+EN PDF FSI RLO; 4
+AN LRE FSI LRO; 4
+AN RLE ON BN; 3
+AN RLO LRI RLO; 4
+AN BN AL LRO; 7
+@Levels:	2 x 2 x
+@Reorder:	0 2
+L LRE NSM BN; 4
+L BN EN RLO; 4
+EN LRO CS LRO; 4
+AN LRE EN BN; 7
+AN RLE EN RLO; 3
+@Levels:	2 x 3 x
+@Reorder:	0 2
+L RLE NSM LRO; 4
+EN RLE ES BN; 4
+AN RLE R RLO; 5
+@Levels:	2 x 4 x
+@Reorder:	0 2
+L LRE AN LRO; 4
+@Levels:	2 x x 0
+@Reorder:	0 3
+AN LRE PDF S; 3
+AN RLO LRE RLI; 3
+AN BN RLE WS; 3
+@Levels:	2 x x 1
+@Reorder:	3 0
+L LRO RLO PDI; 4
+L RLO BN RLI; 4
+EN LRE LRE WS; 4
+EN RLE RLO WS; 4
+EN PDF BN ES; 4
+AN LRO LRE RLI; 4
+AN RLO RLE S; 4
+AN PDF BN ON; 4
+@Levels:	2 x x 2
+@Reorder:	0 3
+L RLO PDF EN; 4
+EN PDF LRO EN; 4
+AN RLE BN AN; 3
+@Levels:	2 x x 3
+@Reorder:	0 3
+L LRO RLE ET; 4
+EN LRO RLO ET; 4
+AN RLE RLE ES; 3
+@Levels:	2 x x 4
+@Reorder:	0 3
+L LRE LRO ES; 4
+EN LRO LRE CS; 4
+AN LRO RLE EN; 7
+@Levels:	2 x x 5
+@Reorder:	0 3
+EN LRO LRE AL; 5
+@Levels:	2 x x 6
+@Reorder:	0 3
+EN RLO RLE AN; 4
+@Levels:	x 0 0 x
+@Reorder:	1 2
+LRE LRI LRI BN; 3
+LRE PDI WS RLO; 3
+LRO LRI S LRO; 3
+LRO FSI FSI BN; 3
+RLE WS RLI RLO; 3
+RLE FSI LRI LRO; 3
+RLO WS S BN; 3
+RLO RLI PDI RLO; 3
+PDF L CS LRO; 3
+PDF EN WS BN; 3
+PDF ES FSI RLO; 3
+PDF CS ES LRO; 3
+PDF NSM NSM BN; 3
+PDF S LRI RLO; 3
+PDF ON L LRO; 3
+PDF LRI RLI BN; 3
+PDF PDI ES RLO; 3
+BN L S LRO; 3
+BN EN LRI BN; 3
+BN ET L RLO; 3
+BN CS CS LRO; 3
+BN NSM WS BN; 3
+BN S FSI RLO; 3
+BN ON ES LRO; 3
+BN LRI PDI BN; 3
+BN PDI CS RLO; 3
+@Levels:	x 0 1 x
+@Reorder:	1 2
+RLO S R LRO; 2
+PDF ET AL BN; 2
+PDF RLI ON RLO; 3
+BN S R LRO; 2
+BN PDI AL BN; 2
+@Levels:	x 0 2 x
+@Reorder:	1 2
+LRO S ON RLO; 3
+PDF LRI CS LRO; 3
+BN ES AN BN; 3
+BN FSI L RLO; 3
+@Levels:	x 0 4 x
+@Reorder:	1 2
+BN LRI AN LRO; 3
+@Levels:	x 0 x 0
+@Reorder:	1 3
+LRE LRI LRO FSI; 3
+LRE PDI LRE LRI; 3
+LRO WS RLO PDI; 3
+LRO FSI RLE RLI; 3
+RLE WS LRE LRI; 3
+RLE RLI BN S; 3
+RLO S RLO FSI; 3
+RLO RLI LRO RLI; 3
+PDF L LRE WS; 3
+PDF ES LRE WS; 3
+PDF CS LRE WS; 3
+PDF S LRE WS; 3
+PDF ON LRE WS; 3
+PDF RLI RLE RLI; 3
+PDF PDI BN S; 3
+BN EN BN S; 3
+BN ET BN S; 3
+BN NSM BN S; 3
+BN WS BN S; 3
+BN RLI LRO WS; 3
+BN PDI PDF FSI; 3
+@Levels:	x 0 x 1
+@Reorder:	1 3
+PDF ES RLO ON; 3
+PDF WS RLO ES; 3
+BN EN RLO AL; 2
+BN S RLE CS; 3
+@Levels:	x 0 x 2
+@Reorder:	1 3
+LRE S BN EN; 3
+PDF EN PDF AN; 3
+PDF S LRO EN; 3
+PDF FSI PDF NSM; 3
+BN ET LRE ET; 3
+BN WS LRO NSM; 3
+BN PDI RLE EN; 3
+@Levels:	x 0 x 3
+@Reorder:	1 3
+PDF LRI RLE CS; 3
+BN RLI RLE ES; 3
+@Levels:	x 0 x 4
+@Reorder:	1 3
+PDF LRI LRE ON; 3
+@Levels:	x 0 x 5
+@Reorder:	1 3
+LRO S LRE AL; 2
+@Levels:	x 1 0 x
+@Reorder:	1 2
+RLE ES LRI BN; 3
+RLE NSM WS RLO; 3
+RLO R S LRO; 2
+RLO EN FSI BN; 3
+RLO AN RLI RLO; 3
+RLO ON LRI LRO; 3
+PDF AL ES BN; 2
+BN R LRI RLO; 2
+@Levels:	x 1 1 x
+@Reorder:	2 1
+LRE S LRI LRO; 4
+LRE RLI S BN; 4
+LRE PDI PDI RLO; 4
+LRO LRI FSI LRO; 4
+LRO PDI LRI BN; 4
+RLE AL ON RLO; 2
+RLE CS ES LRO; 3
+RLE S FSI BN; 4
+RLE ON ES RLO; 3
+RLE FSI S LRO; 4
+RLE PDI RLI BN; 4
+RLO R ES RLO; 2
+RLO EN R LRO; 2
+RLO ES CS BN; 3
+RLO AN ES RLO; 3
+RLO NSM R LRO; 2
+RLO WS R BN; 2
+RLO ON AL RLO; 2
+RLO RLI RLI LRO; 4
+RLO PDI CS BN; 3
+PDF R ON RLO; 5
+PDF AL PDI LRO; 5
+PDF ET ES BN; 4
+PDF CS S RLO; 4
+PDF NSM RLI LRO; 4
+PDF WS R BN; 5
+PDF ON CS RLO; 4
+PDF RLI LRI LRO; 4
+PDF PDI S BN; 4
+BN R RLI RLO; 5
+BN ES AL LRO; 5
+BN ET CS BN; 4
+BN CS ON RLO; 4
+BN NSM PDI LRO; 4
+BN WS ES BN; 4
+BN ON S RLO; 4
+BN RLI FSI LRO; 4
+BN PDI ON BN; 4
+@Levels:	x 1 2 x
+@Reorder:	2 1
+LRO S ET RLO; 4
+RLE CS EN LRO; 3
+RLE LRI NSM BN; 3
+RLO LRI NSM RLO; 3
+PDF ES AN LRO; 4
+PDF ON EN BN; 4
+PDF PDI EN RLO; 4
+BN NSM EN LRO; 4
+BN LRI NSM BN; 4
+@Levels:	x 1 3 x
+@Reorder:	2 1
+RLE S ET RLO; 4
+RLO S AL LRO; 5
+RLO RLI ON BN; 3
+BN RLI AL RLO; 4
+@Levels:	x 1 4 x
+@Reorder:	2 1
+RLO LRI AN LRO; 3
+@Levels:	x 1 x 0
+@Reorder:	1 3
+RLE R LRO PDI; 2
+RLE ES PDF WS; 3
+RLE NSM LRO S; 3
+RLO L RLE LRI; 3
+RLO AL PDF RLI; 2
+RLO ET LRO RLI; 3
+RLO CS PDF CS; 3
+RLO ON BN PDI; 3
+BN R LRE LRI; 2
+@Levels:	x 1 x 1
+@Reorder:	3 1
+LRE S LRO FSI; 4
+LRE LRI BN LRI; 4
+LRE PDI PDF S; 4
+LRO LRI LRO FSI; 4
+LRO PDI LRE LRI; 4
+RLE S LRO S; 4
+RLE LRI LRO WS; 4
+RLE FSI BN PDI; 4
+RLO ES PDF AL; 2
+RLO S PDF PDI; 4
+RLO LRI BN WS; 4
+RLO PDI RLO PDI; 4
+PDF AL LRO WS; 5
+PDF ES BN ET; 4
+PDF CS BN ET; 4
+PDF S BN ET; 4
+PDF ON BN ET; 4
+PDF FSI RLO S; 4
+BN R RLO CS; 2
+BN AL BN FSI; 5
+BN ET BN FSI; 4
+BN NSM BN FSI; 4
+BN WS BN FSI; 4
+BN RLI RLE S; 4
+BN PDI BN ET; 4
+@Levels:	x 1 x 2
+@Reorder:	3 1
+RLE ES BN AN; 3
+RLE ON LRO AL; 2
+RLO R PDF AN; 2
+RLO CS LRE CS; 3
+RLO FSI BN CS; 3
+PDF ET LRE ET; 4
+PDF WS LRO AN; 4
+BN R LRO ON; 7
+BN CS BN L; 4
+BN LRI PDF NSM; 4
+@Levels:	x 1 x 3
+@Reorder:	3 1
+RLE R RLO ON; 2
+RLE S BN CS; 4
+RLE PDI RLE NSM; 3
+RLO ES RLO EN; 3
+RLO WS RLE NSM; 3
+RLO PDI RLO NSM; 3
+PDF NSM RLE AL; 5
+PDF RLI PDF ON; 4
+BN ES RLO ON; 4
+BN ON RLE ES; 4
+@Levels:	x 1 x 4
+@Reorder:	3 1
+LRE S LRO CS; 4
+RLE LRI BN AN; 3
+RLO S LRO CS; 4
+PDF CS RLE EN; 4
+BN ES RLE AN; 4
+@Levels:	x 1 x 5
+@Reorder:	3 1
+RLE S LRE R; 5
+PDF RLI RLE CS; 4
+@Levels:	x 2 0 x
+@Reorder:	1 2
+LRE L RLI RLE; 3
+LRE ET LRI LRE; 3
+LRE ON S PDF; 3
+LRO R PDI RLE; 2
+LRO ES FSI LRE; 3
+LRO CS LRI PDF; 3
+RLE L WS RLE; 3
+PDF AN L LRE; 3
+BN AN CS PDF; 3
+@Levels:	x 2 1 x
+@Reorder:	2 1
+LRE EN RLI RLE; 4
+LRE CS LRI LRE; 4
+LRO L S PDF; 4
+LRO AL PDI RLE; 5
+LRO ET FSI LRE; 4
+LRO NSM LRI PDF; 4
+RLE EN AL RLE; 2
+PDF L ON LRE; 4
+PDF AN R PDF; 7
+BN L S RLE; 4
+BN EN PDI LRE; 4
+@Levels:	x 2 2 x
+@Reorder:	1 2
+LRE L ET PDF; 7
+LRE ES ON RLE; 7
+LRE NSM ES LRE; 7
+LRE ON CS PDF; 7
+LRO L CS RLE; 7
+LRO AL ES LRE; 7
+LRO ES L PDF; 7
+LRO ET CS RLE; 7
+LRO CS ES LRE; 7
+LRO WS L PDF; 7
+LRO ON CS RLE; 7
+RLE EN L LRE; 3
+PDF EN ET PDF; 4
+BN ET EN RLE; 4
+@Levels:	x 2 3 x
+@Reorder:	1 2
+LRE WS R LRE; 7
+LRO RLI AL PDF; 7
+@Levels:	x 2 4 x
+@Reorder:	1 2
+LRE LRI EN RLE; 7
+LRO LRI L LRE; 7
+LRO FSI ON PDF; 7
+@Levels:	x 2 x 0
+@Reorder:	1 3
+LRE EN LRO WS; 3
+LRE ET RLO RLI; 3
+LRE NSM PDF FSI; 3
+LRO L PDF FSI; 3
+LRO EN LRO S; 3
+LRO ET RLO LRI; 3
+LRO CS PDF RLI; 3
+LRO ON BN FSI; 3
+RLE AN LRO RLI; 3
+BN AN RLO LRI; 3
+@Levels:	x 2 x 1
+@Reorder:	3 1
+LRE EN PDF WS; 4
+LRE CS LRE FSI; 4
+LRE ON RLE LRI; 4
+LRO R PDF R; 7
+LRO EN BN FSI; 4
+LRO AN RLE LRI; 4
+LRO NSM PDF WS; 4
+PDF L LRO LRI; 4
+PDF AN RLE ES; 3
+BN EN LRE WS; 4
+BN AN BN ES; 4
+@Levels:	x 2 x 2
+@Reorder:	1 3
+LRE PDI PDF AN; 7
+LRO AN BN EN; 7
+RLE EN LRE L; 3
+PDF ET PDF EN; 4
+BN AN LRO ON; 7
+@Levels:	x 2 x 3
+@Reorder:	1 3
+LRE CS RLO ET; 7
+LRE PDI BN AL; 7
+LRO ET RLO CS; 7
+LRO RLI BN NSM; 7
+PDF EN LRE AL; 5
+@Levels:	x 2 x 4
+@Reorder:	1 3
+LRE L LRE ON; 7
+LRE NSM LRE EN; 7
+LRE FSI LRO AL; 7
+LRO EN LRE CS; 7
+LRO NSM LRE CS; 7
+LRO FSI PDF NSM; 7
+@Levels:	x 2 x 5
+@Reorder:	1 3
+LRE LRI BN R; 7
+LRO RLI RLO AN; 7
+@Levels:	x 2 x 6
+@Reorder:	1 3
+LRO LRI LRO AL; 7
+@Levels:	x 3 0 x
+@Reorder:	1 2
+LRE AL RLI LRE; 2
+@Levels:	x 3 1 x
+@Reorder:	2 1
+RLE R WS PDF; 5
+RLE ET S RLE; 4
+RLE NSM PDI LRE; 4
+RLO R RLI PDF; 5
+RLO ES LRI RLE; 4
+RLO CS WS LRE; 4
+RLO ON PDI PDF; 4
+@Levels:	x 3 3 x
+@Reorder:	2 1
+RLE R R RLE; 5
+RLE ES ET LRE; 4
+RLE CS NSM PDF; 4
+RLE ON AL RLE; 5
+RLO L ES LRE; 4
+RLO AL L PDF; 5
+RLO EN CS RLE; 4
+RLO ET ES LRE; 4
+RLO CS L PDF; 4
+RLO NSM CS RLE; 4
+RLO ON ES LRE; 4
+@Levels:	x 3 4 x
+@Reorder:	2 1
+LRE R EN PDF; 7
+RLE CS AN RLE; 4
+RLE FSI L LRE; 4
+RLO LRI ON PDF; 4
+@Levels:	x 3 5 x
+@Reorder:	2 1
+RLE FSI R RLE; 4
+@Levels:	x 3 6 x
+@Reorder:	2 1
+RLE FSI AN LRE; 4
+@Levels:	x 3 x 0
+@Reorder:	1 3
+LRE AL RLO RLI; 2
+@Levels:	x 3 x 1
+@Reorder:	3 1
+LRE AL BN S; 5
+RLE ES LRO LRI; 4
+RLE CS RLO FSI; 4
+RLE ON PDF NSM; 4
+RLO R PDF PDI; 5
+RLO ES LRO WS; 4
+RLO AN RLO RLI; 4
+RLO NSM PDF FSI; 4
+@Levels:	x 3 x 2
+@Reorder:	1 3
+RLE NSM PDF AN; 4
+@Levels:	x 3 x 3
+@Reorder:	3 1
+RLE ES BN R; 5
+RLO ET BN R; 5
+@Levels:	x 3 x 4
+@Reorder:	3 1
+LRE AL LRO AL; 7
+RLE CS LRO R; 5
+RLE PDI LRE L; 4
+RLO ES LRO ET; 4
+RLO ON LRO EN; 4
+@Levels:	x 3 x 5
+@Reorder:	3 1
+RLE ES RLE CS; 4
+RLE ON RLO AL; 5
+RLO R RLE R; 5
+RLO AN RLE NSM; 4
+RLO LRI RLO ET; 4
+@Levels:	x 3 x 6
+@Reorder:	3 1
+RLE LRI LRO L; 4
+RLO WS LRE AN; 4
+@Levels:	x 3 x 7
+@Reorder:	3 1
+RLE FSI LRE R; 4
+@Levels:	x 4 1 x
+@Reorder:	2 1
+LRE AN RLI LRO; 4
+RLE AN WS BN; 4
+@Levels:	x 4 3 x
+@Reorder:	2 1
+RLE L CS RLO; 4
+@Levels:	x 4 4 x
+@Reorder:	1 2
+RLE L AN LRO; 4
+@Levels:	x 4 x 0
+@Reorder:	1 3
+LRE AN PDF NSM; 3
+@Levels:	x 4 x 1
+@Reorder:	3 1
+RLE EN LRE WS; 4
+@Levels:	x 4 x 2
+@Reorder:	1 3
+RLE EN PDF AN; 4
+@Levels:	x 4 x 4
+@Reorder:	1 3
+RLE EN BN L; 4
+@Levels:	x x 0 0
+@Reorder:	2 3
+LRE LRE S WS; 3
+LRE RLE FSI PDI; 3
+LRE PDF CS NSM; 3
+LRE BN WS RLI; 3
+LRO RLE S WS; 3
+LRO PDF ES ET; 3
+LRO PDF FSI S; 3
+RLE LRO WS RLI; 3
+RLE PDF L EN; 3
+RLE PDF WS RLI; 3
+RLO LRE LRI PDI; 3
+RLO RLO WS RLI; 3
+RLO PDF NSM ON; 3
+RLO BN FSI WS; 3
+PDF RLE LRI PDI; 3
+PDF PDF ET S; 3
+PDF PDF PDI RLI; 3
+PDF BN WS S; 3
+BN LRO LRI WS; 3
+BN PDF L NSM; 3
+BN PDF ON EN; 3
+BN BN CS NSM; 3
+@Levels:	x x 0 1
+@Reorder:	2 3
+LRE PDF CS AL; 2
+RLO PDF WS AL; 2
+BN RLE S AL; 2
+@Levels:	x x 0 2
+@Reorder:	2 3
+LRE PDF PDI AN; 3
+RLO LRO S R; 2
+PDF BN RLI EN; 3
+@Levels:	x x 0 3
+@Reorder:	2 3
+LRE RLO S ON; 3
+@Levels:	x x 0 4
+@Reorder:	2 3
+LRE BN S AN; 3
+@Levels:	x x 1 0
+@Reorder:	2 3
+RLE PDF R WS; 2
+RLO BN EN WS; 3
+PDF RLO AL PDI; 2
+BN RLE ES WS; 3
+BN PDF AL L; 2
+@Levels:	x x 1 1
+@Reorder:	3 2
+LRE LRO PDI WS; 4
+LRE PDF AL RLI; 5
+LRE PDF RLI S; 4
+LRO LRO S RLI; 4
+LRO RLO PDI WS; 4
+LRO PDF WS CS; 4
+RLE LRE WS PDI; 4
+RLE RLO S RLI; 4
+RLE PDF NSM ES; 4
+RLE BN ES NSM; 3
+RLO LRE RLI LRI; 4
+RLO RLO LRI S; 4
+RLO PDF NSM FSI; 4
+RLO BN AL NSM; 2
+RLO BN RLI S; 4
+PDF RLE R R; 2
+PDF RLO L R; 3
+PDF RLO WS ET; 3
+PDF PDF ET S; 4
+PDF PDF PDI RLI; 4
+PDF BN WS S; 4
+BN LRO LRI WS; 4
+BN RLE RLI RLI; 4
+BN RLO CS NSM; 3
+BN PDF AL LRI; 5
+BN PDF LRI PDI; 4
+BN BN NSM LRI; 4
+@Levels:	x x 1 2
+@Reorder:	3 2
+LRE PDF LRI L; 4
+RLE PDF ON L; 4
+RLO PDF PDI L; 4
+PDF PDF CS EN; 4
+BN RLE ET L; 3
+BN BN CS EN; 4
+@Levels:	x x 1 3
+@Reorder:	3 2
+RLE BN S R; 5
+PDF PDF FSI R; 4
+@Levels:	x x 1 4
+@Reorder:	3 2
+LRE PDF FSI AN; 4
+PDF PDF RLI EN; 4
+@Levels:	x x 2 0
+@Reorder:	2 3
+LRE BN L FSI; 3
+LRO BN NSM LRI; 3
+RLE LRO NSM S; 3
+RLO LRO AL FSI; 2
+PDF LRO L LRI; 3
+BN LRE L S; 3
+BN LRO ON FSI; 3
+@Levels:	x x 2 1
+@Reorder:	3 2
+LRE BN ET RLI; 4
+LRO BN CS LRI; 4
+RLO PDF AN RLI; 4
+PDF LRO ON WS; 4
+BN LRE EN LRI; 4
+BN RLE EN R; 2
+@Levels:	x x 2 2
+@Reorder:	2 3
+LRE BN L NSM; 7
+LRO BN AL NSM; 7
+RLE LRE EN EN; 3
+RLE LRO ES ET; 3
+RLE BN AN EN; 3
+RLO LRO EN ES; 3
+PDF LRE L L; 7
+PDF LRO EN CS; 7
+PDF PDF L NSM; 4
+BN LRO R AL; 7
+BN LRO PDI AL; 7
+@Levels:	x x 2 3
+@Reorder:	2 3
+RLE LRE ON R; 2
+BN LRE ET R; 7
+@Levels:	x x 2 4
+@Reorder:	2 3
+RLE LRO LRI EN; 3
+PDF LRO FSI NSM; 7
+@Levels:	x x 3 0
+@Reorder:	2 3
+LRE RLE ES RLI; 3
+LRO RLE R WS; 2
+LRO RLO ON PDI; 3
+RLE RLO CS RLI; 3
+RLO RLO ET WS; 3
+@Levels:	x x 3 1
+@Reorder:	3 2
+LRE RLO L PDI; 4
+LRO RLE NSM RLI; 4
+RLE BN NSM WS; 4
+PDF RLE ES PDI; 4
+BN RLE R RLI; 5
+@Levels:	x x 3 2
+@Reorder:	2 3
+LRE BN R ES; 7
+@Levels:	x x 3 3
+@Reorder:	3 2
+LRE RLE ON ES; 7
+LRE RLO NSM NSM; 7
+LRO RLE PDI ON; 7
+LRO RLO WS ON; 7
+RLE RLO R L; 2
+RLE RLO PDI L; 3
+RLO RLE ET R; 2
+RLO RLO ET NSM; 3
+RLO BN EN NSM; 4
+PDF RLE AL NSM; 5
+PDF RLO ES ON; 4
+BN RLE ET ES; 4
+BN RLO AN L; 4
+@Levels:	x x 3 4
+@Reorder:	3 2
+LRE RLO LRI L; 7
+RLE RLE LRI EN; 3
+RLO RLE LRI ET; 3
+BN LRE R EN; 7
+@Levels:	x x 3 5
+@Reorder:	3 2
+LRO RLO FSI R; 7
+BN RLE FSI AL; 4
+@Levels:	x x 4 0
+@Reorder:	2 3
+LRE LRE ET S; 3
+LRE RLE AN FSI; 3
+LRO LRO NSM LRI; 3
+@Levels:	x x 4 1
+@Reorder:	3 2
+LRE LRE ES S; 4
+LRE RLE EN FSI; 4
+LRO LRO CS LRI; 4
+RLE LRO ES S; 4
+RLO LRO L FSI; 4
+BN RLE AN LRI; 4
+@Levels:	x x 4 3
+@Reorder:	3 2
+RLE BN AN R; 5
+@Levels:	x x 4 4
+@Reorder:	2 3
+LRE LRE NSM ES; 7
+LRE LRO CS ES; 7
+LRO LRE NSM ET; 7
+LRO LRO CS ET; 7
+RLE LRE NSM CS; 4
+RLE LRO CS AN; 4
+RLO LRE AN AN; 3
+RLO LRO AN EN; 4
+BN RLE AN EN; 4
+@Levels:	x x 4 5
+@Reorder:	2 3
+RLE LRE PDI R; 5
+@Levels:	x x 4 6
+@Reorder:	2 3
+LRO LRE LRI ES; 7
+RLO LRE FSI ON; 4
+@Levels:	x x 5 1
+@Reorder:	3 2
+RLE LRE R WS; 5
+RLE RLO CS PDI; 4
+RLO RLO ET RLI; 4
+@Levels:	x x 5 5
+@Reorder:	3 2
+RLE RLE ES AL; 5
+RLE RLO ET AL; 5
+RLO RLE ET NSM; 4
+RLO RLO AN EN; 4
+@Levels:	x x 5 6
+@Reorder:	3 2
+RLE RLE FSI EN; 4
+@Levels:	x x 5 7
+@Reorder:	3 2
+RLE RLO RLI ON; 4
+@Levels:	x x 6 1
+@Reorder:	3 2
+RLO RLE L WS; 4
+@Levels:	x x 6 6
+@Reorder:	2 3
+RLE RLE AN EN; 4
+@Levels:	0 0 0 x
+@Reorder:	0 1 2
+L EN L RLO; 3
+L ES CS LRO; 3
+L ET WS BN; 3
+L CS FSI RLO; 3
+L S ES LRO; 3
+L WS NSM BN; 3
+L ON LRI RLO; 3
+L FSI WS LRO; 3
+L PDI FSI BN; 3
+EN EN ES RLO; 3
+EN ES S LRO; 3
+EN ET LRI BN; 3
+EN NSM L RLO; 3
+EN S CS LRO; 3
+EN WS WS BN; 3
+EN ON FSI RLO; 3
+EN FSI RLI LRO; 3
+ES L L BN; 3
+ES EN CS RLO; 3
+ES ES ON LRO; 3
+ES ET FSI BN; 3
+ES NSM ES RLO; 3
+ES S S LRO; 3
+ES WS LRI BN; 3
+ES LRI S RLO; 3
+ES FSI PDI LRO; 3
+ET L ES BN; 3
+ET EN S RLO; 3
+ET ES RLI LRO; 3
+ET CS L BN; 3
+ET NSM CS RLO; 3
+ET S ON LRO; 3
+ET WS FSI BN; 3
+ET LRI LRI RLO; 3
+ET PDI EN LRO; 3
+CS L CS BN; 3
+CS EN ON RLO; 3
+CS ES PDI LRO; 3
+CS CS ES BN; 3
+CS NSM S RLO; 3
+CS S RLI LRO; 3
+CS ON L BN; 3
+CS LRI FSI RLO; 3
+CS PDI ET LRO; 3
+NSM L S BN; 3
+NSM EN RLI RLO; 3
+NSM ET EN LRO; 3
+NSM CS CS BN; 3
+NSM NSM ON RLO; 3
+NSM S PDI LRO; 3
+NSM ON ES BN; 3
+NSM RLI S RLO; 3
+NSM PDI NSM LRO; 3
+S L ON BN; 3
+S EN PDI RLO; 3
+S ET ET LRO; 3
+S CS S BN; 3
+S NSM RLI RLO; 3
+S WS EN LRO; 3
+S ON CS BN; 3
+S RLI LRI RLO; 3
+S PDI WS LRO; 3
+WS L RLI BN; 3
+WS ES EN RLO; 3
+WS ET NSM LRO; 3
+WS CS ON BN; 3
+WS NSM PDI RLO; 3
+WS WS ET LRO; 3
+WS ON S BN; 3
+WS RLI FSI RLO; 3
+WS PDI LRI LRO; 3
+ON L PDI BN; 3
+ON ES ET RLO; 3
+ON ET WS LRO; 3
+ON CS RLI BN; 3
+ON S EN RLO; 3
+ON WS NSM LRO; 3
+ON ON ON BN; 3
+ON FSI S RLO; 3
+ON PDI FSI LRO; 3
+LRI LRI LRI BN; 3
+LRI PDI EN RLO; 3
+RLI S PDI LRO; 3
+RLI RLI RLI BN; 3
+RLI PDI ON RLO; 3
+FSI LRI S LRO; 3
+FSI FSI FSI BN; 3
+PDI L ES RLO; 3
+PDI EN S LRO; 3
+PDI ES LRI BN; 3
+PDI CS L RLO; 3
+PDI NSM CS LRO; 3
+PDI S WS BN; 3
+PDI WS FSI RLO; 3
+PDI LRI LRI LRO; 3
+PDI PDI L BN; 3
+@Levels:	0 0 1 x
+@Reorder:	0 1 2
+L ES R RLO; 3
+L RLI ET LRO; 3
+EN CS R BN; 2
+EN FSI R RLO; 3
+ES S AL LRO; 2
+ET L R BN; 3
+ET ON AL RLO; 2
+CS ES AL LRO; 2
+CS RLI ET BN; 3
+NSM CS AL RLO; 2
+NSM FSI AL LRO; 3
+S S AL BN; 2
+WS L AL RLO; 3
+WS RLI R LRO; 3
+ON ES AL BN; 2
+ON RLI CS RLO; 3
+RLI PDI AL LRO; 2
+PDI NSM AL BN; 2
+PDI PDI AL RLO; 2
+@Levels:	0 0 2 x
+@Reorder:	0 1 2
+L RLI L LRO; 3
+EN NSM AN BN; 3
+EN FSI ET RLO; 3
+ES LRI ET LRO; 3
+ET EN AN BN; 3
+ET RLI AN RLO; 3
+CS ON AN LRO; 3
+CS FSI NSM BN; 3
+NSM LRI NSM RLO; 3
+S CS AN LRO; 3
+S FSI EN BN; 3
+WS LRI EN RLO; 3
+ON L AN LRO; 3
+ON RLI L BN; 3
+LRI S ON RLO; 3
+PDI ET AN LRO; 3
+PDI FSI L BN; 3
+@Levels:	0 0 3 x
+@Reorder:	0 1 2
+CS LRI AL RLO; 3
+@Levels:	0 0 4 x
+@Reorder:	0 1 2
+ES LRI AN LRO; 3
+PDI LRI AN BN; 3
+@Levels:	0 0 x 0
+@Reorder:	0 1 3
+L EN BN S; 3
+L ET BN S; 3
+L NSM BN S; 3
+L WS BN S; 3
+L RLI LRO WS; 3
+L PDI PDF FSI; 3
+EN EN PDF FSI; 3
+EN ET PDF FSI; 3
+EN NSM PDF FSI; 3
+EN WS PDF FSI; 3
+EN LRI BN PDI; 3
+EN PDI PDF ET; 3
+ES EN PDF ET; 3
+ES ET PDF ET; 3
+ES NSM PDF ET; 3
+ES WS PDF ET; 3
+ES LRI PDF RLI; 3
+ES PDI RLO WS; 3
+ET EN RLO WS; 3
+ET ET RLO WS; 3
+ET NSM RLO WS; 3
+ET WS RLO WS; 3
+ET LRI RLO WS; 3
+ET PDI LRO PDI; 3
+CS EN LRO PDI; 3
+CS ET LRO PDI; 3
+CS NSM LRO PDI; 3
+CS WS LRO PDI; 3
+CS LRI LRO PDI; 3
+CS PDI LRE RLI; 3
+NSM EN LRE RLI; 3
+NSM ET LRE RLI; 3
+NSM NSM LRE RLI; 3
+NSM WS LRE RLI; 3
+NSM LRI LRE RLI; 3
+NSM FSI BN WS; 3
+S L BN ON; 3
+S ES BN ON; 3
+S CS BN ON; 3
+S S BN ON; 3
+S ON BN ON; 3
+S FSI RLO PDI; 3
+WS L BN L; 3
+WS ES BN L; 3
+WS CS BN L; 3
+WS S BN L; 3
+WS ON BN L; 3
+WS FSI RLE RLI; 3
+ON L PDF NSM; 3
+ON ES PDF NSM; 3
+ON CS PDF NSM; 3
+ON S PDF NSM; 3
+ON ON PDF NSM; 3
+ON FSI LRO WS; 3
+LRI S RLO RLI; 3
+LRI RLI RLE WS; 3
+LRI PDI BN CS; 3
+RLI LRI RLO WS; 3
+RLI PDI LRO PDI; 3
+FSI WS PDF WS; 3
+FSI FSI RLE PDI; 3
+PDI L PDF WS; 3
+PDI ES PDF WS; 3
+PDI CS PDF WS; 3
+PDI S PDF WS; 3
+PDI ON PDF WS; 3
+PDI FSI LRO RLI; 3
+@Levels:	0 0 x 1
+@Reorder:	0 1 3
+L EN RLE ES; 3
+L NSM PDF AL; 3
+L PDI RLO ON; 3
+EN CS RLO ES; 3
+EN RLI PDF ON; 3
+ES ET RLE CS; 3
+ES WS BN AL; 2
+ET EN PDF AL; 2
+ET S RLO AN; 3
+CS L RLO ES; 3
+CS NSM RLE ON; 3
+CS PDI RLE CS; 3
+NSM ET BN AL; 2
+NSM ON RLO NSM; 3
+S ES RLO AN; 3
+S WS RLO R; 2
+WS EN RLE ON; 3
+WS S RLE AL; 2
+WS PDI BN AL; 2
+ON CS RLO NSM; 3
+ON RLI BN ET; 3
+FSI PDI RLO ES; 3
+PDI CS RLE ON; 3
+PDI RLI PDF AL; 3
+@Levels:	0 0 x 2
+@Reorder:	0 1 3
+L ES RLE EN; 3
+L WS LRO R; 3
+L PDI LRO ES; 3
+EN CS LRE EN; 3
+EN ON LRO AN; 3
+ES L LRO ON; 3
+ES NSM LRE ON; 3
+ES RLI LRE CS; 3
+ET EN BN AN; 3
+ET S LRO ES; 3
+ET FSI PDF ON; 3
+CS ET LRE CS; 3
+CS WS LRO ON; 3
+CS PDI RLE AN; 3
+NSM CS LRO AL; 2
+NSM ON BN AN; 3
+S EN LRE ES; 3
+S NSM LRO CS; 3
+S RLI LRO ET; 3
+WS ES LRO L; 3
+WS S RLE AN; 3
+WS PDI LRE L; 3
+ON ET LRO ET; 3
+ON ON LRE ES; 3
+LRI S PDF NSM; 3
+FSI PDI LRO R; 2
+PDI ET PDF AN; 3
+PDI ON LRO EN; 3
+@Levels:	0 0 x 3
+@Reorder:	0 1 3
+L S LRE AL; 3
+EN LRI RLO ON; 3
+ES RLI RLO CS; 3
+ET FSI RLO ON; 3
+NSM LRI RLE R; 3
+S RLI LRE R; 3
+WS FSI RLE R; 3
+LRI S RLE ES; 3
+PDI LRI BN R; 3
+@Levels:	0 0 x 4
+@Reorder:	0 1 3
+EN ES LRE AN; 3
+ES FSI LRO AN; 3
+CS RLI RLE AN; 3
+S LRI LRO AN; 3
+ON LRI LRE EN; 3
+PDI NSM LRE AN; 3
+@Levels:	0 1 0 x
+@Reorder:	0 1 2
+L R L BN; 3
+L AL ON RLO; 3
+EN AL ES LRO; 2
+ES R ON BN; 2
+ET R ES RLO; 2
+ET AL LRI LRO; 2
+CS AL ES BN; 2
+NSM R LRI RLO; 2
+S R ET LRO; 2
+S AL LRI BN; 2
+WS AL ET RLO; 2
+ON R RLI LRO; 2
+RLI R LRI BN; 3
+RLI ET WS RLO; 3
+RLI ON S LRO; 3
+FSI AL FSI BN; 3
+PDI AL S RLO; 2
+@Levels:	0 1 1 x
+@Reorder:	0 2 1
+EN AL AL LRO; 2
+CS R NSM BN; 2
+WS R AL RLO; 2
+RLI R ON LRO; 3
+RLI ET AL BN; 3
+RLI NSM CS RLO; 3
+FSI R R LRO; 3
+FSI ET R BN; 3
+@Levels:	0 1 2 x
+@Reorder:	0 2 1
+L R AN RLO; 3
+CS AL EN LRO; 2
+ON AL EN BN; 2
+RLI NSM EN RLO; 3
+RLI FSI ES LRO; 3
+@Levels:	0 1 3 x
+@Reorder:	0 2 1
+RLI LRI AL BN; 3
+@Levels:	0 1 x 0
+@Reorder:	0 1 3
+L R RLE RLI; 3
+EN R RLO PDI; 2
+ES R PDF LRI; 2
+ET R BN S; 2
+CS AL LRE WS; 2
+NSM AL LRO RLI; 2
+S AL RLE PDI; 2
+WS AL PDF ES; 2
+ON AL PDF FSI; 2
+RLI ES RLE RLI; 3
+RLI NSM LRO WS; 3
+FSI R BN PDI; 3
+PDI AL RLE PDI; 2
+@Levels:	0 1 x 1
+@Reorder:	0 3 1
+EN AL RLE ES; 2
+ET AL RLO EN; 2
+NSM AL PDF AL; 2
+ON R RLE ET; 2
+RLI CS PDF AL; 3
+FSI WS PDF AL; 3
+@Levels:	0 1 x 2
+@Reorder:	0 3 1
+L AL BN AN; 3
+ET R LRE ET; 2
+NSM R LRO L; 2
+WS R LRO ES; 2
+RLI R LRO NSM; 3
+RLI NSM LRE ES; 3
+FSI R LRE NSM; 3
+PDI AL BN AN; 2
+@Levels:	0 1 x 3
+@Reorder:	0 3 1
+RLI ET RLE CS; 3
+RLI LRI RLO ES; 3
+FSI NSM RLE AL; 3
+@Levels:	0 1 x 4
+@Reorder:	0 3 1
+RLI RLI LRO AL; 3
+@Levels:	0 2 0 x
+@Reorder:	0 1 2
+L AN ET RLO; 3
+EN AN LRI LRO; 3
+ET AN L BN; 3
+CS AN S RLO; 3
+NSM AN FSI LRO; 3
+WS AN ES BN; 3
+ON AN ON RLO; 3
+LRI ES S LRO; 3
+LRI CS FSI BN; 3
+RLI L RLI RLO; 3
+FSI L LRI LRO; 3
+FSI ET S BN; 3
+FSI NSM PDI RLO; 3
+PDI AN FSI LRO; 3
+@Levels:	0 2 1 x
+@Reorder:	0 2 1
+WS AN R BN; 2
+RLI AN ES RLO; 3
+@Levels:	0 2 2 x
+@Reorder:	0 1 2
+ET AN NSM LRO; 3
+LRI L NSM BN; 3
+LRI ET EN RLO; 3
+LRI NSM CS LRO; 3
+LRI ON ON BN; 3
+FSI L ES RLO; 3
+FSI ES NSM LRO; 3
+FSI NSM L BN; 3
+FSI ON ET RLO; 3
+@Levels:	0 2 3 x
+@Reorder:	0 1 2
+LRI NSM AL LRO; 3
+FSI RLI R BN; 3
+@Levels:	0 2 4 x
+@Reorder:	0 1 2
+LRI LRI L RLO; 3
+FSI L AN LRO; 3
+FSI RLI EN BN; 3
+@Levels:	0 2 x 0
+@Reorder:	0 1 3
+L AN LRE RLI; 3
+ES AN LRO WS; 3
+CS AN LRO PDI; 3
+S AN RLE RLI; 3
+ON AN RLO WS; 3
+LRI EN BN PDI; 3
+LRI CS PDF RLI; 3
+RLI L RLO WS; 3
+FSI L LRO PDI; 3
+FSI ET LRE RLI; 3
+FSI NSM BN WS; 3
+@Levels:	0 2 x 1
+@Reorder:	0 3 1
+L AN RLO ES; 3
+NSM AN RLE ON; 3
+RLI AN PDF R; 3
+@Levels:	0 2 x 2
+@Reorder:	0 1 3
+ES AN LRO ES; 3
+S AN LRO NSM; 3
+LRI ET PDF EN; 3
+RLI EN LRE ON; 3
+FSI ET BN EN; 3
+@Levels:	0 2 x 3
+@Reorder:	0 1 3
+S AN LRE R; 2
+LRI CS RLO EN; 3
+RLI L RLE ON; 3
+FSI ES RLO NSM; 3
+@Levels:	0 2 x 4
+@Reorder:	0 1 3
+WS AN LRE AN; 3
+LRI CS LRO EN; 3
+LRI RLI LRO R; 3
+FSI ES RLE L; 3
+FSI ON RLE L; 3
+@Levels:	0 2 x 5
+@Reorder:	0 1 3
+LRI RLI RLE ES; 3
+@Levels:	0 2 x 6
+@Reorder:	0 1 3
+LRI NSM LRE AN; 3
+FSI FSI RLE AN; 3
+@Levels:	0 3 2 x
+@Reorder:	0 1 2
+LRI R ET BN; 3
+@Levels:	0 3 4 x
+@Reorder:	0 2 1
+LRI AL AN RLO; 3
+@Levels:	0 3 x 3
+@Reorder:	0 3 1
+LRI R RLE NSM; 3
+@Levels:	0 4 0 x
+@Reorder:	0 1 2
+LRI AN S BN; 3
+@Levels:	0 4 2 x
+@Reorder:	0 1 2
+LRI AN ON RLO; 3
+@Levels:	0 4 x 0
+@Reorder:	0 1 3
+LRI AN PDF WS; 3
+@Levels:	0 4 x 3
+@Reorder:	0 3 1
+FSI AN RLO ET; 3
+@Levels:	0 x 0 0
+@Reorder:	0 2 3
+L LRO WS RLI; 3
+L PDF L EN; 3
+L PDF WS RLI; 3
+L BN CS EN; 3
+EN LRE S PDI; 3
+EN RLE PDI RLI; 3
+EN PDF CS LRI; 3
+EN BN EN L; 3
+EN BN ON LRI; 3
+ES LRO FSI PDI; 3
+ES PDF EN ON; 3
+ES PDF LRI FSI; 3
+ES BN NSM ON; 3
+ET LRE FSI WS; 3
+ET RLO LRI PDI; 3
+ET PDF S ET; 3
+ET BN ES WS; 3
+ET BN FSI FSI; 3
+CS RLE LRI WS; 3
+CS PDF ET ES; 3
+CS PDF PDI S; 3
+CS BN WS ES; 3
+NSM LRO WS RLI; 3
+NSM PDF L EN; 3
+NSM PDF WS RLI; 3
+NSM BN CS EN; 3
+S LRE S PDI; 3
+S RLE PDI RLI; 3
+S PDF CS LRI; 3
+S BN EN L; 3
+S BN ON LRI; 3
+WS LRO FSI PDI; 3
+WS PDF EN ON; 3
+WS PDF LRI FSI; 3
+WS BN NSM ON; 3
+ON LRE FSI WS; 3
+ON RLO LRI PDI; 3
+ON PDF S ET; 3
+ON BN ES WS; 3
+ON BN FSI FSI; 3
+LRI LRO PDI PDI; 3
+LRI PDF LRI WS; 3
+RLI LRE FSI RLI; 3
+RLI RLE PDI FSI; 3
+RLI BN LRI S; 3
+FSI LRO FSI LRI; 3
+FSI RLO PDI RLI; 3
+PDI LRE WS PDI; 3
+PDI RLO S RLI; 3
+PDI PDF NSM ES; 3
+PDI BN EN S; 3
+PDI BN LRI LRI; 3
+@Levels:	0 x 0 1
+@Reorder:	0 2 3
+L BN FSI R; 3
+ES PDF ES R; 2
+ET BN L R; 3
+CS BN FSI R; 3
+S PDF ES R; 2
+WS BN L R; 3
+ON BN FSI R; 3
+PDI PDF FSI R; 3
+@Levels:	0 x 0 2
+@Reorder:	0 2 3
+L BN FSI EN; 3
+ES RLE S AN; 3
+ET PDF FSI ON; 3
+CS BN FSI NSM; 3
+S PDF ET AN; 3
+WS BN ES AN; 3
+LRI LRO PDI AN; 3
+PDI PDF LRI EN; 3
+@Levels:	0 x 0 3
+@Reorder:	0 2 3
+LRI RLE S ES; 3
+@Levels:	0 x 0 4
+@Reorder:	0 2 3
+WS PDF FSI AN; 3
+@Levels:	0 x 1 0
+@Reorder:	0 2 3
+L RLE ON WS; 3
+L BN AL ET; 3
+EN RLO NSM WS; 3
+ES RLO L RLI; 3
+ES BN AL PDI; 2
+ET RLO ON RLI; 3
+CS RLO R PDI; 2
+NSM RLE AL WS; 2
+NSM PDF R WS; 2
+S RLO EN WS; 3
+WS RLE ES RLI; 3
+WS PDF AL ET; 2
+ON RLO ES RLI; 3
+RLI PDF ET PDI; 3
+PDI RLE ES RLI; 3
+PDI PDF AL ET; 2
+@Levels:	0 x 1 1
+@Reorder:	0 3 2
+L RLO L AN; 3
+L RLO ON AN; 3
+EN RLO R R; 2
+EN RLO PDI R; 2
+ES RLO R AN; 2
+ES RLO PDI AN; 3
+ET RLO AL R; 2
+ET PDF R AL; 2
+CS RLO AL AN; 2
+CS BN R R; 2
+NSM RLO EN R; 2
+NSM BN AL NSM; 2
+S RLO EN AN; 3
+WS RLE R CS; 2
+WS RLO ES R; 2
+ON RLE AL ES; 2
+ON RLO ES AN; 3
+RLI PDF ES R; 3
+FSI PDF R ES; 3
+PDI RLE ON AL; 2
+PDI RLO NSM CS; 3
+@Levels:	0 x 1 2
+@Reorder:	0 3 2
+L PDF R AN; 3
+ES RLE FSI EN; 3
+CS RLE ES EN; 3
+NSM RLO LRI NSM; 3
+WS RLE ON EN; 3
+ON BN R AN; 2
+PDI RLE CS L; 3
+@Levels:	0 x 1 3
+@Reorder:	0 3 2
+ES RLE RLI ET; 3
+S RLO RLI CS; 3
+@Levels:	0 x 1 4
+@Reorder:	0 3 2
+L RLO RLI EN; 3
+PDI RLO RLI EN; 3
+@Levels:	0 x 2 0
+@Reorder:	0 2 3
+L LRO ON WS; 3
+EN LRO R PDI; 2
+ES LRE EN RLI; 3
+ES RLE EN WS; 3
+ET LRO EN PDI; 3
+CS LRE ET RLI; 3
+CS PDF AN EN; 3
+NSM LRO ET PDI; 3
+S LRE NSM RLI; 3
+S BN AN EN; 3
+WS LRO CS PDI; 3
+ON LRO L RLI; 3
+LRI PDF L WS; 3
+RLI LRE ES PDI; 3
+RLI PDF AN RLI; 3
+FSI BN CS WS; 3
+PDI LRO AN PDI; 3
+@Levels:	0 x 2 1
+@Reorder:	0 3 2
+EN PDF AN AL; 2
+S RLE AN ES; 3
+PDI RLE EN ES; 3
+@Levels:	0 x 2 2
+@Reorder:	0 2 3
+L LRO AL ES; 3
+L RLE EN L; 3
+EN LRO AL EN; 2
+EN RLE L NSM; 3
+ES LRO AL AL; 2
+ES RLE L AN; 3
+ET LRO AL R; 2
+ET RLE L EN; 3
+CS LRO AL L; 2
+CS RLE L L; 3
+NSM LRO R ON; 2
+NSM LRO PDI ON; 3
+S LRO R NSM; 2
+S LRO PDI NSM; 3
+WS LRO R CS; 2
+WS LRO PDI CS; 3
+ON LRO R AN; 2
+ON LRO PDI AN; 3
+LRI BN ET EN; 3
+RLI LRO R L; 3
+RLI PDF L L; 3
+FSI PDF NSM EN; 3
+PDI LRE ET ET; 3
+PDI LRO AN R; 2
+@Levels:	0 x 2 3
+@Reorder:	0 2 3
+L LRE FSI R; 3
+ET LRE ON AL; 2
+S LRE ET AL; 2
+ON LRO FSI AL; 3
+FSI PDF L AL; 3
+@Levels:	0 x 2 4
+@Reorder:	0 2 3
+EN LRE L AN; 3
+ET LRE LRI ON; 3
+NSM LRO LRI ES; 3
+WS LRO FSI ON; 3
+RLI LRE WS AN; 3
+PDI LRE LRI ON; 3
+@Levels:	0 x 2 6
+@Reorder:	0 2 3
+CS LRO FSI AN; 3
+@Levels:	0 x 3 0
+@Reorder:	0 2 3
+NSM LRE AL WS; 2
+LRI RLO AL PDI; 3
+RLI RLE ET RLI; 3
+FSI RLE AL WS; 3
+PDI LRE R PDI; 2
+@Levels:	0 x 3 2
+@Reorder:	0 2 3
+LRI PDF R CS; 3
+@Levels:	0 x 3 3
+@Reorder:	0 3 2
+ON LRE AL NSM; 2
+LRI RLO ES EN; 3
+RLI RLE ES AL; 3
+RLI RLO ET ON; 3
+FSI RLE WS AL; 3
+FSI RLO NSM CS; 3
+@Levels:	0 x 3 4
+@Reorder:	0 3 2
+LRI RLE FSI NSM; 3
+FSI RLE WS L; 3
+@Levels:	0 x 3 5
+@Reorder:	0 3 2
+FSI RLO RLI NSM; 3
+@Levels:	0 x 4 0
+@Reorder:	0 2 3
+LRI LRE ES S; 3
+LRI RLE EN FSI; 3
+FSI LRO ES LRI; 3
+@Levels:	0 x 4 2
+@Reorder:	0 2 3
+NSM LRE AN L; 3
+@Levels:	0 x 4 3
+@Reorder:	0 3 2
+RLI LRE AN AL; 3
+@Levels:	0 x 4 4
+@Reorder:	0 2 3
+LRI LRE WS EN; 3
+LRI LRO NSM CS; 3
+FSI LRE WS EN; 3
+FSI RLE AN NSM; 3
+@Levels:	0 x 4 6
+@Reorder:	0 2 3
+LRI LRO FSI CS; 3
+@Levels:	0 x 6 0
+@Reorder:	0 2 3
+FSI LRE AN WS; 3
+@Levels:	1 0 0 x
+@Reorder:	0 1 2
+R L PDI BN; 2
+R ET NSM RLO; 2
+R CS RLI LRO; 2
+R WS ES BN; 2
+R ON WS RLO; 2
+R RLI PDI LRO; 2
+R PDI RLI BN; 2
+AL ES ES RLO; 2
+AL ET WS LRO; 2
+AL CS FSI BN; 2
+AL WS CS RLO; 2
+AL ON LRI LRO; 2
+AL FSI S BN; 2
+AL PDI PDI RLO; 2
+@Levels:	1 0 1 x
+@Reorder:	0 1 2
+AL S AL LRO; 2
+@Levels:	1 0 2 x
+@Reorder:	0 1 2
+R LRI ET BN; 2
+AL LRI L RLO; 2
+@Levels:	1 0 3 x
+@Reorder:	0 1 2
+R LRI R LRO; 2
+@Levels:	1 0 x 0
+@Reorder:	0 1 3
+R ES LRE RLI; 2
+R CS BN ON; 2
+R WS BN PDI; 2
+R RLI PDF RLI; 2
+AL L LRO WS; 2
+AL ET PDF RLI; 2
+AL WS LRE WS; 2
+AL LRI RLE PDI; 2
+AL PDI LRO RLI; 2
+@Levels:	1 0 x 1
+@Reorder:	0 1 3
+AL L RLE AL; 2
+@Levels:	1 0 x 2
+@Reorder:	0 1 3
+R ET LRE ES; 2
+R LRI BN ET; 2
+AL ET LRE EN; 2
+AL LRI BN ES; 2
+@Levels:	1 0 x 3
+@Reorder:	0 1 3
+R RLI RLE ES; 2
+AL FSI RLO R; 2
+@Levels:	1 0 x 4
+@Reorder:	0 1 3
+AL FSI LRE ES; 2
+@Levels:	1 1 0 x
+@Reorder:	1 0 2
+R AL ES LRO; 2
+R NSM ON BN; 2
+AL AL ES RLO; 2
+AL NSM LRI LRO; 2
+@Levels:	1 1 1 x
+@Reorder:	2 1 0
+R R PDI BN; 5
+R ES ET RLO; 5
+R ET WS LRO; 5
+R CS RLI BN; 5
+R S AL RLO; 5
+R WS NSM LRO; 5
+R ON ON BN; 5
+R FSI S RLO; 5
+R PDI FSI LRO; 5
+AL AL AL BN; 7
+AL ES NSM RLO; 5
+AL ET LRI LRO; 5
+AL CS PDI BN; 5
+AL S ET RLO; 5
+AL WS WS LRO; 5
+AL ON RLI BN; 5
+AL FSI LRI RLO; 5
+ES R R LRO; 5
+ES AL ET BN; 5
+ES ES WS RLO; 4
+ES ET FSI LRO; 4
+ES NSM AL BN; 5
+ES S NSM RLO; 4
+ES WS LRI LRO; 4
+ES ON PDI BN; 4
+ES FSI FSI RLO; 4
+ET R ES LRO; 5
+ET AL NSM BN; 5
+ET ES LRI RLO; 4
+ET CS R LRO; 5
+ET NSM ET BN; 4
+ET S WS RLO; 4
+ET WS FSI LRO; 4
+ET LRI WS BN; 4
+ET PDI R RLO; 5
+CS R CS LRO; 5
+CS AL WS BN; 5
+CS ES FSI RLO; 4
+CS CS ES LRO; 4
+CS NSM NSM BN; 4
+CS S LRI RLO; 4
+CS ON R LRO; 5
+CS LRI RLI BN; 4
+CS PDI ES RLO; 4
+NSM R S LRO; 5
+NSM AL LRI BN; 5
+NSM ET R RLO; 5
+NSM CS CS LRO; 4
+NSM NSM WS BN; 4
+NSM S FSI RLO; 4
+NSM ON ES LRO; 4
+NSM LRI PDI BN; 4
+NSM PDI CS RLO; 4
+S R ON LRO; 5
+S AL FSI BN; 5
+S ET ES RLO; 4
+S CS S LRO; 4
+S NSM LRI BN; 4
+S WS R RLO; 5
+S ON CS LRO; 4
+S RLI WS BN; 4
+S PDI S RLO; 4
+WS R RLI LRO; 5
+WS ES R BN; 5
+WS ET CS RLO; 4
+WS CS ON LRO; 4
+WS NSM FSI BN; 4
+WS WS ES RLO; 4
+WS ON S LRO; 4
+WS RLI RLI BN; 4
+WS PDI ON RLO; 4
+ON R PDI LRO; 5
+ON ES ES BN; 4
+ON ET S RLO; 4
+ON CS RLI LRO; 4
+ON S R BN; 5
+ON WS CS RLO; 4
+ON ON ON LRO; 4
+ON RLI PDI BN; 4
+ON PDI RLI RLO; 4
+LRI LRI LRI LRO; 4
+LRI PDI R BN; 5
+RLI S FSI RLO; 4
+RLI RLI RLI LRO; 4
+RLI PDI WS BN; 4
+FSI WS PDI RLO; 4
+FSI FSI FSI LRO; 4
+PDI R AL BN; 5
+PDI AL NSM RLO; 5
+PDI ES LRI LRO; 4
+PDI ET PDI BN; 4
+PDI NSM ET RLO; 4
+PDI S WS LRO; 4
+PDI WS RLI BN; 4
+PDI LRI WS RLO; 4
+PDI PDI R LRO; 5
+@Levels:	1 1 2 x
+@Reorder:	2 1 0
+R AL L BN; 5
+R WS L RLO; 5
+R FSI CS LRO; 5
+AL ET EN BN; 7
+AL LRI L RLO; 5
+ES R L LRO; 5
+ES NSM AN BN; 4
+ES FSI L RLO; 4
+ET ES EN LRO; 4
+ET ON EN BN; 4
+ET PDI EN RLO; 4
+CS NSM EN LRO; 4
+CS LRI NSM BN; 4
+NSM AL AN RLO; 5
+NSM WS AN LRO; 4
+NSM FSI NSM BN; 4
+S CS EN RLO; 4
+S LRI ET LRO; 4
+WS R AN BN; 5
+WS S AN RLO; 4
+WS FSI ET LRO; 4
+ON ET L BN; 4
+ON LRI L RLO; 4
+LRI S L LRO; 4
+FSI S ET BN; 4
+PDI ET AN RLO; 4
+PDI LRI EN LRO; 4
+@Levels:	1 1 3 x
+@Reorder:	2 1 0
+R LRI R BN; 5
+AL RLI CS RLO; 5
+ET LRI AL LRO; 4
+CS RLI CS BN; 4
+S LRI AL RLO; 4
+WS RLI NSM LRO; 4
+LRI S AL BN; 4
+PDI RLI NSM RLO; 4
+@Levels:	1 1 4 x
+@Reorder:	2 1 0
+ES RLI AN LRO; 4
+NSM FSI AN BN; 4
+RLI S L RLO; 4
+@Levels:	1 1 x 0
+@Reorder:	1 0 3
+R AL LRE RLI; 2
+R NSM RLO RLI; 2
+AL AL RLE PDI; 2
+AL NSM BN L; 2
+@Levels:	1 1 x 1
+@Reorder:	3 1 0
+R AL LRO FSI; 5
+R ES PDF ES; 5
+R CS LRO RLI; 5
+R NSM PDF AL; 7
+R WS RLO L; 2
+R ON BN CS; 5
+R FSI RLO WS; 5
+AL R RLE CS; 2
+AL AL PDF ON; 5
+AL ET RLE ET; 2
+AL CS PDF WS; 5
+AL S RLE LRI; 5
+AL WS BN RLI; 5
+AL LRI BN S; 5
+AL PDI RLE RLI; 5
+ES AL LRE PDI; 5
+ES ET LRE PDI; 4
+ES NSM LRE PDI; 4
+ES WS LRE PDI; 4
+ES LRI LRE PDI; 4
+ES FSI BN RLI; 4
+ET R BN RLI; 5
+ET ES BN RLI; 4
+ET CS BN RLI; 4
+ET S BN RLI; 4
+ET ON BN RLI; 4
+ET FSI PDF WS; 4
+CS R BN ES; 5
+CS ES BN ES; 4
+CS CS BN ES; 4
+CS S BN ES; 4
+CS ON BN ES; 4
+CS FSI RLE PDI; 4
+NSM R PDF WS; 5
+NSM ES PDF WS; 4
+NSM CS PDF WS; 4
+NSM S PDF WS; 4
+NSM ON PDF WS; 4
+NSM FSI LRO RLI; 4
+S R RLO PDI; 5
+S ES RLO PDI; 4
+S CS RLO PDI; 4
+S S RLO PDI; 4
+S ON RLO PDI; 4
+S FSI LRE WS; 4
+WS R RLE RLI; 5
+WS ES RLE RLI; 4
+WS CS RLE RLI; 4
+WS S RLE RLI; 4
+WS ON RLE RLI; 4
+WS RLI PDF PDI; 4
+ON R LRO WS; 5
+ON ES LRO WS; 4
+ON CS LRO WS; 4
+ON S LRO WS; 4
+ON ON LRO WS; 4
+ON RLI RLO RLI; 4
+ON PDI BN PDI; 4
+LRI LRI PDF RLI; 4
+LRI PDI RLO WS; 4
+RLI WS BN RLI; 4
+RLI FSI PDF WS; 4
+FSI WS LRE RLI; 4
+FSI RLI BN WS; 4
+PDI R LRO RLI; 5
+PDI ES LRO RLI; 4
+PDI CS LRO RLI; 4
+PDI S LRO RLI; 4
+PDI ON LRO RLI; 4
+PDI RLI RLO PDI; 4
+@Levels:	1 1 x 2
+@Reorder:	3 1 0
+R R LRE EN; 7
+R ET BN AN; 7
+R WS BN EN; 7
+AL R RLE EN; 2
+AL CS LRO CS; 5
+AL ON LRO AN; 5
+ES AL LRO EN; 5
+ES NSM BN L; 4
+ES PDI LRE L; 4
+ET ET LRO R; 5
+ET WS BN L; 4
+CS AL LRE L; 5
+CS NSM LRO EN; 4
+CS FSI PDF CS; 4
+NSM ES BN EN; 4
+NSM WS LRO R; 5
+S R LRO ES; 5
+S CS BN EN; 4
+S LRI PDF ON; 4
+WS ES LRO AL; 5
+WS S PDF AN; 4
+WS PDI BN AN; 4
+ON CS LRO AL; 5
+ON ON PDF L; 4
+RLI PDI LRE ON; 4
+PDI ES LRE L; 4
+PDI S LRO EN; 4
+PDI PDI LRO AN; 4
+@Levels:	1 1 x 3
+@Reorder:	3 1 0
+R CS RLO ET; 5
+R LRI BN R; 5
+AL ES RLO R; 5
+AL WS RLO AN; 5
+ES R RLE CS; 5
+ES NSM RLO AL; 5
+ES FSI RLE ES; 4
+ET ET RLE NSM; 4
+ET ON RLO EN; 4
+CS AL RLE AL; 5
+CS S RLE ON; 4
+CS FSI BN AL; 4
+NSM CS RLE ES; 4
+NSM LRI RLO AL; 4
+S ES LRE R; 5
+S WS RLE ET; 4
+S PDI RLO AN; 4
+WS NSM LRE AL; 5
+WS RLI PDF CS; 4
+ON ES RLO CS; 4
+ON ON RLE R; 5
+LRI S RLO ET; 4
+PDI R RLE AL; 5
+PDI NSM RLE ON; 4
+PDI RLI BN CS; 4
+@Levels:	1 1 x 4
+@Reorder:	3 1 0
+R RLI LRE ET; 5
+AL LRI RLE EN; 5
+ES LRI LRO ES; 4
+ET LRI LRE CS; 4
+CS ON RLE L; 4
+NSM S RLE EN; 4
+S CS RLE AN; 4
+WS ET LRE AN; 4
+ON AL RLE L; 5
+ON PDI RLE EN; 4
+PDI CS RLE AN; 4
+@Levels:	1 1 x 5
+@Reorder:	3 1 0
+R RLI RLO R; 5
+CS RLI RLE R; 4
+WS FSI RLE R; 4
+@Levels:	1 1 x 6
+@Reorder:	3 1 0
+ES RLI RLE EN; 4
+@Levels:	1 2 0 x
+@Reorder:	1 0 2
+R EN FSI LRO; 2
+AL EN CS BN; 2
+AL AN FSI RLO; 2
+@Levels:	1 2 1 x
+@Reorder:	2 1 0
+R EN CS LRO; 5
+R AN LRI BN; 5
+AL EN AL RLO; 7
+AL AN WS LRO; 5
+ES L FSI BN; 4
+ES AN CS RLO; 4
+ET L RLI LRO; 4
+CS L AL BN; 4
+CS EN ON RLO; 4
+NSM L R LRO; 4
+NSM EN S BN; 4
+NSM AN FSI RLO; 4
+S EN CS LRO; 4
+S AN LRI BN; 4
+WS EN AL RLO; 5
+WS AN ON LRO; 4
+ON L PDI BN; 4
+ON AN S RLO; 4
+LRI EN FSI LRO; 4
+LRI CS LRI BN; 4
+FSI L WS RLO; 4
+FSI ET S LRO; 4
+FSI NSM FSI BN; 4
+PDI L RLI RLO; 4
+PDI AN ET LRO; 4
+@Levels:	1 2 2 x
+@Reorder:	1 2 0
+R EN AN BN; 7
+AL AN AN RLO; 7
+ET L EN LRO; 4
+CS ET EN BN; 4
+NSM AN AN RLO; 4
+WS L EN LRO; 4
+ON L NSM BN; 4
+LRI L ON RLO; 4
+LRI ET ES LRO; 4
+LRI NSM CS BN; 4
+FSI L L RLO; 4
+FSI ES ET LRO; 4
+FSI CS NSM BN; 4
+FSI ON EN RLO; 4
+PDI AN EN LRO; 4
+@Levels:	1 2 3 x
+@Reorder:	1 2 0
+LRI WS AL BN; 4
+FSI RLI ET RLO; 4
+@Levels:	1 2 4 x
+@Reorder:	1 2 0
+LRI LRI ET LRO; 4
+FSI ES AN BN; 4
+FSI FSI EN RLO; 4
+@Levels:	1 2 x 0
+@Reorder:	1 0 3
+R EN RLO WS; 2
+AL EN PDF WS; 2
+@Levels:	1 2 x 1
+@Reorder:	3 1 0
+R L BN AL; 5
+R AN RLO R; 2
+AL EN RLE AL; 2
+AL AN PDF ON; 5
+ES EN BN R; 5
+ET L BN S; 4
+CS L BN RLI; 4
+NSM L LRE RLI; 4
+NSM AN LRO RLI; 4
+S EN RLE WS; 4
+WS L RLO WS; 4
+WS AN PDF AL; 5
+ON EN PDF WS; 4
+LRI L BN PDI; 4
+LRI ET PDF RLI; 4
+LRI ON RLO WS; 4
+FSI ES LRO PDI; 4
+FSI NSM LRE RLI; 4
+PDI L PDF ON; 4
+PDI AN BN AL; 5
+@Levels:	1 2 x 2
+@Reorder:	1 3 0
+AL L LRE CS; 5
+ES L BN AN; 4
+ET AN PDF AN; 4
+NSM L LRO NSM; 4
+S EN LRO ES; 4
+WS AN LRE ET; 4
+ON AN BN NSM; 4
+LRI ON PDF EN; 4
+FSI WS PDF ET; 4
+PDI AN BN L; 4
+@Levels:	1 2 x 3
+@Reorder:	1 3 0
+AL AN LRE AL; 7
+ET AN RLE CS; 4
+NSM EN RLO AL; 5
+WS L RLO CS; 4
+LRI L RLE ES; 4
+LRI CS PDF AL; 4
+FSI L RLO ON; 4
+FSI RLI PDF CS; 4
+@Levels:	1 2 x 4
+@Reorder:	1 3 0
+ES EN RLE L; 4
+LRI EN LRE ET; 4
+LRI NSM LRO NSM; 4
+LRI FSI BN ET; 4
+FSI CS LRO ON; 4
+FSI RLI BN L; 4
+@Levels:	1 2 x 5
+@Reorder:	1 3 0
+LRI FSI RLO ES; 4
+@Levels:	1 2 x 6
+@Reorder:	1 3 0
+LRI RLI RLE AN; 4
+@Levels:	1 3 1 x
+@Reorder:	2 1 0
+LRI R LRI BN; 4
+RLI AL WS RLO; 4
+RLI CS S LRO; 4
+RLI ON FSI BN; 4
+@Levels:	1 3 2 x
+@Reorder:	1 2 0
+LRI R CS RLO; 4
+@Levels:	1 3 3 x
+@Reorder:	2 1 0
+RLI R CS LRO; 4
+RLI ES ON BN; 4
+RLI NSM ES RLO; 4
+RLI ON NSM LRO; 4
+FSI ES R BN; 4
+@Levels:	1 3 4 x
+@Reorder:	2 1 0
+RLI R EN RLO; 4
+RLI WS EN LRO; 4
+RLI FSI CS BN; 4
+@Levels:	1 3 5 x
+@Reorder:	2 1 0
+RLI RLI ON RLO; 4
+@Levels:	1 3 x 1
+@Reorder:	3 1 0
+LRI AL RLO WS; 4
+RLI ES LRO PDI; 4
+RLI NSM LRE RLI; 4
+FSI R BN WS; 4
+@Levels:	1 3 x 3
+@Reorder:	3 1 0
+LRI AL RLO ON; 4
+RLI WS BN ES; 4
+@Levels:	1 3 x 4
+@Reorder:	3 1 0
+LRI AL LRE NSM; 4
+RLI ET LRO ET; 4
+RLI ON BN AN; 4
+@Levels:	1 3 x 5
+@Reorder:	3 1 0
+RLI R RLO L; 4
+RLI NSM RLO ET; 4
+FSI R RLE ET; 4
+@Levels:	1 3 x 6
+@Reorder:	3 1 0
+RLI ON RLE L; 4
+@Levels:	1 3 x 7
+@Reorder:	3 1 0
+RLI FSI LRE AL; 4
+@Levels:	1 4 1 x
+@Reorder:	2 1 0
+RLI EN LRI BN; 4
+@Levels:	1 4 2 x
+@Reorder:	1 2 0
+LRI AN EN RLO; 4
+@Levels:	1 4 3 x
+@Reorder:	2 1 0
+RLI L CS LRO; 4
+FSI AN AL BN; 4
+@Levels:	1 4 4 x
+@Reorder:	1 2 0
+FSI AN AN RLO; 4
+@Levels:	1 4 x 1
+@Reorder:	3 1 0
+RLI EN RLO WS; 4
+@Levels:	1 4 x 2
+@Reorder:	1 3 0
+LRI AN BN ON; 4
+@Levels:	1 4 x 4
+@Reorder:	1 3 0
+LRI AN LRO ES; 4
+FSI AN LRE ON; 4
+@Levels:	1 4 x 6
+@Reorder:	1 3 0
+RLI AN RLE EN; 4
+@Levels:	1 x 0 0
+@Reorder:	0 2 3
+R RLE FSI WS; 2
+R PDF S NSM; 2
+R BN CS ES; 2
+AL LRE RLI PDI; 2
+AL RLO LRI RLI; 2
+AL PDF ON WS; 2
+AL BN WS CS; 2
+@Levels:	1 x 0 1
+@Reorder:	0 2 3
+AL RLE S ON; 2
+@Levels:	1 x 0 2
+@Reorder:	0 2 3
+AL LRE S ET; 2
+@Levels:	1 x 1 0
+@Reorder:	2 0 3
+R RLE ET RLI; 2
+R PDF AL RLI; 2
+AL RLO R PDI; 2
+AL BN AL LRI; 2
+@Levels:	1 x 1 1
+@Reorder:	3 2 0
+R RLE AL ON; 2
+R RLO R ES; 2
+R RLO ON AL; 2
+R PDF CS S; 5
+R BN R RLI; 5
+R BN ON S; 5
+AL LRO FSI LRI; 5
+AL RLE PDI CS; 2
+AL RLO S WS; 5
+AL PDF ES LRI; 5
+AL PDF PDI R; 7
+AL BN S LRI; 5
+ES LRO S RLI; 4
+ES RLO PDI WS; 4
+ES PDF WS CS; 4
+ES BN ET ON; 4
+ES BN PDI PDI; 4
+ET RLE FSI RLI; 4
+ET PDF CS ET; 4
+ET BN R WS; 5
+ET BN ON ET; 4
+CS LRO RLI PDI; 4
+CS PDF AL ES; 5
+CS PDF ON FSI; 4
+CS BN NSM ES; 4
+NSM LRE RLI WS; 4
+NSM RLO WS PDI; 4
+NSM PDF NSM RLI; 4
+NSM BN ES AL; 5
+NSM BN RLI FSI; 4
+S RLE WS WS; 4
+S PDF ES LRI; 4
+S PDF PDI R; 5
+S BN S LRI; 4
+WS LRO S RLI; 4
+WS RLO PDI WS; 4
+WS PDF WS CS; 4
+WS BN ET ON; 4
+WS BN PDI PDI; 4
+ON RLE FSI RLI; 4
+ON PDF CS ET; 4
+ON BN R WS; 5
+ON BN ON ET; 4
+LRI LRO LRI FSI; 4
+LRI RLO PDI R; 5
+RLI LRE S WS; 4
+RLI RLE LRI RLI; 4
+RLI PDF FSI PDI; 4
+FSI LRO S S; 4
+FSI RLO LRI LRI; 4
+FSI BN FSI FSI; 4
+PDI RLE LRI WS; 4
+PDI PDF ET ES; 4
+PDI PDF PDI S; 4
+PDI BN WS ES; 4
+@Levels:	1 x 1 2
+@Reorder:	3 2 0
+R RLE LRI NSM; 2
+R BN LRI NSM; 5
+AL PDF NSM AN; 7
+ES PDF CS EN; 4
+ET PDF ET L; 4
+CS PDF ES AN; 4
+NSM PDF AL AN; 5
+S PDF R AN; 5
+WS LRO S ON; 4
+ON LRO S AN; 4
+LRI RLO PDI EN; 4
+PDI PDF CS L; 4
+@Levels:	1 x 1 3
+@Reorder:	3 2 0
+R RLO S ET; 5
+AL BN FSI AL; 5
+CS RLO S NSM; 4
+S BN RLI ET; 4
+LRI RLO S ET; 4
+@Levels:	1 x 1 4
+@Reorder:	3 2 0
+R BN LRI AN; 5
+WS RLE S L; 4
+PDI PDF RLI EN; 4
+@Levels:	1 x 2 0
+@Reorder:	2 0 3
+R LRO AL PDI; 2
+R BN AN RLI; 2
+AL LRO ON WS; 2
+@Levels:	1 x 2 1
+@Reorder:	3 2 0
+R LRE NSM RLI; 5
+R PDF EN ES; 5
+AL LRO L LRI; 5
+AL PDF AN AL; 7
+ES LRO R PDI; 5
+ES BN EN S; 4
+ET LRO AN RLI; 4
+CS LRE NSM WS; 4
+CS PDF AN WS; 4
+NSM LRO AL PDI; 5
+NSM BN EN PDI; 4
+S LRO CS RLI; 4
+WS LRE ES RLI; 4
+WS PDF EN AL; 5
+ON LRO L WS; 4
+ON BN L WS; 4
+LRI BN CS PDI; 4
+PDI LRE L RLI; 4
+PDI PDF L AL; 4
+@Levels:	1 x 2 2
+@Reorder:	2 3 0
+R LRE CS ET; 7
+R LRO AN NSM; 7
+AL LRE L ON; 7
+AL LRO ES EN; 7
+AL PDF AN EN; 7
+ES LRO AL AL; 5
+ES PDF L AN; 4
+ET LRO R R; 5
+ET LRO PDI R; 5
+CS LRO R AL; 5
+CS LRO PDI AL; 5
+NSM LRO L R; 4
+NSM LRO ON R; 5
+S LRE ON CS; 4
+S LRO WS L; 4
+WS LRE WS L; 4
+WS LRO CS ON; 4
+ON LRE CS ET; 4
+ON LRO AN NSM; 4
+LRI PDF ES ON; 4
+FSI PDF EN EN; 4
+FSI BN ON ET; 4
+PDI LRO EN EN; 4
+PDI PDF AN NSM; 4
+@Levels:	1 x 2 3
+@Reorder:	2 3 0
+ES LRE WS AL; 5
+NSM LRE ES AL; 5
+WS LRO RLI ON; 4
+FSI BN L R; 4
+@Levels:	1 x 2 4
+@Reorder:	2 3 0
+AL LRE LRI ES; 7
+ET LRE FSI ON; 4
+NSM LRO FSI ES; 4
+ON LRE LRI EN; 4
+FSI PDF RLI EN; 4
+@Levels:	1 x 2 5
+@Reorder:	2 3 0
+NSM LRO LRI AL; 4
+@Levels:	1 x 3 1
+@Reorder:	3 2 0
+R LRE R RLI; 5
+R RLO NSM WS; 5
+AL RLO ET PDI; 5
+ES RLO EN RLI; 4
+ET RLO R WS; 5
+CS RLE NSM PDI; 4
+NSM RLE ET RLI; 4
+S RLE AL WS; 5
+WS LRE R PDI; 5
+WS RLO NSM RLI; 4
+ON RLO AN WS; 4
+LRI RLO ET PDI; 4
+RLI BN AL RLI; 4
+FSI RLO NSM WS; 4
+PDI RLO R PDI; 5
+@Levels:	1 x 3 2
+@Reorder:	2 3 0
+NSM LRE R ES; 5
+@Levels:	1 x 3 3
+@Reorder:	3 2 0
+R RLE ET CS; 5
+R RLO AN AL; 5
+AL RLE NSM AL; 5
+AL RLO CS EN; 5
+ES RLE WS NSM; 4
+ES RLO NSM ES; 4
+ET RLE PDI ES; 4
+ET RLO WS ET; 4
+CS RLO L AN; 4
+CS RLO ON AN; 4
+NSM RLO R CS; 5
+NSM RLO PDI CS; 4
+S RLO AL NSM; 5
+WS RLE R ES; 5
+WS RLO EN ON; 4
+ON RLE AL ON; 5
+ON RLO ET L; 4
+LRI RLE CS ES; 4
+LRI RLO CS ES; 4
+RLI PDF ON ET; 4
+FSI RLO EN L; 4
+FSI BN AL ET; 4
+PDI RLO R ET; 5
+PDI RLO PDI ET; 4
+@Levels:	1 x 3 4
+@Reorder:	3 2 0
+AL RLE FSI ET; 5
+ET RLE WS L; 4
+NSM RLE R EN; 5
+S RLO LRI ET; 4
+ON RLE LRI CS; 4
+RLI PDF NSM L; 4
+FSI RLO FSI ES; 4
+@Levels:	1 x 3 5
+@Reorder:	3 2 0
+AL RLE RLI AL; 5
+NSM RLO RLI ES; 4
+RLI PDF RLI ET; 4
+@Levels:	1 x 3 6
+@Reorder:	3 2 0
+ET RLO FSI AN; 4
+@Levels:	1 x 4 0
+@Reorder:	2 0 3
+AL LRE AN RLI; 2
+@Levels:	1 x 4 1
+@Reorder:	3 2 0
+CS LRE AN WS; 4
+ON LRE AN PDI; 4
+LRI LRO AN RLI; 4
+RLI LRO R WS; 4
+FSI LRE EN PDI; 4
+FSI RLE EN RLI; 4
+@Levels:	1 x 4 2
+@Reorder:	2 3 0
+LRI PDF AN EN; 4
+@Levels:	1 x 4 3
+@Reorder:	3 2 0
+ET RLE AN AL; 5
+LRI RLE L R; 4
+@Levels:	1 x 4 4
+@Reorder:	2 3 0
+R RLE L NSM; 5
+S RLE EN AN; 4
+LRI LRO L ET; 4
+LRI LRO ON ET; 4
+RLI LRO AL R; 4
+RLI PDF AN EN; 4
+FSI LRO AL CS; 4
+FSI BN AN NSM; 4
+@Levels:	1 x 4 5
+@Reorder:	2 3 0
+FSI LRE ON AL; 4
+@Levels:	1 x 4 6
+@Reorder:	2 3 0
+RLI LRO FSI CS; 4
+@Levels:	1 x 5 1
+@Reorder:	3 2 0
+RLI RLE AL WS; 4
+FSI LRE R PDI; 4
+@Levels:	1 x 5 5
+@Reorder:	3 2 0
+RLI RLE ET ON; 4
+RLI RLO CS R; 4
+FSI RLO CS AL; 4
+@Levels:	1 x 5 8
+@Reorder:	3 2 0
+RLI RLE RLI EN; 4
+@Levels:	1 x 6 6
+@Reorder:	2 3 0
+RLI RLE EN AN; 4
+@Levels:	2 0 0 x
+@Reorder:	0 1 2
+AN EN ES LRO; 3
+AN ES NSM BN; 3
+AN ET LRI RLO; 3
+AN S L LRO; 3
+AN WS ET BN; 3
+AN ON WS RLO; 3
+AN RLI PDI LRO; 3
+AN PDI LRI BN; 3
+@Levels:	2 0 1 x
+@Reorder:	0 1 2
+AN FSI R RLO; 3
+@Levels:	2 0 2 x
+@Reorder:	0 1 2
+AN FSI ES LRO; 3
+@Levels:	2 0 x 0
+@Reorder:	0 1 3
+AN L BN RLI; 3
+AN ET LRO RLI; 3
+AN S PDF LRI; 3
+AN ON BN ON; 3
+AN FSI RLO PDI; 3
+@Levels:	2 0 x 1
+@Reorder:	0 1 3
+AN EN RLO ON; 3
+@Levels:	2 0 x 2
+@Reorder:	0 1 3
+AN ES LRO ET; 3
+AN LRI PDF NSM; 3
+@Levels:	2 0 x 3
+@Reorder:	0 1 3
+AN LRI BN R; 3
+@Levels:	2 0 x 6
+@Reorder:	0 1 3
+AN FSI LRE AN; 3
+@Levels:	2 1 0 x
+@Reorder:	1 0 2
+AN AL WS RLO; 2
+@Levels:	2 1 1 x
+@Reorder:	2 1 0
+L R FSI LRO; 4
+L ES AL BN; 4
+L ET NSM RLO; 4
+L CS LRI LRO; 4
+L S PDI BN; 4
+L ON ET RLO; 4
+L RLI WS LRO; 4
+L PDI NSM BN; 4
+EN R LRI RLO; 5
+EN ES R LRO; 5
+EN CS ET BN; 4
+EN S WS RLO; 4
+EN WS FSI LRO; 4
+EN LRI WS BN; 4
+EN PDI R RLO; 5
+AN R CS LRO; 5
+AN AL WS BN; 5
+AN ES FSI RLO; 4
+AN CS ES LRO; 4
+AN S NSM BN; 4
+AN WS LRI RLO; 4
+AN LRI S LRO; 4
+AN FSI FSI BN; 4
+@Levels:	2 1 2 x
+@Reorder:	2 1 0
+L R AN RLO; 4
+L LRI NSM LRO; 4
+EN ES L BN; 4
+EN LRI CS RLO; 4
+AN AL EN LRO; 7
+AN ON EN BN; 4
+AN PDI EN RLO; 4
+@Levels:	2 1 3 x
+@Reorder:	2 1 0
+EN RLI ES LRO; 4
+AN FSI R BN; 4
+@Levels:	2 1 x 0
+@Reorder:	1 0 3
+AN R LRE RLI; 2
+AN ES RLO PDI; 3
+@Levels:	2 1 x 1
+@Reorder:	3 1 0
+L AL RLE WS; 4
+L ET BN R; 4
+L S BN PDI; 4
+L LRI LRO PDI; 4
+L PDI LRE RLI; 4
+EN AL LRE RLI; 5
+EN CS LRE RLI; 4
+EN WS LRE RLI; 4
+EN LRI LRE RLI; 4
+EN FSI BN WS; 4
+AN R PDF CS; 5
+AN ES LRO PDI; 4
+AN ET PDF ET; 4
+AN S LRO FSI; 4
+AN WS BN S; 4
+AN LRI PDF LRI; 4
+AN PDI RLE S; 4
+@Levels:	2 1 x 2
+@Reorder:	3 1 0
+L CS BN AN; 4
+EN AL PDF AN; 5
+EN ON LRO R; 5
+AN AL LRO R; 7
+AN S LRO R; 5
+AN PDI LRE NSM; 4
+@Levels:	2 1 x 3
+@Reorder:	3 1 0
+L CS RLO L; 4
+L FSI RLE CS; 4
+EN CS RLO AL; 5
+EN FSI RLE ES; 4
+AN ET RLE NSM; 4
+AN LRI RLO ET; 4
+@Levels:	2 1 x 4
+@Reorder:	3 1 0
+L LRI LRO CS; 4
+EN LRI LRO ON; 4
+AN LRI LRO AN; 4
+@Levels:	2 1 x 5
+@Reorder:	3 1 0
+EN RLI RLO ES; 4
+@Levels:	2 2 0 x
+@Reorder:	0 1 2
+AN AN ON LRO; 3
+AN NSM PDI BN; 3
+@Levels:	2 2 1 x
+@Reorder:	2 0 1
+L EN S RLO; 4
+L AN FSI LRO; 4
+EN L ES BN; 4
+EN EN LRI RLO; 4
+EN AN ES LRO; 4
+EN NSM ON BN; 4
+AN L AL RLO; 4
+AN EN ON LRO; 4
+AN AN PDI BN; 4
+@Levels:	2 2 2 x
+@Reorder:	0 1 2
+L EN L RLO; 4
+L NSM AN LRO; 4
+EN EN NSM BN; 4
+ET EN L RLO; 4
+AN AN L LRO; 4
+@Levels:	2 2 x 0
+@Reorder:	0 1 3
+AN AN BN PDI; 3
+@Levels:	2 2 x 1
+@Reorder:	3 0 1
+L EN LRE RLI; 4
+L AN PDF RLI; 4
+EN L RLE WS; 4
+EN ET RLO WS; 4
+EN NSM PDF AL; 5
+AN L PDF RLI; 4
+AN AN RLO FSI; 4
+@Levels:	2 2 x 2
+@Reorder:	0 1 3
+L L LRO AL; 4
+L AN LRO NSM; 4
+L PDI LRE ES; 4
+EN AN LRE L; 4
+AN L LRO NSM; 4
+@Levels:	2 2 x 3
+@Reorder:	0 1 3
+L L RLE AL; 4
+EN L RLO AN; 4
+AN L LRE AL; 4
+@Levels:	2 2 x 4
+@Reorder:	0 1 3
+EN L RLE AN; 4
+@Levels:	2 x 0 0
+@Reorder:	0 2 3
+AN LRO FSI RLI; 3
+AN PDF EN S; 3
+AN PDF FSI RLI; 3
+AN BN WS S; 3
+@Levels:	2 x 0 2
+@Reorder:	0 2 3
+AN LRE S ES; 3
+@Levels:	2 x 1 0
+@Reorder:	2 0 3
+AN RLE NSM WS; 3
+AN BN R LRI; 2
+@Levels:	2 x 1 1
+@Reorder:	3 2 0
+L RLE LRI WS; 4
+L PDF ET ES; 4
+L BN R S; 4
+L BN LRI LRI; 4
+EN LRO PDI PDI; 4
+EN PDF ES AL; 5
+EN BN R NSM; 5
+EN BN FSI LRI; 4
+AN RLE AL CS; 2
+AN RLO R AL; 2
+AN RLO ON L; 3
+AN PDF CS CS; 4
+AN BN AL ON; 5
+AN BN FSI PDI; 4
+@Levels:	2 x 1 2
+@Reorder:	3 2 0
+EN LRO S ES; 4
+AN RLE AL AN; 2
+AN BN CS EN; 4
+@Levels:	2 x 1 3
+@Reorder:	3 2 0
+EN BN RLI R; 4
+@Levels:	2 x 1 4
+@Reorder:	3 2 0
+AN LRE S AN; 4
+@Levels:	2 x 2 0
+@Reorder:	0 2 3
+AN LRO ET FSI; 3
+@Levels:	2 x 2 1
+@Reorder:	3 0 2
+L LRE EN LRI; 4
+L PDF L WS; 4
+EN LRE ES S; 4
+EN PDF L FSI; 4
+EN BN NSM LRI; 4
+AN LRO ET LRI; 4
+AN BN L LRI; 4
+@Levels:	2 x 2 2
+@Reorder:	0 2 3
+L LRE PDI NSM; 4
+L LRO WS NSM; 4
+EN LRE ES ON; 4
+EN LRO ET CS; 4
+EN BN ET ET; 4
+AN LRO R L; 7
+AN LRO PDI L; 7
+@Levels:	2 x 2 3
+@Reorder:	0 2 3
+EN LRE EN R; 5
+@Levels:	2 x 2 4
+@Reorder:	0 2 3
+L LRO LRI CS; 4
+@Levels:	2 x 2 5
+@Reorder:	0 2 3
+L LRE LRI AL; 4
+@Levels:	2 x 3 1
+@Reorder:	3 0 2
+L RLO R PDI; 4
+EN RLE ON RLI; 4
+AN RLE CS WS; 4
+@Levels:	2 x 3 2
+@Reorder:	0 2 3
+AN LRE R CS; 7
+@Levels:	2 x 3 3
+@Reorder:	0 3 2
+L RLO AL ES; 4
+EN LRE AL AL; 5
+EN RLO EN ET; 4
+AN RLE AL ES; 5
+AN RLO ES AN; 4
+@Levels:	2 x 3 4
+@Reorder:	0 3 2
+L RLE ON AN; 4
+AN RLE ES L; 4
+@Levels:	2 x 3 5
+@Reorder:	0 3 2
+AN RLE RLI ON; 4
+@Levels:	2 x 4 1
+@Reorder:	3 0 2
+AN LRE AN LRI; 4
+@Levels:	2 x 4 4
+@Reorder:	0 2 3
+L RLE L EN; 4
+@Levels:	x 0 0 0
+@Reorder:	1 2 3
+LRE WS RLI WS; 3
+LRE FSI WS PDI; 3
+LRO WS S RLI; 3
+LRO RLI PDI WS; 3
+RLE S RLI PDI; 3
+RLE RLI LRI RLI; 3
+RLO S WS WS; 3
+RLO LRI PDI PDI; 3
+RLO PDI FSI RLI; 3
+PDF L WS L; 3
+PDF EN ET CS; 3
+PDF EN PDI ON; 3
+PDF ES WS CS; 3
+PDF ET ET ON; 3
+PDF ET PDI PDI; 3
+PDF CS WS ON; 3
+PDF NSM ET PDI; 3
+PDF S L ET; 3
+PDF S WS PDI; 3
+PDF WS CS ET; 3
+PDF ON L WS; 3
+PDF ON ON ET; 3
+PDF RLI LRI FSI; 3
+PDF PDI ES CS; 3
+PDF PDI FSI WS; 3
+BN L S CS; 3
+BN EN ES ON; 3
+BN EN FSI PDI; 3
+BN ES S ON; 3
+BN ET ES PDI; 3
+BN ET PDI ET; 3
+BN CS S PDI; 3
+BN NSM ET ET; 3
+BN NSM PDI WS; 3
+BN S WS ET; 3
+BN WS ET WS; 3
+BN WS PDI FSI; 3
+BN ON WS WS; 3
+BN RLI WS WS; 3
+BN PDI EN ON; 3
+BN PDI LRI FSI; 3
+@Levels:	x 0 0 1
+@Reorder:	1 2 3
+PDF L RLI CS; 3
+PDF CS ET R; 2
+PDF WS RLI AL; 3
+BN L ON AL; 3
+BN CS L AL; 3
+BN WS WS R; 2
+@Levels:	x 0 0 2
+@Reorder:	1 2 3
+LRE WS S NSM; 3
+PDF L FSI NSM; 3
+PDF CS RLI L; 3
+PDF ON ON AN; 3
+BN EN WS AN; 3
+BN CS PDI AN; 3
+BN ON RLI AN; 3
+@Levels:	x 0 0 3
+@Reorder:	1 2 3
+RLO FSI S R; 3
+@Levels:	x 0 0 4
+@Reorder:	1 2 3
+PDF ET FSI AN; 3
+@Levels:	x 0 1 0
+@Reorder:	1 2 3
+RLO S AL WS; 2
+PDF ES R FSI; 2
+PDF S AL PDI; 2
+PDF PDI R ES; 2
+BN ET AL ET; 2
+BN ON R CS; 2
+@Levels:	x 0 1 1
+@Reorder:	1 3 2
+RLE S R NSM; 2
+RLO S ES AL; 2
+PDF ET AL AL; 2
+PDF FSI AL NSM; 3
+BN RLI ET NSM; 3
+@Levels:	x 0 1 2
+@Reorder:	1 3 2
+RLE S PDI EN; 3
+BN L R AN; 3
+@Levels:	x 0 1 3
+@Reorder:	1 3 2
+RLO S RLI NSM; 3
+@Levels:	x 0 2 0
+@Reorder:	1 2 3
+LRO S AL S; 2
+PDF ES AN FSI; 3
+PDF LRI CS LRI; 3
+BN EN AN L; 3
+BN LRI L FSI; 3
+BN PDI AN ES; 3
+@Levels:	x 0 2 1
+@Reorder:	1 3 2
+BN RLI AN ET; 3
+@Levels:	x 0 2 2
+@Reorder:	1 2 3
+LRO S AL NSM; 2
+RLE S EN NSM; 3
+PDF FSI L ON; 3
+BN LRI CS ES; 3
+@Levels:	x 0 2 3
+@Reorder:	1 2 3
+LRE S EN R; 2
+BN FSI RLI ET; 3
+@Levels:	x 0 2 4
+@Reorder:	1 2 3
+BN LRI EN AN; 3
+@Levels:	x 0 3 0
+@Reorder:	1 2 3
+BN LRI R RLI; 3
+@Levels:	x 0 4 2
+@Reorder:	1 2 3
+LRE S AN EN; 3
+@Levels:	x 1 0 0
+@Reorder:	1 2 3
+RLE AL RLI WS; 2
+RLE CS WS PDI; 3
+RLO L S RLI; 3
+RLO AL PDI WS; 2
+RLO ET RLI PDI; 3
+RLO NSM LRI RLI; 3
+PDF R CS WS; 2
+PDF AL ET CS; 2
+BN R ES L; 2
+BN R PDI FSI; 2
+BN AL FSI WS; 2
+@Levels:	x 1 0 1
+@Reorder:	1 2 3
+RLO EN S ES; 3
+BN R RLI CS; 2
+@Levels:	x 1 0 2
+@Reorder:	1 2 3
+BN AL S EN; 2
+@Levels:	x 1 1 0
+@Reorder:	2 1 3
+RLE AL ET PDI; 2
+RLE ET ON RLI; 3
+RLE WS ES WS; 3
+RLE PDI CS PDI; 3
+RLO R ES RLI; 2
+RLO EN R WS; 2
+RLO ES CS PDI; 3
+RLO AN ES RLI; 3
+RLO NSM R WS; 2
+RLO WS CS PDI; 3
+RLO PDI ES RLI; 3
+BN R R ES; 2
+@Levels:	x 1 1 1
+@Reorder:	3 2 1
+LRE S PDI PDI; 4
+LRE RLI FSI RLI; 4
+LRO S RLI WS; 4
+LRO RLI WS PDI; 4
+RLE R R ET; 2
+RLE AL NSM NSM; 2
+RLE ET ES R; 2
+RLE CS ON ES; 3
+RLE S FSI WS; 4
+RLE WS PDI ET; 3
+RLE LRI FSI RLI; 4
+RLE FSI PDI FSI; 4
+RLE PDI PDI PDI; 4
+RLO L WS ON; 3
+RLO R CS ON; 2
+RLO AL ET ON; 2
+RLO EN EN ON; 3
+RLO ES R ON; 2
+RLO ES PDI ON; 3
+RLO ET WS ON; 3
+RLO AN CS ON; 3
+RLO CS ET ON; 3
+RLO NSM EN ON; 3
+RLO S RLI WS; 4
+RLO WS NSM EN; 3
+RLO ON AL CS; 2
+RLO LRI WS WS; 4
+RLO FSI LRI RLI; 4
+RLO PDI AN ON; 3
+PDF R AL R; 7
+PDF R ON LRI; 5
+PDF AL NSM R; 7
+PDF ES AL CS; 5
+PDF ES LRI S; 4
+PDF ET NSM CS; 4
+PDF CS AL ON; 5
+PDF CS LRI FSI; 4
+PDF NSM NSM ON; 4
+PDF S AL PDI; 5
+PDF S RLI LRI; 4
+PDF WS NSM PDI; 4
+PDF ON ES ET; 4
+PDF ON FSI S; 4
+PDF RLI PDI ON; 4
+PDF PDI CS R; 5
+BN R R CS; 5
+BN R ON R; 7
+BN AL CS CS; 5
+BN ES R ON; 5
+BN ES ON CS; 4
+BN ET CS ON; 4
+BN CS R PDI; 5
+BN CS ON ON; 4
+BN NSM CS PDI; 4
+BN S AL ET; 5
+BN S ON PDI; 4
+BN WS NSM ET; 4
+BN ON AL WS; 5
+BN ON LRI RLI; 4
+BN RLI FSI PDI; 4
+BN PDI ET CS; 4
+BN PDI PDI ON; 4
+@Levels:	x 1 1 2
+@Reorder:	3 2 1
+RLE AL AL EN; 2
+RLE ET LRI EN; 3
+RLE WS AL EN; 2
+RLE PDI NSM EN; 3
+RLO ET LRI NSM; 3
+PDF R ES EN; 7
+PDF ES WS L; 4
+PDF CS FSI ES; 4
+PDF WS ES L; 4
+PDF FSI PDI L; 4
+BN AL ET AN; 7
+BN ET ON AN; 4
+BN NSM FSI ON; 4
+BN ON ET AN; 4
+@Levels:	x 1 1 3
+@Reorder:	3 2 1
+LRE S S AL; 5
+RLE WS S CS; 4
+RLO ET RLI R; 3
+RLO PDI RLI CS; 3
+PDF ON RLI NSM; 4
+BN S RLI ON; 4
+@Levels:	x 1 1 4
+@Reorder:	3 2 1
+RLE ET RLI L; 3
+RLO WS RLI AN; 3
+BN ET FSI AN; 4
+@Levels:	x 1 2 0
+@Reorder:	2 1 3
+RLE AL EN S; 2
+RLE ON L FSI; 3
+RLE PDI L LRI; 3
+PDF R EN L; 2
+@Levels:	x 1 2 1
+@Reorder:	3 2 1
+LRE S ES LRI; 4
+RLE R AN AL; 2
+RLE WS AN ET; 3
+PDF AL AN CS; 5
+PDF CS AN FSI; 4
+PDF WS AN S; 4
+PDF FSI ES FSI; 4
+BN AL L CS; 5
+BN CS L RLI; 4
+BN WS L CS; 4
+BN LRI NSM FSI; 4
+@Levels:	x 1 2 2
+@Reorder:	2 3 1
+LRE S ES EN; 4
+LRO S ET AL; 5
+RLE ES EN ET; 3
+RLE LRI CS L; 3
+RLO LRI L ES; 3
+RLO FSI WS CS; 3
+PDF WS L L; 4
+PDF FSI ES ES; 4
+BN ET AN AN; 4
+BN LRI CS L; 4
+@Levels:	x 1 2 3
+@Reorder:	2 3 1
+LRE S EN R; 5
+RLO FSI RLI ET; 3
+@Levels:	x 1 2 4
+@Reorder:	2 3 1
+LRE S FSI CS; 4
+RLO FSI CS AN; 3
+BN FSI CS AN; 4
+@Levels:	x 1 3 0
+@Reorder:	2 1 3
+RLE RLI CS RLI; 3
+@Levels:	x 1 3 1
+@Reorder:	3 2 1
+LRE S AL WS; 5
+RLO S NSM PDI; 4
+BN RLI ES RLI; 4
+@Levels:	x 1 3 3
+@Reorder:	3 2 1
+RLE S R NSM; 5
+RLE RLI NSM AL; 3
+RLO S ET ES; 4
+RLO RLI CS R; 3
+PDF RLI NSM NSM; 4
+BN RLI ON ET; 4
+@Levels:	x 1 3 4
+@Reorder:	3 2 1
+RLE RLI ON AN; 3
+PDF RLI NSM L; 4
+@Levels:	x 1 3 5
+@Reorder:	3 2 1
+RLO S RLI R; 4
+@Levels:	x 1 4 0
+@Reorder:	2 1 3
+RLE FSI AN FSI; 3
+@Levels:	x 1 4 1
+@Reorder:	3 2 1
+BN RLI EN LRI; 4
+@Levels:	x 1 4 3
+@Reorder:	3 2 1
+RLE RLI EN CS; 3
+@Levels:	x 1 4 4
+@Reorder:	2 3 1
+RLE RLI L EN; 3
+@Levels:	x 2 0 0
+@Reorder:	1 2 3
+LRE L PDI WS; 3
+LRE ET RLI PDI; 3
+LRE ON LRI RLI; 3
+LRO AL WS WS; 2
+LRO ES PDI PDI; 3
+LRO CS FSI RLI; 3
+RLE L RLI WS; 3
+PDF AN L FSI; 3
+PDF AN RLI WS; 3
+BN AN S FSI; 3
+@Levels:	x 2 0 1
+@Reorder:	1 2 3
+BN AN S AL; 2
+@Levels:	x 2 0 2
+@Reorder:	1 2 3
+LRO ES S R; 2
+BN AN RLI AN; 3
+@Levels:	x 2 1 0
+@Reorder:	2 1 3
+RLE EN ON RLI; 3
+@Levels:	x 2 1 1
+@Reorder:	3 2 1
+LRE L LRI PDI; 4
+LRE ET WS RLI; 4
+LRE ON S WS; 4
+LRO R FSI PDI; 5
+LRO ES RLI RLI; 4
+LRO CS LRI WS; 4
+RLE L R NSM; 3
+RLE AN R R; 2
+PDF L ET NSM; 4
+PDF EN R LRI; 5
+PDF EN PDI R; 5
+PDF AN WS LRI; 4
+BN L CS R; 4
+BN EN AL CS; 5
+BN EN PDI ON; 4
+BN AN ON CS; 4
+@Levels:	x 2 1 2
+@Reorder:	3 2 1
+LRO R S R; 5
+RLE L LRI L; 3
+PDF L LRI ES; 4
+BN L WS AN; 4
+@Levels:	x 2 1 3
+@Reorder:	3 2 1
+LRE CS S R; 5
+BN AN RLI CS; 4
+@Levels:	x 2 2 0
+@Reorder:	1 2 3
+LRE EN L WS; 3
+LRE ET ES PDI; 3
+LRE NSM NSM RLI; 3
+LRE PDI EN WS; 3
+LRO R L PDI; 2
+LRO AL CS RLI; 2
+LRO ES ES WS; 3
+LRO AN L PDI; 3
+LRO CS CS RLI; 3
+LRO WS ES WS; 3
+LRO PDI L PDI; 3
+RLE EN AN RLI; 3
+@Levels:	x 2 2 1
+@Reorder:	3 1 2
+LRE L ES WS; 4
+LRE ES CS PDI; 4
+LRE NSM L RLI; 4
+LRE ON ET WS; 4
+LRO L ET PDI; 4
+LRO AL AL RLI; 5
+LRO EN ON WS; 4
+LRO ET ET PDI; 4
+LRO CS AL RLI; 5
+LRO NSM ON WS; 4
+LRO ON ET PDI; 4
+RLE L AN CS; 3
+PDF L NSM ES; 4
+PDF AN EN PDI; 4
+BN EN ET WS; 4
+@Levels:	x 2 2 2
+@Reorder:	1 2 3
+LRE L EN ON; 7
+LRE EN ON EN; 7
+LRE ET ET ET; 7
+LRE CS PDI NSM; 7
+LRE WS NSM L; 7
+LRE RLI PDI ES; 7
+LRO L AL ET; 7
+LRO R L ET; 7
+LRO R ON ET; 7
+LRO AL NSM ET; 7
+LRO EN AN ET; 7
+LRO ES ES ET; 7
+LRO ET AL ET; 7
+LRO AN L ET; 7
+LRO AN ON ET; 7
+LRO CS NSM ET; 7
+LRO NSM AN ET; 7
+LRO WS ES ET; 7
+LRO ON AL ET; 7
+LRO LRI PDI ET; 7
+LRO PDI CS ET; 7
+RLE ET EN EN; 3
+PDF AN CS AN; 7
+@Levels:	x 2 2 3
+@Reorder:	1 2 3
+LRE L ON AL; 7
+LRE CS ET AL; 7
+LRE ON PDI AL; 7
+LRO CS RLI ET; 7
+@Levels:	x 2 2 4
+@Reorder:	1 2 3
+LRE ES WS AN; 7
+LRE WS ES AN; 7
+LRO R LRI CS; 7
+LRO CS LRI ES; 7
+@Levels:	x 2 2 5
+@Reorder:	1 2 3
+LRE PDI LRI AL; 7
+@Levels:	x 2 3 0
+@Reorder:	1 2 3
+LRE ES AL RLI; 2
+LRE RLI ON WS; 3
+@Levels:	x 2 3 1
+@Reorder:	3 1 2
+LRE EN R PDI; 5
+LRE RLI ET RLI; 4
+@Levels:	x 2 3 2
+@Reorder:	1 2 3
+LRE L R ES; 7
+@Levels:	x 2 3 3
+@Reorder:	1 3 2
+LRE EN AL NSM; 7
+LRE FSI AL R; 7
+LRO FSI CS AL; 7
+@Levels:	x 2 3 4
+@Reorder:	1 3 2
+LRO RLI NSM L; 7
+@Levels:	x 2 4 0
+@Reorder:	1 2 3
+LRE WS AN RLI; 3
+LRE FSI NSM WS; 3
+LRO FSI ET PDI; 3
+@Levels:	x 2 4 1
+@Reorder:	3 1 2
+LRE LRI NSM RLI; 4
+LRO LRI CS WS; 4
+@Levels:	x 2 4 2
+@Reorder:	1 2 3
+LRE ET AN ON; 7
+@Levels:	x 2 4 4
+@Reorder:	1 2 3
+LRE CS AN NSM; 7
+LRE FSI ET ES; 7
+LRO RLI ET EN; 7
+@Levels:	x 2 4 5
+@Reorder:	1 2 3
+LRO LRI EN AL; 7
+@Levels:	x 2 4 6
+@Reorder:	1 2 3
+LRO LRI RLI AN; 7
+@Levels:	x 2 5 4
+@Reorder:	1 2 3
+LRE LRI R CS; 7
+@Levels:	x 2 6 4
+@Reorder:	1 2 3
+LRO LRI AN ET; 7
+@Levels:	x 3 0 2
+@Reorder:	1 2 3
+LRE AL S ES; 2
+@Levels:	x 3 1 1
+@Reorder:	3 2 1
+RLE R LRI RLI; 5
+RLE ET WS WS; 4
+RLE NSM PDI PDI; 4
+RLO R FSI RLI; 5
+RLO ES RLI WS; 4
+RLO CS WS PDI; 4
+@Levels:	x 3 1 2
+@Reorder:	3 2 1
+LRE R S CS; 5
+@Levels:	x 3 1 3
+@Reorder:	3 2 1
+RLO EN S NSM; 4
+@Levels:	x 3 2 0
+@Reorder:	1 2 3
+LRE R ET WS; 2
+@Levels:	x 3 2 1
+@Reorder:	3 1 2
+LRE AL CS PDI; 5
+@Levels:	x 3 2 3
+@Reorder:	1 2 3
+LRE R RLI NSM; 7
+@Levels:	x 3 3 1
+@Reorder:	3 2 1
+LRE R R PDI; 5
+RLE AL CS RLI; 5
+RLE CS R WS; 5
+RLE WS ES PDI; 4
+RLE PDI NSM RLI; 4
+RLO R ET WS; 5
+RLO EN R PDI; 5
+RLO ES NSM RLI; 4
+RLO AN ET WS; 4
+RLO NSM R PDI; 5
+RLO WS NSM RLI; 4
+RLO PDI ET WS; 4
+@Levels:	x 3 3 3
+@Reorder:	3 2 1
+LRE AL PDI AL; 7
+RLE AL NSM AL; 5
+RLE ET AL ET; 5
+RLE CS WS NSM; 4
+RLE WS ET R; 5
+RLE ON PDI ES; 4
+RLO L R R; 4
+RLO L PDI R; 4
+RLO R WS R; 5
+RLO AL CS R; 5
+RLO EN ET R; 5
+RLO ES EN R; 5
+RLO ET R R; 5
+RLO ET PDI R; 5
+RLO AN WS R; 5
+RLO CS CS R; 5
+RLO NSM ET R; 5
+RLO WS EN R; 5
+RLO ON R R; 5
+RLO ON PDI R; 5
+RLO PDI AN R; 5
+@Levels:	x 3 3 4
+@Reorder:	3 2 1
+RLE R ES L; 5
+RLE ES LRI ES; 4
+RLE NSM ES L; 4
+RLE ON LRI ET; 4
+RLO AL FSI ES; 5
+RLO WS FSI CS; 4
+@Levels:	x 3 3 5
+@Reorder:	3 2 1
+RLE WS RLI AL; 4
+RLO AN RLI ES; 4
+@Levels:	x 3 3 6
+@Reorder:	3 2 1
+RLE ON RLI AN; 4
+@Levels:	x 3 4 1
+@Reorder:	3 2 1
+LRE R AN RLI; 5
+RLE NSM L WS; 4
+RLE FSI L PDI; 4
+RLO FSI L RLI; 4
+@Levels:	x 3 4 3
+@Reorder:	3 2 1
+RLE AL AN ON; 5
+RLE PDI L ES; 4
+@Levels:	x 3 4 4
+@Reorder:	2 3 1
+RLE NSM ET EN; 4
+RLE FSI EN CS; 4
+RLO LRI NSM ON; 4
+@Levels:	x 3 4 5
+@Reorder:	2 3 1
+RLE FSI RLI ES; 4
+@Levels:	x 3 4 6
+@Reorder:	2 3 1
+RLO LRI ON AN; 4
+@Levels:	x 3 5 1
+@Reorder:	3 2 1
+RLE RLI CS PDI; 4
+@Levels:	x 3 5 4
+@Reorder:	2 3 1
+RLE LRI AL ON; 4
+@Levels:	x 3 5 5
+@Reorder:	3 2 1
+RLO LRI R AL; 4
+@Levels:	x 3 5 6
+@Reorder:	3 2 1
+RLE RLI ET L; 4
+@Levels:	x 3 5 7
+@Reorder:	3 2 1
+RLO RLI RLI ON; 4
+@Levels:	x 3 6 5
+@Reorder:	3 2 1
+RLE RLI L AL; 4
+@Levels:	x 4 0 0
+@Reorder:	1 2 3
+LRE AN RLI RLI; 3
+@Levels:	x 4 1 1
+@Reorder:	3 2 1
+RLE EN S RLI; 4
+@Levels:	x 4 1 4
+@Reorder:	3 2 1
+RLE L S L; 4
+@Levels:	x 4 2 2
+@Reorder:	1 2 3
+LRE AN ES NSM; 7
+@Levels:	x 4 3 1
+@Reorder:	3 2 1
+RLE L R RLI; 4
+@Levels:	x 4 3 2
+@Reorder:	2 1 3
+LRE AN R ES; 7
+@Levels:	x 4 3 3
+@Reorder:	3 2 1
+RLE EN ES ET; 4
+@Levels:	x 4 3 4
+@Reorder:	3 2 1
+RLE L AL L; 4
+@Levels:	x 4 3 5
+@Reorder:	3 2 1
+RLE L RLI ON; 4
+@Levels:	x 4 4 1
+@Reorder:	3 1 2
+RLE EN ET S; 4
+@Levels:	x 4 4 3
+@Reorder:	3 1 2
+RLE EN ET ES; 4
+@Levels:	x 4 4 4
+@Reorder:	1 2 3
+RLE EN NSM NSM; 4
+@Levels:	0 0 0 0
+@Reorder:	0 1 2 3
+L L NSM ON; 3
+L EN EN PDI; 3
+L EN RLI LRI; 3
+L ES NSM PDI; 3
+L ET ES ET; 3
+L ET FSI S; 3
+L CS S ET; 3
+L NSM ES WS; 3
+L NSM FSI FSI; 3
+L S S WS; 3
+L WS ES FSI; 3
+L WS PDI ES; 3
+L ON S FSI; 3
+L LRI PDI FSI; 3
+L PDI L PDI; 3
+L PDI ON ON; 3
+EN L CS PDI; 3
+EN EN EN ET; 3
+EN EN ON PDI; 3
+EN ES NSM ET; 3
+EN ET EN WS; 3
+EN ET LRI RLI; 3
+EN CS NSM WS; 3
+EN NSM EN FSI; 3
+EN NSM RLI WS; 3
+EN S NSM FSI; 3
+EN WS ES ES; 3
+EN WS RLI PDI; 3
+EN ON S ES; 3
+EN LRI PDI ES; 3
+EN PDI L ET; 3
+EN PDI WS PDI; 3
+ES L CS ET; 3
+ES EN L WS; 3
+ES EN ON ET; 3
+ES ES CS WS; 3
+ES ET L FSI; 3
+ES ET ON WS; 3
+ES CS CS FSI; 3
+ES NSM EN ES; 3
+ES NSM ON FSI; 3
+ES S NSM ES; 3
+ES WS EN S; 3
+ES WS LRI LRI; 3
+ES ON NSM S; 3
+ES LRI RLI PDI; 3
+ES FSI PDI WS; 3
+ES PDI WS ET; 3
+ET L ET WS; 3
+ET L PDI FSI; 3
+ET EN WS WS; 3
+ET ES ET FSI; 3
+ET ET L ES; 3
+ET ET WS FSI; 3
+ET CS CS ES; 3
+ET NSM L S; 3
+ET NSM ON ES; 3
+ET S CS S; 3
+ET WS L RLI; 3
+ET WS ON S; 3
+ET ON CS RLI; 3
+ET LRI LRI LRI; 3
+ET FSI FSI FSI; 3
+ET PDI S WS; 3
+CS L ES FSI; 3
+CS L PDI ES; 3
+CS EN S FSI; 3
+CS ES ET ES; 3
+CS ES PDI S; 3
+CS ET WS ES; 3
+CS CS ET S; 3
+CS CS PDI RLI; 3
+CS NSM WS S; 3
+CS S ET RLI; 3
+CS WS L EN; 3
+CS WS WS RLI; 3
+CS ON CS EN; 3
+CS LRI S PDI; 3
+CS FSI RLI WS; 3
+CS PDI NSM FSI; 3
+NSM L ES ES; 3
+NSM L RLI PDI; 3
+NSM EN S ES; 3
+NSM ES ES S; 3
+NSM ES FSI RLI; 3
+NSM ET S S; 3
+NSM CS ES RLI; 3
+NSM CS PDI EN; 3
+NSM NSM S RLI; 3
+NSM S ET EN; 3
+NSM S PDI NSM; 3
+NSM WS WS EN; 3
+NSM ON ET NSM; 3
+NSM ON PDI LRI; 3
+NSM FSI WS FSI; 3
+NSM PDI NSM ES; 3
+S L EN S; 3
+S L LRI LRI; 3
+S EN NSM S; 3
+S ES EN RLI; 3
+S ES RLI S; 3
+S ET NSM RLI; 3
+S CS ES EN; 3
+S CS RLI FSI; 3
+S NSM S EN; 3
+S S ES NSM; 3
+S S FSI LRI; 3
+S WS S NSM; 3
+S ON ES LRI; 3
+S ON PDI L; 3
+S FSI S WS; 3
+S PDI CS S; 3
+WS L L RLI; 3
+WS L ON S; 3
+WS EN CS RLI; 3
+WS ES EN EN; 3
+WS ES ON RLI; 3
+WS ET NSM EN; 3
+WS CS EN NSM; 3
+WS CS LRI WS; 3
+WS NSM NSM NSM; 3
+WS S EN LRI; 3
+WS S LRI PDI; 3
+WS WS NSM LRI; 3
+WS ON ES L; 3
+WS ON RLI RLI; 3
+WS RLI PDI NSM; 3
+WS PDI ET RLI; 3
+ON L L EN; 3
+ON L WS RLI; 3
+ON EN CS EN; 3
+ON ES L NSM; 3
+ON ES ON EN; 3
+ON ET CS NSM; 3
+ON CS L LRI; 3
+ON CS ON NSM; 3
+ON NSM CS LRI; 3
+ON S EN L; 3
+ON S ON LRI; 3
+ON WS NSM L; 3
+ON ON EN CS; 3
+ON ON LRI S; 3
+ON RLI FSI LRI; 3
+ON PDI ET EN; 3
+ON PDI PDI NSM; 3
+LRI LRI LRI WS; 3
+LRI PDI L NSM; 3
+LRI PDI ON EN; 3
+RLI WS LRI LRI; 3
+RLI FSI WS S; 3
+RLI PDI NSM NSM; 3
+FSI S RLI FSI; 3
+FSI RLI WS WS; 3
+FSI PDI ES LRI; 3
+FSI PDI PDI L; 3
+PDI L S LRI; 3
+PDI EN ET L; 3
+PDI EN PDI CS; 3
+PDI ES WS L; 3
+PDI ET ET CS; 3
+PDI ET PDI ON; 3
+PDI CS WS CS; 3
+PDI NSM ET ON; 3
+PDI NSM PDI PDI; 3
+PDI S WS ON; 3
+PDI WS ET PDI; 3
+PDI ON L ET; 3
+PDI ON WS PDI; 3
+PDI RLI LRI S; 3
+PDI PDI ES L; 3
+PDI PDI RLI RLI; 3
+@Levels:	0 0 0 1
+@Reorder:	0 1 2 3
+L ES RLI ES; 3
+L S ES R; 3
+L PDI EN R; 3
+EN ES WS AL; 2
+EN NSM PDI AL; 2
+EN FSI S AL; 3
+ES ES NSM R; 2
+ES NSM RLI NSM; 3
+ES RLI S NSM; 3
+ET ES ES AL; 2
+ET NSM RLI R; 3
+ET RLI S R; 3
+CS ES L R; 3
+CS NSM S AL; 2
+CS ON FSI AL; 3
+NSM EN RLI ON; 3
+NSM NSM CS R; 2
+NSM ON RLI ET; 3
+S EN RLI AL; 3
+S NSM EN AL; 2
+S ON ON R; 2
+WS EN WS R; 2
+WS CS PDI R; 2
+WS ON NSM AL; 2
+ON EN CS AL; 2
+ON CS RLI CS; 3
+ON ON ET R; 2
+RLI S S ES; 3
+PDI L RLI CS; 3
+PDI CS ET R; 2
+PDI WS RLI AL; 3
+@Levels:	0 0 0 2
+@Reorder:	0 1 2 3
+L L RLI EN; 3
+L CS LRI L; 3
+L ON EN AN; 3
+EN EN L AN; 3
+EN CS FSI L; 3
+EN ON LRI ES; 3
+ES EN LRI EN; 3
+ES NSM ES AN; 3
+ES ON FSI ES; 3
+ET EN FSI EN; 3
+ET NSM LRI ET; 3
+ET LRI S CS; 3
+CS ES ET AN; 3
+CS NSM FSI ET; 3
+CS FSI S ES; 3
+NSM ES LRI CS; 3
+NSM S NSM AN; 3
+NSM PDI CS AN; 3
+S ES FSI CS; 3
+S S LRI ON; 3
+S PDI LRI NSM; 3
+WS ET S AN; 3
+WS S FSI ON; 3
+WS PDI FSI NSM; 3
+ON ET RLI L; 3
+ON WS ON AN; 3
+LRI S PDI AN; 3
+FSI PDI ES AN; 3
+PDI ES FSI ES; 3
+PDI S LRI CS; 3
+PDI PDI LRI ET; 3
+@Levels:	0 0 0 3
+@Reorder:	0 1 2 3
+ET LRI S AL; 3
+ON CS LRI AL; 3
+@Levels:	0 0 0 4
+@Reorder:	0 1 2 3
+EN ES LRI AN; 3
+NSM ON LRI AN; 3
+FSI S S AN; 3
+@Levels:	0 0 1 0
+@Reorder:	0 1 2 3
+L ES R WS; 3
+L S AL ON; 3
+L FSI AL RLI; 3
+EN ET R FSI; 2
+EN WS AL PDI; 2
+ES L R ES; 3
+ES CS AL ET; 2
+ES RLI R RLI; 3
+ET EN R WS; 2
+ET NSM AL ON; 2
+ET RLI CS PDI; 3
+CS ES R FSI; 2
+CS S AL PDI; 2
+CS PDI R ES; 2
+NSM ET AL ET; 2
+NSM ON R CS; 2
+S L R WS; 3
+S CS AL ON; 2
+S RLI AL WS; 3
+WS EN R FSI; 2
+WS NSM AL PDI; 2
+WS RLI NSM RLI; 3
+ON ES AL ET; 2
+ON WS R CS; 2
+ON PDI R WS; 2
+RLI PDI AL RLI; 2
+PDI ES AL RLI; 2
+PDI WS R FSI; 2
+PDI PDI AL L; 2
+@Levels:	0 0 1 1
+@Reorder:	0 1 3 2
+L RLI NSM R; 3
+EN WS AL NSM; 2
+ES L AL NSM; 3
+ES RLI ON ES; 3
+ET RLI AL ES; 3
+CS ET AL R; 2
+CS FSI AL CS; 3
+NSM RLI ET CS; 3
+S S R AL; 2
+S PDI R AL; 2
+WS RLI NSM ON; 3
+ON ON AL NSM; 2
+RLI S R NSM; 3
+PDI EN AL NSM; 2
+PDI FSI R AL; 3
+@Levels:	0 0 1 2
+@Reorder:	0 1 3 2
+L RLI FSI ET; 3
+ES L AL AN; 3
+ET NSM R EN; 2
+CS RLI R EN; 3
+NSM RLI WS EN; 3
+S RLI FSI NSM; 3
+ON EN R AN; 2
+RLI S WS EN; 3
+PDI RLI FSI EN; 3
+@Levels:	0 0 1 3
+@Reorder:	0 1 3 2
+WS RLI RLI NSM; 3
+@Levels:	0 0 2 0
+@Reorder:	0 1 2 3
+L L AN LRI; 3
+L LRI L S; 3
+L FSI ON FSI; 3
+EN WS AN ES; 3
+EN FSI ET S; 3
+ES NSM AN CS; 3
+ES RLI AN LRI; 3
+ET ET AN WS; 3
+ET LRI NSM FSI; 3
+CS EN AN LRI; 3
+CS LRI ES S; 3
+CS PDI AN FSI; 3
+NSM ON AN ES; 3
+NSM FSI NSM S; 3
+S S AN CS; 3
+S FSI EN LRI; 3
+WS CS AN WS; 3
+WS RLI L FSI; 3
+ON ES AN LRI; 3
+ON LRI CS S; 3
+LRI S EN FSI; 3
+FSI S CS LRI; 3
+PDI S AN L; 3
+PDI FSI L FSI; 3
+@Levels:	0 0 2 1
+@Reorder:	0 1 3 2
+EN CS AN AL; 2
+ET RLI EN CS; 3
+S ES AN R; 2
+ON RLI L CS; 3
+@Levels:	0 0 2 2
+@Reorder:	0 1 2 3
+L S AN NSM; 3
+L FSI ET CS; 3
+EN LRI ON L; 3
+ES LRI L ET; 3
+ES FSI CS NSM; 3
+ET RLI L EN; 3
+CS LRI EN CS; 3
+CS FSI NSM ON; 3
+NSM RLI ET EN; 3
+S LRI ES NSM; 3
+S FSI ON L; 3
+WS FSI L ET; 3
+ON LRI ET ON; 3
+ON PDI AN NSM; 3
+FSI S ET CS; 3
+PDI LRI ON L; 3
+@Levels:	0 0 2 3
+@Reorder:	0 1 2 3
+L LRI RLI NSM; 3
+ET LRI WS AL; 3
+S LRI ES AL; 3
+ON FSI RLI ON; 3
+@Levels:	0 0 2 4
+@Reorder:	0 1 2 3
+L FSI L AN; 3
+ES FSI L AN; 3
+CS FSI L AN; 3
+S FSI L AN; 3
+ON FSI L AN; 3
+PDI FSI L AN; 3
+@Levels:	0 0 2 6
+@Reorder:	0 1 2 3
+WS FSI FSI AN; 3
+@Levels:	0 0 3 0
+@Reorder:	0 1 2 3
+WS LRI R RLI; 3
+@Levels:	0 0 3 2
+@Reorder:	0 1 2 3
+NSM LRI AL L; 3
+@Levels:	0 0 3 3
+@Reorder:	0 1 3 2
+WS LRI AL R; 3
+@Levels:	0 0 4 0
+@Reorder:	0 1 2 3
+ES FSI AN PDI; 3
+@Levels:	0 0 4 2
+@Reorder:	0 1 2 3
+L LRI AN ET; 3
+ON FSI AN EN; 3
+@Levels:	0 1 0 0
+@Reorder:	0 1 2 3
+L R L NSM; 3
+L R PDI ET; 3
+L AL LRI PDI; 3
+EN R ON ET; 2
+EN AL S PDI; 2
+ES R CS LRI; 2
+ES AL ET S; 2
+ET R ES ET; 2
+ET AL L L; 2
+ET AL FSI RLI; 2
+CS R LRI S; 2
+CS AL WS RLI; 2
+NSM R S WS; 2
+NSM AL CS CS; 2
+S R ET L; 2
+S AL L RLI; 2
+S AL PDI ON; 2
+WS R RLI FSI; 2
+WS AL ON ON; 2
+ON R WS NSM; 2
+ON AL S ES; 2
+RLI R PDI NSM; 3
+RLI ET WS S; 3
+RLI NSM RLI LRI; 3
+FSI R FSI RLI; 3
+PDI R CS NSM; 2
+PDI AL ET ES; 2
+@Levels:	0 1 0 1
+@Reorder:	0 1 2 3
+L R FSI R; 3
+CS R RLI ET; 2
+ON R S AL; 2
+FSI AL S ET; 3
+@Levels:	0 1 0 2
+@Reorder:	0 1 2 3
+EN R FSI NSM; 2
+ET AL FSI NSM; 2
+S R FSI NSM; 2
+ON AL FSI NSM; 2
+@Levels:	0 1 0 3
+@Reorder:	0 1 2 3
+NSM R LRI AL; 2
+@Levels:	0 1 1 0
+@Reorder:	0 2 1 3
+L AL R RLI; 3
+ES R R FSI; 2
+ET AL R PDI; 2
+NSM R AL L; 2
+S AL AL ES; 2
+ON R AL ET; 2
+RLI AL R PDI; 3
+RLI ET ET RLI; 3
+RLI NSM ON WS; 3
+FSI R AL PDI; 3
+FSI CS R RLI; 3
+PDI AL NSM L; 2
+@Levels:	0 1 1 1
+@Reorder:	0 3 2 1
+ES R AL NSM; 2
+CS AL R R; 2
+S AL WS AL; 2
+RLI R AL CS; 3
+RLI AL ON ON; 3
+RLI ET WS AL; 3
+RLI NSM CS ET; 3
+RLI ON ES NSM; 3
+FSI R WS R; 3
+FSI ET R CS; 3
+FSI ON R R; 3
+@Levels:	0 1 1 2
+@Reorder:	0 3 2 1
+L AL CS AN; 3
+ET AL ES EN; 2
+S R PDI AN; 2
+RLI R CS L; 3
+RLI ES FSI ON; 3
+RLI NSM LRI ET; 3
+FSI R ES L; 3
+FSI ON R EN; 3
+@Levels:	0 1 1 3
+@Reorder:	0 3 2 1
+RLI NSM RLI ET; 3
+@Levels:	0 1 2 0
+@Reorder:	0 2 1 3
+L R EN L; 3
+ES R AN S; 2
+CS AL EN LRI; 2
+S AL AN PDI; 2
+RLI R AN WS; 3
+RLI WS EN PDI; 3
+RLI FSI NSM RLI; 3
+@Levels:	0 1 2 1
+@Reorder:	0 3 2 1
+EN AL EN R; 2
+RLI ES L ON; 3
+FSI R EN ES; 3
+@Levels:	0 1 2 2
+@Reorder:	0 2 3 1
+ET R EN ET; 2
+RLI AL L NSM; 3
+RLI LRI EN ON; 3
+FSI R L EN; 3
+@Levels:	0 1 2 4
+@Reorder:	0 2 3 1
+RLI FSI L AN; 3
+@Levels:	0 1 3 2
+@Reorder:	0 2 3 1
+RLI LRI R ES; 3
+@Levels:	0 1 3 4
+@Reorder:	0 3 2 1
+RLI LRI AL AN; 3
+@Levels:	0 1 4 2
+@Reorder:	0 2 3 1
+RLI FSI AN CS; 3
+@Levels:	0 2 0 0
+@Reorder:	0 1 2 3
+L AN CS NSM; 3
+EN AN EN LRI; 3
+EN AN PDI L; 3
+ES AN WS LRI; 3
+ET AN CS L; 3
+CS AN EN CS; 3
+CS AN FSI WS; 3
+NSM AN WS CS; 3
+S AN ET ON; 3
+WS AN L PDI; 3
+WS AN RLI LRI; 3
+ON AN S PDI; 3
+LRI L PDI PDI; 3
+LRI ET LRI WS; 3
+LRI NSM FSI RLI; 3
+RLI L PDI CS; 3
+FSI L S PDI; 3
+FSI ES RLI WS; 3
+FSI CS PDI ET; 3
+FSI ON PDI RLI; 3
+PDI AN ON S; 3
+@Levels:	0 2 0 1
+@Reorder:	0 1 2 3
+CS AN EN R; 2
+RLI EN S ES; 3
+@Levels:	0 2 0 2
+@Reorder:	0 1 2 3
+ES AN LRI ON; 3
+WS AN LRI ON; 3
+FSI L S L; 3
+@Levels:	0 2 0 3
+@Reorder:	0 1 2 3
+LRI ES S AL; 3
+@Levels:	0 2 1 0
+@Reorder:	0 2 1 3
+ES AN R FSI; 2
+S AN AL PDI; 2
+RLI EN CS WS; 3
+@Levels:	0 2 1 1
+@Reorder:	0 3 2 1
+L AN ES AL; 3
+NSM AN PDI AL; 2
+RLI L ON ET; 3
+FSI EN R NSM; 3
+@Levels:	0 2 1 2
+@Reorder:	0 3 2 1
+CS AN ET AN; 3
+RLI AN AL AN; 3
+@Levels:	0 2 2 0
+@Reorder:	0 1 2 3
+L AN AN ET; 3
+CS AN AN ON; 3
+ON AN AN PDI; 3
+LRI ES L RLI; 3
+LRI CS ET WS; 3
+LRI WS NSM PDI; 3
+RLI EN NSM RLI; 3
+FSI EN CS WS; 3
+FSI ET ON PDI; 3
+FSI WS ES RLI; 3
+@Levels:	0 2 2 1
+@Reorder:	0 3 1 2
+EN AN NSM AL; 2
+RLI AN AN ON; 3
+@Levels:	0 2 2 2
+@Reorder:	0 1 2 3
+LRI L CS L; 3
+LRI ES ES ES; 3
+LRI CS L CS; 3
+LRI NSM WS ON; 3
+LRI ON NSM EN; 3
+RLI AN L L; 3
+FSI EN ET CS; 3
+FSI ET EN ON; 3
+FSI NSM L EN; 3
+FSI WS WS ET; 3
+@Levels:	0 2 2 3
+@Reorder:	0 1 2 3
+LRI L ET AL; 3
+LRI CS ET AL; 3
+FSI L L AL; 3
+FSI ON FSI AL; 3
+@Levels:	0 2 2 4
+@Reorder:	0 1 2 3
+LRI ET FSI ON; 3
+LRI ON FSI ON; 3
+FSI ET FSI ET; 3
+FSI ON FSI ET; 3
+@Levels:	0 2 3 0
+@Reorder:	0 1 2 3
+LRI ES R PDI; 3
+LRI RLI NSM RLI; 3
+@Levels:	0 2 3 2
+@Reorder:	0 1 2 3
+LRI EN R CS; 3
+@Levels:	0 2 3 3
+@Reorder:	0 1 3 2
+LRI ET AL NSM; 3
+LRI FSI CS AL; 3
+@Levels:	0 2 3 4
+@Reorder:	0 1 3 2
+LRI EN R AN; 3
+FSI RLI LRI ET; 3
+@Levels:	0 2 4 0
+@Reorder:	0 1 2 3
+LRI LRI L RLI; 3
+FSI L AN WS; 3
+FSI RLI EN PDI; 3
+@Levels:	0 2 4 2
+@Reorder:	0 1 2 3
+FSI L AN ET; 3
+@Levels:	0 2 4 3
+@Reorder:	0 1 3 2
+FSI RLI AN ON; 3
+@Levels:	0 2 4 4
+@Reorder:	0 1 2 3
+LRI FSI EN ES; 3
+FSI LRI NSM ES; 3
+@Levels:	0 2 4 5
+@Reorder:	0 1 2 3
+LRI LRI NSM AL; 3
+@Levels:	0 2 4 6
+@Reorder:	0 1 2 3
+LRI FSI LRI ON; 3
+@Levels:	0 2 5 0
+@Reorder:	0 1 2 3
+FSI LRI AL PDI; 3
+@Levels:	0 2 6 6
+@Reorder:	0 1 2 3
+FSI FSI AN NSM; 3
+@Levels:	0 3 0 2
+@Reorder:	0 1 2 3
+LRI AL S ET; 3
+@Levels:	0 3 2 2
+@Reorder:	0 1 2 3
+LRI R WS ET; 3
+@Levels:	0 3 2 4
+@Reorder:	0 1 2 3
+LRI AL FSI ES; 3
+@Levels:	0 3 3 3
+@Reorder:	0 3 2 1
+LRI AL R NSM; 3
+@Levels:	0 3 4 4
+@Reorder:	0 2 3 1
+LRI R EN ET; 3
+@Levels:	0 4 0 1
+@Reorder:	0 1 2 3
+LRI AN PDI AL; 2
+@Levels:	0 4 2 2
+@Reorder:	0 1 2 3
+LRI AN L NSM; 3
+@Levels:	0 4 2 3
+@Reorder:	0 1 2 3
+LRI AN RLI ET; 3
+@Levels:	0 4 3 3
+@Reorder:	0 3 2 1
+LRI AN ON AL; 3
+@Levels:	1 0 0 0
+@Reorder:	0 1 2 3
+R L EN PDI; 2
+R L RLI LRI; 2
+R ES WS NSM; 2
+R ET NSM ES; 2
+R CS ES FSI; 2
+R CS PDI LRI; 2
+R S ON PDI; 2
+R WS S LRI; 2
+R ON CS S; 2
+R LRI LRI RLI; 2
+R FSI PDI ES; 2
+R PDI ON NSM; 2
+AL L CS RLI; 2
+AL ES ES ES; 2
+AL ES FSI PDI; 2
+AL ET ON ET; 2
+AL CS NSM PDI; 2
+AL S ET LRI; 2
+AL WS L S; 2
+AL WS RLI RLI; 2
+AL ON WS WS; 2
+AL RLI WS FSI; 2
+AL PDI ET ES; 2
+AL PDI PDI PDI; 2
+@Levels:	1 0 0 1
+@Reorder:	0 1 2 3
+R RLI S R; 2
+AL WS S AL; 2
+@Levels:	1 0 0 2
+@Reorder:	0 1 2 3
+R ET FSI EN; 2
+R PDI S EN; 2
+AL S L AN; 2
+@Levels:	1 0 0 3
+@Reorder:	0 1 2 3
+R ET LRI AL; 2
+@Levels:	1 0 1 0
+@Reorder:	0 1 2 3
+R S AL L; 2
+AL S AL ET; 2
+@Levels:	1 0 1 1
+@Reorder:	0 1 3 2
+R RLI AL CS; 2
+AL RLI R ET; 2
+@Levels:	1 0 1 2
+@Reorder:	0 1 3 2
+R RLI R L; 2
+AL RLI FSI NSM; 2
+@Levels:	1 0 2 0
+@Reorder:	0 1 2 3
+R LRI CS RLI; 2
+AL S AN ET; 2
+AL FSI NSM WS; 2
+@Levels:	1 0 2 2
+@Reorder:	0 1 2 3
+R LRI ET CS; 2
+R FSI ON ON; 2
+AL FSI ET L; 2
+@Levels:	1 0 2 3
+@Reorder:	0 1 2 3
+AL FSI RLI ES; 2
+@Levels:	1 0 2 4
+@Reorder:	0 1 2 3
+AL FSI FSI L; 2
+@Levels:	1 0 4 0
+@Reorder:	0 1 2 3
+AL LRI AN WS; 2
+@Levels:	1 1 0 0
+@Reorder:	1 0 2 3
+R R S NSM; 2
+R AL CS ES; 2
+R NSM ES FSI; 2
+AL R L ON; 2
+AL R PDI S; 2
+AL AL RLI LRI; 2
+AL NSM ON S; 2
+@Levels:	1 1 0 1
+@Reorder:	1 0 2 3
+AL AL S AL; 2
+@Levels:	1 1 0 2
+@Reorder:	1 0 2 3
+AL R S EN; 2
+@Levels:	1 1 1 0
+@Reorder:	2 1 0 3
+R R R FSI; 2
+R ET AL PDI; 2
+R PDI R L; 2
+AL ES AL ES; 2
+AL WS AL ET; 2
+@Levels:	1 1 1 1
+@Reorder:	3 2 1 0
+R R ET ON; 5
+R R PDI PDI; 5
+R AL WS ON; 5
+R ES ET PDI; 5
+R ET R ET; 5
+R ET WS PDI; 5
+R CS CS ET; 5
+R NSM R WS; 5
+R NSM ON ET; 5
+R S CS WS; 5
+R WS R FSI; 5
+R WS ON WS; 5
+R ON CS FSI; 5
+R LRI LRI RLI; 5
+R FSI FSI PDI; 5
+R PDI S ON; 5
+AL R ES PDI; 5
+AL R PDI ET; 5
+AL AL S PDI; 5
+AL ES ET ET; 5
+AL ES PDI WS; 5
+AL ET WS ET; 5
+AL CS ET WS; 5
+AL CS PDI FSI; 5
+AL NSM WS WS; 5
+AL S ET FSI; 5
+AL WS R ES; 5
+AL WS WS FSI; 5
+AL ON CS ES; 5
+AL LRI WS S; 5
+AL FSI RLI LRI; 5
+AL PDI NSM PDI; 5
+ES R ES ET; 5
+ES R FSI S; 5
+ES AL S ET; 5
+ES ES ES WS; 4
+ES ES FSI FSI; 4
+ES ET S WS; 4
+ES CS ES FSI; 4
+ES CS PDI ES; 4
+ES NSM S FSI; 4
+ES S ET ES; 4
+ES S PDI S; 4
+ES WS WS ES; 4
+ES ON ET S; 4
+ES ON PDI RLI; 4
+ES FSI WS PDI; 4
+ES PDI NSM ET; 4
+ET R AL WS; 5
+ET R LRI RLI; 5
+ET AL NSM WS; 5
+ET ES AL FSI; 5
+ET ES RLI WS; 4
+ET ET NSM FSI; 4
+ET CS ES ES; 4
+ET CS RLI PDI; 4
+ET NSM S ES; 4
+ET S ES S; 4
+ET S FSI RLI; 4
+ET WS S S; 4
+ET ON ES RLI; 4
+ET ON PDI AL; 5
+ET FSI S LRI; 4
+ET PDI CS WS; 4
+CS R R FSI; 5
+CS R ON WS; 5
+CS AL CS FSI; 5
+CS ES AL ES; 5
+CS ES ON FSI; 4
+CS ET NSM ES; 4
+CS CS AL S; 5
+CS CS LRI LRI; 4
+CS NSM NSM S; 4
+CS S AL RLI; 5
+CS S RLI S; 4
+CS WS NSM RLI; 4
+CS ON ES AL; 5
+CS ON RLI FSI; 4
+CS RLI PDI S; 4
+CS PDI ET FSI; 4
+NSM R R ES; 5
+NSM R WS FSI; 5
+NSM AL CS ES; 5
+NSM ES R S; 5
+NSM ES ON ES; 4
+NSM ET CS S; 4
+NSM CS R RLI; 5
+NSM CS ON S; 4
+NSM NSM CS RLI; 4
+NSM S AL AL; 5
+NSM S ON RLI; 4
+NSM WS NSM AL; 5
+NSM ON AL NSM; 5
+NSM ON LRI WS; 4
+NSM RLI FSI RLI; 4
+NSM PDI ET ES; 4
+NSM PDI PDI S; 4
+S R WS ES; 5
+S AL ET S; 5
+S AL PDI RLI; 5
+S ES WS S; 4
+S ET ET RLI; 4
+S CS R AL; 5
+S CS WS RLI; 4
+S NSM CS AL; 5
+S S R NSM; 5
+S S ON AL; 5
+S WS CS NSM; 4
+S ON R LRI; 5
+S ON ON NSM; 4
+S RLI RLI S; 4
+S PDI ES S; 4
+S PDI FSI RLI; 4
+WS R S S; 5
+WS AL ES RLI; 5
+WS AL PDI AL; 5
+WS ES S RLI; 4
+WS ET ET AL; 5
+WS ET PDI NSM; 4
+WS CS WS AL; 5
+WS NSM ET NSM; 4
+WS NSM PDI LRI; 4
+WS S WS NSM; 4
+WS WS ET LRI; 4
+WS ON R R; 5
+WS ON WS LRI; 4
+WS RLI WS RLI; 4
+WS PDI AL RLI; 5
+WS PDI RLI S; 4
+ON R NSM RLI; 5
+ON AL ES AL; 5
+ON AL RLI FSI; 5
+ON ES S AL; 5
+ON ET ES NSM; 4
+ON ET FSI LRI; 4
+ON CS S NSM; 4
+ON NSM ES LRI; 4
+ON NSM PDI R; 5
+ON S S LRI; 4
+ON WS ET R; 5
+ON WS PDI CS; 4
+ON ON WS R; 5
+ON RLI S S; 4
+ON PDI AL AL; 5
+ON PDI ON RLI; 4
+LRI WS RLI PDI; 4
+LRI FSI LRI RLI; 4
+LRI PDI S AL; 5
+RLI S PDI AL; 5
+RLI RLI LRI FSI; 4
+RLI PDI ET NSM; 4
+RLI PDI PDI LRI; 4
+FSI LRI LRI PDI; 4
+FSI PDI R LRI; 5
+FSI PDI ON NSM; 4
+PDI R CS LRI; 5
+PDI AL AL R; 5
+PDI AL ON LRI; 5
+PDI ES NSM R; 5
+PDI ET AL CS; 5
+PDI ET LRI S; 4
+PDI CS NSM CS; 4
+PDI NSM AL ON; 5
+PDI NSM LRI FSI; 4
+PDI S NSM ON; 4
+PDI WS AL PDI; 5
+PDI WS RLI LRI; 4
+PDI ON NSM PDI; 4
+PDI LRI FSI PDI; 4
+PDI PDI R R; 5
+PDI PDI WS LRI; 4
+@Levels:	1 1 1 2
+@Reorder:	3 2 1 0
+R AL ET L; 5
+R ET ON L; 5
+R NSM FSI CS; 5
+R ON ES AN; 7
+R PDI PDI AN; 7
+AL ES CS L; 5
+AL CS ON L; 5
+AL S FSI ES; 5
+AL LRI S CS; 5
+ES R FSI CS; 5
+ES ET ES EN; 4
+ES NSM WS AN; 4
+ES WS FSI ET; 4
+ES PDI LRI EN; 4
+ET AL PDI L; 5
+ET CS CS EN; 4
+ET S LRI EN; 4
+ET ON PDI EN; 4
+CS R LRI ON; 5
+CS ET R AN; 5
+CS NSM S L; 4
+CS WS LRI NSM; 4
+CS PDI WS AN; 4
+NSM AL FSI ES; 5
+NSM CS ES EN; 4
+NSM S WS EN; 4
+NSM ON FSI ES; 4
+S R LRI L; 5
+S ES FSI ON; 4
+S NSM CS L; 4
+S WS ON AN; 4
+S PDI NSM AN; 4
+WS AL LRI ET; 5
+WS CS R EN; 5
+WS S NSM EN; 4
+WS ON LRI ET; 4
+ON R WS L; 5
+ON ES FSI L; 4
+ON NSM AL AN; 5
+ON WS S AN; 4
+ON PDI ET AN; 4
+RLI PDI AL EN; 5
+PDI R R EN; 5
+PDI ES NSM L; 4
+PDI CS LRI ET; 4
+PDI WS R L; 5
+PDI FSI S EN; 4
+@Levels:	1 1 1 3
+@Reorder:	3 2 1 0
+R CS RLI ES; 5
+AL ES RLI ET; 5
+ES R RLI CS; 5
+ES RLI S NSM; 4
+ET WS RLI ON; 4
+CS NSM FSI R; 4
+NSM ET FSI AL; 4
+S ES LRI R; 4
+WS R LRI AL; 5
+WS RLI S R; 4
+ON WS RLI AL; 4
+FSI RLI S ON; 4
+PDI WS FSI R; 4
+@Levels:	1 1 1 4
+@Reorder:	3 2 1 0
+AL ES LRI AN; 5
+ET R LRI AN; 5
+CS LRI S AN; 4
+S WS LRI AN; 4
+ON NSM LRI AN; 4
+FSI PDI RLI EN; 4
+@Levels:	1 1 2 0
+@Reorder:	2 1 0 3
+R R AN RLI; 2
+R WS EN ES; 2
+AL AL AN ON; 2
+AL WS EN LRI; 2
+@Levels:	1 1 2 1
+@Reorder:	3 2 1 0
+R AL L WS; 5
+R CS L PDI; 5
+R WS L WS; 5
+R LRI ON S; 5
+AL R EN WS; 5
+AL ET L FSI; 5
+AL S L ES; 5
+AL ON AN WS; 5
+AL PDI L FSI; 5
+ES ES L ET; 4
+ES NSM L RLI; 4
+ES ON L CS; 4
+ES FSI CS RLI; 4
+ET AL EN ET; 5
+ET CS EN RLI; 4
+ET WS AN ET; 4
+ET FSI ES LRI; 4
+CS AL L ES; 5
+CS CS L ON; 4
+CS WS L ES; 4
+CS LRI NSM LRI; 4
+NSM R EN AL; 5
+NSM ET L ON; 4
+NSM S EN AL; 5
+NSM LRI EN LRI; 4
+NSM PDI AN AL; 5
+S ES EN ON; 4
+S NSM AN AL; 5
+S ON EN LRI; 4
+S PDI L R; 4
+WS AL AN WS; 5
+WS NSM L R; 4
+WS WS AN ON; 4
+WS FSI ET S; 4
+ON AL L WS; 5
+ON CS L PDI; 4
+ON WS L WS; 4
+ON LRI ON S; 4
+LRI S ES PDI; 4
+FSI S L PDI; 4
+PDI R AN S; 5
+PDI ET AN FSI; 4
+PDI S AN S; 4
+PDI LRI ET PDI; 4
+@Levels:	1 1 2 2
+@Reorder:	2 3 1 0
+R R EN L; 5
+R ON L L; 5
+R FSI CS ES; 5
+AL CS AN AN; 7
+AL LRI ON EN; 5
+ES ES L L; 4
+ES LRI EN EN; 4
+ES FSI ON ET; 4
+ET S AN AN; 4
+ET FSI ES L; 4
+CS ET AN L; 4
+CS LRI ET NSM; 4
+NSM R L L; 5
+NSM WS AN L; 4
+NSM FSI ET NSM; 4
+S CS EN NSM; 4
+S LRI NSM ET; 4
+WS R AN AN; 5
+WS ON EN NSM; 4
+WS FSI NSM ET; 4
+ON NSM EN ET; 4
+ON LRI ON EN; 4
+LRI S ET ET; 4
+FSI S NSM NSM; 4
+PDI NSM EN NSM; 4
+PDI LRI ON ET; 4
+@Levels:	1 1 2 3
+@Reorder:	2 3 1 0
+R FSI L AL; 5
+ET LRI RLI ES; 4
+S LRI NSM R; 4
+LRI S EN R; 4
+@Levels:	1 1 2 4
+@Reorder:	2 3 1 0
+R FSI NSM AN; 5
+ES FSI NSM AN; 4
+CS FSI NSM AN; 4
+S FSI NSM AN; 4
+ON FSI NSM AN; 4
+PDI FSI NSM AN; 4
+@Levels:	1 1 2 6
+@Reorder:	2 3 1 0
+LRI S LRI AN; 4
+@Levels:	1 1 3 1
+@Reorder:	3 2 1 0
+AL RLI ES LRI; 5
+ES FSI AL S; 4
+CS RLI ES FSI; 4
+NSM FSI AL LRI; 4
+WS RLI ET S; 4
+ON FSI AL FSI; 4
+PDI RLI ET LRI; 4
+@Levels:	1 1 3 2
+@Reorder:	2 3 1 0
+S LRI AL ES; 4
+@Levels:	1 1 3 3
+@Reorder:	3 2 1 0
+R RLI ON AL; 5
+AL FSI R ON; 5
+ES FSI CS R; 4
+CS LRI AL AL; 4
+NSM RLI AL ET; 4
+S RLI ET AL; 4
+WS RLI CS ON; 4
+ON RLI WS CS; 4
+FSI S R ES; 4
+PDI FSI ES R; 4
+@Levels:	1 1 3 4
+@Reorder:	3 2 1 0
+AL FSI R L; 5
+CS LRI R EN; 4
+S RLI R AN; 4
+ON RLI ES AN; 4
+PDI RLI NSM L; 4
+@Levels:	1 1 3 5
+@Reorder:	3 2 1 0
+S RLI RLI ET; 4
+@Levels:	1 1 3 6
+@Reorder:	3 2 1 0
+PDI RLI LRI AN; 4
+@Levels:	1 1 4 1
+@Reorder:	3 2 1 0
+ET LRI AN PDI; 4
+S RLI EN RLI; 4
+FSI S AN WS; 4
+@Levels:	1 1 4 2
+@Reorder:	2 3 1 0
+NSM LRI AN ON; 4
+@Levels:	1 1 4 3
+@Reorder:	3 2 1 0
+AL RLI EN ES; 5
+NSM RLI AN ON; 4
+PDI RLI L AL; 4
+@Levels:	1 1 4 4
+@Reorder:	2 3 1 0
+CS RLI EN ET; 4
+PDI LRI AN AN; 4
+@Levels:	1 2 0 0
+@Reorder:	1 0 2 3
+R EN RLI RLI; 2
+R AN ON WS; 2
+AL EN WS CS; 2
+AL AN S L; 2
+@Levels:	1 2 0 1
+@Reorder:	1 0 2 3
+AL EN RLI CS; 2
+@Levels:	1 2 0 3
+@Reorder:	1 0 2 3
+R AN LRI R; 2
+@Levels:	1 2 1 0
+@Reorder:	2 1 0 3
+AL AN AL FSI; 2
+@Levels:	1 2 1 1
+@Reorder:	3 2 1 0
+R L ON WS; 5
+R EN S FSI; 5
+R AN ET ES; 5
+AL L R S; 5
+AL L LRI LRI; 5
+AL EN S S; 5
+AL AN ES RLI; 5
+ES L R AL; 4
+ES L ON RLI; 4
+ES EN WS AL; 5
+ES AN ET NSM; 4
+ET L R LRI; 4
+ET L LRI PDI; 4
+ET AN S LRI; 4
+CS L ET R; 4
+CS EN R CS; 5
+CS EN FSI WS; 4
+CS AN WS CS; 4
+NSM L ET ON; 4
+NSM EN R PDI; 5
+NSM EN PDI ET; 4
+NSM AN WS PDI; 4
+S L CS ET; 4
+S EN AL WS; 5
+S EN PDI FSI; 4
+S AN ON WS; 4
+WS L CS FSI; 4
+WS EN ES ES; 4
+WS AN R S; 5
+WS AN LRI LRI; 4
+ON L S S; 4
+ON EN ES RLI; 4
+ON AN AL AL; 5
+ON AN RLI FSI; 4
+LRI EN PDI S; 4
+LRI CS WS WS; 4
+LRI ON LRI LRI; 4
+FSI EN FSI FSI; 4
+FSI ET PDI PDI; 4
+FSI ON WS S; 4
+PDI L CS FSI; 4
+PDI EN ES ES; 4
+PDI AN R S; 5
+PDI AN LRI LRI; 4
+@Levels:	1 2 1 2
+@Reorder:	3 2 1 0
+R AN ES L; 5
+AL EN PDI AN; 7
+ES EN FSI NSM; 4
+ET AN LRI NSM; 4
+CS AN LRI EN; 4
+NSM AN ON L; 4
+S AN S AN; 4
+WS AN CS L; 4
+ON AN ES EN; 4
+LRI ON S NSM; 4
+PDI L FSI EN; 4
+@Levels:	1 2 1 3
+@Reorder:	3 2 1 0
+R EN RLI NSM; 5
+ET AN RLI ON; 4
+S AN FSI R; 4
+PDI EN RLI ET; 4
+@Levels:	1 2 1 4
+@Reorder:	3 2 1 0
+NSM AN RLI AN; 4
+@Levels:	1 2 2 0
+@Reorder:	1 2 0 3
+R EN AN S; 2
+AL AN EN RLI; 2
+@Levels:	1 2 2 1
+@Reorder:	3 1 2 0
+R EN ET WS; 5
+AL L EN AL; 5
+AL AN EN WS; 5
+ES EN ET R; 5
+ET L L LRI; 4
+CS L EN ES; 4
+CS ET EN PDI; 4
+NSM EN L S; 4
+NSM AN NSM ES; 4
+S EN AN RLI; 4
+WS L AN S; 4
+WS AN EN AL; 5
+ON EN EN LRI; 4
+LRI L L FSI; 4
+LRI ES ET LRI; 4
+LRI CS ON S; 4
+LRI ON EN FSI; 4
+FSI EN CS LRI; 4
+FSI CS L S; 4
+FSI WS ES FSI; 4
+PDI L AN RLI; 4
+PDI AN EN WS; 4
+@Levels:	1 2 2 2
+@Reorder:	1 2 3 0
+R AN ET EN; 7
+ES L ON L; 4
+ET AN NSM EN; 4
+NSM L CS L; 4
+S EN EN NSM; 4
+WS ET EN AN; 4
+ON AN NSM EN; 4
+LRI EN NSM ON; 4
+LRI ET CS EN; 4
+LRI NSM ES ET; 4
+LRI ON L NSM; 4
+FSI L CS L; 4
+FSI ES ES ES; 4
+FSI CS L CS; 4
+FSI NSM WS ON; 4
+FSI ON NSM EN; 4
+PDI ET ET EN; 4
+@Levels:	1 2 2 3
+@Reorder:	1 2 3 0
+LRI ET ES R; 4
+LRI ON ES R; 4
+FSI NSM RLI ES; 4
+@Levels:	1 2 2 4
+@Reorder:	1 2 3 0
+LRI ES FSI ET; 4
+LRI WS FSI ET; 4
+FSI ES FSI L; 4
+FSI WS FSI L; 4
+@Levels:	1 2 3 1
+@Reorder:	3 1 2 0
+LRI L R WS; 4
+LRI RLI R PDI; 4
+FSI RLI ON RLI; 4
+@Levels:	1 2 3 2
+@Reorder:	1 2 3 0
+FSI L AL L; 4
+@Levels:	1 2 3 3
+@Reorder:	1 3 2 0
+LRI RLI WS NSM; 4
+FSI FSI R ET; 4
+@Levels:	1 2 3 4
+@Reorder:	1 3 2 0
+FSI L AL EN; 4
+@Levels:	1 2 4 1
+@Reorder:	3 1 2 0
+LRI ET AN PDI; 4
+LRI FSI ES RLI; 4
+FSI LRI CS WS; 4
+@Levels:	1 2 4 2
+@Reorder:	1 2 3 0
+LRI ET AN ON; 4
+@Levels:	1 2 4 3
+@Reorder:	1 3 2 0
+LRI RLI AN R; 4
+@Levels:	1 2 4 4
+@Reorder:	1 2 3 0
+LRI LRI ON ES; 4
+FSI LRI EN ES; 4
+FSI FSI NSM CS; 4
+@Levels:	1 2 4 6
+@Reorder:	1 2 3 0
+LRI LRI LRI ET; 4
+@Levels:	1 2 4 8
+@Reorder:	1 2 3 0
+LRI FSI FSI AN; 4
+@Levels:	1 2 6 4
+@Reorder:	1 2 3 0
+LRI FSI AN EN; 4
+@Levels:	1 3 1 1
+@Reorder:	3 2 1 0
+LRI AL FSI FSI; 4
+RLI AL PDI PDI; 4
+RLI CS LRI WS; 4
+RLI ON RLI LRI; 4
+FSI AL PDI CS; 4
+@Levels:	1 3 1 3
+@Reorder:	3 2 1 0
+RLI NSM S CS; 4
+@Levels:	1 3 2 1
+@Reorder:	3 1 2 0
+LRI AL L PDI; 4
+@Levels:	1 3 2 3
+@Reorder:	1 2 3 0
+LRI R L AL; 4
+@Levels:	1 3 3 1
+@Reorder:	3 2 1 0
+LRI AL NSM PDI; 4
+RLI ES ES RLI; 4
+RLI CS NSM WS; 4
+RLI ON R PDI; 4
+FSI AL ET RLI; 4
+@Levels:	1 3 3 2
+@Reorder:	2 1 3 0
+LRI R AL ET; 4
+@Levels:	1 3 3 3
+@Reorder:	3 2 1 0
+RLI R NSM CS; 4
+RLI ES ET ON; 4
+RLI CS ES AL; 4
+RLI WS R ET; 4
+RLI ON WS NSM; 4
+FSI AL ES R; 4
+FSI CS R ON; 4
+FSI RLI PDI R; 4
+@Levels:	1 3 3 4
+@Reorder:	3 2 1 0
+RLI AL LRI CS; 4
+RLI CS WS L; 4
+RLI ON ES L; 4
+FSI AL ON AN; 4
+@Levels:	1 3 3 5
+@Reorder:	3 2 1 0
+RLI CS RLI ET; 4
+@Levels:	1 3 3 6
+@Reorder:	3 2 1 0
+RLI ON FSI AN; 4
+@Levels:	1 3 4 1
+@Reorder:	3 2 1 0
+RLI ET AN PDI; 4
+RLI LRI CS RLI; 4
+@Levels:	1 3 4 2
+@Reorder:	2 1 3 0
+LRI R AN CS; 4
+@Levels:	1 3 4 3
+@Reorder:	3 2 1 0
+RLI CS AN ON; 4
+FSI NSM AN AL; 4
+@Levels:	1 3 4 4
+@Reorder:	2 3 1 0
+RLI WS L EN; 4
+RLI FSI ES ET; 4
+@Levels:	1 3 4 5
+@Reorder:	2 3 1 0
+RLI FSI FSI AL; 4
+@Levels:	1 3 5 1
+@Reorder:	3 2 1 0
+RLI RLI CS PDI; 4
+@Levels:	1 3 5 5
+@Reorder:	3 2 1 0
+RLI FSI R ET; 4
+@Levels:	1 3 6 1
+@Reorder:	3 2 1 0
+RLI RLI EN LRI; 4
+@Levels:	1 4 1 1
+@Reorder:	3 2 1 0
+LRI AN PDI AL; 5
+RLI AN S LRI; 4
+@Levels:	1 4 1 2
+@Reorder:	3 2 1 0
+RLI AN PDI L; 4
+@Levels:	1 4 2 1
+@Reorder:	3 1 2 0
+FSI AN ES WS; 4
+@Levels:	1 4 2 2
+@Reorder:	1 2 3 0
+FSI AN CS L; 4
+@Levels:	1 4 3 1
+@Reorder:	3 2 1 0
+LRI AN AL RLI; 4
+RLI AN ON WS; 4
+@Levels:	1 4 3 3
+@Reorder:	3 2 1 0
+RLI L ON ET; 4
+FSI EN R NSM; 4
+@Levels:	1 4 3 4
+@Reorder:	3 2 1 0
+RLI EN FSI ET; 4
+@Levels:	1 4 3 6
+@Reorder:	3 2 1 0
+RLI AN FSI AN; 4
+@Levels:	1 4 4 1
+@Reorder:	3 1 2 0
+FSI AN AN RLI; 4
+@Levels:	1 4 4 3
+@Reorder:	3 1 2 0
+RLI AN EN ES; 4
+@Levels:	1 4 4 4
+@Reorder:	1 2 3 0
+RLI AN EN EN; 4
+@Levels:	2 0 0 0
+@Reorder:	0 1 2 3
+AN L S ET; 3
+AN EN ES WS; 3
+AN EN FSI FSI; 3
+AN ES S WS; 3
+AN ET ES FSI; 3
+AN ET PDI ES; 3
+AN CS S FSI; 3
+AN S ET ES; 3
+AN S PDI S; 3
+AN WS WS ES; 3
+AN ON ET S; 3
+AN ON PDI RLI; 3
+AN FSI WS PDI; 3
+AN PDI NSM ET; 3
+@Levels:	2 0 0 1
+@Reorder:	0 1 2 3
+AN L RLI ES; 3
+AN WS RLI ES; 3
+@Levels:	2 0 0 2
+@Reorder:	0 1 2 3
+AN ES LRI L; 3
+AN ON LRI ET; 3
+@Levels:	2 0 1 0
+@Reorder:	0 1 2 3
+AN L R FSI; 3
+AN FSI R WS; 3
+@Levels:	2 0 1 1
+@Reorder:	0 1 3 2
+AN FSI R AL; 3
+@Levels:	2 0 1 4
+@Reorder:	0 1 3 2
+AN RLI RLI EN; 3
+@Levels:	2 0 2 0
+@Reorder:	0 1 2 3
+AN FSI L WS; 3
+@Levels:	2 0 2 2
+@Reorder:	0 1 2 3
+AN LRI ET NSM; 3
+@Levels:	2 0 2 3
+@Reorder:	0 1 2 3
+AN LRI L R; 3
+@Levels:	2 0 3 0
+@Reorder:	0 1 2 3
+AN LRI AL S; 3
+@Levels:	2 1 0 0
+@Reorder:	1 0 2 3
+AN R CS ON; 2
+AN AL ET NSM; 2
+@Levels:	2 1 0 1
+@Reorder:	1 0 2 3
+AN AL L AL; 2
+@Levels:	2 1 1 0
+@Reorder:	2 1 0 3
+AN R NSM ON; 2
+AN CS AL LRI; 2
+@Levels:	2 1 1 1
+@Reorder:	3 2 1 0
+L R ES CS; 4
+L R FSI WS; 4
+L AL S CS; 4
+L ES ES ON; 4
+L ES FSI PDI; 4
+L ET S ON; 4
+L CS ES PDI; 4
+L CS PDI ET; 4
+L S S PDI; 4
+L WS ET ET; 4
+L WS PDI WS; 4
+L ON WS ET; 4
+L RLI S RLI; 4
+L PDI AL CS; 4
+L PDI LRI S; 4
+EN R NSM CS; 5
+EN AL AL ON; 5
+EN AL LRI FSI; 5
+EN ES NSM ON; 4
+EN CS AL PDI; 5
+EN CS RLI LRI; 4
+EN S NSM PDI; 4
+EN WS ES ET; 4
+EN WS FSI S; 4
+EN ON S ET; 4
+EN LRI PDI ET; 4
+EN PDI R CS; 5
+EN PDI ON R; 5
+AN R CS CS; 5
+AN AL R ON; 5
+AN AL ON CS; 5
+AN ES CS ON; 4
+AN ET R PDI; 5
+AN ET ON ON; 4
+AN CS CS PDI; 4
+AN S AL ET; 5
+AN S ON PDI; 4
+AN WS NSM ET; 4
+AN ON AL WS; 5
+AN ON LRI RLI; 4
+AN RLI FSI PDI; 4
+AN PDI ET CS; 4
+AN PDI PDI ON; 4
+@Levels:	2 1 1 2
+@Reorder:	3 2 1 0
+L ES CS AN; 4
+L S FSI ES; 4
+L PDI LRI CS; 4
+EN ES R AN; 5
+EN S NSM AN; 4
+EN ON LRI CS; 4
+AN R WS EN; 7
+AN ES FSI EN; 4
+AN S ES L; 4
+AN ON WS L; 4
+@Levels:	2 1 1 3
+@Reorder:	3 2 1 0
+L AL LRI R; 4
+EN R LRI AL; 5
+AN R RLI R; 5
+AN PDI RLI AL; 4
+@Levels:	2 1 1 4
+@Reorder:	3 2 1 0
+EN PDI RLI EN; 4
+@Levels:	2 1 2 0
+@Reorder:	2 1 0 3
+AN ES AN CS; 3
+@Levels:	2 1 2 1
+@Reorder:	3 2 1 0
+L AL L RLI; 4
+L WS AN ES; 4
+L FSI ON S; 4
+EN ES L PDI; 4
+EN WS AN S; 4
+EN FSI ES FSI; 4
+AN AL L CS; 5
+AN CS L RLI; 4
+AN ON EN S; 4
+AN FSI ON RLI; 4
+@Levels:	2 1 2 2
+@Reorder:	2 3 1 0
+L S ON EN; 4
+L FSI CS NSM; 4
+EN ON L EN; 4
+EN FSI CS ET; 4
+AN S L NSM; 4
+AN FSI L NSM; 4
+@Levels:	2 1 2 3
+@Reorder:	2 3 1 0
+L FSI FSI AL; 4
+@Levels:	2 1 2 4
+@Reorder:	2 3 1 0
+L FSI ES AN; 4
+AN FSI ES AN; 4
+@Levels:	2 1 3 1
+@Reorder:	3 2 1 0
+L RLI ON PDI; 4
+AN RLI AL RLI; 4
+@Levels:	2 1 3 3
+@Reorder:	3 2 1 0
+L RLI ES NSM; 4
+EN RLI CS ET; 4
+AN RLI WS AL; 4
+@Levels:	2 1 3 4
+@Reorder:	3 2 1 0
+EN RLI ET AN; 4
+@Levels:	2 1 3 5
+@Reorder:	3 2 1 0
+EN RLI FSI R; 4
+@Levels:	2 1 4 1
+@Reorder:	3 2 1 0
+AN RLI EN S; 4
+@Levels:	2 1 4 3
+@Reorder:	3 2 1 0
+AN LRI AN R; 4
+@Levels:	2 2 0 0
+@Reorder:	0 1 2 3
+AN AN EN RLI; 3
+AN AN PDI EN; 3
+AN NSM WS RLI; 3
+@Levels:	2 2 0 2
+@Reorder:	0 1 2 3
+AN NSM LRI L; 3
+@Levels:	2 2 1 1
+@Reorder:	3 2 0 1
+L L ES NSM; 4
+L L PDI LRI; 4
+L EN LRI PDI; 4
+L AN S LRI; 4
+L NSM ET R; 4
+EN L R CS; 4
+EN L LRI S; 4
+EN EN WS CS; 4
+EN ET CS ON; 4
+EN AN AL PDI; 5
+EN AN PDI ET; 4
+EN NSM ON PDI; 4
+ET EN WS ET; 4
+AN L ET WS; 4
+AN EN R FSI; 5
+AN EN PDI ES; 4
+AN AN WS FSI; 4
+AN NSM CS ES; 4
+@Levels:	2 2 1 2
+@Reorder:	3 2 0 1
+L L LRI NSM; 4
+L NSM LRI ET; 4
+EN ET LRI L; 4
+ET EN CS L; 4
+AN AN ES EN; 4
+@Levels:	2 2 1 3
+@Reorder:	3 2 0 1
+L AN RLI NSM; 4
+AN EN RLI ON; 4
+@Levels:	2 2 2 0
+@Reorder:	0 1 2 3
+AN AN AN S; 3
+@Levels:	2 2 2 1
+@Reorder:	3 0 1 2
+L L NSM FSI; 4
+L ET EN ON; 4
+L NSM AN ES; 4
+EN L L RLI; 4
+EN ES EN WS; 4
+EN AN NSM ES; 4
+ET EN EN PDI; 4
+AN L NSM LRI; 4
+AN AN AN S; 4
+@Levels:	2 2 2 2
+@Reorder:	0 1 2 3
+L L NSM NSM; 4
+L AN CS AN; 4
+L ON ON EN; 4
+EN ET ET L; 4
+ET NSM ET EN; 4
+AN NSM CS AN; 7
+@Levels:	1 1 4 x 1
+@Reorder:	4 2 1 0
+R LRI AN LRO PDI; 5
+@Levels:	0 0 1 1 0 0 1 1 0
+@Reorder:	0 1 3 2 4 5 7 6 8
+ON FSI R AL PDI RLI R AL PDI; 3
+@Levels:	2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 1 1 1 1 1
+@Reorder:	26 25 24 23 22 15 16 17 18 19 20 21 14 13 12 11 10 9 8 7 0 1 2 3 4 5 6
+L L WS L L L L WS ON R R WS R R WS EN EN EN CS EN EN AN CS WS R R ON; 4

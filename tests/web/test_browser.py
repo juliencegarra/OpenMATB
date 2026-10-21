@@ -1854,3 +1854,102 @@ class TestResponseTimeGain:
         [pressed] = app.page.evaluate("() => window.__keydowns")
         assert handled - pressed >= 15
         assert input_time == pytest.approx(pressed, abs=0.01)
+
+
+# ── Languages ───────────────────────────────────────────────────────────────
+
+
+def _locale_languages() -> list[str]:
+    return sorted(p.parents[1].name for p in (ROOT / "locales").glob("*/LC_MESSAGES/openmatb.mo"))
+
+
+class TestLanguages:
+    @pytest.mark.parametrize("language", _locale_languages())
+    def test_start_page_in_each_language(self, page_factory, language):
+        """The start page is translated, and mirrored for a right-to-left language."""
+        from core import bidi
+        from tests.test_locales import WEB_TEXTS
+
+        app = page_factory()
+        app.page.goto(f"{app.url}/index.html?lang={language}")
+        app.page.wait_for_selector("#lang")
+        assert app.page.input_value("#lang") == language
+        assert app.page.text_content("[data-i18n=language]") == WEB_TEXTS[language]["language"]
+        assert app.page.text_content("[data-i18n=run_scenario]") == WEB_TEXTS[language]["run_scenario"]
+        page_dir = app.page.evaluate("() => document.documentElement.dir")
+        assert page_dir == ("rtl" if bidi.is_rtl_language(language) else "ltr")
+
+    def test_openmatb_in_arabic(self, page_factory, tmp_path):
+        """The task titles and the labels of the tasks are drawn from right to left (core.rtl_labels)."""
+        from core import bidi
+
+        app = page_factory()
+        scenario = "0:00:00;sysmon;start\n0:00:00;scheduling;start\n0:05:00;sysmon;stop\n0:05:00;scheduling;stop\n"
+        app.start(scenario, params="&lang=ar_SA")
+        app.page.wait_for_timeout(1000)
+        labels = json.loads(
+            app.python(
+                "import gc, json\nfrom pyglet.text import Label\n"
+                "json.dumps([[l.text, l.document.text, l.multiline] for l in gc.get_objects() "
+                "if isinstance(l, Label)])"
+            )
+        )
+        app.page.screenshot(path=str(tmp_path / "arabic.png"))
+        print(f"\n{tmp_path / 'arabic.png'}")
+        bidi.set_language("ar_SA")
+        try:
+            documents = {text: document for text, document, _ in labels}
+            for title in ("مراقبة النظام", "الجدولة"):
+                assert documents.get(title) == bidi.visual(title), (title, documents.get(title))
+            arabic = [(text, document, multiline) for text, document, multiline in labels if bidi.has_rtl(text)]
+            assert len(arabic) >= 3
+            assert [text for text, document, _ in arabic if set(document) & set(bidi.FORMS)] == []  # All shaped
+            # Single line labels (multiline ones are reordered line by line, see tests/test_desktop_rtl.py)
+            single = [(text, document) for text, document, multiline in arabic if not multiline]
+            assert [(text, document) for text, document in single if document != bidi.visual(text)] == []
+        finally:
+            bidi.set_language("en_EN")
+        assert not app.errors
+
+    def test_every_character_of_the_translations_has_a_glyph(self, page_factory):
+        """With the fonts of the page (Noto Sans, its Arabic and Hebrew versions) and those of the system, the
+        browser draws every character of every translation (as pyglet draws them: Arabic presentation forms)."""
+        sys.path.insert(0, str(ROOT / "locales"))
+        import build
+
+        from core import bidi
+
+        app = page_factory()
+        app.start(LONG_SCENARIO)  # The fonts are loaded when OpenMATB starts
+        characters: dict[str, list[str]] = {}
+        try:
+            for path in build.po_files():
+                language: str = path.parents[1].name
+                bidi.set_language(language)
+                visible: set[str] = set()
+                for msgstr in build.read_po(path)[1].values():
+                    visible |= set(bidi.visual(msgstr)) - set(" \t\n ")
+                characters[language] = sorted(visible)
+        finally:
+            bidi.set_language("en_EN")
+        missing = app.page.evaluate(
+            """(characters) => {
+                const canvas = document.createElement("canvas");
+                canvas.width = canvas.height = 48;
+                const context = canvas.getContext("2d", { willReadFrequently: true });
+                context.font = '24px "Noto Sans"';  // pyglet's font in the browser (core.platform.WEB_FONT_NAME)
+                const draw = (c) => {
+                    context.clearRect(0, 0, 48, 48);
+                    context.fillText(c, 4, 32);
+                    return context.getImageData(0, 0, 48, 48).data.join(",");
+                };
+                const missingGlyph = draw("\u0378");  // An unassigned character
+                const result = {};
+                for (const [language, chars] of Object.entries(characters)) {
+                    result[language] = chars.filter((c) => draw(c) === missingGlyph);
+                }
+                return result;
+            }""",
+            characters,
+        )
+        assert {language: chars for language, chars in missing.items() if chars} == {}

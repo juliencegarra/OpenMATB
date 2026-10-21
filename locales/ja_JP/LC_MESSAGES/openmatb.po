@@ -1,0 +1,426 @@
+# OpenMATB translations (see locales/build.py).
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: OpenMATB\n"
+"POT-Creation-Date: 2026-10-20 22:48+0200\n"
+"PO-Revision-Date: 2026-10-20 22:48+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ja_JP\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: core/constants.py:24
+msgid "Path to a scenario file (.txt) to launch directly"
+msgstr "直接起動するシナリオファイル (.txt) のパス"
+
+#: core/constants.py:33
+msgid "Launch in replay mode (optional: session path)"
+msgstr "リプレイモードで起動（任意：セッションのパス）"
+
+#: core/constants.py:39
+msgid "Skip dialog boxes (session, non-fatal errors, questionnaires, instructions)"
+msgstr "ダイアログを省略（セッション、致命的でないエラー、質問票、教示）"
+
+#: core/error.py:48
+msgid "Warning"
+msgstr "警告"
+
+#: core/error.py:48
+msgid "Error(s)"
+msgstr "エラー"
+
+#: core/joystick.py:171
+msgid "No joystick found"
+msgstr "ジョイスティックが見つかりません"
+
+#: core/logger.py:168
+msgid "Warning, queue is empty"
+msgstr "警告：キューが空です"
+
+#: core/logreader.py:49
+msgid "The desired session file (ID=%s) does not exist"
+msgstr "指定されたセッションファイル (ID=%s) は存在しません"
+
+#: core/logreader.py:53
+msgid "Multiple session files match the desired session ID (%s)"
+msgstr "指定されたセッション ID (%s) に一致するセッションファイルが複数あります"
+
+#: core/modaldialog.py:64
+msgid "Exit"
+msgstr "終了"
+
+#: core/modaldialog.py:71
+msgid "Continue"
+msgstr "続ける"
+
+#: core/replayscheduler.py:766
+msgid "Mouse:"
+msgstr "マウス："
+
+#: core/replayscheduler.py:236
+msgid "Page hidden (tab change or minimized window): session paused"
+msgstr "ページが非表示になりました（タブの切り替えまたはウィンドウの最小化）：セッションを一時停止しました"
+
+#: core/replayscheduler.py:238
+msgid "Session paused (pause dialog after the page was hidden)"
+msgstr "セッション一時停止中（ページ非表示後の一時停止ダイアログ）"
+
+#: core/replayscheduler.py:637
+msgid "Keyboard history:"
+msgstr "キーボード履歴："
+
+#: core/replayscheduler.py:773
+msgid "held"
+msgstr "押下中"
+
+#: core/scenario.py:91
+msgid "No error"
+msgstr "エラーなし"
+
+#: core/scenario.py:95
+msgid "There were some errors in the scenario. See the %s file."
+msgstr "シナリオにエラーがあります。ファイル %s を参照してください。"
+
+#: core/scenario.py:48
+msgid "%s was not found"
+msgstr "%s が見つかりません"
+
+#: core/scenario.py:76
+msgid "Scenario error: %s is not a valid plugin name (l. %s)"
+msgstr "シナリオエラー：%s は有効なプラグイン名ではありません（%s 行目）"
+
+#: core/scenario.py:118
+msgid "Line %s: '%s' is deprecated and will be ignored"
+msgstr "%s 行目：'%s' は非推奨のため無視されます"
+
+#: core/scenario.py:166
+msgid "The (%s) plugin does not have a start command."
+msgstr "プラグイン (%s) に start コマンドがありません。"
+
+#: core/scenario.py:213
+msgid "Error on line %s. This event does not trigger any command."
+msgstr "%s 行目でエラー。このイベントはどのコマンドも実行しません。"
+
+#: core/scenario.py:60
+msgid "Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)"
+msgstr "シナリオエラー：%s 行目が H:MM:SS;プラグイン;コマンド の形式ではありません (%s)"
+
+#: core/scenario.py:197 core/scenario.py:208
+msgid "Error on line %s. Invalid system command: %s"
+msgstr "%s 行目でエラー。無効なシステムコマンド：%s"
+
+#: core/scenario.py:217
+msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
+msgstr "%s 行目でエラー。イベントの要素は最大 2 つです（パラメータ;値）。"
+
+#: core/scenario.py:173
+msgid "The (%s) plugin does not have a stop command."
+msgstr "プラグイン (%s) に stop コマンドがありません。"
+
+#: core/scenario.py:199
+msgid "Error on line %s. Agent command requires a name argument"
+msgstr "%s 行目でエラー。agent コマンドには名前の引数が必要です"
+
+#: core/scenario.py:189
+msgid "The (%s) plugin has a start command without a preceding filename command."
+msgstr "プラグイン (%s) の start コマンドの前に filename コマンドがありません。"
+
+#: core/scenario.py:202
+msgid "Error on line %s. Unknown agent: %s"
+msgstr "%s 行目でエラー。不明なエージェント：%s"
+
+#: core/scenario.py:224
+msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
+msgstr "%s 行目でエラー。メソッド (%s) はプラグイン (%s) では使用できません"
+
+#: core/scenario.py:206
+msgid "Error on line %s. mousecontrol command requires True/False argument"
+msgstr "%s 行目でエラー。mousecontrol コマンドには True/False の引数が必要です"
+
+#: core/scenario.py:271
+msgid "Error on line %s. The %s plugin does not have a %s parameter"
+msgstr "%s 行目でエラー。%s プラグインに %s パラメータはありません"
+
+#: core/scenario.py:245
+msgid "Warning on line %s. Parameter (%s) has no verification method"
+msgstr "%s 行目で警告。パラメータ (%s) に検証方法がありません"
+
+#: core/scenario.py:263
+msgid "Error on line %s. %s "
+msgstr "%s 行目でエラー。%s "
+
+#: core/selector.py:128
+msgid "Select a scenario"
+msgstr "シナリオを選択"
+
+#: core/selector.py:128
+msgid "Select a session"
+msgstr "セッションを選択"
+
+#: core/selector.py:143
+msgid "Esc: Quit"
+msgstr "Esc：終了"
+
+#: core/selector.py:50
+msgid "(empty)"
+msgstr "（空）"
+
+#: core/selector.py:191
+msgid "No files found"
+msgstr "ファイルが見つかりません"
+
+#: core/selector.py:143
+msgid "Enter: Select"
+msgstr "Enter：選択"
+
+#: core/selector.py:143
+msgid "UP/DOWN: Navigate"
+msgstr "上/下：移動"
+
+#: core/utils.py:113
+msgid "In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False"
+msgstr "config.ini のパラメータ [%s] はブール値（true または false）である必要があります（%s ではなく）。False を使用します"
+
+#: core/utils.py:123
+msgid "In config.ini, [%s] parameter must be an integer (not %s)"
+msgstr "config.ini のパラメータ [%s] は整数である必要があります（%s ではなく）"
+
+#: core/utils.py:132
+msgid "In config.ini, [%s] parameter must be a float (not %s)"
+msgstr "config.ini のパラメータ [%s] は小数である必要があります（%s ではなく）"
+
+#: core/utils.py:142
+msgid "In config.ini, [%s] parameter must be a list of floats (not %s)"
+msgstr "config.ini のパラメータ [%s] は小数のリストである必要があります（%s ではなく）"
+
+#: core/utils.py:154
+msgid "In config.ini, the specified font is not available. A default font will be used."
+msgstr "config.ini で指定されたフォントは使用できません。既定のフォントを使用します。"
+
+#: core/validation.py:35
+msgid "should be a natural (0 included) integer (not %s)."
+msgstr "は 0 以上の整数である必要があります（%s ではなく）。"
+
+#: core/validation.py:97
+msgid "should be a positive float (not %s)"
+msgstr "は正の小数である必要があります（%s ではなく）"
+
+#: core/validation.py:216
+msgid "should be a float between 0 and 1 (included) (not %s)"
+msgstr "は 0 以上 1 以下の小数である必要があります（%s ではなく）"
+
+#: core/validation.py:167 core/validation.py:163
+msgid "should be an acceptable joystick key value (not %s). See documentation."
+msgstr "は有効なジョイスティックのボタンである必要があります（%s ではなく）。ドキュメントを参照してください。"
+
+#: core/validation.py:179
+msgid "should be an acceptable (keyboard or joystick) key value (not %s). See documentation."
+msgstr "は有効な（キーボードまたはジョイスティックの）キーである必要があります（%s ではなく）。ドキュメントを参照してください。"
+
+#: core/validation.py:31
+msgid "should be a string (not %s)."
+msgstr "は文字列である必要があります（%s ではなく）。"
+
+#: core/validation.py:52
+msgid "should be a positive (0 excluded) integer (not %s)."
+msgstr "は正の整数（0 を除く）である必要があります（%s ではなく）。"
+
+#: core/validation.py:130
+msgid "should be comprised in %s (not %s)"
+msgstr "は %s のいずれかである必要があります（%s ではなく）"
+
+#: core/validation.py:147
+msgid "should be an acceptable keyboard key value (not %s). See documentation."
+msgstr "は有効なキーボードのキーである必要があります（%s ではなく）。ドキュメントを参照してください。"
+
+#: core/validation.py:197
+msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
+msgstr "は英字 [a-z] または数字 [0-9] で構成する必要があります（%s を含めないでください：%s）"
+
+#: core/validation.py:212
+msgid "should be composed of valid callsigns (not %s)"
+msgstr "は有効なコールサインで構成する必要があります（%s ではなく）"
+
+#: core/validation.py:235
+msgid "should be available either in the Instruction or Questionnaire folder (not %s)"
+msgstr "は Instruction または Questionnaire フォルダにある必要があります（%s ではなく）"
+
+#: core/validation.py:61
+msgid "should be a boolean (not %s)."
+msgstr "はブール値である必要があります（%s ではなく）。"
+
+#: core/validation.py:137
+msgid "should be a valid regex expression (not %s)"
+msgstr "は有効な正規表現である必要があります（%s ではなく）"
+
+#: core/validation.py:78
+msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
+msgstr "は色の名前（%s）、(R,G,B,a) または 16 進数（例：#00ff00）の値である必要があります（%s ではなく）"
+
+#: core/validation.py:92
+msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
+msgstr "はそれぞれ 0 から 255 の (R,G,B,a) 値である必要があります（%s ではなく）"
+
+#: core/widgets/timeline.py:73
+msgid "min."
+msgstr "分"
+
+#: core/window.py:367
+msgid "You hit the Escape key"
+msgstr "Esc キーが押されました"
+
+#: core/window.py:372
+msgid "Pause"
+msgstr "一時停止"
+
+#: core/window.py:166
+msgid "Session ID: %s"
+msgstr "セッション ID：%s"
+
+#: core/window.py:367
+msgid "Exit OpenMATB?"
+msgstr "OpenMATB を終了しますか？"
+
+#: core/window.py:184
+msgid "In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected."
+msgstr "config.ini で指定された画面番号が使用可能な画面数 (%s) を超えています。最後の画面を使用します。"
+
+#: core/window.py:423
+msgid "Error. No placement found for the [%s] alias"
+msgstr "エラー。エイリアス [%s] の配置が見つかりません"
+
+#: plugins/abstractplugin.py:292 plugins/abstractplugin.py:290
+msgid "MANUAL"
+msgstr "手動"
+
+#: plugins/communications.py:31
+msgid "Communications"
+msgstr "通信"
+
+#: plugins/communications.py:153
+msgid "Sound path %s does not exist. Check voiceidiom/voicegender combination."
+msgstr "音声のパス %s は存在しません。voiceidiom/voicegender の組み合わせを確認してください。"
+
+#: plugins/communications.py:203
+msgid "Callsign \t\t %s"
+msgstr "コールサイン \t\t %s"
+
+#: plugins/communications.py:167
+msgid " does not exist"
+msgstr " は存在しません"
+
+#: plugins/genericscales.py:38
+msgid "Press SPACE to validate"
+msgstr "スペースキーで確定"
+
+#: plugins/generictrigger.py:15
+msgid "Generic Trigger"
+msgstr "汎用トリガー"
+
+#: plugins/instructions.py:26
+msgid "Press SPACE to continue"
+msgstr "スペースキーで続行"
+
+#: plugins/labstreaminglayer.py:41
+msgid "Please enable the OpenMATB stream into your LabRecorder."
+msgstr "LabRecorder で OpenMATB ストリームを有効にしてください。"
+
+#: plugins/labstreaminglayer.py:53
+msgid "Lab streaming layer is not available in the browser without the LSL bridge (web_lsl_bridge in config.ini). No marker will be sent"
+msgstr "LSL ブリッジ（config.ini の web_lsl_bridge）がない場合、ブラウザでは Lab Streaming Layer を使用できません。マーカーは送信されません"
+
+#: plugins/labstreaminglayer.py:60
+msgid "Python pylsl module is missing. No marker will be sent"
+msgstr "Python の pylsl モジュールがありません。マーカーは送信されません"
+
+#: plugins/parallelport.py:19
+msgid "Parallel port"
+msgstr "パラレルポート"
+
+#: plugins/parallelport.py:52
+msgid "Parallel port is not supported on macOS. Skipping parallel plugin."
+msgstr "macOS ではパラレルポートはサポートされていません。parallel プラグインをスキップします。"
+
+#: plugins/parallelport.py:41
+msgid "The parallel port is not available in the browser: set web_serial_trigger=True in config.ini to use a USB trigger box. Skipping parallel plugin"
+msgstr "ブラウザではパラレルポートを使用できません。USB トリガーボックスを使用するには config.ini で web_serial_trigger=True を設定してください。parallel プラグインをスキップします"
+
+#: plugins/parallelport.py:61
+msgid "Python Parallel module is missing. On Windows, install pyparallel (pip install pyparallel) and the InpOut32 driver (provides simpleio.dll)."
+msgstr "Python の Parallel モジュールがありません。Windows では pyparallel（pip install pyparallel）と InpOut32 ドライバ（simpleio.dll を提供）をインストールしてください。"
+
+#: plugins/parallelport.py:69
+msgid "Python Parallel module is missing. On Linux, install pyparallel (pip install pyparallel) and ensure the ppdev kernel module is loaded."
+msgstr "Python の Parallel モジュールがありません。Linux では pyparallel（pip install pyparallel）をインストールし、カーネルモジュール ppdev が読み込まれていることを確認してください。"
+
+#: plugins/parallelport.py:83
+msgid "Parallel port not found. Ensure the InpOut32 driver is installed (provides simpleio.dll) and that a physical parallel port is available."
+msgstr "パラレルポートが見つかりません。InpOut32 ドライバ（simpleio.dll を提供）がインストールされ、物理パラレルポートがあることを確認してください。"
+
+#: plugins/parallelport.py:91
+msgid "Parallel port not found. Ensure /dev/parport0 exists and you have read/write permissions (try: sudo chmod 666 /dev/parport0)."
+msgstr "パラレルポートが見つかりません。/dev/parport0 が存在し、読み書き権限があることを確認してください（例：sudo chmod 666 /dev/parport0）。"
+
+#: plugins/parallelport.py:99
+msgid "Parallel port error: {error}"
+msgstr "パラレルポートのエラー：{error}"
+
+#: plugins/performance.py:18
+msgid "Performance"
+msgstr "成績"
+
+#: plugins/resman.py:23
+msgid "Resources management"
+msgstr "リソース管理"
+
+#: plugins/resman.py:189
+msgid "Pump status"
+msgstr "ポンプの状態"
+
+#: plugins/scheduling.py:19
+msgid "Scheduling"
+msgstr "スケジュール"
+
+#: plugins/scheduling.py:149
+msgid "Elapsed time \t %s"
+msgstr "経過時間 \t %s"
+
+#: plugins/scheduling.py:156
+msgid "Remaining time \t %s"
+msgstr "残り時間 \t %s"
+
+#: plugins/sysmon.py:21
+msgid "System monitoring"
+msgstr "システム監視"
+
+#: plugins/track.py:26
+msgid "Tracking"
+msgstr "トラッキング"
+
+#: plugins/scheduling.py:44
+msgid "Lab streaming layer"
+msgstr "Lab Streaming Layer"
+
+#: plugins/scheduling.py:44
+msgid "Instructions"
+msgstr "教示"
+
+#: plugins/scheduling.py:44
+msgid "Generic scales"
+msgstr "汎用尺度"
+
+#: core/modaldialog.py:70
+msgid "Space"
+msgstr "スペース"
+
+#: core/modaldialog.py:63
+msgid "Escape"
+msgstr "Esc"
+
+#: plugins/abstractplugin.py:287
+msgid "AUTO"
+msgstr "自動"

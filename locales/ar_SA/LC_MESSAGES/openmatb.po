@@ -1,0 +1,426 @@
+# OpenMATB translations (see locales/build.py).
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: OpenMATB\n"
+"POT-Creation-Date: 2026-10-20 22:48+0200\n"
+"PO-Revision-Date: 2026-10-20 22:48+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ar_SA\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
+
+#: core/constants.py:24
+msgid "Path to a scenario file (.txt) to launch directly"
+msgstr "مسار ملف سيناريو (.txt) لتشغيله مباشرة"
+
+#: core/constants.py:33
+msgid "Launch in replay mode (optional: session path)"
+msgstr "التشغيل في وضع الإعادة (اختياري: مسار الجلسة)"
+
+#: core/constants.py:39
+msgid "Skip dialog boxes (session, non-fatal errors, questionnaires, instructions)"
+msgstr "تخطي مربعات الحوار (الجلسة، الأخطاء غير الحرجة، الاستبيانات، التعليمات)"
+
+#: core/error.py:48
+msgid "Warning"
+msgstr "تحذير"
+
+#: core/error.py:48
+msgid "Error(s)"
+msgstr "أخطاء"
+
+#: core/joystick.py:171
+msgid "No joystick found"
+msgstr "لم يتم العثور على عصا تحكم"
+
+#: core/logger.py:168
+msgid "Warning, queue is empty"
+msgstr "تحذير: قائمة الانتظار فارغة"
+
+#: core/logreader.py:49
+msgid "The desired session file (ID=%s) does not exist"
+msgstr "ملف الجلسة المطلوب (ID=%s) غير موجود"
+
+#: core/logreader.py:53
+msgid "Multiple session files match the desired session ID (%s)"
+msgstr "عدة ملفات جلسات تطابق معرّف الجلسة المطلوب (%s)"
+
+#: core/modaldialog.py:64
+msgid "Exit"
+msgstr "خروج"
+
+#: core/modaldialog.py:71
+msgid "Continue"
+msgstr "متابعة"
+
+#: core/replayscheduler.py:766
+msgid "Mouse:"
+msgstr "الفأرة:"
+
+#: core/replayscheduler.py:236
+msgid "Page hidden (tab change or minimized window): session paused"
+msgstr "الصفحة مخفية (تغيير علامة التبويب أو تصغير النافذة): الجلسة متوقفة مؤقتاً"
+
+#: core/replayscheduler.py:238
+msgid "Session paused (pause dialog after the page was hidden)"
+msgstr "الجلسة متوقفة مؤقتاً (مربع الإيقاف بعد إخفاء الصفحة)"
+
+#: core/replayscheduler.py:637
+msgid "Keyboard history:"
+msgstr "سجل لوحة المفاتيح:"
+
+#: core/replayscheduler.py:773
+msgid "held"
+msgstr "مضغوط"
+
+#: core/scenario.py:91
+msgid "No error"
+msgstr "لا يوجد خطأ"
+
+#: core/scenario.py:95
+msgid "There were some errors in the scenario. See the %s file."
+msgstr "يحتوي السيناريو على أخطاء. راجع الملف %s."
+
+#: core/scenario.py:48
+msgid "%s was not found"
+msgstr "لم يتم العثور على %s"
+
+#: core/scenario.py:76
+msgid "Scenario error: %s is not a valid plugin name (l. %s)"
+msgstr "خطأ في السيناريو: %s ليس اسم إضافة صالحاً (السطر %s)"
+
+#: core/scenario.py:118
+msgid "Line %s: '%s' is deprecated and will be ignored"
+msgstr "السطر %s: '%s' متقادم وسيتم تجاهله"
+
+#: core/scenario.py:166
+msgid "The (%s) plugin does not have a start command."
+msgstr "الإضافة (%s) لا تحتوي على أمر start."
+
+#: core/scenario.py:213
+msgid "Error on line %s. This event does not trigger any command."
+msgstr "خطأ في السطر %s. هذا الحدث لا يشغّل أي أمر."
+
+#: core/scenario.py:60
+msgid "Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)"
+msgstr "خطأ في السيناريو: السطر %s ليس بالصيغة H:MM:SS;plugin;command (%s)"
+
+#: core/scenario.py:197 core/scenario.py:208
+msgid "Error on line %s. Invalid system command: %s"
+msgstr "خطأ في السطر %s. أمر نظام غير صالح: %s"
+
+#: core/scenario.py:217
+msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
+msgstr "خطأ في السطر %s. يحتوي الحدث على عنصرين على الأكثر (parameter;value)."
+
+#: core/scenario.py:173
+msgid "The (%s) plugin does not have a stop command."
+msgstr "الإضافة (%s) لا تحتوي على أمر stop."
+
+#: core/scenario.py:199
+msgid "Error on line %s. Agent command requires a name argument"
+msgstr "خطأ في السطر %s. يتطلب الأمر agent اسماً كوسيط"
+
+#: core/scenario.py:189
+msgid "The (%s) plugin has a start command without a preceding filename command."
+msgstr "الإضافة (%s) تحتوي على أمر start دون أمر filename قبله."
+
+#: core/scenario.py:202
+msgid "Error on line %s. Unknown agent: %s"
+msgstr "خطأ في السطر %s. وكيل غير معروف: %s"
+
+#: core/scenario.py:224
+msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
+msgstr "خطأ في السطر %s. الطريقة (%s) غير متاحة للإضافة (%s)"
+
+#: core/scenario.py:206
+msgid "Error on line %s. mousecontrol command requires True/False argument"
+msgstr "خطأ في السطر %s. يتطلب الأمر mousecontrol الوسيط True/False"
+
+#: core/scenario.py:271
+msgid "Error on line %s. The %s plugin does not have a %s parameter"
+msgstr "خطأ في السطر %s. الإضافة %s لا تحتوي على المعامل %s"
+
+#: core/scenario.py:245
+msgid "Warning on line %s. Parameter (%s) has no verification method"
+msgstr "تحذير في السطر %s. المعامل (%s) ليس له طريقة تحقق"
+
+#: core/scenario.py:263
+msgid "Error on line %s. %s "
+msgstr "خطأ في السطر %s. %s "
+
+#: core/selector.py:128
+msgid "Select a scenario"
+msgstr "اختر سيناريو"
+
+#: core/selector.py:128
+msgid "Select a session"
+msgstr "اختر جلسة"
+
+#: core/selector.py:143
+msgid "Esc: Quit"
+msgstr "Esc: خروج"
+
+#: core/selector.py:50
+msgid "(empty)"
+msgstr "(فارغ)"
+
+#: core/selector.py:191
+msgid "No files found"
+msgstr "لم يتم العثور على ملفات"
+
+#: core/selector.py:143
+msgid "Enter: Select"
+msgstr "Enter: اختيار"
+
+#: core/selector.py:143
+msgid "UP/DOWN: Navigate"
+msgstr "أعلى/أسفل: تنقل"
+
+#: core/utils.py:113
+msgid "In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False"
+msgstr "في config.ini، يجب أن يكون المعامل [%s] قيمة منطقية (true أو false، وليس %s). القيمة الافتراضية: False"
+
+#: core/utils.py:123
+msgid "In config.ini, [%s] parameter must be an integer (not %s)"
+msgstr "في config.ini، يجب أن يكون المعامل [%s] عدداً صحيحاً (وليس %s)"
+
+#: core/utils.py:132
+msgid "In config.ini, [%s] parameter must be a float (not %s)"
+msgstr "في config.ini، يجب أن يكون المعامل [%s] عدداً عشرياً (وليس %s)"
+
+#: core/utils.py:142
+msgid "In config.ini, [%s] parameter must be a list of floats (not %s)"
+msgstr "في config.ini، يجب أن يكون المعامل [%s] قائمة أعداد عشرية (وليس %s)"
+
+#: core/utils.py:154
+msgid "In config.ini, the specified font is not available. A default font will be used."
+msgstr "الخط المحدد في config.ini غير متاح. سيتم استخدام خط افتراضي."
+
+#: core/validation.py:35
+msgid "should be a natural (0 included) integer (not %s)."
+msgstr "يجب أن يكون عدداً طبيعياً (بما في ذلك 0) (وليس %s)."
+
+#: core/validation.py:97
+msgid "should be a positive float (not %s)"
+msgstr "يجب أن يكون عدداً عشرياً موجباً (وليس %s)"
+
+#: core/validation.py:216
+msgid "should be a float between 0 and 1 (included) (not %s)"
+msgstr "يجب أن يكون عدداً عشرياً بين 0 و1 (ضمناً) (وليس %s)"
+
+#: core/validation.py:167 core/validation.py:163
+msgid "should be an acceptable joystick key value (not %s). See documentation."
+msgstr "يجب أن يكون زراً صالحاً لعصا التحكم (وليس %s). راجع الوثائق."
+
+#: core/validation.py:179
+msgid "should be an acceptable (keyboard or joystick) key value (not %s). See documentation."
+msgstr "يجب أن يكون مفتاحاً صالحاً (للوحة المفاتيح أو لعصا التحكم) (وليس %s). راجع الوثائق."
+
+#: core/validation.py:31
+msgid "should be a string (not %s)."
+msgstr "يجب أن يكون سلسلة نصية (وليس %s)."
+
+#: core/validation.py:52
+msgid "should be a positive (0 excluded) integer (not %s)."
+msgstr "يجب أن يكون عدداً صحيحاً موجباً (باستثناء 0) (وليس %s)."
+
+#: core/validation.py:130
+msgid "should be comprised in %s (not %s)"
+msgstr "يجب أن يكون ضمن %s (وليس %s)"
+
+#: core/validation.py:147
+msgid "should be an acceptable keyboard key value (not %s). See documentation."
+msgstr "يجب أن يكون مفتاحاً صالحاً للوحة المفاتيح (وليس %s). راجع الوثائق."
+
+#: core/validation.py:197
+msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
+msgstr "يجب أن يتكون من حروف [a-z] أو أرقام [0-9] (وليس %s في %s)"
+
+#: core/validation.py:212
+msgid "should be composed of valid callsigns (not %s)"
+msgstr "يجب أن يتكون من رموز نداء صالحة (وليس %s)"
+
+#: core/validation.py:235
+msgid "should be available either in the Instruction or Questionnaire folder (not %s)"
+msgstr "يجب أن يكون موجوداً في المجلد Instruction أو Questionnaire (وليس %s)"
+
+#: core/validation.py:61
+msgid "should be a boolean (not %s)."
+msgstr "يجب أن يكون قيمة منطقية (وليس %s)."
+
+#: core/validation.py:137
+msgid "should be a valid regex expression (not %s)"
+msgstr "يجب أن يكون تعبيراً نمطياً (regex) صالحاً (وليس %s)"
+
+#: core/validation.py:78
+msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
+msgstr "يجب أن تكون اسم لون (%s) أو قيم (R,G,B,a) أو قيمة سداسية عشرية (مثلاً #00ff00) (وليس %s)"
+
+#: core/validation.py:92
+msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
+msgstr "يجب أن تكون قيم (R,G,B,a) كل منها بين 0 و255 (وليس %s)"
+
+#: core/widgets/timeline.py:73
+msgid "min."
+msgstr "د"
+
+#: core/window.py:367
+msgid "You hit the Escape key"
+msgstr "لقد ضغطت على مفتاح Esc"
+
+#: core/window.py:372
+msgid "Pause"
+msgstr "إيقاف مؤقت"
+
+#: core/window.py:166
+msgid "Session ID: %s"
+msgstr "معرّف الجلسة: %s"
+
+#: core/window.py:367
+msgid "Exit OpenMATB?"
+msgstr "الخروج من OpenMATB؟"
+
+#: core/window.py:184
+msgid "In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected."
+msgstr "رقم الشاشة المحدد في config.ini يتجاوز عدد الشاشات المتاحة (%s). تم اختيار الشاشة الأخيرة."
+
+#: core/window.py:423
+msgid "Error. No placement found for the [%s] alias"
+msgstr "خطأ. لم يتم العثور على موضع للاسم المستعار [%s]"
+
+#: plugins/abstractplugin.py:292 plugins/abstractplugin.py:290
+msgid "MANUAL"
+msgstr "يدوي"
+
+#: plugins/communications.py:31
+msgid "Communications"
+msgstr "الاتصالات"
+
+#: plugins/communications.py:153
+msgid "Sound path %s does not exist. Check voiceidiom/voicegender combination."
+msgstr "مسار الصوت %s غير موجود. تحقق من تركيبة voiceidiom/voicegender."
+
+#: plugins/communications.py:203
+msgid "Callsign \t\t %s"
+msgstr "رمز النداء \t\t %s"
+
+#: plugins/communications.py:167
+msgid " does not exist"
+msgstr " غير موجود"
+
+#: plugins/genericscales.py:38
+msgid "Press SPACE to validate"
+msgstr "اضغط على مفتاح المسافة للتأكيد"
+
+#: plugins/generictrigger.py:15
+msgid "Generic Trigger"
+msgstr "مشغّل عام"
+
+#: plugins/instructions.py:26
+msgid "Press SPACE to continue"
+msgstr "اضغط على مفتاح المسافة للمتابعة"
+
+#: plugins/labstreaminglayer.py:41
+msgid "Please enable the OpenMATB stream into your LabRecorder."
+msgstr "يرجى تفعيل تدفق OpenMATB في LabRecorder."
+
+#: plugins/labstreaminglayer.py:53
+msgid "Lab streaming layer is not available in the browser without the LSL bridge (web_lsl_bridge in config.ini). No marker will be sent"
+msgstr "لا تتوفر Lab Streaming Layer في المتصفح دون جسر LSL (web_lsl_bridge في config.ini). لن يتم إرسال أي علامة"
+
+#: plugins/labstreaminglayer.py:60
+msgid "Python pylsl module is missing. No marker will be sent"
+msgstr "وحدة Python pylsl مفقودة. لن يتم إرسال أي علامة"
+
+#: plugins/parallelport.py:19
+msgid "Parallel port"
+msgstr "المنفذ المتوازي"
+
+#: plugins/parallelport.py:52
+msgid "Parallel port is not supported on macOS. Skipping parallel plugin."
+msgstr "المنفذ المتوازي غير مدعوم على macOS. تم تخطي الإضافة parallel."
+
+#: plugins/parallelport.py:41
+msgid "The parallel port is not available in the browser: set web_serial_trigger=True in config.ini to use a USB trigger box. Skipping parallel plugin"
+msgstr "المنفذ المتوازي غير متاح في المتصفح: اضبط web_serial_trigger=True في config.ini لاستخدام صندوق مشغّلات USB. تم تخطي الإضافة parallel"
+
+#: plugins/parallelport.py:61
+msgid "Python Parallel module is missing. On Windows, install pyparallel (pip install pyparallel) and the InpOut32 driver (provides simpleio.dll)."
+msgstr "وحدة Python Parallel مفقودة. على Windows، ثبّت pyparallel (pip install pyparallel) وبرنامج التشغيل InpOut32 (يوفر simpleio.dll)."
+
+#: plugins/parallelport.py:69
+msgid "Python Parallel module is missing. On Linux, install pyparallel (pip install pyparallel) and ensure the ppdev kernel module is loaded."
+msgstr "وحدة Python Parallel مفقودة. على Linux، ثبّت pyparallel (pip install pyparallel) وتأكد من تحميل وحدة النواة ppdev."
+
+#: plugins/parallelport.py:83
+msgid "Parallel port not found. Ensure the InpOut32 driver is installed (provides simpleio.dll) and that a physical parallel port is available."
+msgstr "لم يتم العثور على المنفذ المتوازي. تأكد من تثبيت برنامج التشغيل InpOut32 (يوفر simpleio.dll) ومن توفر منفذ متوازٍ فعلي."
+
+#: plugins/parallelport.py:91
+msgid "Parallel port not found. Ensure /dev/parport0 exists and you have read/write permissions (try: sudo chmod 666 /dev/parport0)."
+msgstr "لم يتم العثور على المنفذ المتوازي. تأكد من وجود /dev/parport0 ومن امتلاكك صلاحيات القراءة والكتابة (جرّب: sudo chmod 666 /dev/parport0)."
+
+#: plugins/parallelport.py:99
+msgid "Parallel port error: {error}"
+msgstr "خطأ في المنفذ المتوازي: {error}"
+
+#: plugins/performance.py:18
+msgid "Performance"
+msgstr "الأداء"
+
+#: plugins/resman.py:23
+msgid "Resources management"
+msgstr "إدارة الموارد"
+
+#: plugins/resman.py:189
+msgid "Pump status"
+msgstr "حالة المضخات"
+
+#: plugins/scheduling.py:19
+msgid "Scheduling"
+msgstr "الجدولة"
+
+#: plugins/scheduling.py:149
+msgid "Elapsed time \t %s"
+msgstr "الوقت المنقضي \t %s"
+
+#: plugins/scheduling.py:156
+msgid "Remaining time \t %s"
+msgstr "الوقت المتبقي \t %s"
+
+#: plugins/sysmon.py:21
+msgid "System monitoring"
+msgstr "مراقبة النظام"
+
+#: plugins/track.py:26
+msgid "Tracking"
+msgstr "التتبع"
+
+#: plugins/scheduling.py:44
+msgid "Lab streaming layer"
+msgstr "Lab Streaming Layer"
+
+#: plugins/scheduling.py:44
+msgid "Instructions"
+msgstr "التعليمات"
+
+#: plugins/scheduling.py:44
+msgid "Generic scales"
+msgstr "مقاييس عامة"
+
+#: core/modaldialog.py:70
+msgid "Space"
+msgstr "المسافة"
+
+#: core/modaldialog.py:63
+msgid "Escape"
+msgstr "Esc"
+
+#: plugins/abstractplugin.py:287
+msgid "AUTO"
+msgstr "تلقائي"

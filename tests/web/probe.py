@@ -10,11 +10,14 @@ state() returns everything as JSON.
 
 import gettext
 import json
+from urllib.parse import parse_qs
 
 import js
 
-# main.py installs the translation before importing core modules: do the same to import them first
-gettext.translation("openmatb", "locales", ["en_EN"], fallback=True).install()
+# main.py installs the translation (?lang= of the page) before importing core modules: do the same to import them
+# first (their texts are translated when imported)
+LANGUAGE: str = parse_qs(str(js.window.location.search).lstrip("?")).get("lang", ["en_EN"])[-1]
+gettext.translation("openmatb", "locales", [LANGUAGE], fallback=True).install()
 
 import pyglet.app  # noqa: E402
 import pyglet.window.key  # noqa: E402

@@ -11,6 +11,7 @@ The session files are in OUT_DIR/sessions. The dialogs are answered with Space, 
 (RESPONSE_DELAY after they appear). At SCREENSHOT_AT seconds, the window is captured to OUT_DIR/screenshot_run.png
 (or _replay). OUT_DIR/result_run.json (or _replay) gives the pyglet version, the last session file, the number of
 colors of the screenshot, the keys answered, and what the tasks gave (sysmon responses, pump states).
+With OPENMATB_TEST_LANGUAGE=xx_XX, OpenMATB runs in this language (instead of the one of config.ini).
 """
 
 from __future__ import annotations
@@ -40,7 +41,16 @@ import pyglet  # noqa: E402
 gettext.translation("openmatb", "locales", ["en_EN"], fallback=True).install()
 
 import core.scheduler  # noqa: E402
-from core import pyglet_compat  # noqa: E402
+from core import bidi, pyglet_compat  # noqa: E402
+
+# OPENMATB_TEST_LANGUAGE=ar_SA: main.py runs in this language instead of the one of config.ini
+LANGUAGE: str | None = os.environ.get("OPENMATB_TEST_LANGUAGE")
+if LANGUAGE:
+    _translation, _set_language = gettext.translation, bidi.set_language
+    gettext.translation = lambda domain, localedir, languages, **kwargs: _translation(
+        domain, localedir, [LANGUAGE], **kwargs
+    )
+    bidi.set_language = lambda language_iso: _set_language(LANGUAGE)
 from core.constants import CONFIG, PATHS  # noqa: E402
 
 CONFIG["Openmatb"]["display_session_number"] = "False"

@@ -91,8 +91,15 @@ CMI5_COURSE_ID: str = "https://github.com/juliencegarra/OpenMATB/cmi5/course"
 CMI5_AU_ID: str = "https://github.com/juliencegarra/OpenMATB/cmi5/au"
 CMI5_NAMESPACE: str = "https://w3id.org/xapi/profiles/cmi5/v1/CourseStructure.xsd"
 
-# Browsers have no common sans-serif font name that pyglet can use: ship one (SIL Open Font License)
-FONT_URL: str = "https://cdn.jsdelivr.net/npm/@fontsource/noto-sans@5.3.0/files/noto-sans-latin-{weight}-normal.woff2"
+# Browsers have no common sans-serif font name that pyglet can use: ship one (SIL Open Font License). Its Arabic and
+# Hebrew versions join the same font family for their characters (web/openmatb.js): the shaped Arabic letters of
+# core.bidi are presentation forms, which not all system fonts have
+FONT_CDN: str = "https://cdn.jsdelivr.net/npm/@fontsource"
+FONTS: dict[str, str] = {  # File name in dist/fonts: path in the CDN, without "-{weight}-normal.woff2"
+    "noto-sans": "noto-sans@5.3.0/files/noto-sans-latin",
+    "noto-sans-arabic": "noto-sans-arabic@5.3.0/files/noto-sans-arabic-arabic",
+    "noto-sans-hebrew": "noto-sans-hebrew@5.3.0/files/noto-sans-hebrew-hebrew",
+}
 FONT_WEIGHTS: tuple[int, ...] = (400, 700)
 
 # Application files packed into app.zip, then extracted into the Pyodide file system
@@ -152,9 +159,10 @@ def copy_pyglet_bridge() -> None:
 def download_fonts() -> None:
     fonts_dir: Path = DIST / "fonts"
     fonts_dir.mkdir(parents=True, exist_ok=True)
-    for weight in FONT_WEIGHTS:
-        with urllib.request.urlopen(FONT_URL.format(weight=weight)) as response:
-            (fonts_dir / f"noto-sans-{weight}.woff2").write_bytes(response.read())
+    for name, path in FONTS.items():
+        for weight in FONT_WEIGHTS:
+            with urllib.request.urlopen(f"{FONT_CDN}/{path}-{weight}-normal.woff2") as response:
+                (fonts_dir / f"{name}-{weight}.woff2").write_bytes(response.read())
 
 
 def download(url: str, path: Path) -> None:

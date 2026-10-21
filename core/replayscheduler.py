@@ -260,7 +260,7 @@ class ReplayScheduler(Scheduler):
         key_container: Container = input_container.reduce_and_translate(width=0.9, height=0.66, y=0, x=0.5)
         # The text is centered in its area: keep the lines that fit in it (about 24 px each), whatever the screen
         self._max_keys_history: int = max(5, int(key_container.h / 24) - 1)
-        self.key_widget: SimpleHTML = SimpleHTML("replay_keys", key_container, "<strong>Keyboard history:\n</strong>")
+        self.key_widget: SimpleHTML = SimpleHTML("replay_keys", key_container, self.keys_history_html())
         self.key_widget.show()
 
     def set_media_buttons(self) -> None:
@@ -631,8 +631,10 @@ class ReplayScheduler(Scheduler):
                 if len(self.keys_history) > getattr(self, "_max_keys_history", 30):
                     del self.keys_history[0]
 
-        history_str: str = "<strong>Keyboard history:\n</strong>" + "<br>".join(self.keys_history)
-        self.key_widget.set_text(history_str)
+        self.key_widget.set_text(self.keys_history_html())
+
+    def keys_history_html(self) -> str:
+        return "<strong>%s\n</strong>" % _("Keyboard history:") + "<br>".join(self.keys_history)
 
     def _rows_to_read(self, name: str, logtimes: list[float]) -> range:
         """The indices of the rows not read yet, up to the replay time. Not only those of the last CLOCK_STEP: a
@@ -761,14 +763,14 @@ class ReplayScheduler(Scheduler):
             if self._pointer_marker.visible != visible:
                 self._pointer_marker.visible = visible
 
-        label: str = "Mouse: "
+        label: str = _("Mouse:") + " "
         if self._last_mouse_x is not None and self._last_mouse_y is not None:
             label += f"{self._last_mouse_x}, {self._last_mouse_y}"
         else:
             label += "--"
 
         if self._click_held:
-            label += " [held]"
+            label += " [%s]" % _("held")
 
         self.mouse_label.set_text(label)
 

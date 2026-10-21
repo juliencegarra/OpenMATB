@@ -1,6 +1,4 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR ORGANIZATION
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# OpenMATB translations (see locales/build.py).
 #
 msgid ""
 msgstr ""
@@ -20,590 +18,414 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: locales\n"
 
-#: core/constants.py:37
-msgid "System monitoring"
-msgstr "Surveillance"
-
-#: core/constants.py:38
-msgid "Tracking"
-msgstr "Poursuite"
-
-#: core/constants.py:39
-msgid "Scheduling"
-msgstr "Planning"
-
-#: core/constants.py:40
-msgid "Communications"
-msgstr "Communications"
-
-#: core/constants.py:41
-msgid "Resources management"
-msgstr "Gestion des ressources"
-
-#: core/constants.py:42
-msgid "Parallel port"
-msgstr "Port parallèle"
-
-#: core/constants.py:43
-msgid "Lab streaming layer"
-msgstr "Lab streaming layer"
-
-#: core/constants.py:44
-msgid "Instructions"
-msgstr "Instructions"
-
-#: core/constants.py:45
-msgid "Generic scales"
-msgstr "Échelle de base"
-
-#: core/constants.py:46
-msgid "Eye tracker"
-msgstr "Oculomètre"
-
-#: core/constants.py:47
-msgid "Performance"
-msgstr "Performance"
-
-#: core/constants.py:22
+#: core/constants.py:24
 msgid "Path to a scenario file (.txt) to launch directly"
 msgstr "Chemin vers un fichier scénario (.txt) à lancer directement"
 
-#: core/constants.py:31
+#: core/constants.py:33
 msgid "Launch in replay mode (optional: session path)"
 msgstr "Lancer en mode replay (optionnel : chemin de session)"
 
-#: core/constants.py:37
+#: core/constants.py:39
 msgid "Skip dialog boxes (session, non-fatal errors, questionnaires, instructions)"
 msgstr "Passer les boîtes de dialogue (session, erreurs non fatales, questionnaires, instructions)"
 
-#: core/error.py:21
+#: core/error.py:48
 msgid "Warning"
 msgstr "Attention"
 
-#: core/error.py:21
+#: core/error.py:48
 msgid "Error(s)"
 msgstr "Erreur(s)"
 
-#: core/logger.py:130
-msgid "Warning, queue is empty"
-msgstr "Attention, la file d'attente est vide"
-
-#: core/modaldialog.py:16
-msgid "Space"
-msgstr "Espace"
-
-#: core/modaldialog.py:17
-msgid "Escape"
-msgstr "Échap"
-
-#: core/modaldialog.py:51
-msgid "Exit"
-msgstr "Quitter"
-
-#: core/modaldialog.py:58
-msgid "Continue"
-msgstr "Continuer"
-
-#: core/scenario.py:82
-#, python-format
-msgid "%s was not found"
-msgstr "%s n'est pas disponible"
-
-#: core/scenario.py:98
-#, python-format
-msgid "Scenario error: %s is not a valid plugin name (l. %s)"
-msgstr "Erreur du scénario: %s n'est pas le nom d'un plugin (l. %s)"
-
-#: core/scenario.py:105
-#, python-format
-msgid "Line %s: '%s' is deprecated and will be ignored"
-msgstr "Ligne %s : '%s' est obsolète et sera ignoré"
-
-#: core/scenario.py:112
-msgid "No error"
-msgstr "Aucune erreur"
-
-#: core/scenario.py:116
-#, python-format
-msgid "There were some errors in the scenario. See the %s file."
-msgstr "Le scénario contient des erreurs. Voir le fichier suivant : %s."
-
-#: core/scenario.py:184
-#, python-format
-msgid "The (%s) plugin does not have a start command."
-msgstr "Le plugin (%s) n'a pas de commande start."
-
-#: core/scenario.py:188
-#, python-format
-msgid "The (%s) plugin does not have a stop command."
-msgstr "Le plugin (%s) n'a pas de commande stop."
-
-#: core/scenario.py:197
-#, python-format
-msgid "Error on line %s. This event does not trigger any command."
-msgstr "Erreur à la ligne %s. Cet évènement n'est associé à aucune commande."
-
-#: core/scenario.py:201
-#, python-format
-msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
-msgstr ""
-"Erreur à la ligne %s. Un évènement ne peut avoir plus de deux arguments "
-"(paramètre;valeur)."
-
-#: core/scenario.py:208
-#, python-format
-msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
-msgstr ""
-"Erreur à la ligne %s. La méthode (%s) n'est pas disponible pour ce plugin "
-"(%s)"
-
-#: core/scenario.py:225
-#, python-format
-msgid "Warning on line %s. Parameter (%s) has no verification method"
-msgstr ""
-"Erreur à la ligne %s. Le paramètre (%s) n'a pas de méthode de vérification"
-
-#: core/scenario.py:243
-#, python-format
-msgid "Error on line %s. %s "
-msgstr "Erreur à la ligne %s. %s "
-
-#: core/scenario.py:250
-#, python-format
-msgid "Error on line %s. The %s plugin does not have a %s parameter"
-msgstr "Erreur à la ligne %s. Le plugin %s ne comporte pas de paramètre %s"
-
-#: core/scenario.py:270
-#, python-format
-msgid "should be a string (not %s)."
-msgstr "devrait être une chaîne de caractères (et non %s)."
-
-#: core/scenario.py:274
-#, python-format
-msgid "should be a natural (0 included) integer (not %s)."
-msgstr "devrait être un entier naturel (0 inclus, et non %s)."
-
-#: core/scenario.py:291
-#, python-format
-msgid "should be a positive (0 excluded) integer (not %s)."
-msgstr "devrait être un entier positif (0 exclus, et non %s)."
-
-#: core/scenario.py:298
-#, python-format
-msgid "should be a boolean (not %s)."
-msgstr "devrait être un booléen (et non %s)."
-
-#: core/scenario.py:314
-#, python-format
-msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
-msgstr ""
-"devrait être un nom de couleur (%s), une valeur (R,G,B,a) ou hexadécimale "
-"(p.ex., #00ff00) (non pas %s)."
-
-#: core/scenario.py:320
-#, python-format
-msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
-msgstr "devraient être des valeurs (R,G,B,a) comprises en 0 et 255 (et non %s)"
-
-#: core/scenario.py:325
-#, python-format
-msgid "should be a positive float (not %s)"
-msgstr "devrait être un nombre décimal positif (et non %s)."
-
-#: core/scenario.py:360
-#, python-format
-msgid "should be comprised in %s (not %s)"
-msgstr "devrait être compris dans %s (et non %s)"
-
-#: core/scenario.py:367
-#, python-format
-msgid "should be a valid regex expression (not %s)"
-msgstr "devrait être une expression régulière (regex) valide (et non %s)"
-
-#: core/scenario.py:377
-#, python-format
-msgid "should be an acceptable keyboard key value (not %s). See documentation."
-msgstr ""
-"devrait être une touche de clavier acceptable (et non %s). Voir la "
-"documentation."
-
-#: core/scenario.py:393
-#, python-format
-msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
-msgstr ""
-"devrait n'être composé que de lettres [a-z] et de chiffres [0-9] (et non %s "
-"dans %s)"
-
-#: core/scenario.py:408
-#, python-format
-msgid "should be composed of valid callsigns (not %s)"
-msgstr "devrait être composé d'identifiants valides (et non %s)"
-
-#: core/scenario.py:412
-#, python-format
-msgid "should be a float between 0 and 1 (included) (not %s)"
-msgstr "devrait être un nombre décimal compris entre 0 et 1 inclus (et non %s)"
-
-#: core/scenario.py:431
-#, python-format
-msgid ""
-"should be available either in the Instruction or Questionnaire folder (not "
-"%s)"
-msgstr ""
-"devrait être disponible dans le dossier Instruction ou Questionnaire (%s)"
-
-#: core/scheduler.py:66
-#, python-format
-msgid "Session ID: %s"
-msgstr "Identifiant unique de la session : %s"
-
-#: core/widgets/timeline.py:33
-msgid "min."
-msgstr "min."
-
-#: core/window.py:35
-#, python-format
-msgid ""
-"In config.ini, the specified screen index exceeds the number of available "
-"screens (%s). Last screen selected."
-msgstr ""
-"Dans config.ini le numéro d'écran indiqué dépasse le nombre d'écrans "
-"disponibles (%s). Dernier écran sélectionné."
-
-#: core/window.py:45
-msgid ""
-"In config.ini, the specified font is not available. A default font will be "
-"used."
-msgstr ""
-"Dans config.ini, la police spécifiée n'est pas disponible. Une police par "
-"défaut sera utilisée."
-
-#: core/window.py:166
-msgid "You hit the Escape key"
-msgstr "Vous avez pressé la touche Échap"
-
-#: core/window.py:166
-msgid "Exit OpenMATB?"
-msgstr "Quitter OpenMATB ?"
-
-#: core/window.py:170
-msgid "Pause"
-msgstr "Pause"
-
-#: core/window.py:209
-#, python-format
-msgid "Error. No placement found for the [%s] alias"
-msgstr "Erreur. Aucune localisation trouvée pour l'alias (%s)"
-
-#: main.py:37
-#, python-format
-msgid ""
-"In config.ini, [%s] parameter must be a boolean (true or false, not %s). "
-"Defaulting to False"
-msgstr ""
-"Dans config.ini, le paramètre [%s] doit être un bolléen (true ou false, non "
-"pas %s). Défaut = False"
-
-#: plugins/abstract.py:196 plugins/abstract.py:198
-msgid "MANUAL"
-msgstr "MANUEL"
-
-#: plugins/abstract.py:196
-msgid "AUTO"
-msgstr "AUTO"
-
-#: plugins/communications.py:62
-msgid " does not exist"
-msgstr " n'existe pas"
-
-#: plugins/communications.py:81
-#, python-format
-msgid "Callsign \t\t %s"
-msgstr "Indicatif \t\t %s"
-
-#: plugins/genericscales.py:17
-msgid "Press SPACE to validate"
-msgstr "Appuyez sur ESPACE pour valider"
-
-#: plugins/instructions.py:15
-msgid "Press SPACE to continue"
-msgstr "Appuyez sur ESPACE pour continuer"
-
-#: plugins/labstreaminglayer.py:23
-msgid "Please enable the OpenMATB stream into your LabRecorder."
-msgstr "Merci d’activer le flux OpenMATB dans le LabRecorder."
-
-#: plugins/parallelport.py
-msgid "Parallel port is not supported on macOS. Skipping parallel plugin."
-msgstr "Le port parallèle n'est pas supporté sur macOS. Plugin ignoré."
-
-#: plugins/parallelport.py
-msgid ""
-"Python Parallel module is missing. On Windows, install pyparallel (pip "
-"install pyparallel) and the InpOut32 driver (provides simpleio.dll)."
-msgstr ""
-"La librairie Python Parallel est manquante. Sous Windows, installez "
-"pyparallel (pip install pyparallel) et le pilote InpOut32 (fournit "
-"simpleio.dll)."
-
-#: plugins/parallelport.py
-msgid ""
-"Python Parallel module is missing. On Linux, install pyparallel (pip install "
-"pyparallel) and ensure the ppdev kernel module is loaded."
-msgstr ""
-"La librairie Python Parallel est manquante. Sous Linux, installez "
-"pyparallel (pip install pyparallel) et assurez-vous que le module noyau "
-"ppdev est chargé."
-
-#: plugins/parallelport.py
-msgid ""
-"Parallel port not found. Ensure the InpOut32 driver is installed (provides "
-"simpleio.dll) and that a physical parallel port is available."
-msgstr ""
-"Port parallèle non trouvé. Vérifiez que le pilote InpOut32 est installé "
-"(fournit simpleio.dll) et qu'un port parallèle physique est disponible."
-
-#: plugins/parallelport.py
-msgid ""
-"Parallel port not found. Ensure /dev/parport0 exists and you have read/write "
-"permissions (try: sudo chmod 666 /dev/parport0)."
-msgstr ""
-"Port parallèle non trouvé. Vérifiez que /dev/parport0 existe et que vous "
-"avez les droits de lecture/écriture (essayez : sudo chmod 666 "
-"/dev/parport0)."
-
-#: plugins/parallelport.py
-#, python-brace-format
-msgid "Parallel port error: {error}"
-msgstr "Erreur du port parallèle : {error}"
-
-#: core/selector.py
-msgid "Select a scenario"
-msgstr "Choisissez un scénario"
-
-#: core/selector.py
-msgid "Select a session"
-msgstr "Choisissez une session"
-
-#: core/selector.py
-msgid "UP/DOWN: Navigate"
-msgstr "HAUT/BAS : naviguer"
-
-#: core/selector.py
-msgid "Enter: Select"
-msgstr "Entrée : choisir"
-
-#: core/selector.py
-msgid "Esc: Quit"
-msgstr "Échap : quitter"
-
-#: core/selector.py
-msgid "No files found"
-msgstr "Aucun fichier trouvé"
-
-#: core/selector.py
-msgid "(empty)"
-msgstr "(vide)"
-
-msgid "The parallel port is not available in the browser: set web_serial_trigger=True in config.ini to use a USB trigger box. Skipping parallel plugin"
-msgstr "Le port parallèle n'est pas disponible dans le navigateur : indiquez web_serial_trigger=True dans config.ini pour utiliser un boîtier de triggers USB. Plugin ignoré"
-
-msgid "Lab streaming layer is not available in the browser without the LSL bridge (web_lsl_bridge in config.ini). No marker will be sent"
-msgstr "Lab Streaming Layer n'est pas disponible dans le navigateur sans le pont LSL (web_lsl_bridge dans config.ini). Aucun marqueur ne sera envoyé"
-
-msgid "Python pylsl module is missing. No marker will be sent"
-msgstr "La librairie pylsl de python est manquante. Aucun marqueur ne sera envoyé"
-
-#: plugins/resman.py:114
-msgid "Pump status"
-msgstr "État des pompes"
-
-#: plugins/scheduling.py:131
-#, python-format
-msgid "Elapsed time \t %s"
-msgstr "Temps passé \t %s"
-
-#: plugins/scheduling.py:140
-#, python-format
-msgid "Remaining time \t %s"
-msgstr "Temps restant \t %s"
-
-#: plugins/track.py:41
+#: core/joystick.py:171
 msgid "No joystick found"
 msgstr "Aucun joystick détecté"
 
-#: replay.py:45
-msgid ""
-"In config.ini, screen index must be an integer, not {config['Openmatb']"
-"['screen_index']}"
-msgstr ""
-"Dans config.ini, le numéro de l'écran (screen_index) doit être un entier, et "
-"non pas {config['Openmatb']['screen_index']}"
+#: core/logger.py:168
+msgid "Warning, queue is empty"
+msgstr "Attention, la file d'attente est vide"
 
-#: core/logreader.py:48
-#, python-format
+#: core/logreader.py:49
 msgid "The desired session file (ID=%s) does not exist"
 msgstr "Le fichier de session souhaité (ID=%s) n'existe pas"
 
-#: core/logreader.py:52
-#, python-format
+#: core/logreader.py:53
 msgid "Multiple session files match the desired session ID (%s)"
 msgstr "Plusieurs fichiers de session correspondent à l'identifiant souhaité (%s)"
 
-#: core/scenario.py:190
-#, python-format
+#: core/modaldialog.py:64
+msgid "Exit"
+msgstr "Quitter"
+
+#: core/modaldialog.py:71
+msgid "Continue"
+msgstr "Continuer"
+
+#: core/replayscheduler.py:766
+msgid "Mouse:"
+msgstr "Souris :"
+
+#: core/replayscheduler.py:236
+msgid "Page hidden (tab change or minimized window): session paused"
+msgstr "Page masquée (changement d'onglet ou fenêtre réduite) : session en pause"
+
+#: core/replayscheduler.py:238
+msgid "Session paused (pause dialog after the page was hidden)"
+msgstr "Session en pause (fenêtre de pause après le masquage de la page)"
+
+#: core/replayscheduler.py:637
+msgid "Keyboard history:"
+msgstr "Historique du clavier :"
+
+#: core/replayscheduler.py:773
+msgid "held"
+msgstr "maintenu"
+
+#: core/scenario.py:91
+msgid "No error"
+msgstr "Aucune erreur"
+
+#: core/scenario.py:95
+msgid "There were some errors in the scenario. See the %s file."
+msgstr "Le scénario contient des erreurs. Voir le fichier suivant : %s."
+
+#: core/scenario.py:48
+msgid "%s was not found"
+msgstr "%s n'est pas disponible"
+
+#: core/scenario.py:76
+msgid "Scenario error: %s is not a valid plugin name (l. %s)"
+msgstr "Erreur du scénario: %s n'est pas le nom d'un plugin (l. %s)"
+
+#: core/scenario.py:118
+msgid "Line %s: '%s' is deprecated and will be ignored"
+msgstr "Ligne %s : '%s' est obsolète et sera ignoré"
+
+#: core/scenario.py:166
+msgid "The (%s) plugin does not have a start command."
+msgstr "Le plugin (%s) n'a pas de commande start."
+
+#: core/scenario.py:213
+msgid "Error on line %s. This event does not trigger any command."
+msgstr "Erreur à la ligne %s. Cet évènement n'est associé à aucune commande."
+
+#: core/scenario.py:60
+msgid "Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)"
+msgstr "Erreur de scénario : la ligne %s n'est pas au format H:MM:SS;plugin;commande (%s)"
+
+#: core/scenario.py:197 core/scenario.py:208
 msgid "Error on line %s. Invalid system command: %s"
 msgstr "Erreur à la ligne %s. Commande système invalide : %s"
 
-#: core/scenario.py:192
-#, python-format
+#: core/scenario.py:217
+msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
+msgstr "Erreur à la ligne %s. Un évènement ne peut avoir plus de deux arguments (paramètre;valeur)."
+
+#: core/scenario.py:173
+msgid "The (%s) plugin does not have a stop command."
+msgstr "Le plugin (%s) n'a pas de commande stop."
+
+#: core/scenario.py:199
 msgid "Error on line %s. Agent command requires a name argument"
 msgstr "Erreur à la ligne %s. La commande agent nécessite un argument de nom"
 
-#: core/scenario.py:200
-#, python-format
+#: core/scenario.py:189
+msgid "The (%s) plugin has a start command without a preceding filename command."
+msgstr "Le plugin (%s) a une commande start sans commande filename la précédant."
+
+#: core/scenario.py:202
 msgid "Error on line %s. Unknown agent: %s"
 msgstr "Erreur à la ligne %s. Agent inconnu : %s"
 
-#: core/scenario.py:60
-#, python-format
-msgid "Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)"
-msgstr ""
-"Erreur de scénario : la ligne %s n'est pas au format H:MM:SS;plugin;commande "
-"(%s)"
+#: core/scenario.py:224
+msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
+msgstr "Erreur à la ligne %s. La méthode (%s) n'est pas disponible pour ce plugin (%s)"
 
-#: core/scenario.py:187
-#, python-format
-msgid "The (%s) plugin has a start command without a preceding filename command."
-msgstr ""
-"Le plugin (%s) a une commande start sans commande filename la précédant."
-
-#: core/scenario.py:194
-#, python-format
+#: core/scenario.py:206
 msgid "Error on line %s. mousecontrol command requires True/False argument"
 msgstr "Erreur à la ligne %s. La commande mousecontrol nécessite un argument True/False"
 
-#: core/selector.py:178
+#: core/scenario.py:271
+msgid "Error on line %s. The %s plugin does not have a %s parameter"
+msgstr "Erreur à la ligne %s. Le plugin %s ne comporte pas de paramètre %s"
+
+#: core/scenario.py:245
+msgid "Warning on line %s. Parameter (%s) has no verification method"
+msgstr "Erreur à la ligne %s. Le paramètre (%s) n'a pas de méthode de vérification"
+
+#: core/scenario.py:263
+msgid "Error on line %s. %s "
+msgstr "Erreur à la ligne %s. %s "
+
+#: core/selector.py:128
+msgid "Select a scenario"
+msgstr "Choisissez un scénario"
+
+#: core/selector.py:128
+msgid "Select a session"
+msgstr "Choisissez une session"
+
+#: core/selector.py:143
+msgid "Esc: Quit"
+msgstr "Échap : quitter"
+
+#: core/selector.py:50
+msgid "(empty)"
+msgstr "(vide)"
+
+#: core/selector.py:191
 msgid "No files found"
 msgstr "Aucun fichier trouvé"
 
-#: core/utils.py:79
-#, python-format
+#: core/selector.py:143
+msgid "Enter: Select"
+msgstr "Entrée : choisir"
+
+#: core/selector.py:143
+msgid "UP/DOWN: Navigate"
+msgstr "HAUT/BAS : naviguer"
+
+#: core/utils.py:113
+msgid "In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False"
+msgstr "Dans config.ini, le paramètre [%s] doit être un bolléen (true ou false, non pas %s). Défaut = False"
+
+#: core/utils.py:123
 msgid "In config.ini, [%s] parameter must be an integer (not %s)"
 msgstr "Dans config.ini, le paramètre [%s] doit être un entier (et non %s)"
 
-#: core/utils.py:88
-#, python-format
+#: core/utils.py:132
 msgid "In config.ini, [%s] parameter must be a float (not %s)"
 msgstr "Dans config.ini, le paramètre [%s] doit être un flottant (et non %s)"
 
-#: core/utils.py:98
-#, python-format
+#: core/utils.py:142
 msgid "In config.ini, [%s] parameter must be a list of floats (not %s)"
 msgstr "Dans config.ini, le paramètre [%s] doit être une liste de flottants (et non %s)"
 
-#: core/validation.py:148
-#, python-format
+#: core/utils.py:154
+msgid "In config.ini, the specified font is not available. A default font will be used."
+msgstr "Dans config.ini, la police spécifiée n'est pas disponible. Une police par défaut sera utilisée."
+
+#: core/validation.py:35
+msgid "should be a natural (0 included) integer (not %s)."
+msgstr "devrait être un entier naturel (0 inclus, et non %s)."
+
+#: core/validation.py:97
+msgid "should be a positive float (not %s)"
+msgstr "devrait être un nombre décimal positif (et non %s)."
+
+#: core/validation.py:216
+msgid "should be a float between 0 and 1 (included) (not %s)"
+msgstr "devrait être un nombre décimal compris entre 0 et 1 inclus (et non %s)"
+
+#: core/validation.py:167 core/validation.py:163
 msgid "should be an acceptable joystick key value (not %s). See documentation."
 msgstr "devrait être une touche de joystick acceptable (et non %s). Voir la documentation."
 
-#: core/validation.py:161
-#, python-format
-msgid ""
-"should be an acceptable (keyboard or joystick) key value (not %s). See "
-"documentation."
-msgstr ""
-"devrait être une touche (clavier ou joystick) acceptable (et non %s). Voir "
-"la documentation."
+#: core/validation.py:179
+msgid "should be an acceptable (keyboard or joystick) key value (not %s). See documentation."
+msgstr "devrait être une touche (clavier ou joystick) acceptable (et non %s). Voir la documentation."
 
-#: plugins/communications.py:150
-#, python-format
-msgid ""
-"Sound path %s does not exist. Check voiceidiom/voicegender combination."
-msgstr ""
-"Le chemin audio %s n'existe pas. Vérifiez la combinaison "
-"voiceidiom/voicegender."
+#: core/validation.py:31
+msgid "should be a string (not %s)."
+msgstr "devrait être une chaîne de caractères (et non %s)."
+
+#: core/validation.py:52
+msgid "should be a positive (0 excluded) integer (not %s)."
+msgstr "devrait être un entier positif (0 exclus, et non %s)."
+
+#: core/validation.py:130
+msgid "should be comprised in %s (not %s)"
+msgstr "devrait être compris dans %s (et non %s)"
+
+#: core/validation.py:147
+msgid "should be an acceptable keyboard key value (not %s). See documentation."
+msgstr "devrait être une touche de clavier acceptable (et non %s). Voir la documentation."
+
+#: core/validation.py:197
+msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
+msgstr "devrait n'être composé que de lettres [a-z] et de chiffres [0-9] (et non %s dans %s)"
+
+#: core/validation.py:212
+msgid "should be composed of valid callsigns (not %s)"
+msgstr "devrait être composé d'identifiants valides (et non %s)"
+
+#: core/validation.py:235
+msgid "should be available either in the Instruction or Questionnaire folder (not %s)"
+msgstr "devrait être disponible dans le dossier Instruction ou Questionnaire (%s)"
+
+#: core/validation.py:61
+msgid "should be a boolean (not %s)."
+msgstr "devrait être un booléen (et non %s)."
+
+#: core/validation.py:137
+msgid "should be a valid regex expression (not %s)"
+msgstr "devrait être une expression régulière (regex) valide (et non %s)"
+
+#: core/validation.py:78
+msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
+msgstr "devrait être un nom de couleur (%s), une valeur (R,G,B,a) ou hexadécimale (p.ex., #00ff00) (non pas %s)."
+
+#: core/validation.py:92
+msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
+msgstr "devraient être des valeurs (R,G,B,a) comprises en 0 et 255 (et non %s)"
+
+#: core/widgets/timeline.py:73
+msgid "min."
+msgstr "min."
+
+#: core/window.py:367
+msgid "You hit the Escape key"
+msgstr "Vous avez pressé la touche Échap"
+
+#: core/window.py:372
+msgid "Pause"
+msgstr "Pause"
+
+#: core/window.py:166
+msgid "Session ID: %s"
+msgstr "Identifiant unique de la session : %s"
+
+#: core/window.py:367
+msgid "Exit OpenMATB?"
+msgstr "Quitter OpenMATB ?"
+
+#: core/window.py:184
+msgid "In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected."
+msgstr "Dans config.ini le numéro d'écran indiqué dépasse le nombre d'écrans disponibles (%s). Dernier écran sélectionné."
+
+#: core/window.py:423
+msgid "Error. No placement found for the [%s] alias"
+msgstr "Erreur. Aucune localisation trouvée pour l'alias (%s)"
+
+#: plugins/abstractplugin.py:292 plugins/abstractplugin.py:290
+msgid "MANUAL"
+msgstr "MANUEL"
+
+#: plugins/communications.py:31
+msgid "Communications"
+msgstr "Communications"
+
+#: plugins/communications.py:153
+msgid "Sound path %s does not exist. Check voiceidiom/voicegender combination."
+msgstr "Le chemin audio %s n'existe pas. Vérifiez la combinaison voiceidiom/voicegender."
+
+#: plugins/communications.py:203
+msgid "Callsign \t\t %s"
+msgstr "Indicatif \t\t %s"
+
+#: plugins/communications.py:167
+msgid " does not exist"
+msgstr " n'existe pas"
+
+#: plugins/genericscales.py:38
+msgid "Press SPACE to validate"
+msgstr "Appuyez sur ESPACE pour valider"
 
 #: plugins/generictrigger.py:15
 msgid "Generic Trigger"
 msgstr "Déclencheur générique"
 
-#: core/replayscheduler.py
-msgid "Page hidden (tab change or minimized window): session paused"
-msgstr "Page masquée (changement d'onglet ou fenêtre réduite) : session en pause"
+#: plugins/instructions.py:26
+msgid "Press SPACE to continue"
+msgstr "Appuyez sur ESPACE pour continuer"
 
-#: core/replayscheduler.py
-msgid "Session paused (pause dialog after the page was hidden)"
-msgstr "Session en pause (fenêtre de pause après le masquage de la page)"
+#: plugins/labstreaminglayer.py:41
+msgid "Please enable the OpenMATB stream into your LabRecorder."
+msgstr "Merci d’activer le flux OpenMATB dans le LabRecorder."
 
-#~ msgid "Press any key to exit"
-#~ msgstr "Appuyez sur n’importe quelle touche pour sortir"
+#: plugins/labstreaminglayer.py:53
+msgid "Lab streaming layer is not available in the browser without the LSL bridge (web_lsl_bridge in config.ini). No marker will be sent"
+msgstr "Lab Streaming Layer n'est pas disponible dans le navigateur sans le pont LSL (web_lsl_bridge dans config.ini). Aucun marqueur ne sera envoyé"
 
-#~ msgid "Start"
-#~ msgstr "Commencer"
+#: plugins/labstreaminglayer.py:60
+msgid "Python pylsl module is missing. No marker will be sent"
+msgstr "La librairie pylsl de python est manquante. Aucun marqueur ne sera envoyé"
 
-#~ msgid "You pressed the Escape key. Do you want to quit?"
-#~ msgstr "Vous avez appuyé sur Échap. Voulez-vous quitter ?"
+#: plugins/parallelport.py:19
+msgid "Parallel port"
+msgstr "Port parallèle"
 
-#~ msgid "Yes"
-#~ msgstr "Oui"
+#: plugins/parallelport.py:52
+msgid "Parallel port is not supported on macOS. Skipping parallel plugin."
+msgstr "Le port parallèle n'est pas supporté sur macOS. Plugin ignoré."
 
-#~ msgid "No"
-#~ msgstr "Non"
+#: plugins/parallelport.py:41
+msgid "The parallel port is not available in the browser: set web_serial_trigger=True in config.ini to use a USB trigger box. Skipping parallel plugin"
+msgstr "Le port parallèle n'est pas disponible dans le navigateur : indiquez web_serial_trigger=True dans config.ini pour utiliser un boîtier de triggers USB. Plugin ignoré"
 
-#, python-format
-#~ msgid "In config.ini, screen index must be an integer, not %s"
-#~ msgstr ""
-#~ "Dans config.ini, le numéro de l'écran (screen_index) doit être un entier, "
-#~ "et non pas %s"
+#: plugins/parallelport.py:61
+msgid "Python Parallel module is missing. On Windows, install pyparallel (pip install pyparallel) and the InpOut32 driver (provides simpleio.dll)."
+msgstr "La librairie Python Parallel est manquante. Sous Windows, installez pyparallel (pip install pyparallel) et le pilote InpOut32 (fournit simpleio.dll)."
 
-#~ msgid "OpenMATB Error"
-#~ msgstr "Erreur de OpenMATB"
+#: plugins/parallelport.py:69
+msgid "Python Parallel module is missing. On Linux, install pyparallel (pip install pyparallel) and ensure the ppdev kernel module is loaded."
+msgstr "La librairie Python Parallel est manquante. Sous Linux, installez pyparallel (pip install pyparallel) et assurez-vous que le module noyau ppdev est chargé."
 
-#~ msgid "Abort"
-#~ msgstr "Abandonner"
+#: plugins/parallelport.py:83
+msgid "Parallel port not found. Ensure the InpOut32 driver is installed (provides simpleio.dll) and that a physical parallel port is available."
+msgstr "Port parallèle non trouvé. Vérifiez que le pilote InpOut32 est installé (fournit simpleio.dll) et qu'un port parallèle physique est disponible."
 
-#~ msgid "Quit"
-#~ msgstr "Quitter"
+#: plugins/parallelport.py:91
+msgid "Parallel port not found. Ensure /dev/parport0 exists and you have read/write permissions (try: sudo chmod 666 /dev/parport0)."
+msgstr "Port parallèle non trouvé. Vérifiez que /dev/parport0 existe et que vous avez les droits de lecture/écriture (essayez : sudo chmod 666 /dev/parport0)."
 
-#, python-format
-#~ msgid ""
-#~ "In config.ini, the specified fullscreen mode must be a boolean (not %s). "
-#~ "If you continue, fullscreen will be set to its default value (True)"
-#~ msgstr ""
-#~ "Dans config.ini, le mode de plein-écran (fullscreen) doit être un booléen "
-#~ "(et non %s). Si vous continuez, le mode de plein-écran sera activé"
+#: plugins/parallelport.py:99
+msgid "Parallel port error: {error}"
+msgstr "Erreur du port parallèle : {error}"
 
-#, python-format
-#~ msgid ""
-#~ "In config.ini, the specified highlight_aoi value must be a boolean (not "
-#~ "%s). If you continue, highlight_aoi will be set to its default value "
-#~ "(False)"
-#~ msgstr ""
-#~ "Dans config.ini, la variable highlight_aoi doit être booléenne (et non "
-#~ "%s). Si vous continuez, la mise en surbrillance des AOIs sera désactivée"
+#: plugins/performance.py:18
+msgid "Performance"
+msgstr "Performance"
 
-#, python-brace-format
-#~ msgid "Session ID: {logger.session_id}"
-#~ msgstr "Identifiant unique de la session: {logger.session_id}"
+#: plugins/resman.py:23
+msgid "Resources management"
+msgstr "Gestion des ressources"
 
-#~ msgid "Plugin"
-#~ msgstr "Plugin"
+#: plugins/resman.py:189
+msgid "Pump status"
+msgstr "État des pompes"
 
-#~ msgid "Error on line %s. Parameter (%s) should be boolean, not (%s)"
-#~ msgstr ""
-#~ "Erreur à la ligne %s. Le paramètre (%s) devrait être un booléen, et non "
-#~ "un (%s)"
+#: plugins/scheduling.py:19
+msgid "Scheduling"
+msgstr "Planning"
 
-#~ msgid "Error on line %s. Parameter (%s) should be an integer, not (%s)"
-#~ msgstr ""
-#~ "Erreur à la ligne %s. La paramètre (%s) devrait être un entier, et non un "
-#~ "(%s)"
+#: plugins/scheduling.py:149
+msgid "Elapsed time \t %s"
+msgstr "Temps passé \t %s"
 
-#~ msgid "Error on line %s. Parameter (%s) should be a float, not (%s)"
-#~ msgstr ""
-#~ "Erreur à la ligne %s. La paramètre (%s) devrait être un flottant, et non "
-#~ "un (%s)"
+#: plugins/scheduling.py:156
+msgid "Remaining time \t %s"
+msgstr "Temps restant \t %s"
 
-#~ msgid "Error on line %s. Malformed parameter (%s) for the plugin (%s)"
-#~ msgstr "Erreur à la ligne %s. La paramètre (%s) du plugin (%s) est malformé"
+#: plugins/sysmon.py:21
+msgid "System monitoring"
+msgstr "Surveillance"
+
+#: plugins/track.py:26
+msgid "Tracking"
+msgstr "Poursuite"
+
+#: plugins/scheduling.py:44
+msgid "Lab streaming layer"
+msgstr "Lab streaming layer"
+
+#: plugins/scheduling.py:44
+msgid "Instructions"
+msgstr "Instructions"
+
+#: plugins/scheduling.py:44
+msgid "Generic scales"
+msgstr "Échelle de base"
+
+#: core/modaldialog.py:70
+msgid "Space"
+msgstr "Espace"
+
+#: core/modaldialog.py:63
+msgid "Escape"
+msgstr "Échap"
+
+#: plugins/abstractplugin.py:287
+msgid "AUTO"
+msgstr "AUTO"

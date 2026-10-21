@@ -41,7 +41,7 @@ language.install()
 
 
 # Only after language installation, import core modules (they must be translated)
-from core import ReplayScheduler, Scheduler
+from core import ReplayScheduler, Scheduler, bidi, rtl_labels
 from core.constants import ARGS, PATHS, REPLAY_MODE
 from core.platform import notify_page, report_loop_errors, setup_web, url_params
 from core.selector import FileSelector
@@ -52,6 +52,9 @@ from core.window import Window
 class OpenMATB:
     def __init__(self) -> None:
         setup_web()
+        # pyglet lays out text from left to right only: put right-to-left text (Arabic, Hebrew...) in display order
+        bidi.set_language(language_iso)
+        rtl_labels.install()
         # The MATB window must be borderless (for non-fullscreen mode)
         Window(style=Window.WINDOW_STYLE_DIALOG, resizable=True)
         # Keep references: pyglet only holds weak references to event handlers

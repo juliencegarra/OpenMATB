@@ -1,14 +1,47 @@
 # Translations
 
-To regenerate the base.pot file, use the following command in a terminal, from the root directory
->> pygettext3.9 -d guess -o locales/openmatb.pot *
+OpenMATB is translated with gettext: `locales/xx_XX/LC_MESSAGES/openmatb.po` (the translations, edited with a text
+editor or [Poedit](https://poedit.net/)) is compiled into `openmatb.mo` (read by OpenMATB). The language is chosen by
+`language=xx_XX` in config.ini, or by `?lang=xx_XX` (and the start page) in the browser.
 
-Also you can use the detection feature of a PO editor such as [Poedit](https://poedit.net/).
+`locales/build.py` manages these files without the gettext tools (run it from the root directory):
 
-You can edit locales with a software like poedit. New translations (.po & .mo files) should be
-placed into locales/xx_XX/LC_MESSAGES/  and renamed openmatb.po & openmatb.mo.
-xx_XX being the short code of the locale (see below).
+    python locales/build.py pot        # Extract the messages of the code into locales/openmatb.pot
+    python locales/build.py update     # Add the new messages of openmatb.pot to each openmatb.po (untranslated)
+    python locales/build.py mo         # Compile each openmatb.po into openmatb.mo
 
+After a change of the messages of the code: `pot`, `update`, translate the new messages, `mo`. Messages translated
+through a variable (plugin titles, key names) cannot be found in the code: they are listed in `DYNAMIC_MESSAGES` of
+`locales/build.py`.
+
+## Adding a language
+
+1. Copy `locales/openmatb.pot` to `locales/xx_XX/LC_MESSAGES/openmatb.po`, set its `Language` and `Plural-Forms`
+   headers, translate every message (keep `%s`, `{error}`, the tabs and the spaces at both ends), then
+   `python locales/build.py mo`.
+2. Web version: add the language to the menu of `web/index.html` and its texts to `TEXTS` in `web/openmatb.js`.
+3. Optionally, the instructions (`includes/instructions`), questionnaires (`includes/questionnaires`), scenarios
+   (`includes/scenarios`) and voices of the communications task (`includes/sounds/<idiom>/<gender>`).
+4. `tests/test_locales.py` checks the catalogs (complete, compiled, placeholders kept) and the web start page.
+
+Chinese and Japanese are drawn with the fonts of the system (desktop and browser). If `font_name` is set in
+config.ini, the font must have their characters.
+
+## Right-to-left languages (Arabic, Hebrew, Persian...)
+
+pyglet draws text from left to right only, and does not join Arabic letters in the browser. `core/bidi.py` turns
+right-to-left text into the characters to draw (Arabic letters replaced by their contextual forms, each line put in
+display order with the Unicode bidirectional algorithm), and `core/rtl_labels.py` applies it to every pyglet label
+(wrapping and HTML styles are kept, right-to-left paragraphs are aligned to the right). It is enabled for every
+language: a text without right-to-left characters is not changed. In a right-to-left language (`RTL_LANGUAGES` of
+`core/bidi.py`), a paragraph with right-to-left characters is right-to-left even if it starts with a Latin word.
+
+The web version ships Noto Sans Arabic and Noto Sans Hebrew (`web/build.py`). Tests: `tests/test_bidi.py` (with a
+sample of the Unicode conformance tests), and with a display, `OPENMATB_DESKTOP_TESTS=1` for
+`tests/test_desktop_rtl.py` (labels, glyphs of every translation, OpenMATB in each language), `OPENMATB_BROWSER_TESTS=1`
+for `TestLanguages` of `tests/web/test_browser.py`.
+
+## Locale codes
 
 Below you can find a list a locale short codes
 https://stackoverflow.com/questions/3191664/list-of-all-locales-and-their-short-codes

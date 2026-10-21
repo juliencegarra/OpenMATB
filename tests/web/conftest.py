@@ -92,6 +92,11 @@ def _config(overrides: dict[str, str]) -> str:
     return text
 
 
+def _language(params: str) -> str:
+    """English, unless the parameters of the page give the language (the page reads the first lang=)."""
+    return "" if "lang=" in params else "lang=en_EN&"
+
+
 class OpenMATBPage:
     """The web page, with helpers to start a scenario and read the probe (tests/web/probe.py)."""
 
@@ -122,13 +127,13 @@ class OpenMATBPage:
 
     def open_menu(self, params: str = "") -> None:
         """Open the start page and wait until OpenMATB is loaded (without starting it)."""
-        self.page.goto(f"{self.url}/index.html?lang=en_EN{params}")
+        self.page.goto(f"{self.url}/index.html?{_language(params).rstrip('&')}{params}")
         self.page.wait_for_function("() => window.openmatb !== undefined", timeout=BOOT_TIMEOUT_MS)
 
     def prepare(self, scenario: str, config: dict[str, str] | None = None, params: str = "") -> None:
         """Open the start page with the scenario and config.ini values of the test, ready to click Start.
-        params: other parameters of the page address ("&name=value...")."""
-        self.page.goto(f"{self.url}/index.html?lang=en_EN&mode=scenario&scenario={self.SCENARIO}{params}")
+        params: other parameters of the page address ("&name=value...", "&lang=ar_SA" for another language)."""
+        self.page.goto(f"{self.url}/index.html?{_language(params)}mode=scenario&scenario={self.SCENARIO}{params}")
         self.page.wait_for_selector("#start:not([disabled])", timeout=BOOT_TIMEOUT_MS)
         self.write_file(f"/app/includes/scenarios/{self.SCENARIO}", scenario)
         self.write_file("/app/config.ini", _config({"display_session_number": "False", **(config or {})}))
