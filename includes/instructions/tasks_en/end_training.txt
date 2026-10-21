@@ -1,0 +1,3 @@
+<h1>End of the training</h1>
+
+<p>The training is over. Please tell the experimenter that you are ready.</p>

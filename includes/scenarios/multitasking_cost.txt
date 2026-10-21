@@ -1,0 +1,107 @@
+# Multitasking cost: each task alone (2 minutes each), then the four tasks together (4 minutes)
+# Each task has the same difficulty and the same number of events per minute when alone and when combined:
+# the performance difference between the single-task and the multitask phases is the cost of multitasking.
+# An instruction screen announces each phase (the scenario time is paused while it is displayed).
+
+# 1. Start all the tasks, then keep only the first one
+0:00:00;sysmon;start
+0:00:00;track;start
+0:00:00;communications;start
+0:00:00;resman;start
+
+# 2. System monitoring alone (0:00:00 - 0:02:00)
+0:00:00;track;pause
+0:00:00;track;hide
+0:00:00;communications;pause
+0:00:00;communications;hide
+0:00:00;resman;pause
+0:00:00;resman;hide
+0:00:00;instructions;filename;tasks_en/sysmon.txt
+0:00:00;instructions;start
+0:00:09;sysmon;scales-2-failure;True
+0:00:47;sysmon;scales-4-failure;True
+0:01:12;sysmon;lights-2-failure;True
+0:01:34;sysmon;scales-3-failure;True
+
+# 3. Tracking alone (0:02:00 - 0:04:00)
+0:02:00;sysmon;pause
+0:02:00;sysmon;hide
+0:02:00;track;show
+0:02:00;track;resume
+0:02:00;instructions;filename;tasks_en/track.txt
+0:02:00;instructions;start
+0:02:00;track;targetproportion;0.5
+
+# 4. Communications alone (0:04:00 - 0:06:00)
+0:04:00;track;pause
+0:04:00;track;hide
+0:04:00;communications;show
+0:04:00;communications;resume
+0:04:00;instructions;filename;tasks_en/communications.txt
+0:04:00;instructions;start
+0:04:10;communications;radioprompt;own
+0:04:47;communications;radioprompt;other
+0:05:36;communications;radioprompt;own
+
+# 5. Resources management alone (0:06:00 - 0:08:00)
+0:06:00;communications;pause
+0:06:00;communications;hide
+0:06:00;resman;show
+0:06:00;resman;resume
+0:06:00;instructions;filename;tasks_en/resman.txt
+0:06:00;instructions;start
+0:06:00;resman;tank-a-lossperminute;600
+0:06:00;resman;tank-b-lossperminute;600
+0:07:20;resman;pump-4-state;failure
+0:07:50;resman;pump-4-state;off
+
+# 6. The four tasks together (0:08:00 - 0:12:00)
+0:08:00;resman;pause
+0:08:00;resman;hide
+0:08:00;sysmon;show
+0:08:00;sysmon;resume
+0:08:00;track;show
+0:08:00;track;resume
+0:08:00;communications;show
+0:08:00;communications;resume
+0:08:00;resman;show
+0:08:00;resman;resume
+0:08:00;instructions;filename;tasks_en/all_tasks.txt
+0:08:00;instructions;start
+
+# Difficulty and events (as in the single-task phases)
+0:08:00;track;targetproportion;0.5
+0:08:00;resman;tank-a-lossperminute;600
+0:08:00;resman;tank-b-lossperminute;600
+
+# System monitoring: gauge and light failures
+0:08:23;sysmon;lights-2-failure;True
+0:08:44;sysmon;scales-1-failure;True
+0:09:27;sysmon;scales-3-failure;True
+0:09:49;sysmon;lights-1-failure;True
+0:10:07;sysmon;scales-4-failure;True
+0:10:36;sysmon;scales-2-failure;True
+0:11:17;sysmon;scales-1-failure;True
+0:11:34;sysmon;lights-2-failure;True
+
+# Communications: radio prompts (own: to answer, other: to ignore)
+0:08:11;communications;radioprompt;other
+0:08:46;communications;radioprompt;own
+0:09:37;communications;radioprompt;own
+0:10:21;communications;radioprompt;own
+0:10:56;communications;radioprompt;other
+0:11:19;communications;radioprompt;other
+
+# Resources management: pump failures, then repaired
+0:09:04;resman;pump-2-state;failure
+0:09:34;resman;pump-2-state;off
+0:10:43;resman;pump-1-state;failure
+0:11:13;resman;pump-1-state;off
+
+# 7. End
+0:12:00;sysmon;stop
+0:12:00;track;stop
+0:12:00;communications;stop
+0:12:00;resman;stop
+0:12:00;genericscales;filename;nasatlx_en.txt
+0:12:00;genericscales;start

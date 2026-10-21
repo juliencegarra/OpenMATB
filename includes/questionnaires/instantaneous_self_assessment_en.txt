@@ -1,0 +1,3 @@
+# One-item workload rating, inspired by the Instantaneous Self-Assessment (ISA) technique
+# (Tattersall & Foord, 1996): 1 = very low to 5 = very high workload
+Workload;How would you rate your workload during the last two minutes?;Very low/Very high;1/5/3

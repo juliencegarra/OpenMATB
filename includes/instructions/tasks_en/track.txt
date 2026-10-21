@@ -1,0 +1,5 @@
+<h1>Tracking</h1>
+
+<p>In the tracking task (top middle), a cursor drifts away from the center.</p>
+
+<p>Use the <strong>joystick</strong> to keep it inside the central square, as close to the center as possible.</p>

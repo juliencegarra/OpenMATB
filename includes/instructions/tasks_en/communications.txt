@@ -1,0 +1,7 @@
+<h1>Communications</h1>
+
+<p>You will hear radio messages. Your callsign is written at the top of the communications task (bottom left).</p>
+
+<p>Answer only the messages that begin with <strong>your callsign</strong>, and ignore the others.</p>
+
+<p>When a message is for you, select the radio it names with the <strong>up</strong> and <strong>down</strong> arrows, set the frequency it gives with the <strong>left</strong> and <strong>right</strong> arrows, then press <strong>Enter</strong>.</p>

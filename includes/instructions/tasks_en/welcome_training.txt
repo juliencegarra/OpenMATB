@@ -1,0 +1,5 @@
+<h1>Training</h1>
+
+<p>This training presents the four tasks one by one, then asks you to perform them together.</p>
+
+<p>Before each task, a screen explains what to do. Take your time to read it: the training waits for you.</p>

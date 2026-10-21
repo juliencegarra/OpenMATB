@@ -1,0 +1,5 @@
+<h1>Rest</h1>
+
+<p>Please relax, stay still, and look at the center of the screen for two minutes.</p>
+
+<p>Do not press any key: the tasks will start by themselves.</p>

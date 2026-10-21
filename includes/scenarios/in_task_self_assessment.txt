@@ -1,0 +1,147 @@
+# In-task self-assessment: a one-item workload rating every 2 minutes, during a 10-minute session whose
+# workload rises then falls (low, high, low). The rating (1 to 5, inspired by the Instantaneous Self-Assessment
+# technique) pauses the tasks for 10 s at most: without an answer, the page closes and the timeout is logged.
+
+# 1. Start all the tasks
+0:00:00;sysmon;start
+0:00:00;track;start
+0:00:00;scheduling;start
+0:00:00;communications;start
+0:00:00;resman;start
+
+# 2. Low workload (0:00:00 - 0:02:00)
+0:00:00;track;targetproportion;0.75
+0:00:00;resman;tank-a-lossperminute;300
+0:00:00;resman;tank-b-lossperminute;300
+
+# System monitoring: gauge and light failures
+0:00:29;sysmon;scales-3-failure;True
+0:01:24;sysmon;lights-2-failure;True
+
+# Communications: radio prompts (own: to answer, other: to ignore)
+0:00:30;communications;radioprompt;own
+0:00:54;communications;radioprompt;other
+
+# Resources management: pump failures, then repaired
+0:01:25;resman;pump-6-state;failure
+0:01:55;resman;pump-6-state;off
+
+# Rating at 0:02:00
+0:02:00;genericscales;filename;instantaneous_self_assessment_en.txt
+0:02:00;genericscales;maxdurationsec;10
+0:02:00;genericscales;start
+
+# 3. Low workload (0:02:00 - 0:04:00)
+0:02:00;track;targetproportion;0.75
+0:02:00;resman;tank-a-lossperminute;300
+0:02:00;resman;tank-b-lossperminute;300
+
+# System monitoring: gauge and light failures
+0:02:21;sysmon;lights-1-failure;True
+0:02:57;sysmon;scales-1-failure;True
+
+# Communications: radio prompts (own: to answer, other: to ignore)
+0:02:12;communications;radioprompt;other
+0:02:54;communications;radioprompt;own
+
+# Resources management: pump failures, then repaired
+0:03:06;resman;pump-5-state;failure
+0:03:36;resman;pump-5-state;off
+
+# Rating at 0:04:00
+0:04:00;genericscales;filename;instantaneous_self_assessment_en.txt
+0:04:00;genericscales;maxdurationsec;10
+0:04:00;genericscales;start
+
+# 4. High workload (0:04:00 - 0:06:00)
+0:04:00;track;targetproportion;0.2
+0:04:00;resman;tank-a-lossperminute;960
+0:04:00;resman;tank-b-lossperminute;960
+
+# System monitoring: gauge and light failures
+0:04:15;sysmon;scales-4-failure;True
+0:04:23;sysmon;lights-2-failure;True
+0:04:34;sysmon;scales-2-failure;True
+0:04:48;sysmon;scales-1-failure;True
+0:05:06;sysmon;scales-3-failure;True
+0:05:16;sysmon;lights-1-failure;True
+0:05:31;sysmon;lights-1-failure;True
+0:05:42;sysmon;scales-3-failure;True
+
+# Communications: radio prompts (own: to answer, other: to ignore)
+0:04:03;communications;radioprompt;own
+0:04:25;communications;radioprompt;other
+0:04:47;communications;radioprompt;other
+0:05:10;communications;radioprompt;own
+0:05:35;communications;radioprompt;own
+
+# Resources management: pump failures, then repaired
+0:04:45;resman;pump-6-state;failure
+0:05:05;resman;pump-6-state;off
+0:05:05;resman;pump-1-state;failure
+0:05:25;resman;pump-1-state;off
+
+# Rating at 0:06:00
+0:06:00;genericscales;filename;instantaneous_self_assessment_en.txt
+0:06:00;genericscales;maxdurationsec;10
+0:06:00;genericscales;start
+
+# 5. High workload (0:06:00 - 0:08:00)
+0:06:00;track;targetproportion;0.2
+0:06:00;resman;tank-a-lossperminute;960
+0:06:00;resman;tank-b-lossperminute;960
+
+# System monitoring: gauge and light failures
+0:06:15;sysmon;scales-1-failure;True
+0:06:20;sysmon;scales-3-failure;True
+0:06:31;sysmon;scales-2-failure;True
+0:06:49;sysmon;lights-1-failure;True
+0:07:07;sysmon;scales-4-failure;True
+0:07:13;sysmon;lights-2-failure;True
+0:07:28;sysmon;lights-1-failure;True
+0:07:46;sysmon;scales-4-failure;True
+
+# Communications: radio prompts (own: to answer, other: to ignore)
+0:06:05;communications;radioprompt;own
+0:06:27;communications;radioprompt;other
+0:06:52;communications;radioprompt;own
+0:07:15;communications;radioprompt;own
+0:07:37;communications;radioprompt;other
+
+# Resources management: pump failures, then repaired
+0:06:30;resman;pump-7-state;failure
+0:06:50;resman;pump-7-state;off
+0:07:05;resman;pump-3-state;failure
+0:07:25;resman;pump-3-state;off
+
+# Rating at 0:08:00
+0:08:00;genericscales;filename;instantaneous_self_assessment_en.txt
+0:08:00;genericscales;maxdurationsec;10
+0:08:00;genericscales;start
+
+# 6. Low workload (0:08:00 - 0:10:00)
+0:08:00;track;targetproportion;0.75
+0:08:00;resman;tank-a-lossperminute;300
+0:08:00;resman;tank-b-lossperminute;300
+
+# System monitoring: gauge and light failures
+0:08:17;sysmon;scales-4-failure;True
+0:09:01;sysmon;lights-2-failure;True
+
+# Communications: radio prompts (own: to answer, other: to ignore)
+0:08:52;communications;radioprompt;other
+0:09:28;communications;radioprompt;own
+
+# Resources management: pump failures, then repaired
+0:08:38;resman;pump-3-state;failure
+0:09:08;resman;pump-3-state;off
+
+# 7. End: the tasks stop, then a last rating without time limit
+0:10:00;sysmon;stop
+0:10:00;track;stop
+0:10:00;scheduling;stop
+0:10:00;communications;stop
+0:10:00;resman;stop
+0:10:00;genericscales;filename;instantaneous_self_assessment_en.txt
+0:10:00;genericscales;maxdurationsec;0
+0:10:00;genericscales;start
