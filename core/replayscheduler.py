@@ -459,7 +459,8 @@ class ReplayScheduler(Scheduler):
         if player is not None:
             # The sound follows the replay speed (it only accompanies the prompt, which ends at its logged time)
             speed: int = self.clock.get_speed()
-            silent: bool = self._muted or speed > MAX_AUDIO_SPEED or self.clock.isFastForward
+            hidden: bool = not self.plugins["communications"].is_visible()  # A hidden task is not heard either
+            silent: bool = self._muted or speed > MAX_AUDIO_SPEED or self.clock.isFastForward or hidden
             player.volume = 0.0 if silent else 1.0
             player.pitch = min(speed, MAX_AUDIO_SPEED)
 

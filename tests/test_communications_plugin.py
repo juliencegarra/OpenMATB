@@ -185,6 +185,24 @@ class TestPauseResume:
         assert comms.paused is False
 
 
+class TestHiddenIsSilent:
+    """A hidden task is not heard either (default_en: a prompt cut by hide + pause was heard on a hidden resume)."""
+
+    def test_a_prompt_resumed_while_hidden_is_silent(self, comms):
+        comms.player = MagicMock(volume=1.0)
+        comms.hide()
+        comms.pause()
+        comms.resume()
+        assert comms.player.volume == 0.0
+        comms.show()
+        assert comms.player.volume == 1.0
+
+    def test_no_player_yet(self, comms):
+        comms.hide()
+        comms.show()
+        assert not hasattr(comms, "player")
+
+
 class TestGroupAudioFiles:
     def test_sound_sequence(self, comms):
         """Silence, callsign twice, radio name, frequency (with 'point'), silence."""
@@ -240,6 +258,13 @@ class TestPromptForANewTarget:
         assert (callsign, radio_name, freq) == (comms.parameters["owncallsign"], "NAV_2", radio["targetfreq"])
         self.player.assert_called_once_with(self.group.return_value)
         self.player.return_value.play.assert_called_once()
+        assert self.player.return_value.volume == 1.0
+
+    def test_prompt_of_a_hidden_task_is_silent(self, comms):
+        comms.visible = False
+        comms.prompt_for_a_new_target("own", "NAV_2")
+        assert self.player.return_value.volume == 0.0
+        self.player.return_value.play.assert_called_once()  # It goes on: the target is given at its end
 
     def _bounded_draws(self, comms):
         """Make an endless redraw of the target frequency fail, instead of hanging the tests."""

@@ -660,6 +660,12 @@ class TestPromptAudio:
         rs._enforce_mute()
         assert player.volume == 0.0
 
+    def test_muted_while_the_task_is_hidden(self):
+        rs, player = self._replay()
+        rs.plugins["communications"].is_visible.return_value = False
+        rs._enforce_mute()
+        assert player.volume == 0.0
+
     def test_paused_with_the_replay(self):
         rs, player = self._replay()
         rs.pause_playback()

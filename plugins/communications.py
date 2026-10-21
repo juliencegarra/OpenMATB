@@ -235,6 +235,20 @@ class Communications(AbstractPlugin):
         if hasattr(self, "player") and self.player.source is not None:
             self.player.play()
 
+    def show(self) -> None:
+        super().show()
+        self.set_prompt_audibility()
+
+    def hide(self) -> None:
+        super().hide()
+        self.set_prompt_audibility()
+
+    def set_prompt_audibility(self) -> None:
+        # A hidden task is not heard either: its prompt goes on silently (e.g. the end of a prompt cut by a pause,
+        # resumed before the task is shown again)
+        if hasattr(self, "player"):
+            self.player.volume = 1.0 if self.is_visible() else 0.0
+
     def get_callsign(self) -> str:
         self.callsign_seed += 1
         call_rgx: str = self.parameters["callsignregex"]
@@ -326,6 +340,7 @@ class Communications(AbstractPlugin):
 
         try:
             self.player: SequencePlayer = SequencePlayer(sounds)
+            self.set_prompt_audibility()
             self.player.play()
         except Exception:
             self.logger.log_manual_entry("Audio prompt playback failed")
