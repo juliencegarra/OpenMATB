@@ -598,7 +598,7 @@ a.cite-link:hover { color: var(--blue-800); border-color: var(--blue-700); text-
 <h3>Prerequisites</h3>
 <div class="prereq-grid">
   <div class="prereq-item">
-    <div><strong>Python</strong><br><span>3.9 or higher</span></div>
+    <div><strong>Python</strong><br><span>3.10 or higher</span></div>
   </div>
   <div class="prereq-item">
     <div><strong>Dependencies</strong><br><span>pyglet, pyparallel, rstr, pylsl</span></div>
@@ -1306,7 +1306,7 @@ time;plugin;parameter;value</code></pre>
 <div class="card">
 <p>The log uses two time references:</p>
 <ul>
-  <li><code>totaltime</code> &mdash; wall-clock time since the application launched (includes pauses)</li>
+  <li><code>logtime</code> &mdash; a monotonic clock, in seconds (includes pauses and instruction screens; only its differences are meaningful)</li>
   <li><code>scenario_time</code> &mdash; time within the scenario (pauses excluded, blocking segments skipped)</li>
 </ul>
 <p>During replay, the timeline maps <code>replay_time</code> to <code>scenario_time</code>, allowing accurate reconstruction even when the original session included instruction screens or pauses.</p>
@@ -1314,15 +1314,14 @@ time;plugin;parameter;value</code></pre>
 
 <h3>Log Format</h3>
 <p>Sessions are recorded in CSV in the <code>sessions/</code> directory:</p>
-<pre><code>logtime,totaltime,scenario_time,type,module,address,value</code></pre>
+<pre><code>logtime,scenario_time,type,module,address,value</code></pre>
 <div class="table-wrap">
 <table>
 <thead><tr><th>Column</th><th>Description</th></tr></thead>
 <tbody>
-<tr><td><code>logtime</code></td><td>Absolute timestamp</td></tr>
-<tr><td><code>totaltime</code></td><td>Total elapsed time</td></tr>
+<tr><td><code>logtime</code></td><td>Timestamp of a monotonic clock, in seconds (only its differences are meaningful)</td></tr>
 <tr><td><code>scenario_time</code></td><td>Time relative to scenario start</td></tr>
-<tr><td><code>type</code></td><td>Entry type: <code>input</code>, <code>state</code>, <code>event</code>, <code>performance</code>, <code>manual</code></td></tr>
+<tr><td><code>type</code></td><td>Entry type: <code>input</code>, <code>state</code>, <code>event</code>, <code>parameter</code>, <code>performance</code>, <code>manual</code>, and at start <code>version</code>, <code>session_id</code>, <code>scenario_path</code></td></tr>
 <tr><td><code>module</code></td><td>Source module (sysmon, track, etc.)</td></tr>
 <tr><td><code>address</code></td><td>Target address/property</td></tr>
 <tr><td><code>value</code></td><td>Recorded value</td></tr>
@@ -1331,12 +1330,15 @@ time;plugin;parameter;value</code></pre>
 </div>
 
 <h4>Example Log Entries</h4>
-<pre><code>logtime,totaltime,scenario_time,type,module,address,value
-13869.194646,0,0,input,keyboard,ENTER,release
-13869.210557,0.018296,0,state,sysmon,"task_title, text",SURVEILLANCE
-13869.232539,0.018296,0,event,sysmon,self,start
-13869.238017,0.058883,0.018296,state,track,"task_title, text",POURSUITE
-13869.240641,0.058883,0.018296,performance,track,cursor_in_target,1</code></pre>
+<pre><code>logtime,scenario_time,type,module,address,value
+13869.194101,0,version,,,1.5.2
+13869.194258,0,session_id,,,12
+13869.194646,0,input,keyboard,ENTER,release
+13869.210557,0,state,sysmon,"task_title, text",SURVEILLANCE
+13869.232539,0,event,sysmon,self,start
+13869.238017,0.018296,state,track,"task_title, text",POURSUITE
+13869.240641,0.018296,performance,track,cursor_in_target,1</code></pre>
+<p>The details of each entry are in <a href="https://github.com/juliencegarra/OpenMATB/wiki/The-session-log-file">the wiki</a>.</p>
 
 </section>
 
