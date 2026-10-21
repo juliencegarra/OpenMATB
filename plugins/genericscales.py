@@ -9,7 +9,7 @@ from typing import Any
 
 from pyglet.text import Label as PygletLabel
 
-from core import validation
+from core import bidi, validation
 from core.constants import FONT_SIZES as F
 from core.constants import PATHS as P
 from core.constants import REPLAY_MODE
@@ -187,6 +187,7 @@ class Genericscales(BlockingPlugin):
                     interactive=not REPLAY_MODE,
                     showvalue=self.parameters["showvalue"],
                     on_mouse_focus=self._on_slider_mouse_focus,
+                    mirrored=bidi.rtl_language(),
                 )
 
         if self.sliders:
@@ -220,10 +221,10 @@ class Genericscales(BlockingPlugin):
         elif keystr.lower() == "down":
             self.selected_slider_index = (self.selected_slider_index + 1) % len(slider_list)
             self._update_slider_selection()
-        elif keystr.lower() == "left":
-            slider_list[self.selected_slider_index].adjust_value(-1)
-        elif keystr.lower() == "right":
-            slider_list[self.selected_slider_index].adjust_value(1)
+        elif keystr.lower() in ("left", "right"):
+            # The arrow moves the thumb its way: towards the minimum on the left, unless the sliders are mirrored
+            steps: int = -1 if keystr.lower() == "left" else 1
+            slider_list[self.selected_slider_index].adjust_value(-steps if bidi.rtl_language() else steps)
 
         return keystr
 

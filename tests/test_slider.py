@@ -372,3 +372,57 @@ class TestInactiveSlider:
         with patch("core.widgets.slider.Window") as window:
             s.remove_mouse_handlers()
         window.MainWindow.remove_handlers.assert_called_once_with(s.on_mouse_press, s.on_mouse_drag, s.on_mouse_release)
+
+
+class TestMirroredSlider:
+    """For a right-to-left language: the minimum on the right, the mouse and the value following it."""
+
+    @staticmethod
+    def _make(showvalue=True):
+        s = TestOnMouseFocusCallback._make_slider_with_callback()
+        s.mirrored = True
+        s.showvalue = showvalue
+        s.vertex = {}
+        s.set_sub_containers()
+        s.containers["allgroove"] = s.containers["slide"].get_reduced(0.9, 0.2)
+        s.vertex["groove_b"] = MagicMock(x=0, y=0)
+        s.vertex["groove"] = MagicMock(x=0, y=0)
+        return s
+
+    def test_order_is_value_max_slide_min(self):
+        s = self._make()
+        assert s.containers["value"].l < s.containers["max"].l < s.containers["slide"].l < s.containers["min"].l
+
+    def test_containers_fill_width(self):
+        s = self._make()
+        assert math.isclose(s.containers["value"].l, s.container.l)
+        assert math.isclose(s.containers["min"].l + s.containers["min"].w, s.container.l + s.container.w)
+        assert math.isclose(s.containers["slide"].w, s.container.w * 0.6)
+
+    def test_without_value(self):
+        s = self._make(showvalue=False)
+        assert "value" not in s.containers
+        assert math.isclose(s.containers["max"].l, s.container.l)
+        assert s.containers["max"].l < s.containers["slide"].l < s.containers["min"].l
+
+    def test_minimum_is_on_the_right(self):
+        s = self._make()
+        groove = s.containers["allgroove"]
+        s.groove_value = s.value_min
+        assert math.isclose(s._get_groove_center()[0], groove.l + groove.w)
+        s.groove_value = s.value_max
+        assert math.isclose(s._get_groove_center()[0], groove.l)
+
+    def test_click_on_the_left_gives_the_maximum(self):
+        s = self._make(showvalue=False)
+        groove = s.containers["allgroove"]
+        with patch("core.widgets.slider.Window", MainWindow=MagicMock(modal_dialog=None)):
+            s.on_mouse_press(int(groove.l), int(groove.cy), 1, 0)
+            assert math.isclose(s.groove_value, 100)
+            s.on_mouse_drag(int(groove.l + groove.w), int(groove.cy), 10, 0, 1, 0)
+        assert math.isclose(s.groove_value, 0)
+
+    def test_not_mirrored_by_default(self):
+        s = TestOnMouseFocusCallback._make_slider_with_callback()
+        assert s.mirrored is False
+        assert s.containers["min"].l < s.containers["max"].l

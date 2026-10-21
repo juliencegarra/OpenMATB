@@ -19,6 +19,8 @@ from core.window import Window
 
 
 class Slider(AbstractWidget):
+    mirrored: bool = False  # Minimum on the right, for a right-to-left language
+
     def __init__(
         self,
         name: str,
@@ -34,6 +36,7 @@ class Slider(AbstractWidget):
         interactive: bool = True,
         showvalue: bool = True,
         on_mouse_focus: Callable[[int], Any] | None = None,
+        mirrored: bool = False,
     ) -> None:
         super().__init__(name, container)
 
@@ -45,6 +48,7 @@ class Slider(AbstractWidget):
         self.value_max: float = value_max
         self.value_default: float = value_default
         self.draw_order: int = draw_order
+        self.mirrored = mirrored
 
         self.rank: int = rank
         self.groove_value: float = self.value_default
@@ -67,18 +71,14 @@ class Slider(AbstractWidget):
         slider_w: float = self.container.w * slider_width
 
         self.containers = dict()
-        names: list[str] = ["min", "slide", "max"]
-        bounds: list[float] = [l, l + label_w, l + label_w + slider_w, l + label_w + slider_w + label_w]
-        for c, name in enumerate(names):
-            left: float = bounds[c]
-            right: float = bounds[c + 1]
-            self.containers[name] = Container(
-                f"container_{name}", left, self.container.b, right - left, self.container.h
-            )
-        if self.showvalue:
-            self.containers["value"] = Container(
-                "container_value", bounds[3], self.container.b, label_w, self.container.h
-            )
+        names: list[str] = ["min", "slide", "max"] + (["value"] if self.showvalue else [])
+        if self.mirrored:  # From the right: min, slide, max, value
+            names.reverse()
+        left: float = l
+        for name in names:
+            width: float = slider_w if name == "slide" else label_w
+            self.containers[name] = Container(f"container_{name}", left, self.container.b, width, self.container.h)
+            left += width
         for name in ["min", "max"]:
             x: float = self.containers[name].cx
             y: float = self.containers[name].cy
@@ -154,6 +154,8 @@ class Slider(AbstractWidget):
 
     def _get_groove_center(self) -> tuple[float, float]:
         center_ratio: float = (self.groove_value - self.value_min) / (self.value_max - self.value_min)
+        if self.mirrored:
+            center_ratio = 1 - center_ratio
         x: float = self.containers["allgroove"].l + center_ratio * self.containers["allgroove"].w
         y: float = self.containers["allgroove"].cy
         return x, y
@@ -197,11 +199,7 @@ class Slider(AbstractWidget):
             if self.on_mouse_focus is not None:
                 self.on_mouse_focus(self.rank)
             # Jump groove to click position
-            x_min: float = self.containers["allgroove"].l
-            x_max: float = self.containers["allgroove"].l + self.containers["allgroove"].w
-            clamped_x: float = min(x_max, max(x_min, x))
-            ratio: float = (clamped_x - x_min) / (x_max - x_min)
-            self.update_groove_value(ratio)
+            self.update_groove_value(self._ratio_at(x))
 
     def on_mouse_release(self, x: int, y: int, button: int, modifiers: int) -> None:
         if self.hover is True:
@@ -210,11 +208,15 @@ class Slider(AbstractWidget):
 
     def on_mouse_drag(self, x: int, y: int, dx: int, dy: int, button: int, modifiers: int) -> None:
         if self.hover is True and self.is_active():
-            x_min: float = self.containers["allgroove"].l
-            x_max: float = self.containers["allgroove"].l + self.containers["allgroove"].w
-            x = min(x_max, max(x_min, x))
-            ratio: float = (x - x_min) / (x_max - x_min)
-            self.update_groove_value(ratio)
+            self.update_groove_value(self._ratio_at(x))
+
+    def _ratio_at(self, x: float) -> float:
+        """The position of x in the groove, from the minimum (0) to the maximum (1)."""
+        x_min: float = self.containers["allgroove"].l
+        x_max: float = self.containers["allgroove"].l + self.containers["allgroove"].w
+        x = min(x_max, max(x_min, x))
+        ratio: float = (x - x_min) / (x_max - x_min)
+        return 1 - ratio if self.mirrored else ratio
 
     def update_groove_value(self, ratio: float) -> None:
         val: float = float(ratio * (self.value_max - self.value_min) + self.value_min)

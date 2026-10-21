@@ -34,7 +34,8 @@ right-to-left text into the characters to draw (Arabic letters replaced by their
 display order with the Unicode bidirectional algorithm), and `core/rtl_labels.py` applies it to every pyglet label
 (wrapping and HTML styles are kept, right-to-left paragraphs are aligned to the right). It is enabled for every
 language: a text without right-to-left characters is not changed. In a right-to-left language (`RTL_LANGUAGES` of
-`core/bidi.py`), a paragraph with right-to-left characters is right-to-left even if it starts with a Latin word.
+`core/bidi.py`), a paragraph with right-to-left characters is right-to-left even if it starts with a Latin word. The sliders of the
+questionnaires (genericscales) are mirrored: the minimum is on the right, and the left arrow increases the value.
 
 The web version ships Noto Sans Arabic and Noto Sans Hebrew (`web/build.py`). Tests: `tests/test_bidi.py` (with a
 sample of the Unicode conformance tests), and with a display, `OPENMATB_DESKTOP_TESTS=1` for

@@ -363,6 +363,14 @@ class TestKeyboardNavigation:
         slider_list = list(gs_with_keys.sliders.values())
         slider_list[0].adjust_value.assert_called_once_with(-1)
 
+    @pytest.mark.parametrize("key_name, steps", [("LEFT", 1), ("RIGHT", -1)])
+    def test_arrows_follow_mirrored_sliders(self, gs_with_keys, monkeypatch, key_name, steps):
+        """In a right-to-left language, the minimum is on the right: the left arrow increases the value."""
+        monkeypatch.setattr("core.bidi._rtl_language", True)
+        self._add_mock_sliders(gs_with_keys, 2)
+        gs_with_keys.do_on_key(key_name, "press", emulate=True)
+        list(gs_with_keys.sliders.values())[0].adjust_value.assert_called_once_with(steps)
+
     def test_space_release_triggers_next_slide(self, gs_with_keys):
         self._add_mock_sliders(gs_with_keys, 2)
         gs_with_keys.do_on_key("SPACE", "release", emulate=True)

@@ -33,6 +33,11 @@ def set_language(language_iso: str) -> None:
     _rtl_language = is_rtl_language(language_iso)
 
 
+def rtl_language() -> bool:
+    """Whether the language of the interface is written from right to left."""
+    return _rtl_language
+
+
 def is_rtl_language(language_iso: str) -> bool:
     return language_iso.split("_")[0].split("-")[0].lower() in RTL_LANGUAGES
 

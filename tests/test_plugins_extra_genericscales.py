@@ -229,6 +229,16 @@ class TestFirstPage:
         gs.update(1)
         assert all(s.kwargs["showvalue"] is True for s in gs.sliders.values())
 
+    @pytest.mark.parametrize("language, mirrored", [("ar_SA", True), ("fr_FR", False)])
+    def test_sliders_are_mirrored_in_a_right_to_left_language(self, make_scales, monkeypatch, language, mirrored):
+        from core import bidi
+
+        monkeypatch.setattr(bidi, "_rtl_language", bidi.is_rtl_language(language))
+        gs = make_scales()
+        gs.start()
+        gs.update(1)
+        assert all(s.kwargs["mirrored"] is mirrored for s in gs.sliders.values())
+
     def test_first_slider_is_selected(self, scales):
         assert _selected(scales) == [True, False]
         assert scales.selected_slider_index == 0
