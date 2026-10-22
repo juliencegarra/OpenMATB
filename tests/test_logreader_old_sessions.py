@@ -78,3 +78,20 @@ def test_lab_streaming_layer_replayed_with_its_pause_page(tmp_path):
 def test_lab_streaming_layer_pause_page_not_shown(tmp_path):
     """Without a stream (e.g. pylsl missing), the session skipped the page: the replay must not wait for it."""
     assert _reader(tmp_path, _lsl_rows(page_shown=False)).lsl_pause_shown is False
+
+
+def test_stops_of_a_session_quit_not_replayed(tmp_path):
+    """Logged in the last update (the window closed then), they were replayed at their whole second: the tasks
+    disappeared up to 1 s (here 0.8 s) before the session was quit."""
+    lr = _reader(
+        tmp_path,
+        [
+            (100.0, 0.0, "event", "track", "self", "start"),
+            (100.0, 0.0, "event", "sysmon", "self", "start"),
+            (150.02, 50.02, "event", "sysmon", "self", "stop"),  # A stop of the scenario: replayed
+            (200.8, 100.8, "event", "track", "self", "stop"),  # The session quit
+            (200.8, 100.8, "manual", "", "", "end"),
+        ],
+    )
+    stops = [line for line in lr.contents if line.endswith(";stop")]
+    assert stops == ["0:00:50;sysmon;stop"]

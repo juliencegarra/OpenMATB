@@ -169,6 +169,11 @@ class LogReader:
             for row in all_rows
         )
         self.window_size = self._read_window_size(all_rows)
+        # The scenario time of the end of the session (its "end" row), None for a session that crashed
+        end_time: float | None = next(
+            (row["scenario_time"] for row in reversed(all_rows) if row["type"] == "manual" and row["value"] == "end"),
+            None,
+        )
 
         # Second pass: process rows (skip first row as before)
         for row in all_rows[1:]:
@@ -177,6 +182,11 @@ class LogReader:
 
             # Event case
             if row["type"] == "event":
+                # Not the stops of the end of the session: logged in its last update (e.g. a session quit, the stops
+                # of the running tasks), the window closed then and never showed them. Replayed at their whole second
+                # (the scenario times are whole seconds), they hid the tasks up to 1 s too early
+                if row["address"] == "self" and row["value"] == "stop" and row["scenario_time"] == end_time:
+                    continue
                 self.contents.append(self.session_event_to_str(row))
 
             # The end of a communications prompt ("Target COM_2:127.9", since 2023)
