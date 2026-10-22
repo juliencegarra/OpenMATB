@@ -921,3 +921,22 @@ class TestReleasePackages:
         with zipfile.ZipFile(package) as archive:
             assert archive.namelist()[0] == "imsmanifest.xml"
             assert "2004 4th Edition" in archive.read("imsmanifest.xml").decode("utf-8")
+
+
+class TestLoopErrors:
+    def test_an_error_ends_the_session(self, js):
+        """The session is ended as an exit would (its file handed to the page): it stayed in the browser storage
+        only, up to its last checkpoint, never downloaded nor sent."""
+        js.console = MagicMock()
+        callbacks = []
+        task = SimpleNamespace(add_done_callback=callbacks.append)
+        logger = MagicMock()
+        with (
+            patch.object(sys.modules["pyglet.app"], "event_loop", SimpleNamespace(_run_task=task), create=True),
+            patch("core.logger.get_logger", return_value=logger),
+        ):
+            platform.report_loop_errors()
+            error = RuntimeError("error for the test")
+            callbacks[0](SimpleNamespace(cancelled=lambda: False, exception=lambda: error))
+        logger.log_manual_entry.assert_called_once_with("RuntimeError: error for the test", key="error")
+        logger.end_session.assert_called_once()

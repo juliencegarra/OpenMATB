@@ -53,6 +53,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the stimulus onsets (the start of the human response times), stamped before the frame was drawn and shown: they are stamped after the swap of its buffers (once shown), the response times were longer by up to a refresh (16.7 ms at 60 Hz)
   - Fix the session exporter questionnaire columns: the pages ended by maxdurationsec made a scale column (`scale_page_timeout_<n>`, the number of the last page timed out); they are counted in `scale_pages_timed_out_<n>`
   - Fix the desktop session file, never written to the disk during the session: a killed process (Task Manager, a crash of a graphics or audio driver) lost the rows still buffered, up to the whole end questionnaire. It is written every second
+  - Fix an error stopping a browser session: the session was never ended, its file stayed in the browser storage only (up to its last checkpoint), never downloaded nor sent. It is ended as an exit would, with the error logged
   - Fix the scenario generator with a fractional event duration (e.g. an alerttimeout of 10500 ms, a refractory duration of 0.5 s): the times, truncated to the second when written, could bring two events closer than planned, and a light was failed again while still on failure (the failure was then ignored). The events take whole seconds, rounded up, and the refractory duration slider has a 1 s step
 
 ## Version 1.5.2

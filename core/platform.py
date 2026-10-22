@@ -293,6 +293,15 @@ def report_loop_errors() -> None:
             return
         error: BaseException = done_task.exception()
         js.console.error("OpenMATB stopped:\n" + "".join(traceback.format_exception(error)))
+        # End the session as an exit would: its file is persisted and handed to the page, which downloads it or
+        # sends it (web_session_output). It was left in the browser storage only, up to its last checkpoint
+        from core.logger import get_logger
+
+        try:
+            get_logger().log_manual_entry(f"{type(error).__name__}: {error}", key="error")
+            get_logger().end_session()
+        except Exception as end_error:  # The session file itself may be the problem
+            js.console.error(f"OpenMATB session not ended: {end_error!r}")
 
     task.add_done_callback(report)
 
