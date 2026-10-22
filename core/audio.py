@@ -5,9 +5,9 @@
 """Audio helpers shared by desktop and browser.
 
 In the browser, pyglet decodes sounds asynchronously with the Web Audio API and its
-player does not support SourceGroup (one decoded buffer per player, a stopped buffer
-can't be restarted). SequencePlayer hides these differences: on desktop it plays a
-SourceGroup as before; in the browser it chains one AudioPlayer per sound.
+player does not play sounds back to back (one decoded buffer per player, a stopped buffer
+can't be restarted). SequencePlayer hides these differences: on desktop it plays them
+with a single gapless player; in the browser it chains one AudioPlayer per sound.
 """
 
 from __future__ import annotations
@@ -16,10 +16,9 @@ from pathlib import Path
 from typing import Any
 
 import pyglet.clock
-from pyglet.media import SourceGroup
 
 from core.platform import IS_WEB
-from core.pyglet_compat import AudioPlayer, load_audio
+from core.pyglet_compat import AudioPlayer, gapless_player, load_audio
 
 _cache: dict[str, Any] = dict()
 
@@ -68,12 +67,7 @@ class SequencePlayer:
         self._player: Any = None
 
         if not self._sequential:
-            self._player = AudioPlayer()
-            if self._sources:
-                group: Any = SourceGroup()
-                for source in self._sources:
-                    group.add(source)
-                self._player.queue(group)
+            self._player = gapless_player(self._sources)
 
     @property
     def source(self) -> Any:

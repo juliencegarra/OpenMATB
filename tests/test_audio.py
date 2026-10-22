@@ -1,20 +1,37 @@
-"""Tests for core.audio.SequencePlayer (desktop SourceGroup mode and browser sequential mode)."""
+"""Tests for core.audio.SequencePlayer (desktop gapless mode and browser sequential mode)."""
 
+import sys
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import core.audio as audio
+import core.pyglet_compat as pyglet_compat
 
 
 class TestDesktopMode:
     def test_uses_a_single_player_with_source_group(self):
-        with patch.object(audio, "AudioPlayer") as player_cls, patch.object(audio, "SourceGroup") as group_cls:
+        media = sys.modules["pyglet.media"]
+        with patch.object(pyglet_compat, "AudioPlayer") as player_cls, patch.object(media, "SourceGroup") as group_cls:
             sp = audio.SequencePlayer(["s1", "s2"], sequential=False)
             sp.play()
         group_cls.return_value.add.assert_any_call("s1")
         group_cls.return_value.add.assert_any_call("s2")
         player_cls.return_value.queue.assert_called_once_with(group_cls.return_value)
         player_cls.return_value.play.assert_called_once()
+
+    def test_uses_a_gapless_player_without_source_group(self, monkeypatch):
+        """pyglet 3 development branch: SourceGroup was replaced by GaplessAudioPlayer."""
+        media = SimpleNamespace(GaplessAudioPlayer=MagicMock())  # No SourceGroup
+        monkeypatch.setitem(sys.modules, "pyglet.media", media)
+        monkeypatch.setattr(pyglet_compat.pyglet, "media", media, raising=False)
+        sp = audio.SequencePlayer(["s1", "s2"], sequential=False)
+        sp.play()
+        sp.volume = 0.0
+        player = media.GaplessAudioPlayer.return_value
+        player.queue.assert_called_once_with(["s1", "s2"])
+        player.play.assert_called_once()
+        assert player.volume == 0.0
+        assert sp.source is player.source
 
 
 class TestSequentialMode:

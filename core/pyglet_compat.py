@@ -40,10 +40,29 @@ else:
         return pyglet.image.get_buffer_manager().get_color_buffer()
 
 
-__all__ = ["ITALIC", "PYGLET_3", "AudioPlayer", "Config", "get_screenshot", "load_audio"]
+__all__ = ["ITALIC", "PYGLET_3", "AudioPlayer", "Config", "gapless_player", "get_screenshot", "load_audio"]
 
 # Label keyword arguments for italic text
 ITALIC: dict[str, Any] = {"style": "italic"} if PYGLET_3 else {"italic": True}
+
+
+def gapless_player(sources: list[Any]) -> Any:
+    """A player of the sources one after the other, its source None once they are all played. pyglet 2 and pyglet 3
+    up to 3.0.dev11 queue a SourceGroup; the pyglet 3 development branch replaced SourceGroup by GaplessAudioPlayer."""
+    import pyglet.media
+
+    if not hasattr(pyglet.media, "SourceGroup"):
+        player: Any = pyglet.media.GaplessAudioPlayer()
+        if sources:
+            player.queue(sources)
+        return player
+    player = AudioPlayer()
+    if sources:
+        group: Any = pyglet.media.SourceGroup()
+        for source in sources:
+            group.add(source)
+        player.queue(group)
+    return player
 
 
 def window_config(screen: Any) -> Config | list[Config]:
