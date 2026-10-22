@@ -112,7 +112,6 @@ class TestInit:
         window.display_session_id.assert_called_once()
         assert sched.scenario_time == 0
 
-
     def test_the_random_seed_is_logged(self, mock_logger, window):
         """random_seed (config.ini) seeds the draws: the replay reads it from the session file."""
         from core.scheduler import Scheduler
