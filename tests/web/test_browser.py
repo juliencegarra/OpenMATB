@@ -1732,9 +1732,10 @@ class TestStoredSessions:
         menu = page_factory()
         menu.open_menu()
         for name in ("2026-09-20/1_260920_100000.csv", "2026-09-21/2_260921_100000.csv", "imported/7_260901_1.csv"):
-            folder = "/data/openmatb/sessions/" + name.rsplit("/", 1)[0]
-            menu.page.evaluate(f"() => window.openmatb.pyodide.FS.mkdirTree('{folder}')")
-            menu.write_file(f"/data/openmatb/sessions/{name}", "logtime,scenario_time,type,module,address,value\n")
+            menu.page.evaluate(
+                "(path) => window.openmatb.sessions.writeSession(path, 'logtime,scenario_time,type,module,address,value')",
+                f"/data/openmatb/sessions/{name}",
+            )
         assert len(_stored_sessions(menu)) == 3
         menu.page.once("dialog", lambda dialog: dialog.accept())
         menu.page.click("#delete-all")
@@ -1927,3 +1928,44 @@ class TestSuspendedAudio:
                 break
             app.page.wait_for_timeout(1_000)
         assert starts and starts[0] is not None, "the prompt never ended"
+
+
+class TestStorageWarning:
+    def test_a_warning_when_the_kept_sessions_are_large(self, page_factory):
+        """The browser storage is loaded in memory at each start of the page: many sessions slowed it down, up to a
+        page out of memory. Beyond 500 MB, the start page asks to download, then delete them."""
+        app = page_factory()
+        app.open_menu()
+        assert app.page.is_hidden("#storage-warning")
+        app.page.evaluate(
+            "() => window.openmatb.sessions.writeSession("
+            "'/data/openmatb/sessions/2026-01-01/1_260101_100000.csv', new Uint8Array(510e6))"
+        )
+        app.page.select_option("#mode", "replay")  # The list of the sessions, and the warning
+        app.page.wait_for_selector("#storage-warning:not([hidden])", timeout=10_000)
+        assert "510 MB" in app.page.text_content("#storage-warning")
+
+
+class TestSessionStore:
+    def test_a_session_beyond_the_size_of_an_indexeddb_value(self, page_factory):
+        """Chromium refuses an IndexedDB value of more than 133 MB: IDBFS could not keep a session of more than
+        about 1 h 45 (76 MB per hour). It is kept in parts, read back whole, listed with its size, deleted whole."""
+        app = page_factory()
+        app.open_menu()
+        path = "/data/openmatb/sessions/2026-01-01/1_260101_100000.csv"
+        result = app.page.evaluate(
+            """async (path) => {
+                const sessions = window.openmatb.sessions;
+                const contents = new Uint8Array(140e6);
+                contents[0] = 1;
+                contents[contents.length - 1] = 2;
+                await sessions.writeSession(path, contents);
+                const read = await sessions.readSession(path);
+                const listed = await sessions.listSessions();
+                await sessions.deleteSession(path);
+                const left = await sessions.listSessions();
+                return [read.length, read[0], read[read.length - 1], listed.map((s) => [s.name, s.size]), left.length];
+            }""",
+            path,
+        )
+        assert result == [140_000_000, 1, 2, [["1_260101_100000.csv", 140_000_000]], 0]

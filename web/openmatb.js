@@ -15,12 +15,13 @@ import { connectScorm } from "./scorm.js";
 import { Cmi5Session, cmi5LaunchParameters, preferredLanguage } from "./cmi5.js";
 import { SerialTrigger, describePort } from "./serial_trigger.js";
 import { LslBridge } from "./lsl_bridge.js";
+import {
+    SESSIONS_DIR, deleteSession, listSessions, loadSessionsForReplay, readSession, writeSession,
+} from "./session_store.js";
 
 // Set by web/build.py: pyodide.mjs on the Pyodide CDN, or its copy shipped with the page (--pyodide local)
 const PYODIDE_MODULE = new URL(document.querySelector('meta[name="pyodide-module"]').content, location.href).href;
 const APP_DIR = "/app";
-const SESSIONS_DIR = "/data/openmatb/sessions"; // pyglet.storage.get("openmatb").data / "sessions"
-let storage = null; // pyglet's storage bridge (persists /data in IndexedDB), set by boot()
 const FONT_FAMILY = "Noto Sans"; // core.platform.WEB_FONT_NAME, files downloaded by web/build.py
 const FONT_WEIGHTS = [400, 700];
 
@@ -61,6 +62,8 @@ const TEXTS = {
         config_error: "Configuration error (config.ini):",
         stored_sessions: "Sessions kept in this browser",
         no_session: "No session yet.",
+        storage_full: "The sessions kept in this browser take {size} MB of its storage: download them, then delete them "
+            + "(Replay a session).",
         download: "Download",
         delete: "Delete",
         delete_all: "Delete all the sessions",
@@ -124,6 +127,8 @@ const TEXTS = {
         config_error: "Erreur de configuration (config.ini) :",
         stored_sessions: "Sessions conservées dans ce navigateur",
         no_session: "Aucune session pour le moment.",
+        storage_full: "Les sessions conservées dans ce navigateur occupent {size} Mo de son stockage : "
+            + "téléchargez-les, puis supprimez-les (Rejouer une session).",
         download: "Télécharger",
         delete: "Supprimer",
         delete_all: "Supprimer toutes les sessions",
@@ -482,9 +487,11 @@ async function boot() {
     await loadFonts();
     const { loadPyodide } = await import(PYODIDE_MODULE);
     const pyodide = await loadPyodide(await pyodideOptions());
-    // Mounts /data (IndexedDB, where sessions are kept). The /cache mount (OPFS) is optional: Safari refuses
+    // Not /data (IndexedDB): its mount loaded every kept session in memory, they are read one at a time (see
+    // session_store.js); the running session is in memory. The /cache mount (OPFS) is optional: Safari refuses
     // OPFS in private browsing, which made the loading fail. OpenMATB does not use it: keep /cache in memory then.
-    const bridge = await installPygletEmscripten(pyodide, { cachePath: null });
+    const bridge = await installPygletEmscripten(pyodide, { dataPath: null, cachePath: null });
+    pyodide.FS.mkdirTree(SESSIONS_DIR);
     try {
         await bridge.mount_opfs("/cache");
     } catch (error) {
@@ -508,8 +515,8 @@ async function boot() {
     }
     pyodide.runPython(`import os, sys; os.chdir("${APP_DIR}"); sys.path.insert(0, "${APP_DIR}")`);
 
-    window.openmatb = { pyodide }; // for debugging from the browser console
-    storage = bridge;
+    // For debugging from the browser console (and the tests)
+    window.openmatb = { pyodide, sessions: { listSessions, readSession, writeSession, deleteSession } };
     await cmi5Ready;
     const outputErrors = sessionOutputSettings(readAppConfig(pyodide)).errors;
     const deviceErrors = DEMO ? [] : await showDevices(readAppConfig(pyodide));
@@ -546,10 +553,8 @@ const DESTINATION_NAMES = {
 async function importSession(pyodide, file, bytes) {
     // Imported CSV files are stored with the browser sessions, so they appear in the replay selector.
     // Compressed files (.csv.gz, as sent to JATOS) are stored decompressed.
-    const folder = `${SESSIONS_DIR}/imported`;
-    pyodide.FS.mkdirTree(folder);
     const csv = await gunzipIfNeeded(bytes);
-    pyodide.FS.writeFile(`${folder}/${file.name.replace(/\.gz$/i, "")}`, new Uint8Array(csv));
+    await writeSession(`${SESSIONS_DIR}/imported/${file.name.replace(/\.gz$/i, "")}`, new Uint8Array(csv));
 }
 
 const ready = boot().catch((error) => {
@@ -583,30 +588,6 @@ document.addEventListener("fullscreenchange", keepCanvasFocus);
 
 // ---- Sessions kept in this browser (replay mode): download them again or delete them ----
 
-// Session files under SESSIONS_DIR (run in this browser, or imported), the most recent first
-function storedSessions(pyodide) {
-    const sessions = [];
-    const walk = (folder) => {
-        let names;
-        try {
-            names = pyodide.FS.readdir(folder);
-        } catch {
-            return; // No session yet
-        }
-        for (const name of names.filter((n) => n !== "." && n !== "..")) {
-            const path = `${folder}/${name}`;
-            const stat = pyodide.FS.stat(path);
-            if (pyodide.FS.isDir(stat.mode)) {
-                walk(path);
-            } else if (name.endsWith(".csv")) {
-                const time = new Date(stat.mtime).getTime();
-                sessions.push({ path, name, folder: folder.slice(SESSIONS_DIR.length + 1), size: stat.size, time });
-            }
-        }
-    };
-    walk(SESSIONS_DIR);
-    return sessions.sort((a, b) => b.time - a.time);
-}
 
 function sessionButton(label, icon, action) {
     const button = document.createElement("button");
@@ -619,20 +600,20 @@ function sessionButton(label, icon, action) {
     return button;
 }
 
-async function deleteSessions(pyodide, sessions) {
+async function deleteSessions(sessions) {
     for (const session of sessions) {
-        pyodide.FS.unlink(session.path);
+        await deleteSession(session.path);
     }
-    await storage.sync_idbfs(); // Also delete them from the browser storage
-    showStoredSessions();
+    showStoredSessions(); // And the warning on their size
 }
 
 async function showStoredSessions() {
     if ($("mode").value !== "replay") {
         return;
     }
-    const pyodide = await ready;
-    const sessions = storedSessions(pyodide);
+    await ready;
+    const sessions = await listSessions();
+    showStorageWarning(sessions.reduce((total, session) => total + session.size, 0));
     $("sessions-empty").hidden = sessions.length > 0;
     $("delete-all").hidden = sessions.length === 0;
     $("sessions-list").replaceChildren(...sessions.map((session) => {
@@ -646,12 +627,12 @@ async function showStoredSessions() {
         label.append(details);
         row.append(
             label,
-            sessionButton(t("download"), "⬇️", () => {
-                downloadText(session.name, pyodide.FS.readFile(session.path, { encoding: "utf8" }));
+            sessionButton(t("download"), "⬇️", async () => {
+                downloadText(session.name, new TextDecoder().decode(await readSession(session.path)));
             }),
             sessionButton(t("delete"), "🗑️", () => {
                 if (window.confirm(t("confirm_delete").replace("{name}", session.name))) {
-                    deleteSessions(pyodide, [session]);
+                    deleteSessions([session]);
                 }
             }),
         );
@@ -659,7 +640,7 @@ async function showStoredSessions() {
     }));
     $("delete-all").onclick = () => {
         if (window.confirm(t("confirm_delete_all").replace("{count}", sessions.length))) {
-            deleteSessions(pyodide, sessions);
+            deleteSessions(sessions);
         }
     };
 }
@@ -668,6 +649,19 @@ $("mode").addEventListener("change", () => {
     $("replay-options").hidden = $("mode").value !== "replay";
     showStoredSessions();
 });
+
+// A lab computer running many sessions in a browser (about 76 MB per hour of session): the storage of the browser
+// is limited, and the replay selector loads them all in memory
+const STORAGE_WARNING_MB = 500;
+// bytes: the size of the kept sessions (the list of the replay), else the storage of the page (a cheap estimate:
+// listing the sessions reads them all)
+async function showStorageWarning(bytes = null) {
+    const size = bytes ?? (await navigator.storage?.estimate?.())?.usage ?? 0;
+    const megabytes = size / 1e6;
+    $("storage-warning").hidden = megabytes < STORAGE_WARNING_MB;
+    $("storage-warning").textContent = t("storage_full").replace("{size}", Math.round(megabytes));
+}
+showStorageWarning().catch(console.error);
 
 // Back from a replay (Escape, then Q): the menu opens on the choice of the session to replay
 if (new URLSearchParams(location.search).get("mode") === "replay" && !DEMO && !scorm && !cmi5) {
@@ -739,6 +733,9 @@ $("start").addEventListener("click", async () => {
     if (file) {
         await importSession(pyodide, file, bytes);
     }
+    if ($("mode").value === "replay") { // The session of ?session=, else all (the replay selector lists them)
+        await loadSessionsForReplay(pyodide, params.get("session"));
+    }
     status(null);
     if ($("mode").value !== "replay" && !DEMO) {
         window.addEventListener("beforeunload", warnBeforeLeaving);
@@ -778,10 +775,14 @@ document.addEventListener("openmatb-exit", () => {
 
 const readSessionFile = (pyodide, path) => pyodide.FS.readFile(path, { encoding: "utf8" });
 
-// Dispatched by core.logger.Logger.checkpoint() every 10 s: send the file written so far (if configured)
+// Dispatched by core.logger.Logger.checkpoint() every 10 s: keep the file written so far in the browser (in case
+// the tab is closed), and send it (if configured)
 document.addEventListener("openmatb-checkpoint", async (event) => {
+    const pyodide = await ready;
+    if (!DEMO) {
+        await writeSession(event.detail, pyodide.FS.readFile(event.detail));
+    }
     if (sessionOutput) {
-        const pyodide = await ready;
         sessionOutput.checkpoint(sessionRelativePath(event.detail), readSessionFile(pyodide, event.detail));
     }
 });
@@ -812,11 +813,12 @@ document.addEventListener("openmatb-end", async (event) => {
     if (DEMO) {
         // Not kept for replay either
         pyodide.FS.unlink(event.detail);
-        await storage.sync_idbfs();
         $("end-destinations").replaceChildren(destinationItem(t("demo_not_recorded")));
         document.querySelector('#end [data-i18n="kept_in_browser"]').hidden = true;
         return;
     }
+    // Kept in the browser first (replay, download again), whatever happens to the destinations
+    await writeSession(event.detail, pyodide.FS.readFile(event.detail));
     const output = sessionOutput || new SessionOutput(sessionOutputSettings(""));
     const results = await output.finish(relativePath, readSessionFile(pyodide, event.detail));
     window.removeEventListener("beforeunload", warnBeforeLeaving); // Downloaded and/or sent

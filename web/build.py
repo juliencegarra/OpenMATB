@@ -47,6 +47,7 @@ WHEELS: list[str] = ["pyglet==3.0.dev10", "rstr==3.1.0"]
 PAGE_MODULES: tuple[str, ...] = (
     "openmatb.js",
     "session_output.js",
+    "session_store.js",
     "scorm.js",
     "cmi5.js",
     "serial_trigger.js",

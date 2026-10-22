@@ -208,14 +208,16 @@ def request_fullscreen() -> None:
 
 
 def web_sessions_path() -> Path:
-    """Sessions folder in the browser persistent storage (IndexedDB backed /data mount)."""
+    """Sessions folder in the browser: the running session (in memory), and the sessions copied to be replayed. The
+    page keeps them in IndexedDB at each checkpoint and at the end (web/session_store.js)."""
     import pyglet.storage
 
     return pyglet.storage.get(STORAGE_NAME).data / "sessions"
 
 
 def sync_storage() -> None:
-    """Commit pending writes of the browser persistent storage. No-op on desktop."""
+    """Commit pending writes of pyglet's browser storage (its /cache mount: the sessions are kept by the page at each
+    checkpoint, see web/session_store.js). No-op on desktop."""
     if not IS_WEB:
         return
     import pyglet.storage
