@@ -166,7 +166,7 @@ def web_modules(js):
         _font_canvas=SimpleNamespace(width=0, height=0),
         _font_context=FakeCanvasContext(),
     )
-    key_map = {"End": "END", "1": "_1", "Numpad1": "NUM_1", "NumpadEnter": "NUM_ENTER", "F1": "F1"}
+    key_map = {"End": "END", "1": "_1", "Numpad1": "NUM_1", "NumpadEnter": "NUM_ENTER", "Enter": "ENTER", "F1": "F1"}
     web_window = _module(
         "pyglet.window.emscripten",
         _key_map=key_map,
@@ -293,7 +293,7 @@ class TestSetupWeb:
         [
             ("End", "Numpad1", "NUM_1"),  # NumLock off
             ("1", "Numpad1", "NUM_1"),  # NumLock on
-            ("Enter", "NumpadEnter", "NUM_ENTER"),
+            ("Enter", "NumpadEnter", "ENTER"),  # As on desktop: the communications answers are confirmed
             ("1", "Digit1", "_1"),  # Main keyboard unchanged
             ("End", "End", "END"),
             ("F1", "F1", "F1"),

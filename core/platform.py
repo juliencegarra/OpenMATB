@@ -116,7 +116,9 @@ def _patch_pyglet_numpad_keys() -> None:
         symbol, modifiers = js_key_to_pyglet(event)
         code: str = str(event.code)
         name: str = str(event.key)
-        if code.startswith("Numpad") and code in web_window._key_map:
+        # Not the numpad Enter: ENTER, as on desktop (Windows), not NUM_ENTER, which no task listens to (an answer of
+        # the communications task with the numpad Enter was not confirmed)
+        if code.startswith("Numpad") and code != "NumpadEnter" and code in web_window._key_map:
             symbol = web_window._key_map[code]
         elif name not in web_window._key_map:  # pyglet gave the string event.code
             symbol = named_keys.get(name, getattr(winkey, name.upper(), 0))
