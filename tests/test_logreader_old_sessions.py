@@ -80,9 +80,9 @@ def test_lab_streaming_layer_pause_page_not_shown(tmp_path):
     assert _reader(tmp_path, _lsl_rows(page_shown=False)).lsl_pause_shown is False
 
 
-def test_stops_of_a_session_quit_not_replayed(tmp_path):
+def test_stops_of_a_session_quit_at_the_next_whole_second(tmp_path):
     """Logged in the last update (the window closed then), they were replayed at their whole second: the tasks
-    disappeared up to 1 s (here 0.8 s) before the session was quit."""
+    disappeared up to 1 s (here 0.8 s) before the session was quit. At the next one, executed at the end."""
     lr = _reader(
         tmp_path,
         [
@@ -94,4 +94,4 @@ def test_stops_of_a_session_quit_not_replayed(tmp_path):
         ],
     )
     stops = [line for line in lr.contents if line.endswith(";stop")]
-    assert stops == ["0:00:50;sysmon;stop"]
+    assert stops == ["0:00:50;sysmon;stop", "0:01:41;track;stop"]

@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import math
 from bisect import bisect_left, bisect_right
 from time import gmtime, strftime
 from typing import Any
@@ -374,6 +375,8 @@ class ReplayScheduler(Scheduler):
                 super().update(dt)  # update_timers (mapping) + execute_events
                 if self.clock.isFastForward:
                     self.execute_due_events()
+                # The end reached in this update: its last events now, not at the next update (a frame later)
+                self.pause_if_end_reached()
         else:
             # Required: check exit while paused (super().update is not called)
             self.check_if_must_exit()
@@ -434,7 +437,12 @@ class ReplayScheduler(Scheduler):
     def pause_if_end_reached(self) -> None:
         if self.replay_time >= self.logreader.session_duration and not self.is_paused:
             # An update executes one event: at a faster speed, the end is reached before the last simultaneous
-            # events (e.g. the stop of every task) were all executed
+            # events (e.g. the stop of every task) were all executed. And the stops of the end of the session, at the
+            # next whole second (see LogReader)
+            end: int = math.ceil(self.scenario_time)
+            while self._event_cursor < len(self.events) and self.events[self._event_cursor].time_sec <= end:
+                self.events_queue.append(self.events[self._event_cursor])
+                self._event_cursor += 1
             self.execute_due_events()
             self.pause_playback()
 

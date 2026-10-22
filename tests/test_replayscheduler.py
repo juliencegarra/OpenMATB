@@ -134,6 +134,19 @@ class TestPauseIfEndReached:
         rs.execute_due_events.assert_called_once()
         assert rs.is_paused is True
 
+    def test_the_stops_of_the_end_of_the_session_are_executed(self):
+        """At the next whole second (see LogReader): the stops of a session quit at 100.8 s are at 0:01:41."""
+        from core.event import Event
+
+        stop = Event(1, 101, "track", "stop")
+        rs = _make_replay(
+            replay_time=300, scenario_time=100.8, is_paused=False, events=[stop], execute_due_events=MagicMock()
+        )
+        rs.logreader.session_duration = 300
+        rs.pause_if_end_reached()
+        assert rs.events_queue == [stop]
+        rs.execute_due_events.assert_called_once()
+
     def test_no_pause_before_end(self):
         """No action while time is before end."""
         rs = _make_replay(replay_time=100, is_paused=False)

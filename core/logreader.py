@@ -7,6 +7,7 @@ from __future__ import annotations
 import ast
 import csv
 import io
+import math
 from bisect import bisect_right
 from pathlib import Path
 from typing import Any
@@ -185,12 +186,12 @@ class LogReader:
 
             # Event case
             if row["type"] == "event":
-                # Not the stops of the end of the session: logged in its last update (e.g. a session quit, the stops
-                # of the running tasks), the window closed then and never showed them. Replayed at their whole second
-                # (the scenario times are whole seconds), they hid the tasks up to 1 s too early
-                if row["address"] == "self" and row["value"] == "stop" and row["scenario_time"] == end_time:
-                    continue
-                self.contents.append(self.session_event_to_str(row))
+                # The stops of the end of the session (its last update: the last stop of the scenario, or the stops
+                # of the running tasks when the session is quit) at the next whole second, executed at the end of
+                # the replay: at the previous one (the scenario times are whole seconds), a session quit hid its
+                # tasks up to 1 s too early (a session quit after 0.5 s showed no task)
+                at_end: bool = row["address"] == "self" and row["value"] == "stop" and row["scenario_time"] == end_time
+                self.contents.append(self.session_event_to_str(row, round_up=at_end))
                 self.event_logtimes.append(row["normalized_logtime"])
 
             # The end of a communications prompt ("Target COM_2:127.9", since 2023)
@@ -411,8 +412,9 @@ class LogReader:
             return value
         return ",".join(values)
 
-    def session_event_to_str(self, event_row: dict[str, Any]) -> str:
-        time_sec: int = int(float(event_row["scenario_time"]))
+    def session_event_to_str(self, event_row: dict[str, Any], round_up: bool = False) -> str:
+        scenario_time: float = float(event_row["scenario_time"])
+        time_sec: int = math.ceil(scenario_time) if round_up else int(scenario_time)
         plugin: str = event_row["module"]
         if event_row["address"] == "self":
             command: str = event_row["value"]
