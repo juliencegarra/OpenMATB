@@ -55,6 +55,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the desktop session file, never written to the disk during the session: a killed process (Task Manager, a crash of a graphics or audio driver) lost the rows still buffered, up to the whole end questionnaire. It is written every second
   - Fix an error stopping a browser session: the session was never ended, its file stayed in the browser storage only (up to its last checkpoint), never downloaded nor sent. It is ended as an exit would, with the error logged
   - Fix the browser sessions: closing or reloading the page during a session (Ctrl+W, Ctrl+R, a back swipe) ended it at once, not downloaded nor sent; the browser now asks for a confirmation
+  - Fix the keys lost in the browser after the Tab key or a click out of the task area (the canvas lost the focus): every key of the tasks was ignored until a click on the tasks
   - Fix the numpad Enter key in the browser, which did not confirm a communications answer (NUM_ENTER instead of ENTER, as on desktop)
   - Fix the scenario generator with a fractional event duration (e.g. an alerttimeout of 10500 ms, a refractory duration of 0.5 s): the times, truncated to the second when written, could bring two events closer than planned, and a light was failed again while still on failure (the failure was then ignored). The events take whole seconds, rounded up, and the refractory duration slider has a 1 s step
 

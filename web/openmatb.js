@@ -562,6 +562,22 @@ window.addEventListener("keydown", (event) => {
     }
 }, { capture: true });
 
+// The keys go to the canvas only (pyglet listens to it): the Tab key (the canvas is the only element that takes the
+// focus: the address bar took it), or a click in the margins around the canvas (once out of fullscreen), took the
+// focus away, and every key of the tasks was lost until a click on the canvas
+window.addEventListener("keydown", (event) => {
+    if (!$("pygletCanvas").hidden && event.key === "Tab") {
+        event.preventDefault();
+    }
+}, { capture: true });
+const keepCanvasFocus = () => {
+    if (!$("pygletCanvas").hidden && document.activeElement !== $("pygletCanvas")) {
+        $("pygletCanvas").focus();
+    }
+};
+document.addEventListener("pointerup", keepCanvasFocus);
+document.addEventListener("fullscreenchange", keepCanvasFocus);
+
 // ---- Sessions kept in this browser (replay mode): download them again or delete them ----
 
 // Session files under SESSIONS_DIR (run in this browser, or imported), the most recent first

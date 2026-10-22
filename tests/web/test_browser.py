@@ -1878,3 +1878,16 @@ class TestLeavingThePage:
         app.page.close(run_before_unload=True)
         app.page.wait_for_event("close", timeout=5_000)  # Closed without a confirmation
         assert dialogs == []
+
+
+class TestKeyboardFocus:
+    def test_the_canvas_keeps_the_keys(self, page_factory):
+        """The Tab key, or a click out of the canvas, took the focus away: every key of the tasks was lost."""
+        app = page_factory()
+        app.start("0:00:00;sysmon;start\n0:00:30;sysmon;stop\n")
+        app.page.focus("#pygletCanvas")
+        app.page.keyboard.press("Tab")
+        assert app.page.evaluate("() => document.activeElement.id") == "pygletCanvas"
+        app.page.evaluate("() => document.activeElement.blur()")  # E.g. a click in a margin
+        app.page.mouse.click(5, 5)
+        assert app.page.evaluate("() => document.activeElement.id") == "pygletCanvas"
