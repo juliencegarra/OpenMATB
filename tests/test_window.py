@@ -560,3 +560,20 @@ class TestScreenshot:
         mock_logger.log_manual_entry.assert_called_once_with(path, key="screenshot")
         assert str(download.call_args[0][0]) == path
         assert download.call_args[0][1] == "image/png"
+
+
+class TestOnsetStamp:
+    def test_stamped_once_the_frame_is_shown(self):
+        """After the swap of its buffers (the end of Window.draw), not before on_draw: the onsets were early by the
+        draw and the wait for the screen (up to a refresh), the response times longer."""
+        w = _make_window()
+        order = []
+        with (
+            patch.object(Window.__mro__[1], "draw", side_effect=lambda dt: order.append("draw and swap"), create=True),
+            patch("core.window.timing.flip", side_effect=lambda: order.append("stamp")),
+        ):
+            Window.draw(w, 1 / 60)
+            w.clear = MagicMock()
+            w.set_mouse_cursor_visible = MagicMock()
+            Window.on_draw(w)  # Called by the draw: no stamp of its own
+        assert order == ["draw and swap", "stamp"]

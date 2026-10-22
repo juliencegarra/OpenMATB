@@ -282,8 +282,15 @@ class Window(Window):
         get_logger().log_manual_entry(str(filepath), key="screenshot")
         download_file(filepath, "image/png")  # Browser: the file is in the page storage, hand it to the user
 
+    def draw(self, dt: float) -> None:
+        super().draw(dt)
+        # This frame displays the stimuli started since the last one: stamped once it is shown, after the swap of its
+        # buffers (pyglet 2: on_draw then flip, which waits for the vertical sync or the compositor; pyglet 3: then
+        # frame_end, which presents it), as PsychoPy callOnFlip. Stamped before on_draw, the onsets were early by the
+        # draw and the wait for the screen (up to a refresh, 16.7 ms at 60 Hz): the response times were longer
+        timing.flip()
+
     def on_draw(self) -> None:
-        timing.flip()  # This frame displays the stimuli started since the last one
         pyglet_compat.set_mouse_cursor_visible(self, self.is_mouse_necessary())
         self.clear()
         self.batch.draw()
