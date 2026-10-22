@@ -32,6 +32,7 @@ class Parallelport(AbstractPlugin):
         self._trigger_start: float = 0
         self._last_trigger: int = self._downvalue
         self._awaiting_triggers: list[int] = []
+        self._low_since: float | None = None  # The scenario time the last trigger was lowered
 
         if IS_WEB:
             # A USB trigger box chosen on the start page (web_serial_trigger in config.ini) instead
@@ -109,6 +110,17 @@ class Parallelport(AbstractPlugin):
         self._trigger_start = self.scenario_time
         get_logger().record_state(f"{self.alias}_trigger", "value", value)
         self._last_trigger = value
+        if value == self._downvalue:
+            self._low_since = self.scenario_time
+
+    def can_raise_trigger(self) -> bool:
+        """No trigger being sent, and the port low for delayms since the last one: two triggers in a row went
+        10 -> 0 -> 20 in the same update (the steps caught up share their scenario time), a low period of a few
+        microseconds, missed by EEG amplifiers (10 then 10 made a single long pulse)"""
+        if self.is_trigger_being_sent():
+            return False
+        low_since: float | None = getattr(self, "_low_since", None)
+        return low_since is None or round((self.scenario_time - low_since) * 1000, 3) >= self.parameters["delayms"]
 
     def stop(self) -> None:
         # The steps no longer run: a trigger being sent (e.g. an end-of-block marker just before the stop) would
@@ -127,19 +139,19 @@ class Parallelport(AbstractPlugin):
 
         # If the trigger value is not null...
         if self.parameters["trigger"] != self._downvalue:
-            # ... and no trigger being sent: send it
-            if not self.is_trigger_being_sent():
+            # ... and no trigger being sent (nor just ended): send it
+            if self.can_raise_trigger():
                 self.set_trigger_value(self.parameters["trigger"])
 
-            # but if a trigger is already being sent, store it
+            # but if a trigger is already being sent (or just ended), store it
             else:
                 self._awaiting_triggers.append(self.parameters["trigger"])
 
             # Finally, reset the input trigger
             self.parameters["trigger"] = self._downvalue
 
-        # If it is null and some triggers are awaiting and no trigger is being sent
-        elif len(self._awaiting_triggers) > 0 and not self.is_trigger_being_sent():
+        # If it is null and some triggers are awaiting and no trigger is being sent (nor just ended)
+        elif len(self._awaiting_triggers) > 0 and self.can_raise_trigger():
             self.set_trigger_value(self._awaiting_triggers[0])  # Make it current
             del self._awaiting_triggers[0]  # And delete it
 

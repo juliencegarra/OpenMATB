@@ -192,6 +192,32 @@ class TestPulseWidth:
         assert (down_time - up_time) * 1000 >= 20
 
 
+class TestLowPeriod:
+    def test_the_port_stays_low_delayms_between_two_triggers(self):
+        """Two triggers in a row went 10 -> 0 -> 20 in the same update: a low period of a few microseconds."""
+        pp = _make_pp()
+        sent = []
+        pp._port.setData.side_effect = lambda value: sent.append((pp.scenario_time, value))
+        for frame in range(8):
+            pp.scenario_time = 1.0 + frame / 60
+            if frame == 0:
+                pp.parameters["trigger"] = 10
+            elif frame == 1:
+                pp.parameters["trigger"] = 20
+            for _ in range(3):  # The steps of one update share its scenario time
+                pp.next_refresh_time = pp.scenario_time
+                pp.compute_next_plugin_state()
+        assert [value for _, value in sent] == [10, 0, 20, 0]
+        (_, _), (low_time, _), (high_time, _), (_, _) = sent
+        assert (high_time - low_time) * 1000 >= pp.parameters["delayms"]
+
+    def test_first_trigger_is_not_delayed(self):
+        pp = _make_pp(scenario_time=0.0, _trigger_start=0.0)
+        pp.parameters["trigger"] = 10
+        pp.compute_next_plugin_state()
+        pp._port.setData.assert_called_with(10)
+
+
 class TestFullLifecycle:
     def test_send_wait_reset(self):
         """Full cycle: send trigger → wait → auto-reset to 0."""
