@@ -376,6 +376,22 @@ class TestDefaultAgentSysmon:
             agent.on_plugin_update(plugin, 1.8)
         plugin.do_on_key.assert_not_called()
 
+    def test_update_sysmon_at_the_step_nearest_to_the_delay(self):
+        """5 steps of 200 ms elapsed after 0.99999 s (rounding, frame jitter): solved a step later, after 1200 ms."""
+        agent = DefaultAgent()
+        plugin = MagicMock()
+        plugin.alias = "sysmon"
+        plugin.parameters = {"automaticsolverdelay": 1000, "taskupdatetime": 200}
+        gauge = {"name": "F1", "_response_start": 1.0, "key": "F1"}
+        plugin.get_gauges_on_failure.return_value = [gauge]
+        with patch("agents.abstract_agent.get_logger"):
+            plugin.task_time = 1.8  # 4 steps
+            agent.on_plugin_update(plugin, 1.8)
+            plugin.do_on_key.assert_not_called()
+            plugin.task_time = 1.99999  # 5 steps
+            agent.on_plugin_update(plugin, 2.0)
+        plugin.do_on_key.assert_called_once_with("F1", "press", emulate=True)
+
     def test_update_sysmon_no_failure(self):
         """Agent does nothing when no gauges are on failure."""
         agent = DefaultAgent()

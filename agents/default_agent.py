@@ -30,7 +30,9 @@ class DefaultAgent(AbstractAgent):
         return {"delay": plugin.parameters["alerttimeout"]}
 
     def _update_sysmon(self, plugin: Any) -> None:
-        delay = plugin.parameters["automaticsolverdelay"]
+        # At the step nearest to the delay: the steps come with the frames, a delay of 5 steps elapsed after 4.999
+        # (frame jitter, rounding) or 5.001 steps, and the failure was solved after 1000 or 1200 ms, at random
+        delay = plugin.parameters["automaticsolverdelay"] - plugin.parameters.get("taskupdatetime", 0) / 2
         for gauge in plugin.get_gauges_on_failure():
             if (
                 gauge["_response_start"] is not None
