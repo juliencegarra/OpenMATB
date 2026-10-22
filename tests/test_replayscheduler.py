@@ -18,11 +18,14 @@ def _make_replay(**kwargs):
     rs.pause_scenario_time = False
     rs.plugins = {}
     rs.events_queue = []
+    rs.events = []
+    rs._event_cursor = 0
     rs._hidden_paused_plugins = []
     rs.logreader = MagicMock()
     rs.logreader.end_sec = 300
     rs.logreader.duration_sec = 300
     rs.logreader.session_duration = 300
+    rs.logreader.event_logtimes = []
     rs.playpause = MagicMock()
     rs.slider = MagicMock()
     rs.clock = MagicMock(isFastForward=False)
@@ -249,9 +252,36 @@ class TestUpdateTimers:
         rs.emulate_keyboard_inputs.assert_called_once()
 
     def test_keys_wait_for_the_queued_events(self):
-        rs = _make_replay(replay_time=7.0, emulate_keyboard_inputs=MagicMock(), events_queue=[MagicMock()])
-        rs.update_timers(0.1)
-        rs.emulate_keyboard_inputs.assert_not_called()
+        """The keys logged after the next event wait for it (they were replayed before it in a seek, or within a
+        frame: e.g. an agent key 5 ms after a resman start was sent to the task not started yet)."""
+        from core.event import Event
+
+        lr = _logreader(keyboard=[(6.9, "F1", "press"), (7.005, "NUM_1", "press")])
+        lr.event_logtimes = [7.0]
+        lr.replay_to_scenario_time = lambda t: t
+        plugin = _running_task()
+        rs = _make_loaded_replay(lr, replay_time=7.1, plugins={"resman": plugin})
+        rs.events_queue = [Event(1, 7, "resman", "start")]
+        with patch("core.replayscheduler.get_logger"):
+            rs.update_timers(0.1)
+        assert [c.args[0] for c in plugin.do_on_key.call_args_list] == ["F1"]
+        rs.events_queue = []  # The event executed
+        rs.emulate_keyboard_inputs()
+        assert [c.args[0] for c in plugin.do_on_key.call_args_list] == ["F1", "NUM_1"]
+
+    def test_keys_wait_for_an_event_due_now(self):
+        """Not queued yet: it becomes due in this update."""
+        from core.event import Event
+
+        lr = _logreader(keyboard=[(7.005, "NUM_1", "press")])
+        lr.event_logtimes = [7.0]
+        lr.replay_to_scenario_time = lambda t: t
+        plugin = _running_task()
+        rs = _make_loaded_replay(lr, replay_time=7.1, plugins={"resman": plugin})
+        rs.events = [Event(1, 7, "resman", "start")]
+        with patch("core.replayscheduler.get_logger"):
+            rs.update_timers(0.1)
+        plugin.do_on_key.assert_not_called()
 
 
 class TestCleanupAfterSeek:
@@ -392,7 +422,13 @@ class TestExecuteDueEvents:
 
         rs = _make_replay(is_paused=False, target_time=10, replay_time=5)
         rs.clock.isFastForward = fast_forward
-        for name in ("pause_if_end_reached", "update_time_string", "slider_control_update", "execute_due_events"):
+        for name in (
+            "pause_if_end_reached",
+            "update_time_string",
+            "slider_control_update",
+            "execute_due_events",
+            "emulate_keyboard_inputs",
+        ):
             setattr(rs, name, MagicMock())
         rs.events_queue = [MagicMock()]  # Stop before the input emulation
         with patch.object(Scheduler, "update"):
@@ -600,9 +636,10 @@ class TestUpdate:
         rs._perf_overlay.update_cursor.assert_called_once_with(12)  # The strip is in replay time, as the timeline
 
     def test_inputs_deferred_while_events_are_queued(self):
+        """The keys logged before the queued event are sent (emulate_keyboard_inputs), not the other inputs."""
         rs = self._replay(is_paused=True, events_queue=[MagicMock()])
         rs.update(0.1)
-        rs.emulate_keyboard_inputs.assert_not_called()
+        rs.display_joystick_inputs.assert_not_called()
 
     def test_inputs_emulated_when_blocked_by_a_plugin(self):
         """Queued events cannot fire while a blocking plugin pauses the scenario: inputs must go on."""

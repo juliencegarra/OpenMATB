@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from bisect import bisect_right
+from bisect import bisect_left, bisect_right
 from time import gmtime, strftime
 from typing import Any
 
@@ -357,9 +357,8 @@ class ReplayScheduler(Scheduler):
         # In the session, a key logged before this update was handled before the plugin steps of this update
         # (a key pressed between two updates, or an agent key sent at the start of a plugin step): replay it
         # before them too, not after (a resman step lasts 2 s: a pump toggled after it missed a whole step).
-        # Same deferral as in update(): the events still queued come first.
-        if not (len(self.events_queue) > 0 and not self.is_scenario_time_paused()):
-            self.emulate_keyboard_inputs()
+        # Not before the event that precedes it (see emulate_keyboard_inputs)
+        self.emulate_keyboard_inputs()
 
     def update(self, dt: float) -> None:
         self.pause_if_end_reached()
@@ -382,6 +381,8 @@ class ReplayScheduler(Scheduler):
         # Before the early return below: a prompt started in this update must not be heard in a muted replay
         self._enforce_mute()
 
+        self.emulate_keyboard_inputs()  # Those logged before the next event (see emulate_keyboard_inputs)
+
         # Defer input emulation while queued events can still be processed.
         # When scenario_time is paused (blocking plugin active), events in the
         # queue cannot fire, so we must allow keyboard emulation to proceed
@@ -389,7 +390,6 @@ class ReplayScheduler(Scheduler):
         if len(self.events_queue) > 0 and not self.is_scenario_time_paused():
             return
 
-        self.emulate_keyboard_inputs()
         self.display_joystick_inputs()
         self.display_mouse_inputs()
         self.process_states()
@@ -407,6 +407,7 @@ class ReplayScheduler(Scheduler):
         for _ in range(len(self.events_queue) + len(self.events)):
             if len(self.events_queue) == 0 or self.is_scenario_time_paused():
                 return
+            self.emulate_keyboard_inputs()  # The keys logged before this event, before it
             self.execute_events()
 
     def check_plugins_alive(self) -> bool:
@@ -605,11 +606,31 @@ class ReplayScheduler(Scheduler):
 
         self.clock.schedule(self.update)
 
+    def _next_event_logtime(self) -> float | None:
+        """The logtime of the next event to execute (queued, or due at the scenario time), inf without one: the
+        events wait while a blocking plugin pauses the scenario, the keys go on (e.g. the SPACE of a page)"""
+        if self.is_scenario_time_paused():
+            return float("inf")
+        if self.events_queue:
+            event: Any = self.events_queue[0]
+        elif self._event_cursor < len(self.events) and self.events[self._event_cursor].time_sec <= self.scenario_time:
+            event = self.events[self._event_cursor]
+        else:
+            return float("inf")
+        logtimes: list[float] = getattr(self.logreader, "event_logtimes", [])
+        # Unknown (e.g. a replay without log reader): the keys wait for the event, as the queued events
+        return logtimes[event.line - 1] if 0 < event.line <= len(logtimes) else None
+
     def emulate_keyboard_inputs(self) -> None:
         # Every key not sent yet, not only those of the last CLOCK_STEP: a frame may last longer (a GC pause, a
-        # dragged window, a throttled page), or the keys may have been deferred by queued events
+        # dragged window, a throttled page), or the keys may have been deferred by queued events.
+        # Not the keys logged after the next event to execute: replayed before it (in a seek, steps of 0.1 s, or
+        # within a frame), e.g. an agent key 5 ms after a resman start was sent to the task not started yet
+        next_event: float | None = self._next_event_logtime()
+        if next_event is None:
+            return
         lo: int = self._next_key_index
-        hi: int = bisect_right(self._key_logtimes, self.replay_time)
+        hi: int = min(bisect_right(self._key_logtimes, self.replay_time), bisect_left(self._key_logtimes, next_event))
         self._next_key_index = max(lo, hi)
 
         for idx in range(lo, hi):

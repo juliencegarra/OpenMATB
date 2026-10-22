@@ -58,6 +58,8 @@ class LogReader:
                 self.session_file_path = session_file_list[0]
 
         self.contents: list[str] = []
+        # The normalized logtime of each event of contents: the replay sends the keys logged before an event before it
+        self.event_logtimes: list[float] = []
         # The ends of the communications prompts, as (scenario time, radio name): the replay ends them at these times
         self.prompt_ends: list[tuple[float, str]] = []
         # Whether the lab streaming layer showed its pause at start (not without a stream, e.g. pylsl missing)
@@ -94,6 +96,7 @@ class LogReader:
         self.start_sec, self.end_sec, self.duration_sec = 0, 0, 0
         self.session_duration = 0
         self.line_n = 0
+        self.event_logtimes = []
         self.keyboard_inputs = []
         self.joystick_inputs = []
         self.mouse_inputs = []
@@ -188,6 +191,7 @@ class LogReader:
                 if row["address"] == "self" and row["value"] == "stop" and row["scenario_time"] == end_time:
                     continue
                 self.contents.append(self.session_event_to_str(row))
+                self.event_logtimes.append(row["normalized_logtime"])
 
             # The end of a communications prompt ("Target COM_2:127.9", since 2023)
             elif row["type"] == "manual" and str(row["value"]).startswith("Target "):
