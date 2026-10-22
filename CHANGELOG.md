@@ -60,6 +60,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix a start page that never loaded with `?lang=constructor` (or another name of a JavaScript object property)
   - Fix the browser sessions all numbered 1 (online, each participant has a fresh browser): every participant had the same pseudorandom draws (callsigns, frequencies, failure sides...). In the browser, the session numbers are random 6-digit numbers
   - Fix the tracking difficulty, which depended on the screen: the disturbance followed the size of the reticle, the joystick (and the mouse) did not (25 % harder in 1440p than in 1080p). The inputs are scaled as the reticle, from a 1920 x 1080 window (where nothing changes)
+  - Tracking: the deviation is also logged in half-sizes of the reticle (`center_deviation_relative`, 1: at its edge), as in version 1.1: the same on every screen (`center_deviation` is in px, 1.33 times larger in 1440p)
   - Fix the scenario generator with a fractional event duration (e.g. an alerttimeout of 10500 ms, a refractory duration of 0.5 s): the times, truncated to the second when written, could bring two events closer than planned, and a light was failed again while still on failure (the failure was then ignored). The events take whole seconds, rounded up, and the refractory duration slider has a 1 s step
 
 ## Version 1.5.2

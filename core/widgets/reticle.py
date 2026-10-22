@@ -154,6 +154,13 @@ class Reticle(AbstractWidget):
     def return_deviation(self) -> float:
         return Vec2(*self.cursor_relative).length()
 
+    def return_relative_deviation(self) -> float:
+        """The deviation in half-sizes of the reticle (1: at its edge), as version 1.1: the same on every screen (in
+        px, it was 1.33 times larger in 1440p than in 1080p)"""
+        return Vec2(
+            self.cursor_relative[0] / (self.container.w / 2), self.cursor_relative[1] / (self.container.h / 2)
+        ).length()
+
     def is_cursor_in_radius(self, radius: float) -> bool:
         return radius >= Vec2(self.container.cx, self.container.cy).distance(Vec2(*self.cursor_absolute))
 

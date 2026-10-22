@@ -137,7 +137,8 @@ class Track(AbstractPlugin):
         on_target: bool = isnan(in_target) or bool(in_target)
         self.cursor_color_key = "cursorcolor" if on_target else "cursorcoloroutside"
         self.log_performance("cursor_in_target", in_target)
-        self.log_performance("center_deviation", self.reticle.return_deviation())
+        self.log_performance("center_deviation", self.reticle.return_deviation())  # px
+        self.log_performance("center_deviation_relative", self.reticle.return_relative_deviation())
 
         if not on_target:  # A response is needed
             if self._response_start is None:

@@ -7,6 +7,8 @@ __init__.
 
 from unittest.mock import MagicMock
 
+import pytest
+
 from core.constants import COLORS as C
 from core.container import Container
 from plugins.track import Track
@@ -418,3 +420,15 @@ class TestResponseTimeTracking:
             if t._response_start is None:
                 t._response_start = t.scenario_time
         assert t._response_start is None
+
+
+class TestRelativeDeviation:
+    def test_in_half_sizes_of_the_reticle(self):
+        """As version 1.1: the same on every screen (in px, 1.33 times larger in 1440p than in 1080p)."""
+        from core.widgets.reticle import Reticle
+
+        reticle = object.__new__(Reticle)
+        reticle.container = Container("reticle", 0, 0, 400, 400)
+        reticle.cursor_relative = [120, -160]  # 200 px from the center
+        assert reticle.return_deviation() == pytest.approx(200)
+        assert reticle.return_relative_deviation() == pytest.approx(1.0)  # At the edge (half-size: 200 px)
