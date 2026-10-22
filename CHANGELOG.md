@@ -31,6 +31,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the parallel port: a trigger sent just before the stop of the plugin stayed on the port after the session
   - Fix a parallel port trigger above 255, accepted by the scenario check (sent as 0, or a crash on Linux)
   - Fix a questionnaire default value out of its scale (e.g. `0/100/150`): the slider was off the track, and the value logged as the answer
+  - Fix a task placed in fullscreen shown again after a questionnaire: the arrows of all its radios, or the feedback of its scales, appeared
 
 ## Version 1.5.2
   **New Features**

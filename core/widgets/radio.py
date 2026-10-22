@@ -90,9 +90,12 @@ class Radio(AbstractWidget):
         self.show()
 
     def show(self) -> None:
-        super().show()
+        super().show()  # Shows all its shapes, the arrows of a radio not selected too (e.g. after a questionnaire)
         if self.is_selected:
             self.show_arrows()
+        else:
+            for arrow_name in self.arrows:
+                self.vertex[arrow_name].visible = False
 
     def get_frequency_string(self, frequency: float) -> str:
         return str(round(frequency, 1))

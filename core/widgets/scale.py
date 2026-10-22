@@ -126,6 +126,10 @@ class Scale(AbstractWidget):
             self.positions[position] + aw / 2,
         )
 
+    def show(self) -> None:
+        super().show()  # Shows all its shapes, the feedback not visible too (e.g. after a questionnaire)
+        self.vertex["feedback"].visible = self.feedback_visible
+
     def set_feedback_visibility(self, visible: bool) -> None:
         if visible == self.feedback_visible:
             return

@@ -55,3 +55,31 @@ class TestRadioLabels:
         assert radio.vertex["radio_frequency"].text == "118.2"
         assert not radio.is_new_frequency(118.2)
         assert radio.is_new_frequency(119.0)
+
+
+class TestShowAgain:
+    """A task hidden then shown again (e.g. a fullscreen task during a questionnaire): all the shapes were shown."""
+
+    def test_arrows_of_a_radio_not_selected_stay_hidden(self, radio_labels):
+        radio, _labels = radio_labels
+        radio.hide()
+        radio.show()
+        assert not radio.is_selected
+        assert not any(radio.vertex[arrow].visible for arrow in radio.arrows)
+
+    def test_feedback_of_a_scale_stays_hidden(self):
+        from core.widgets.scale import Scale
+
+        previous_logger = get_logger()
+        set_logger(MagicMock())
+        try:
+            with patch.object(Window, "MainWindow", MagicMock(), create=True):
+                scale = Scale("sysmon_scale1", Container("scale", 0, 0, 40, 200), "F1")
+                scale.show()
+                scale.set_feedback_visibility(True)
+                scale.set_feedback_visibility(False)
+                scale.hide()
+                scale.show()
+        finally:
+            set_logger(previous_logger)
+        assert scale.vertex["feedback"].visible is False
