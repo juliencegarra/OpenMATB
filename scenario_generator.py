@@ -19,8 +19,9 @@ config.read("config.ini")
 # The LOCALE_PATH constant can't be set into constants.py because
 # the latter must be translated itself
 LOCALE_PATH: Path = Path(".", "locales")
-language_iso: str = config["Openmatb"]["language"]
-language: gettext.GNUTranslations = gettext.translation("openmatb", LOCALE_PATH, [language_iso])
+# As main.py: en_EN if the language is missing, the English texts if it has no translation
+language_iso: str = config.get("Openmatb", "language", fallback="en_EN")
+language: gettext.NullTranslations = gettext.translation("openmatb", LOCALE_PATH, [language_iso], fallback=True)
 language.install()
 
 

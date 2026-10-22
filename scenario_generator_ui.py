@@ -30,7 +30,10 @@ from pyglet.window import mouse
 _cfg = configparser.ConfigParser()
 _cfg.read("config.ini")
 _locale_path = Path(".", "locales")
-_lang = gettext.translation("openmatb", _locale_path, [_cfg["Openmatb"]["language"]])
+# As main.py: en_EN if the language is missing, the English texts if it has no translation
+_lang = gettext.translation(
+    "openmatb", _locale_path, [_cfg.get("Openmatb", "language", fallback="en_EN")], fallback=True
+)
 _lang.install()
 
 from core.constants import PATHS as P
