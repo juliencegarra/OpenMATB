@@ -119,6 +119,8 @@ class Genericscales(BlockingPlugin):
             value_min, value_max, value_default = [int(v) for v in values]
             if value_min == value_max:  # Not a scale either: the slider divided by zero when the page showed
                 continue
+            # A default value out of the scale (e.g. 0/100/150): its thumb was off the track, and logged as the answer
+            value_default = max(min(value_min, value_max), min(value_default, max(value_min, value_max)))
             items.append(
                 dict(
                     number=l + 1,

@@ -436,3 +436,15 @@ class TestMouseFocusSync:
         gs_with_keys._on_slider_mouse_focus(2)
         gs_with_keys.do_on_key("RIGHT", "press", emulate=True)
         list(gs_with_keys.sliders.values())[2].adjust_value.assert_called_once_with(1)
+
+
+class TestDefaultValueInTheScale:
+    """A default value out of the scale (a typo, e.g. 0/100/150): the thumb was off the track, logged as the answer."""
+
+    def test_above_the_maximum(self, gs):
+        run_make_slide_graphs(gs, "Title;Question;Low/High;0/100/150", {})
+        assert gs.captured_kwargs["slider_1"]["value_default"] == 100
+
+    def test_below_the_minimum_of_a_reversed_scale(self, gs):
+        run_make_slide_graphs(gs, "Title;Question;High/Low;100/0/-5", {})
+        assert gs.captured_kwargs["slider_1"]["value_default"] == 0
