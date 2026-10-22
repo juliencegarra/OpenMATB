@@ -29,3 +29,16 @@ def test_task_visible_in_a_1_4_session(tmp_path):
     lr = _reader(tmp_path, _visibility_rows(visible="0", hidden="1"))
     # Not hidden from 0 to the end of the session (20 s)
     assert lr.task_hidden_periods["track"] == [(0.0, 0.0)]
+
+
+def test_session_in_the_windows_encoding_is_read(tmp_path):
+    path = tmp_path / "12_260101_120000.csv"
+    rows = [
+        HEADER,
+        "100.0,0.0,event,track,self,start",
+        '101.0,1.0,state,scheduling,"chrono_label, text",Temps passé',
+        "120.0,20.0,event,track,self,stop",
+    ]
+    path.write_bytes(("\n".join(rows) + "\n").encode("cp1252"))
+    lr = LogReader(session_path=str(path))
+    assert lr.session_duration == 20.0

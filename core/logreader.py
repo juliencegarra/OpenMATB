@@ -106,8 +106,12 @@ class LogReader:
         # First pass: read all rows
         all_rows: list[dict[str, Any]] = []
         # utf-8-sig: a session file saved again as "CSV UTF-8" (e.g. by Excel) starts with a BOM
-        with open(self.session_file_path, newline="", encoding="utf-8-sig") as csvfile:
-            text: str = csvfile.read()
+        with open(self.session_file_path, "rb") as csvfile:
+            data: bytes = csvfile.read()
+        try:
+            text: str = data.decode("utf-8-sig")
+        except UnicodeDecodeError:  # Sessions before 1.5 were written in the Windows encoding (e.g. "Temps passé")
+            text = data.decode("cp1252", errors="replace")
         rows: list[dict[str, Any]] = list(csv.DictReader(io.StringIO(text, newline="")))
         # A session killed while writing (power loss, crash) ends with a row cut anywhere, without its end of line
         cut_last_row: bool = not text.endswith(("\n", "\r"))

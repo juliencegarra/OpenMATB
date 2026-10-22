@@ -33,6 +33,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix a questionnaire default value out of its scale (e.g. `0/100/150`): the slider was off the track, and the value logged as the answer
   - Fix a task placed in fullscreen shown again after a questionnaire: the arrows of all its radios, or the feedback of its scales, appeared
   - Fix the replay of a session older than 1.5: its performance strip was all grey (the visibility was logged as 1/0)
+  - Fix the replay of a session in the Windows encoding (before 1.5, e.g. "Temps passé"): it crashed
 
 ## Version 1.5.2
   **New Features**
