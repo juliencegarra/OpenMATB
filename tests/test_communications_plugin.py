@@ -12,7 +12,7 @@ from pyglet.window import mouse
 from core.constants import COLORS as C
 from core.container import Container
 from plugins.abstractplugin import AbstractPlugin
-from plugins.communications import CALLSIGN_MAX_ATTEMPTS, Communications
+from plugins.communications import CALLSIGN_MAX_ATTEMPTS, TUNE_REPEAT_DELAY, Communications
 
 
 def _distinct_callsigns():
@@ -349,6 +349,25 @@ class TestModulateFrequency:
         before = radio["currentfreq"]
         comms.modulate_frequency()
         assert radio["currentfreq"] == before
+
+    def test_a_press_tunes_a_single_step(self, comms, no_modal_dialog):
+        """A press held for more than a task step tuned two steps (the press, then the held key)."""
+        radio = comms.get_active_radio_dict()
+        before = radio["currentfreq"]
+        comms.do_on_key("RIGHT", "press", False)
+        no_modal_dialog.MainWindow.keyboard = {"RIGHT": True}
+        comms.scenario_time += 0.08  # The next task step
+        comms.modulate_frequency()
+        assert radio["currentfreq"] == pytest.approx(before + 0.1)
+
+    def test_a_key_held_tunes_after_the_repeat_delay(self, comms, no_modal_dialog):
+        radio = comms.get_active_radio_dict()
+        before = radio["currentfreq"]
+        comms.do_on_key("RIGHT", "press", False)
+        no_modal_dialog.MainWindow.keyboard = {"RIGHT": True}
+        comms.scenario_time += TUNE_REPEAT_DELAY
+        comms.modulate_frequency()
+        assert radio["currentfreq"] == pytest.approx(before + 0.2)
 
 
 class TestComputeNextPluginState:

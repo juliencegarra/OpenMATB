@@ -24,6 +24,9 @@ from core.widgets import Radio, Simpletext
 from plugins.abstractplugin import AbstractPlugin
 
 CALLSIGN_MAX_ATTEMPTS: int = 100
+# A press tunes one step, a key held tunes continuously after this delay (s), as a key repeat: a press held for more
+# than a task step tuned two steps
+TUNE_REPEAT_DELAY: float = 0.3
 
 
 class Communications(AbstractPlugin):
@@ -134,6 +137,7 @@ class Communications(AbstractPlugin):
             }
         self.lastradioselected: int | None = None
         self.frequency_modulation: float = 0.1
+        self._tune_pressed_at: float | None = None  # The scenario time of the last press of a tuning key
         self.sound_path: Path | None = None
 
         self.set_sample_sounds()
@@ -426,6 +430,8 @@ class Communications(AbstractPlugin):
         return min([r["pos"] for k, r in self.parameters["radios"].items()])
 
     def modulate_frequency(self) -> None:
+        if self._tune_pressed_at is not None and self.scenario_time - self._tune_pressed_at < TUNE_REPEAT_DELAY:
+            return  # The press has tuned its step
         if self.is_key_state(self.parameters["keys"]["tunefrequencydown"], True):
             self.get_active_radio_dict()["currentfreq"] -= self.frequency_modulation
         elif self.is_key_state(self.parameters["keys"]["tunefrequencyup"], True):
@@ -658,11 +664,13 @@ class Communications(AbstractPlugin):
                 self.get_active_radio_dict()["is_active"] = False
                 self.get_radio_dict_by_pos(next_active_n)["is_active"] = True
 
-            # Frequency tuning (discrete step per key press)
+            # Frequency tuning (discrete step per key press, then continuous if held: see modulate_frequency)
             elif key == self.parameters["keys"]["tunefrequencyup"]:
                 self.get_active_radio_dict()["currentfreq"] += self.frequency_modulation
+                self._tune_pressed_at = self.scenario_time
             elif key == self.parameters["keys"]["tunefrequencydown"]:
                 self.get_active_radio_dict()["currentfreq"] -= self.frequency_modulation
+                self._tune_pressed_at = self.scenario_time
 
             elif key == self.parameters["keys"]["validateresponse"]:
                 self.confirm_response(emulate=emulate)
