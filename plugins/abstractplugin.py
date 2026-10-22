@@ -328,6 +328,10 @@ class AbstractPlugin:
 
                     if self.scenario_time >= overdue["_nexttoggletime"]:
                         overdue["_nexttoggletime"] += overdue["blinkdurationms"] / 1000
+                        # From now if it fell behind (the task was hidden: no refresh): it toggled at each frame
+                        # until it caught up, a flicker
+                        if overdue["_nexttoggletime"] <= self.scenario_time:
+                            overdue["_nexttoggletime"] = self.scenario_time + overdue["blinkdurationms"] / 1000
                         overdue["_is_visible"] = not overdue["_is_visible"]
             else:
                 overdue["_nexttoggletime"] = 0  # The next alarm blinks from its own start

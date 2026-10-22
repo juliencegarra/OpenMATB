@@ -42,6 +42,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the communications response times, too short by up to a step and a half (80 to 160 ms): the response time started at the step after the one that saw the end of the prompt, and an answer in between was a HIT of 0 ms
   - Fix two parallel port triggers in a row: the port went from one to the other within the same update (10, 0, 20), with a low period of a few microseconds missed by EEG amplifiers (10 then 10 made a single pulse). The port stays low delayms between two triggers
   - Fix the system monitoring automatic solver: a delay of 1000 ms solved the failures after 1000 or 1200 ms, at random (frame jitter). They are solved at the task step nearest to the delay
+  - Fix the overdue alarm of a task shown again after being hidden: it flickered (toggled at each frame) until it caught up its blinks
   - Fix the scenario generator with a fractional event duration (e.g. an alerttimeout of 10500 ms, a refractory duration of 0.5 s): the times, truncated to the second when written, could bring two events closer than planned, and a light was failed again while still on failure (the failure was then ignored). The events take whole seconds, rounded up, and the refractory duration slider has a 1 s step
 
 ## Version 1.5.2

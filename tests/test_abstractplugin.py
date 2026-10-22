@@ -302,3 +302,17 @@ class TestPluginStates:
         assert p.alive is False
         assert p.paused is True
         assert p.visible is False
+
+
+class TestOverdueBlink:
+    def test_no_flicker_after_the_task_was_hidden(self):
+        """Hidden for 10 s (no refresh), the alarm toggled at each frame for 10 frames to catch up its blinks."""
+        p = _make_plugin(visible=True, display_title=False)
+        p.parameters["taskfeedback"]["overdue"]["active"] = True
+        p.get_response_timers = lambda: [5000]
+        states = []
+        for t in [1.0, 2.0, 12.0, 12.016, 12.033, 12.05]:  # Hidden from 2 to 12 s
+            p.scenario_time = t
+            p.refresh_widgets()
+            states.append(p.parameters["taskfeedback"]["overdue"]["_is_visible"])
+        assert states == [True, False, True, True, True, True]
