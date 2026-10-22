@@ -156,7 +156,8 @@ class ReplayScheduler(Scheduler):
                     perfstrip_container,
                     Window.MainWindow.batch,
                     self.logreader.perf_series,
-                    self.logreader.duration_sec,
+                    self.logreader.session_duration,  # In replay time, as the timeline
+                    self.logreader.task_hidden_periods,
                 )
 
         self.sliding: bool = False
@@ -260,6 +261,7 @@ class ReplayScheduler(Scheduler):
         key_container: Container = input_container.reduce_and_translate(width=0.9, height=0.66, y=0, x=0.5)
         # The text is centered in its area: keep the lines that fit in it (about 24 px each), whatever the screen
         self._max_keys_history: int = max(5, int(key_container.h / 24) - 1)
+        # One key per line, under the title (a line break is a space in HTML: the first key was on the title line)
         self.key_widget: SimpleHTML = SimpleHTML("replay_keys", key_container, self.keys_history_html())
         self.key_widget.show()
 
@@ -288,7 +290,15 @@ class ReplayScheduler(Scheduler):
         )
         self.mute_button: MuteButton = MuteButton("mute_button", mute_container, self.toggle_mute)
 
-        self.slider: Slider = Slider("timeline", media_container, None, "", "", 0, 1, 0, 1)
+        # The timeline takes the space between the play button and the time (it was a centered half of the strip)
+        timeline_l: float = pp_container.l + pp_container.w
+        timeline_r: float = media_container.l + media_container.w * 0.70
+        timeline_container: Container = Container(
+            "timeline", timeline_l, media_container.b, timeline_r - timeline_l, media_container.h
+        )
+        self.slider: Slider = Slider(
+            "timeline", timeline_container, None, "", "", 0, 1, 0, 1, showvalue=False, slider_width=1
+        )
         self.time.show()
 
         # Inputs strip
@@ -383,8 +393,7 @@ class ReplayScheduler(Scheduler):
         self.process_states()
 
         if self._perf_overlay is not None:
-            st: float = self.logreader.replay_to_scenario_time(self.replay_time)
-            self._perf_overlay.update_cursor(st)
+            self._perf_overlay.update_cursor(self.replay_time)
 
     def execute_due_events(self) -> None:
         """Fast-forward (seek): execute all the events due at the reached time.
@@ -459,7 +468,8 @@ class ReplayScheduler(Scheduler):
         if player is not None:
             # The sound follows the replay speed (it only accompanies the prompt, which ends at its logged time)
             speed: int = self.clock.get_speed()
-            silent: bool = self._muted or speed > MAX_AUDIO_SPEED or self.clock.isFastForward
+            hidden: bool = not self.plugins["communications"].is_visible()  # A hidden task is not heard either
+            silent: bool = self._muted or speed > MAX_AUDIO_SPEED or self.clock.isFastForward or hidden
             player.volume = 0.0 if silent else 1.0
             player.pitch = min(speed, MAX_AUDIO_SPEED)
 
@@ -634,7 +644,7 @@ class ReplayScheduler(Scheduler):
         self.key_widget.set_text(self.keys_history_html())
 
     def keys_history_html(self) -> str:
-        return "<strong>%s\n</strong>" % _("Keyboard history:") + "<br>".join(self.keys_history)
+        return "<strong>%s</strong><br>" % _("Keyboard history:") + "<br>".join(self.keys_history)
 
     def _rows_to_read(self, name: str, logtimes: list[float]) -> range:
         """The indices of the rows not read yet, up to the replay time. Not only those of the last CLOCK_STEP: a

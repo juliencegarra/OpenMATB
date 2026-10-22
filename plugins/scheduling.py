@@ -12,6 +12,7 @@ from pyglet.text import Label as PygletLabel
 from core import validation
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
+from core.constants import scaled
 from core.container import Container
 from core.utils import get_conf_value
 from core.widgets import Schedule, Simpletext, Timeline
@@ -141,7 +142,7 @@ class Scheduling(AbstractPlugin):
         # Its name and its time side by side, centered together: two labels (they were separated by a tab, which
         # made the text wrap in a narrow window, below the task area). Stacked if the window is too narrow
         c: Container = self.task_container
-        gap: float = 8
+        gap: float = scaled(8)
         label_w: float = self._text_width(self.get_chrono_label())
         time_w: float = self._text_width("00:00:00")
         positions: dict[str, tuple[float, float, str]]

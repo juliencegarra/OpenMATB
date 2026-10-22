@@ -24,6 +24,7 @@ def window():
         main = win_cls.MainWindow
         main.modal_dialog = None
         main.alive = True
+        main.font_scale = 0.75
         yield main
 
 
@@ -102,7 +103,8 @@ class TestInit:
 
         keys = [c.kwargs["key"] for c in mock_logger.log_manual_entry.call_args_list]
         # The session ID gives the replay its seeds (the file may be renamed); the window size places the mouse
-        assert keys == ["version", "session_id", "window"]
+        assert keys == ["version", "session_id", "window", "font_scale"]
+        mock_logger.log_manual_entry.assert_any_call("0.750", key="font_scale")
         mock_logger.log_manual_entry.assert_any_call(mock_logger.session_id, key="session_id")
         clock_cls.assert_called_once_with("main")
         clock_cls.return_value.schedule.assert_called_once_with(sched.update)

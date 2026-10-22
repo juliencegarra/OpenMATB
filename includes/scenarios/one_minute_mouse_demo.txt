@@ -1,3 +1,4 @@
+# title: One-minute mouse demo
 # Demo of the website (Demo tab, ?demo=1): the basic scenario for visitors
 # English voice, no questionnaire, and every task can be done with the mouse (no numeric keypad on laptops)
 
@@ -34,11 +35,11 @@
 0:00:20;track;automaticsolver;True
 0:00:40;track;automaticsolver;False
 
-# Communications: own and other callsigns, then automated
+# Communications: own and other callsigns, then automated (a prompt lasts up to 18 s: each one ends before the next)
 0:00:00;communications;radioprompt;own
-0:00:25;communications;radioprompt;other
+0:00:20;communications;radioprompt;other
 0:00:40;communications;automaticsolver;True
-0:00:45;communications;radioprompt;own
+0:00:41;communications;radioprompt;own
 
 0:01:00;resman;stop
 0:01:00;track;stop

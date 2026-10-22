@@ -44,6 +44,8 @@ class Scheduler:
         # The size of the window (a page in the browser): the replay places the mouse inputs with it
         if Window.MainWindow is not None and not REPLAY_MODE:
             get_logger().log_manual_entry(f"{Window.MainWindow.width}x{Window.MainWindow.height}", key="window")
+            # The texts are scaled to the window (1 in a 1920 x 1080 one)
+            get_logger().log_manual_entry(f"{Window.MainWindow.font_scale:.3f}", key="font_scale")
 
         self.clock: Clock = Clock("main")
         self.scenario_time: float = 0

@@ -1,0 +1,88 @@
+# title: LSL synchronized session
+# Physiological synchronization: a resting baseline, then a 5-minute block, with Lab Streaming Layer markers
+# For EEG, ECG, fNIRS or eye tracking recordings: record the OpenMATB stream and the sensor streams with the
+# LabRecorder (they share the LSL clock). pauseatstart displays a pause to add the OpenMATB stream in the
+# LabRecorder; streamsession also streams the whole session log. With a parallel port trigger box, replace
+# the markers by parallelport;trigger;<1-255> lines (see the wiki).
+
+# 1. LSL stream, then a 2-minute resting baseline (the instruction page closes after 120 s)
+0:00:00;labstreaminglayer;pauseatstart;True
+0:00:00;labstreaminglayer;streamsession;True
+0:00:00;labstreaminglayer;start
+0:00:00;labstreaminglayer;marker;baseline_start
+0:00:00;instructions;filename;tasks_en/rest_baseline.txt
+0:00:00;instructions;maxdurationsec;120
+0:00:00;instructions;start
+0:00:00;labstreaminglayer;marker;baseline_end
+
+# 2. Task block (the scenario time starts again at the end of the baseline)
+0:00:00;labstreaminglayer;marker;block_start
+0:00:00;sysmon;start
+0:00:00;track;start
+0:00:00;scheduling;start
+0:00:00;communications;start
+0:00:00;resman;start
+0:00:00;track;targetproportion;0.5
+0:00:00;resman;tank-a-lossperminute;600
+0:00:00;resman;tank-b-lossperminute;600
+
+# System monitoring: gauge and light failures, each one with a marker
+0:00:11;sysmon;lights-1-failure;True
+0:00:11;labstreaminglayer;marker;sysmon_lights-1_failure
+0:00:47;sysmon;lights-2-failure;True
+0:00:47;labstreaminglayer;marker;sysmon_lights-2_failure
+0:01:06;sysmon;scales-3-failure;True
+0:01:06;labstreaminglayer;marker;sysmon_scales-3_failure
+0:01:52;sysmon;scales-4-failure;True
+0:01:52;labstreaminglayer;marker;sysmon_scales-4_failure
+0:02:04;sysmon;scales-2-failure;True
+0:02:04;labstreaminglayer;marker;sysmon_scales-2_failure
+0:02:41;sysmon;scales-1-failure;True
+0:02:41;labstreaminglayer;marker;sysmon_scales-1_failure
+0:03:20;sysmon;scales-3-failure;True
+0:03:20;labstreaminglayer;marker;sysmon_scales-3_failure
+0:03:33;sysmon;scales-4-failure;True
+0:03:33;labstreaminglayer;marker;sysmon_scales-4_failure
+0:04:17;sysmon;scales-1-failure;True
+0:04:17;labstreaminglayer;marker;sysmon_scales-1_failure
+0:04:39;sysmon;lights-1-failure;True
+0:04:39;labstreaminglayer;marker;sysmon_lights-1_failure
+
+# Communications: radio prompts (own: to answer, other: to ignore), each one with a marker
+0:00:28;communications;radioprompt;other
+0:00:28;labstreaminglayer;marker;communications_prompt_other
+0:01:11;communications;radioprompt;own
+0:01:11;labstreaminglayer;marker;communications_prompt_own
+0:01:41;communications;radioprompt;own
+0:01:41;labstreaminglayer;marker;communications_prompt_own
+0:02:44;communications;radioprompt;own
+0:02:44;labstreaminglayer;marker;communications_prompt_own
+0:03:06;communications;radioprompt;other
+0:03:06;labstreaminglayer;marker;communications_prompt_other
+0:03:30;communications;radioprompt;other
+0:03:30;labstreaminglayer;marker;communications_prompt_other
+0:03:57;communications;radioprompt;other
+0:03:57;labstreaminglayer;marker;communications_prompt_other
+0:04:30;communications;radioprompt;own
+0:04:30;labstreaminglayer;marker;communications_prompt_own
+
+# Resources management: pump failures, then repaired, each one with a marker
+0:02:06;resman;pump-8-state;failure
+0:02:06;labstreaminglayer;marker;resman_pump-8_failure
+0:02:36;resman;pump-8-state;off
+0:04:25;resman;pump-1-state;failure
+0:04:25;labstreaminglayer;marker;resman_pump-1_failure
+0:04:55;resman;pump-1-state;off
+
+# 3. End of the block, NASA-TLX, then the end of the stream
+0:05:00;labstreaminglayer;marker;block_end
+0:05:00;sysmon;stop
+0:05:00;track;stop
+0:05:00;scheduling;stop
+0:05:00;communications;stop
+0:05:00;resman;stop
+0:05:00;labstreaminglayer;marker;questionnaire_start
+0:05:00;genericscales;filename;nasatlx_en.txt
+0:05:00;genericscales;start
+0:05:00;labstreaminglayer;marker;questionnaire_end
+0:05:00;labstreaminglayer;stop

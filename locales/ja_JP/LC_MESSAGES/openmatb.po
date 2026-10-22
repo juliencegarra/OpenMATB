@@ -57,23 +57,23 @@ msgstr "終了"
 msgid "Continue"
 msgstr "続ける"
 
-#: core/replayscheduler.py:766
+#: core/replayscheduler.py:776 core/replayscheduler.py:776 core/replayscheduler.py:776
 msgid "Mouse:"
 msgstr "マウス："
 
-#: core/replayscheduler.py:236
+#: core/replayscheduler.py:237 core/replayscheduler.py:237 core/replayscheduler.py:237
 msgid "Page hidden (tab change or minimized window): session paused"
 msgstr "ページが非表示になりました（タブの切り替えまたはウィンドウの最小化）：セッションを一時停止しました"
 
-#: core/replayscheduler.py:238
+#: core/replayscheduler.py:239 core/replayscheduler.py:239 core/replayscheduler.py:239
 msgid "Session paused (pause dialog after the page was hidden)"
 msgstr "セッション一時停止中（ページ非表示後の一時停止ダイアログ）"
 
-#: core/replayscheduler.py:637
+#: core/replayscheduler.py:647 core/replayscheduler.py:647 core/replayscheduler.py:647
 msgid "Keyboard history:"
 msgstr "キーボード履歴："
 
-#: core/replayscheduler.py:773
+#: core/replayscheduler.py:783 core/replayscheduler.py:783 core/replayscheduler.py:783
 msgid "held"
 msgstr "押下中"
 
@@ -153,31 +153,31 @@ msgstr "%s 行目で警告。パラメータ (%s) に検証方法がありませ
 msgid "Error on line %s. %s "
 msgstr "%s 行目でエラー。%s "
 
-#: core/selector.py:128
+#: core/selector.py:166
 msgid "Select a scenario"
 msgstr "シナリオを選択"
 
-#: core/selector.py:128
+#: core/selector.py:166
 msgid "Select a session"
 msgstr "セッションを選択"
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "Esc: Quit"
 msgstr "Esc：終了"
 
-#: core/selector.py:50
+#: core/selector.py:60
 msgid "(empty)"
 msgstr "（空）"
 
-#: core/selector.py:191
+#: core/selector.py:242
 msgid "No files found"
 msgstr "ファイルが見つかりません"
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "Enter: Select"
 msgstr "Enter：選択"
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "UP/DOWN: Navigate"
 msgstr "上/下：移動"
 
@@ -269,27 +269,27 @@ msgstr "はそれぞれ 0 から 255 の (R,G,B,a) 値である必要があり�
 msgid "min."
 msgstr "分"
 
-#: core/window.py:367
+#: core/window.py:373
 msgid "You hit the Escape key"
 msgstr "Esc キーが押されました"
 
-#: core/window.py:372
+#: core/window.py:378
 msgid "Pause"
 msgstr "一時停止"
 
-#: core/window.py:166
+#: core/window.py:172
 msgid "Session ID: %s"
 msgstr "セッション ID：%s"
 
-#: core/window.py:367
+#: core/window.py:373
 msgid "Exit OpenMATB?"
 msgstr "OpenMATB を終了しますか？"
 
-#: core/window.py:184
+#: core/window.py:190
 msgid "In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected."
 msgstr "config.ini で指定された画面番号が使用可能な画面数 (%s) を超えています。最後の画面を使用します。"
 
-#: core/window.py:423
+#: core/window.py:429
 msgid "Error. No placement found for the [%s] alias"
 msgstr "エラー。エイリアス [%s] の配置が見つかりません"
 
@@ -301,19 +301,19 @@ msgstr "手動"
 msgid "Communications"
 msgstr "通信"
 
+#: plugins/communications.py:199
+msgid "Callsign \t\t %s"
+msgstr "コールサイン \t\t %s"
+
 #: plugins/communications.py:153
 msgid "Sound path %s does not exist. Check voiceidiom/voicegender combination."
 msgstr "音声のパス %s は存在しません。voiceidiom/voicegender の組み合わせを確認してください。"
-
-#: plugins/communications.py:203
-msgid "Callsign \t\t %s"
-msgstr "コールサイン \t\t %s"
 
 #: plugins/communications.py:167
 msgid " does not exist"
 msgstr " は存在しません"
 
-#: plugins/genericscales.py:38
+#: plugins/genericscales.py:39 plugins/genericscales.py:39 plugins/genericscales.py:39
 msgid "Press SPACE to validate"
 msgstr "スペースキーで確定"
 
@@ -381,17 +381,17 @@ msgstr "燃料管理"
 msgid "Pump status"
 msgstr "ポンプの状態"
 
-#: plugins/scheduling.py:19
+#: plugins/scheduling.py:24
 msgid "Scheduling"
 msgstr "スケジュール"
 
-#: plugins/scheduling.py:149
-msgid "Elapsed time"
-msgstr "経過時間"
-
-#: plugins/scheduling.py:156
+#: plugins/scheduling.py:165
 msgid "Remaining time"
 msgstr "残り時間"
+
+#: plugins/scheduling.py:165
+msgid "Elapsed time"
+msgstr "経過時間"
 
 #: plugins/sysmon.py:21
 msgid "System monitoring"

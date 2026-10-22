@@ -50,16 +50,16 @@ class TestInterBlockEvents:
 
     def test_instructions_file_is_relative_to_the_instructions_folder(self):
         """The instructions plugin reads its filename in includes/instructions: the path from the repository root
-        (includes/instructions/default_en/...) was not found, and the generated scenario did not load."""
+        (includes/instructions/guided_tour_en/...) was not found, and the generated scenario did not load."""
         ui = _ui()
         ui.WIN_W, ui.WIN_H, ui._overlay_batch = 800, 600, MagicMock()
         ui._add_inter_block_widget = MagicMock()
         ui._close_overlay = MagicMock()
         files = self._offered_files(ui, ui._insert_instructions_at)
         assert files and all(f.is_relative_to(P["INSTRUCTIONS"]) for f in files)
-        ui._on_interblock_file_selected(P["INSTRUCTIONS"] / "default_en" / "welcome_screen.txt")
+        ui._on_interblock_file_selected(P["INSTRUCTIONS"] / "guided_tour_en" / "welcome_screen.txt")
         filename = ui._add_inter_block_widget.call_args.args[2]
-        assert filename == "default_en/welcome_screen.txt"
+        assert filename == "guided_tour_en/welcome_screen.txt"
         assert validation.is_available_text_file(filename)[1] is None
 
     def test_questionnaires_are_offered_for_a_questionnaire(self):
@@ -107,8 +107,8 @@ class TestOldPresetFilenames:
 
     def test_windows_path_from_root_is_made_relative_to_the_plugin_folder(self):
         ui = _ui()
-        name = ui._preset_filename("instructions", r"includes\instructions\default_en\welcome_screen.txt")
-        assert name == "default_en/welcome_screen.txt"
+        name = ui._preset_filename("instructions", r"includes\instructions\guided_tour_en\welcome_screen.txt")
+        assert name == "guided_tour_en/welcome_screen.txt"
 
     def test_posix_path_from_root_is_made_relative_to_the_plugin_folder(self):
         ui = _ui()
@@ -117,7 +117,7 @@ class TestOldPresetFilenames:
     def test_current_filename_is_kept(self):
         ui = _ui()
         assert ui._preset_filename("genericscales", "nasatlx_en.txt") == "nasatlx_en.txt"
-        assert ui._preset_filename("instructions", "default_en/track.txt") == "default_en/track.txt"
+        assert ui._preset_filename("instructions", "guided_tour_en/track.txt") == "guided_tour_en/track.txt"
 
 
 class TestAdvancedPanelDefaults:

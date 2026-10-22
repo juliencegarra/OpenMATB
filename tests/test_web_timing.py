@@ -193,6 +193,9 @@ class TestNoDrift:
             pytest.param([1 / 120] * 12_000, id="steady-120Hz"),
             pytest.param([1 / 60] * 6_000, id="steady-60Hz-animation-frames"),
             pytest.param(_jittered_gaps(10_000, 0.004, 0.017, seed=1), id="jittered-4-17ms"),
+            # Chrome on Windows in some sessions: timers fire on the Windows timer step (1/64 s), and the loop
+            # wakes up again at once to wait for the rest of the interval
+            pytest.param([0.0001, 1 / 64 - 0.0001] * 3_840, id="windows-timer-step-15.6ms"),
             pytest.param(([0.0095] * 50 + [0.25]) * 200, id="stalls-250ms"),
             pytest.param([1.0] * 100, id="hidden-tab-throttled-1Hz"),
         ],

@@ -397,7 +397,18 @@ class TestMirroredSlider:
         s = self._make()
         assert math.isclose(s.containers["value"].l, s.container.l)
         assert math.isclose(s.containers["min"].l + s.containers["min"].w, s.container.l + s.container.w)
-        assert math.isclose(s.containers["slide"].w, s.container.w * 0.6)
+        assert math.isclose(s.containers["slide"].w, s.container.w * 0.5)
+
+    def test_bounds_next_to_the_track_minimum_on_the_right(self):
+        """The bound on the right is left-aligned after the track, the one on the left right-aligned before it."""
+        with patch("core.widgets.slider.Label") as label_cls:
+            s = self._make(showvalue=False)
+        bounds = {c.args[0]: c.kwargs for c in label_cls.call_args_list}
+        slide = s.containers["slide"]
+        assert bounds[s.label_min]["anchor_x"] == "left"
+        assert bounds[s.label_min]["x"] > slide.l + slide.w * 0.95
+        assert bounds[s.label_max]["anchor_x"] == "right"
+        assert bounds[s.label_max]["x"] < slide.l + slide.w * 0.05
 
     def test_without_value(self):
         s = self._make(showvalue=False)

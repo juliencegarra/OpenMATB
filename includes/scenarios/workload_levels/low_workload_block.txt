@@ -1,0 +1,44 @@
+# title: Workload levels: low workload block
+# Workload levels: low workload block (5 minutes), followed by the NASA-TLX
+# The three blocks (low, medium and high) have the same structure and differ only by the number of events
+# and the task difficulty: run them in the order of your design (e.g. counterbalanced across participants).
+# Per minute: 1 system monitoring failures, 0.8 radio prompts (half of them to the participant), 0.2 pump failures.
+# Tracking target: 0.75 of the area; tanks A and B lose 300 per minute (the difficulty mapping of the scenario generator).
+
+# 1. Start all the tasks
+0:00:00;sysmon;start
+0:00:00;track;start
+0:00:00;scheduling;start
+0:00:00;communications;start
+0:00:00;resman;start
+
+# 2. Task difficulty and events
+0:00:00;track;targetproportion;0.75
+0:00:00;resman;tank-a-lossperminute;300
+0:00:00;resman;tank-b-lossperminute;300
+
+# System monitoring: gauge and light failures
+0:00:30;sysmon;lights-1-failure;True
+0:01:32;sysmon;scales-2-failure;True
+0:02:49;sysmon;lights-2-failure;True
+0:03:20;sysmon;scales-3-failure;True
+0:04:19;sysmon;scales-4-failure;True
+
+# Communications: radio prompts (own: to answer, other: to ignore)
+0:00:33;communications;radioprompt;other
+0:02:19;communications;radioprompt;own
+0:03:00;communications;radioprompt;other
+0:04:16;communications;radioprompt;own
+
+# Resources management: pump failures, then repaired
+0:04:17;resman;pump-7-state;failure
+0:04:47;resman;pump-7-state;off
+
+# 3. End of the block: the tasks stop, then the NASA-TLX
+0:05:00;sysmon;stop
+0:05:00;track;stop
+0:05:00;scheduling;stop
+0:05:00;communications;stop
+0:05:00;resman;stop
+0:05:00;genericscales;filename;nasatlx_en.txt
+0:05:00;genericscales;start

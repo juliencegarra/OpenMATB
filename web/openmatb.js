@@ -743,7 +743,7 @@ checkBrowser();
 
 // ?demo=1 (Demo tab of the website): runs the demo scenario, and nothing is recorded
 const DEMO = new URLSearchParams(location.search).get("demo") === "1";
-const DEMO_SCENARIO = "demo.txt";
+const DEMO_SCENARIO = "one_minute_mouse_demo.txt";
 // config.ini values of the demo: no session number to acknowledge, and the session is not sent anywhere
 const DEMO_CONFIG = { display_session_number: "False", web_session_output: "none" };
 

@@ -62,23 +62,23 @@ msgstr "Quitter"
 msgid "Continue"
 msgstr "Continuer"
 
-#: core/replayscheduler.py:766
+#: core/replayscheduler.py:776 core/replayscheduler.py:776 core/replayscheduler.py:776
 msgid "Mouse:"
 msgstr "Souris :"
 
-#: core/replayscheduler.py:236
+#: core/replayscheduler.py:237 core/replayscheduler.py:237 core/replayscheduler.py:237
 msgid "Page hidden (tab change or minimized window): session paused"
 msgstr "Page masquée (changement d'onglet ou fenêtre réduite) : session en pause"
 
-#: core/replayscheduler.py:238
+#: core/replayscheduler.py:239 core/replayscheduler.py:239 core/replayscheduler.py:239
 msgid "Session paused (pause dialog after the page was hidden)"
 msgstr "Session en pause (fenêtre de pause après le masquage de la page)"
 
-#: core/replayscheduler.py:637
+#: core/replayscheduler.py:647 core/replayscheduler.py:647 core/replayscheduler.py:647
 msgid "Keyboard history:"
 msgstr "Historique du clavier :"
 
-#: core/replayscheduler.py:773
+#: core/replayscheduler.py:783 core/replayscheduler.py:783 core/replayscheduler.py:783
 msgid "held"
 msgstr "maintenu"
 
@@ -158,31 +158,31 @@ msgstr "Erreur à la ligne %s. Le paramètre (%s) n'a pas de méthode de vérifi
 msgid "Error on line %s. %s "
 msgstr "Erreur à la ligne %s. %s "
 
-#: core/selector.py:128
+#: core/selector.py:166
 msgid "Select a scenario"
 msgstr "Choisissez un scénario"
 
-#: core/selector.py:128
+#: core/selector.py:166
 msgid "Select a session"
 msgstr "Choisissez une session"
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "Esc: Quit"
 msgstr "Échap : quitter"
 
-#: core/selector.py:50
+#: core/selector.py:60
 msgid "(empty)"
 msgstr "(vide)"
 
-#: core/selector.py:191
+#: core/selector.py:242
 msgid "No files found"
 msgstr "Aucun fichier trouvé"
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "Enter: Select"
 msgstr "Entrée : choisir"
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "UP/DOWN: Navigate"
 msgstr "HAUT/BAS : naviguer"
 
@@ -274,27 +274,27 @@ msgstr "devraient être des valeurs (R,G,B,a) comprises en 0 et 255 (et non %s)"
 msgid "min."
 msgstr "min."
 
-#: core/window.py:367
+#: core/window.py:373
 msgid "You hit the Escape key"
 msgstr "Vous avez pressé la touche Échap"
 
-#: core/window.py:372
+#: core/window.py:378
 msgid "Pause"
 msgstr "Pause"
 
-#: core/window.py:166
+#: core/window.py:172
 msgid "Session ID: %s"
 msgstr "Identifiant unique de la session : %s"
 
-#: core/window.py:367
+#: core/window.py:373
 msgid "Exit OpenMATB?"
 msgstr "Quitter OpenMATB ?"
 
-#: core/window.py:184
+#: core/window.py:190
 msgid "In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected."
 msgstr "Dans config.ini le numéro d'écran indiqué dépasse le nombre d'écrans disponibles (%s). Dernier écran sélectionné."
 
-#: core/window.py:423
+#: core/window.py:429
 msgid "Error. No placement found for the [%s] alias"
 msgstr "Erreur. Aucune localisation trouvée pour l'alias (%s)"
 
@@ -306,19 +306,19 @@ msgstr "MANUEL"
 msgid "Communications"
 msgstr "Communications"
 
+#: plugins/communications.py:199
+msgid "Callsign \t\t %s"
+msgstr "Indicatif \t\t %s"
+
 #: plugins/communications.py:153
 msgid "Sound path %s does not exist. Check voiceidiom/voicegender combination."
 msgstr "Le chemin audio %s n'existe pas. Vérifiez la combinaison voiceidiom/voicegender."
-
-#: plugins/communications.py:203
-msgid "Callsign \t\t %s"
-msgstr "Indicatif \t\t %s"
 
 #: plugins/communications.py:167
 msgid " does not exist"
 msgstr " n'existe pas"
 
-#: plugins/genericscales.py:38
+#: plugins/genericscales.py:39 plugins/genericscales.py:39 plugins/genericscales.py:39
 msgid "Press SPACE to validate"
 msgstr "Appuyez sur ESPACE pour valider"
 
@@ -386,17 +386,17 @@ msgstr "Gestion des ressources"
 msgid "Pump status"
 msgstr "État des pompes"
 
-#: plugins/scheduling.py:19
+#: plugins/scheduling.py:24
 msgid "Scheduling"
 msgstr "Planning"
 
-#: plugins/scheduling.py:149
-msgid "Elapsed time"
-msgstr "Temps passé"
-
-#: plugins/scheduling.py:156
+#: plugins/scheduling.py:165
 msgid "Remaining time"
 msgstr "Temps restant"
+
+#: plugins/scheduling.py:165
+msgid "Elapsed time"
+msgstr "Temps passé"
 
 #: plugins/sysmon.py:21
 msgid "System monitoring"

@@ -13,7 +13,7 @@ OpenMATB can also run in a web browser, with no installation for participants: P
 python web/build.py --serve
 ```
 
-Then open http://localhost:8000. `web/build.py` writes a static site into `web/dist` (the application files, the pyglet and rstr wheels, and a font), which can be hosted on any web server (the page must be served over HTTP, `file://` does not work). The start page lets you choose the language, run a scenario or replay a session. These choices can also be given in the URL: `?lang=fr_FR`, `?scenario=basic.txt`, `?mode=replay`, `?session=12`. `?demo=1` runs the demo scenario (`includes/scenarios/demo.txt`: English voice, no questionnaire, mouse control) without recording anything: it is the Demo tab of the website.
+Then open http://localhost:8000. `web/build.py` writes a static site into `web/dist` (the application files, the pyglet and rstr wheels, and a font), which can be hosted on any web server (the page must be served over HTTP, `file://` does not work). The start page lets you choose the language, run a scenario or replay a session. These choices can also be given in the URL: `?lang=fr_FR`, `?scenario=basic.txt`, `?mode=replay`, `?session=12`. `?demo=1` runs the demo scenario (`includes/scenarios/one_minute_mouse_demo.txt`: English voice, no questionnaire, mouse control) without recording anything: it is the Demo tab of the website.
 
 Differences with the desktop version:
 

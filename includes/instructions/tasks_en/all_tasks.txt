@@ -1,0 +1,5 @@
+<h1>All the tasks together</h1>
+
+<p>You will now perform the four tasks at the same time.</p>
+
+<p>Try to perform all of them as well as possible: none of them is more important than the others.</p>

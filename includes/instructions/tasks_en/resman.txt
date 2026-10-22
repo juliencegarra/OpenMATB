@@ -1,0 +1,7 @@
+<h1>Resources management</h1>
+
+<p>In the resources management task (bottom middle), tanks A and B lose fuel continuously.</p>
+
+<p>Keep their levels inside the marked zone by switching the pumps on and off with the keys <strong>1</strong> to <strong>8</strong> of the numeric keypad. Each pump moves fuel in the direction of its arrow.</p>
+
+<p>A failed pump turns red and cannot be used until it is repaired.</p>

@@ -194,13 +194,17 @@ class Communications(AbstractPlugin):
                 this_callsign = self.get_callsign()
             self.parameters["othercallsign"].append(this_callsign)
 
+    def callsign_text(self) -> str:
+        """The callsign label of the participant, at creation and at each refresh (the callsign can change)."""
+        return _("Callsign \t\t %s") % self.parameters["owncallsign"]
+
     def create_widgets(self) -> None:
         super().create_widgets()
         self.add_widget(
             "callsign",
             Simpletext,
             container=self.task_container,
-            text=_("Callsign \t\t %s") % self.parameters["owncallsign"],
+            text=self.callsign_text(),
             y=0.9,
         )
 
@@ -234,6 +238,20 @@ class Communications(AbstractPlugin):
         super().resume()
         if hasattr(self, "player") and self.player.source is not None:
             self.player.play()
+
+    def show(self) -> None:
+        super().show()
+        self.set_prompt_audibility()
+
+    def hide(self) -> None:
+        super().hide()
+        self.set_prompt_audibility()
+
+    def set_prompt_audibility(self) -> None:
+        # A hidden task is not heard either: its prompt goes on silently (e.g. the end of a prompt cut by a pause,
+        # resumed before the task is shown again)
+        if hasattr(self, "player"):
+            self.player.volume = 1.0 if self.is_visible() else 0.0
 
     def get_callsign(self) -> str:
         self.callsign_seed += 1
@@ -326,6 +344,7 @@ class Communications(AbstractPlugin):
 
         try:
             self.player: SequencePlayer = SequencePlayer(sounds)
+            self.set_prompt_audibility()
             self.player.play()
         except Exception:
             self.logger.log_manual_entry("Audio prompt playback failed")
@@ -493,7 +512,7 @@ class Communications(AbstractPlugin):
         if not super().refresh_widgets():
             return
 
-        self.widgets["communications_callsign"].set_text(self.parameters["owncallsign"])
+        self.widgets["communications_callsign"].set_text(self.callsign_text())
 
         # Move arrow to active radio
         for _, radio in self.parameters["radios"].items():

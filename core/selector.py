@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import math
+import re
 import time as _time
 from datetime import datetime
 from pathlib import Path
@@ -19,6 +20,10 @@ from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.constants import PATHS as P
 from core.constants import Group as G
+
+# The name of a scenario in the selector: a "# title: Workload peak" comment before its first command
+TITLE_PATTERN: re.Pattern[str] = re.compile(r"#\s*title\s*:(.*)", re.IGNORECASE)
+FILE_COLOR: tuple[int, int, int, int] = (150, 150, 150, 255)
 
 
 class FileSelector:
@@ -44,6 +49,11 @@ class FileSelector:
         # Scan files
         self._files: list[Path] = self._scan_files()
         self._display_texts: list[str] = [self._format_entry(f) for f in self._files]
+        if self.mode == "scenario":  # Sorted by title, and the file name shown in grey at the right
+            pairs: list[tuple[str, Path]] = sorted(zip(self._display_texts, self._files), key=lambda p: p[0].casefold())
+            self._display_texts = [title for title, _f in pairs]
+            self._files = [f for _title, f in pairs]
+        self._file_texts: list[str] = [self._scenario_file(f) if self.mode == "scenario" else "" for f in self._files]
 
         self._empty_indices: set[int] = self._find_empty_indices()
         for i in self._empty_indices:
@@ -73,6 +83,7 @@ class FileSelector:
         # Graphics objects
         self._vertices: list[Any] = []
         self._label_pool: list[Any] = []
+        self._file_label_pool: list[Any] = []
         self._build_ui()
 
     # ---- File scanning ----
@@ -98,9 +109,36 @@ class FileSelector:
         except (ValueError, IndexError):
             return 0
 
+    @staticmethod
+    def _scenario_file(filepath: Path) -> str:
+        try:
+            return filepath.relative_to(P["SCENARIOS"]).as_posix()
+        except ValueError:
+            return filepath.name
+
+    @staticmethod
+    def scenario_title(filepath: Path) -> str:
+        """The `# title:` comment of the scenario header (before its first command), else its file path in words
+        (workload_levels/high_workload_block.txt: Workload levels / High workload block)."""
+        try:
+            with open(filepath, encoding="utf-8-sig", errors="replace") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        break
+                    match: re.Match[str] | None = TITLE_PATTERN.fullmatch(line)
+                    if match and match.group(1).strip():
+                        return match.group(1).strip()
+        except OSError:
+            pass
+        parts: list[str] = [
+            p.replace("_", " ").strip() for p in Path(FileSelector._scenario_file(filepath)).with_suffix("").parts
+        ]
+        return " / ".join(p[:1].upper() + p[1:] for p in parts)
+
     def _format_entry(self, filepath: Path) -> str:
         if self.mode == "scenario":
-            return str(filepath.relative_to(P["SCENARIOS"]).with_suffix(""))
+            return self.scenario_title(filepath)
         # Replay: parse {ID}_{YYMMDD}_{HHMMSS}.csv
         parts: list[str] = filepath.stem.split("_")
         if len(parts) >= 3:
@@ -184,6 +222,19 @@ class FileSelector:
             )
             self._label_pool.append(lbl)
             self._vertices.append(lbl)
+            file_lbl: Label = Label(
+                "",
+                x=self._margin + self._list_width - 10,
+                y=y,
+                anchor_x="right",
+                anchor_y="center",
+                font_size=F["SMALL"],
+                color=FILE_COLOR,
+                group=self._LABEL_GROUP,
+                batch=self.win.batch,
+            )
+            self._file_label_pool.append(file_lbl)
+            self._vertices.append(file_lbl)
 
         # "No files found" fallback
         if not self._files:
@@ -217,6 +268,10 @@ class FileSelector:
                     lbl.color = C["BLACK"]
             else:
                 lbl.text = ""
+        for i, file_lbl in enumerate(self._file_label_pool):
+            file_idx = self._scroll_offset + i
+            file_lbl.text = self._file_texts[file_idx] if file_idx < len(self._file_texts) else ""
+            file_lbl.color = C["WHITE"] if file_idx == self._selected_index else FILE_COLOR
 
         # Highlight bar position
         vis_idx: int = self._selected_index - self._scroll_offset
@@ -356,3 +411,4 @@ class FileSelector:
                 v.delete()
         self._vertices.clear()
         self._label_pool.clear()
+        self._file_label_pool.clear()

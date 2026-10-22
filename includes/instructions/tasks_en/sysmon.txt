@@ -1,0 +1,9 @@
+<h1>System monitoring</h1>
+
+<p>Watch the two lights and the four scales of the system monitoring task (top left).</p>
+
+<p>Press <strong>F5</strong> when the green light turns off, and <strong>F6</strong> when the red light turns on.</p>
+
+<p>Each scale has an arrow that normally moves around its middle. When an arrow drifts towards the top or the bottom of its scale, press the key written below it (<strong>F1</strong> to <strong>F4</strong>).</p>
+
+<p>Respond as quickly as possible.</p>

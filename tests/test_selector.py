@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 
 from pyglet.window import key as winkey
 
+from core.constants import PATHS as P
 from core.selector import FileSelector
 
 
@@ -21,6 +22,7 @@ def _make_selector(files):
     sel._selected_index = 0
     sel._vertices = []
     sel._label_pool = []
+    sel._file_label_pool = []
     return sel
 
 
@@ -79,3 +81,32 @@ class TestFinish:
         sel._on_key_press(winkey.RETURN, 0)
         sel._on_key_press(winkey.RETURN, 0)
         callback.assert_called_once()
+
+
+class TestScenarioTitle:
+    def test_title_comment_of_the_header(self, tmp_path):
+        scenario = tmp_path / "workload_peak.txt"
+        scenario.write_text("# title: Workload peak\n# A description\n0:00:00;sysmon;start\n", encoding="utf-8")
+        assert FileSelector.scenario_title(scenario) == "Workload peak"
+
+    def test_title_after_other_comments_and_with_a_bom(self, tmp_path):
+        scenario = tmp_path / "tour.txt"
+        scenario.write_text("﻿# A description\n\n#Title:Visite guidée\n0:00:00;sysmon;start\n", encoding="utf-8")
+        assert FileSelector.scenario_title(scenario) == "Visite guidée"
+
+    def test_title_after_the_first_command_is_ignored(self, tmp_path, monkeypatch):
+        monkeypatch.setitem(P, "SCENARIOS", tmp_path)
+        (tmp_path / "workload_levels").mkdir()
+        scenario = tmp_path / "workload_levels" / "high_workload_block.txt"
+        scenario.write_text("0:00:00;sysmon;start\n# title: Too late\n", encoding="utf-8")
+        assert FileSelector.scenario_title(scenario) == "Workload levels / High workload block"
+
+    def test_scenarios_sorted_by_title_with_their_file(self, tmp_path, monkeypatch):
+        monkeypatch.setitem(P, "SCENARIOS", tmp_path)
+        (tmp_path / "a.txt").write_text("# title: Zulu\n", encoding="utf-8")
+        (tmp_path / "b.txt").write_text("# title: alpha\n", encoding="utf-8")
+        monkeypatch.setattr(FileSelector, "_build_ui", lambda self: None)
+        sel = FileSelector(MagicMock(), "scenario")
+        assert sel._display_texts == ["alpha", "Zulu"]
+        assert sel._files == [tmp_path / "b.txt", tmp_path / "a.txt"]
+        assert sel._file_texts == ["b.txt", "a.txt"]

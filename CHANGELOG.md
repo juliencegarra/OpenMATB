@@ -3,8 +3,25 @@
 The main changes of each version of OpenMATB. The releases and their files are on [GitHub](https://github.com/juliencegarra/OpenMATB/releases).
 
 ## Unreleased
+  **New Features**
+  - New example scenarios: three workload levels (`workload_levels/`, 5-minute blocks with the NASA-TLX), the multitasking cost (each task alone, then together), a workload peak, a training session, a session synchronized with physiological recordings (resting baseline and LSL markers), and in-task workload ratings (a one-item scale every 2 minutes, closed after 10 s), with participant instructions (`includes/instructions/tasks_en`)
+  - Scenarios with names that tell what they are: `guided_tour_en` and `guided_tour_fr` (formerly `default_en` and `default_fr`), `one_minute_mouse_demo` (formerly `demo`); the manual test scenarios moved to `tests/scenarios` (out of the scenario selection)
+  - Scenario selector: each scenario is shown by its title, a `# title: Workload peak` comment before its first command (else its file name in words), sorted by title, with its file name in grey
+  - Questionnaires: a clearer layout. The scales are regularly spaced, the scale titles larger than the questions, the questions at most about 100 characters per line, the slider bounds next to the track, and the response text smaller, in grey. A full page brings its scales closer, then uses smaller titles and longer lines
+  - The English NASA-TLX is scored from 0 to 100 (was 0 to 10), as the original and the French version; the French version has the order of the original (Performance before Effort)
+  - Texts scaled to the window, as the task areas: from a 1920 x 1080 window, smaller in a smaller one (at least 0.75, e.g. 9 pt for 12 pt texts) and larger in a larger one. In a 1366 x 768 window, texts overlapped (system monitoring, communications, scheduling); in a 2560 x 1440 one, they looked small. In the replay, the texts follow the reduced task areas, as in the session. The scale is logged in the session file (`font_scale`)
+  - Replay: the performance strip greys each task while it was not visible (instructions, questionnaires, dialogs, before its start and after its stop). The strip is now in replay time, as the timeline: the instructions and questionnaires, which pause the scenario time, had no width on it
+
   **Bug Fixes**
+  - Fix a hidden communications task heard: a prompt cut by a pause was played again when the task was resumed while still hidden (guided tours). A hidden task is now silent, in the replay too
+  - Fix the guided tours: the communications prompt was cut before its frequency, and the French tour had the English voice; fix the demo prompt cut by the end
+  - Fix the communications radios on desktop: the name and the frequency were glued ("NAV 1135.7"), their digits even overlapped with pyglet 3 (a tab has no width in a single-line label)
+  - Fix the communications callsign label: "Callsign" disappeared after the first frame, only the callsign remained
+  - Fix in the browser the top right of italic letters cut (e.g. the dot of an italic i)
+  - Fix a scenario path given on the command line from the current folder (e.g. `includes/scenarios/basic.txt`), looked for in the scenarios folder
+  - Fix a questionnaire page title covering the first scale of a full page
   - Fix the scheduling chronometer in a window narrower than 1920 px: separated from its time by a tab, its name wrapped onto two lines, the second one below the task area. They are now side by side, centered together
+  - Fix the replay keyboard history: the first key was on the title line, which wrapped in the narrow inputs strip. The replay timeline also takes the whole space between the play button and the time
 
 ## Version 1.5.2
   **New Features**

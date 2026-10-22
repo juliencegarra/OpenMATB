@@ -22,12 +22,14 @@ from pyglet.window import key as winkey
 
 from core import pyglet_compat, timing
 from core.constants import COLORS as C
+from core.constants import FONT_SIZES as F
 from core.constants import (
     HEADLESS_MODE,
     PLUGIN_TITLE_HEIGHT_PROPORTION,
     REPLAY_MODE,
     REPLAY_PERF_STRIP_PROPORTION,
     REPLAY_STRIP_PROPORTION,
+    scale_font_sizes,
 )
 from core.constants import PATHS as P
 from core.constants import Group as G
@@ -111,6 +113,10 @@ class Window(Window):
                 self.fit_to_work_area()
 
         pyglet_compat.set_mouse_cursor_visible(self, REPLAY_MODE)
+        # From the area of the tasks: the whole window in a session, smaller in the replay (strips around it)
+        tasks_area: Container = self.get_container("fullscreen")
+        self.font_scale: float = scale_font_sizes(tasks_area.w, tasks_area.h)
+        HTMLDecoder.default_style["font_size"] = F["SMALL"]  # Dialogs, and instructions without size
 
         if HEADLESS_MODE:
             self.set_visible(False)

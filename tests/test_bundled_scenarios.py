@@ -1,4 +1,4 @@
-"""The scenarios shipped in includes/scenarios load without any error or warning.
+"""The scenarios shipped in includes/scenarios (and the manual test ones of tests/scenarios) load without any error or warning.
 
 The real plugins validate each line, so a deprecated command (e.g. pumpstatus, cutofffrequency), an unknown
 parameter or an invalid value in a bundled scenario fails here, even when it is only a non-fatal warning.
@@ -14,11 +14,13 @@ import pytest
 import core.constants
 from core.scenario import Scenario
 
-SCENARIOS_DIR = Path(__file__).resolve().parent.parent / "includes" / "scenarios"
-# Scenarios written by the generator stay on the computer that made them (not bundled)
+ROOT = Path(__file__).resolve().parent.parent
+SCENARIOS_DIR = ROOT / "includes" / "scenarios"
+# Scenarios written by the generator stay on the computer that made them (not bundled). The manual test scenarios
+# (tests/scenarios: not listed in the scenario selection) are checked too
 BUNDLED_SCENARIOS = sorted(
     p for p in SCENARIOS_DIR.rglob("*.txt") if "generated" not in p.relative_to(SCENARIOS_DIR).parts
-)
+) + sorted((ROOT / "tests" / "scenarios").glob("*.txt"))
 
 
 def _distinct_callsigns():
@@ -31,7 +33,7 @@ def test_bundled_scenarios_are_found():
     assert len(BUNDLED_SCENARIOS) > 0
 
 
-@pytest.mark.parametrize("path", BUNDLED_SCENARIOS, ids=lambda p: p.relative_to(SCENARIOS_DIR).as_posix())
+@pytest.mark.parametrize("path", BUNDLED_SCENARIOS, ids=lambda p: p.relative_to(ROOT).as_posix())
 def test_bundled_scenario_has_no_error(path, tmp_path, mock_logger):
     errors = MagicMock()
     errors.errors_list = []
@@ -51,3 +53,18 @@ def test_bundled_scenario_has_no_error(path, tmp_path, mock_logger):
     log = tmp_path / "errors.log"
     assert errors.errors_list == [], log.read_text(encoding="utf-8") if log.exists() else ""
     assert len(scenario.plugins) > 0
+
+
+@pytest.mark.parametrize(
+    "path", sorted((ROOT / "includes" / "scenarios").glob("**/*.txt")), ids=lambda p: p.relative_to(ROOT).as_posix()
+)
+def test_bundled_scenario_has_a_title(path):
+    """Each scenario of the selector has a "# title: ..." comment before its first command."""
+    from core.selector import TITLE_PATTERN
+
+    header = []
+    for line in path.read_text(encoding="utf-8-sig").splitlines():
+        if line.strip() and not line.strip().startswith("#"):
+            break
+        header.append(line.strip())
+    assert any(TITLE_PATTERN.fullmatch(line) for line in header)

@@ -9,6 +9,7 @@ from typing import Any
 from pyglet.shapes import Circle, Line, Rectangle
 from pyglet.text import Label
 
+from core.constants import FONT_SIZES as F
 from core.constants import Group as G
 from core.container import Container
 
@@ -20,6 +21,7 @@ COLOR_HIT: tuple[int, int, int] = (40, 200, 40)
 COLOR_MISS: tuple[int, int, int] = (200, 40, 40)
 COLOR_FA: tuple[int, int, int] = (220, 200, 40)
 COLOR_BAD: tuple[int, int, int] = (240, 130, 30)  # A communications answer on a wrong radio or frequency
+COLOR_HIDDEN: tuple[int, int, int, int] = (150, 150, 150, 110)  # A task not visible (instructions, questionnaire...)
 
 # Task display order and labels
 TASK_ORDER: list[str] = ["track", "resman", "sysmon", "communications"]
@@ -65,12 +67,14 @@ class PerfOverlay:
         batch: Any,
         perf_series: dict[str, list[tuple[float, dict[str, str]]]],
         duration_sec: float,
+        hidden_periods: dict[str, list[tuple[float, float]]] | None = None,
     ) -> None:
         self._container: Container = container
         self._batch: Any = batch
         self._duration: float = max(duration_sec, 0.001)
         self._shapes: list[Any] = []
         self._labels: list[Any] = []
+        self._hidden = []  # The periods when the task of the row being drawn was not visible
 
         l, b, w, h = container.get_lbwh()
         self._label_width: float = 70.0
@@ -106,13 +110,18 @@ class PerfOverlay:
                 TASK_LABELS.get(task_name, task_name.upper()),
                 x=l + 4,
                 y=row_mid,
-                font_size=9,
+                font_size=round(F["SMALL"] * 0.75),
                 color=(200, 200, 200, 255),
                 anchor_y="center",
                 batch=batch,
                 group=G(98),
             )
             self._labels.append(label)
+
+            # Grey over the periods when the task was not visible, without any plot in them
+            self._hidden: list[tuple[float, float]] = (hidden_periods or {}).get(task_name, [])
+            for start, end in self._hidden:
+                self._draw_hidden_period(start, end, row_bottom, row_height)
 
             # Separator line between rows (except at the bottom)
             if i < n_tasks - 1:
@@ -175,6 +184,21 @@ class PerfOverlay:
     def _time_to_x(self, t: float) -> float:
         return self._x_min + (t / self._duration) * self._sparkline_width
 
+    def _in_hidden_period(self, t_start: float, t_end: float) -> bool:
+        """Whether [t_start, t_end] (a point, or a segment between two points) enters a period of the task not
+        visible: its bounds may touch the period, as the last point before it and the first one after it"""
+        return any(start < t_end and t_start < end for start, end in self._hidden)
+
+    def _draw_hidden_period(self, start: float, end: float, y: float, height: float) -> None:
+        x_start: float = max(self._x_min, self._time_to_x(start))
+        x_end: float = min(self._x_max, self._time_to_x(end))
+        if x_end - x_start < 1:  # E.g. the instant before the start of a task
+            return
+        rect = Rectangle(
+            x=x_start, y=y, width=x_end - x_start, height=height, color=COLOR_HIDDEN, batch=self._batch, group=G(97)
+        )
+        self._shapes.append(rect)
+
     def _draw_continuous_sparkline(
         self,
         series: list[tuple[float, dict[str, str]]],
@@ -191,7 +215,8 @@ class PerfOverlay:
                     val: float = float(data[address])
                 except (ValueError, TypeError):
                     continue
-                raw_points.append((t, val))
+                if not self._in_hidden_period(t, t):
+                    raw_points.append((t, val))
 
         if len(raw_points) < 2:
             return
@@ -205,8 +230,10 @@ class PerfOverlay:
         # Normalize Y coordinates
         ys: list[float] = normalize([v for _, v in points], y_bottom, y_top)
 
-        # Create line segments
+        # Create line segments, not across a period of the task not visible
         for j in range(len(xs) - 1):
+            if self._in_hidden_period(points[j][0], points[j + 1][0]):
+                continue
             line = Line(xs[j], ys[j], xs[j + 1], ys[j + 1], thickness=1, color=color, batch=self._batch, group=G(98))
             self._shapes.append(line)
 
@@ -231,17 +258,17 @@ class PerfOverlay:
             if sdt_key not in data:
                 continue
             sdt_val: str = data[sdt_key]
-            if sdt_val not in color_map:
+            if sdt_val not in color_map or self._in_hidden_period(t, t):
                 continue
 
             x: float = self._time_to_x(t)
             circle = Circle(x=x, y=y_mid, radius=4, color=color_map[sdt_val], batch=self._batch, group=G(98))
             self._shapes.append(circle)
 
-    def update_cursor(self, scenario_time: float) -> None:
+    def update_cursor(self, replay_time: float) -> None:
         if self._cursor is None:
             return
-        x: float = self._time_to_x(scenario_time)
+        x: float = self._time_to_x(replay_time)
         x = max(self._x_min, min(self._x_max, x))
         self._cursor.x = x
         self._cursor.x2 = x

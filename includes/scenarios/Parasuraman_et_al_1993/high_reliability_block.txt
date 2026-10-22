@@ -1,3 +1,4 @@
+# title: Parasuraman et al. (1993): high reliability block
 # Replication of Parasuraman, Molloy and Singh (1993)
 # This experiment aims at investigating the performance consequences of automation-induced complacency
 # Example of a low-reliability block (10 minutes, with 87.5% or 14 of 16 malfuctions detected)

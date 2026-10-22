@@ -58,6 +58,8 @@ def fine_timers() -> None:
 
     It rounds setTimeout to the Windows timer resolution (15.6 ms): the loop wakes every ~31 ms, where
     Safari, Chrome and Firefox wake every ~8-10 ms. Plugin pace and the rest are still tested.
+    Chrome on Windows also rounds them in some sessions, but its loop still wakes every ~10 ms (median) and
+    these tests pass: measuring setTimeout (15.6 ms in both) would not tell the two apart.
     """
     if ENGINE == "webkit" and sys.platform == "win32":
         pytest.skip("Playwright WebKit on Windows rounds its timers to 15.6 ms (not representative of Safari)")
@@ -1544,7 +1546,7 @@ class TestDemo:
         app.page.goto(f"{app.url}/index.html?lang=en_EN&demo=1")
         app.page.wait_for_selector("#start:not([disabled])", timeout=180_000)
         if scenario is not None:
-            app.write_file("/app/includes/scenarios/demo.txt", scenario)
+            app.write_file("/app/includes/scenarios/one_minute_mouse_demo.txt", scenario)
         app.write_file("/app/_openmatb_probe.py", PROBE.read_text(encoding="utf-8"))
         app.python("import _openmatb_probe")
         app.page.uncheck("#fullscreen")
@@ -1557,7 +1559,7 @@ class TestDemo:
         app.page.wait_for_selector("#end:not([hidden])", timeout=40_000)
         app.page.wait_for_function("() => document.querySelector('#end-destinations').textContent !== 'Sending…'")
         assert app.page.text_content("#end-destinations") == "This was a demo: the session was not recorded."
-        assert "scenario=demo.txt" in app.page.url
+        assert "scenario=one_minute_mouse_demo.txt" in app.page.url
         assert app.downloads == []
         assert app.page.text_content("#back") == "Restart the demo"
         menu = app.new_tab()
@@ -1565,7 +1567,7 @@ class TestDemo:
         assert _stored_sessions(menu) == []  # Not kept for replay either
 
     def test_the_demo_scenario_runs(self, page_factory):
-        """The real includes/scenarios/demo.txt: valid, all the tasks started, mouse enabled."""
+        """The real includes/scenarios/one_minute_mouse_demo.txt: valid, all the tasks started, mouse enabled."""
         app = page_factory()
         self.open_demo(app)
         app.page.click("#start")

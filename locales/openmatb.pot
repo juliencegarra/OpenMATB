@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenMATB\n"
-"POT-Creation-Date: 2026-10-22 08:12+0200\n"
+"POT-Creation-Date: 2026-10-22 09:05+0200\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -52,23 +52,23 @@ msgstr ""
 msgid "Continue"
 msgstr ""
 
-#: core/replayscheduler.py:766
+#: core/replayscheduler.py:776 core/replayscheduler.py:776 core/replayscheduler.py:776
 msgid "Mouse:"
 msgstr ""
 
-#: core/replayscheduler.py:236
+#: core/replayscheduler.py:237 core/replayscheduler.py:237 core/replayscheduler.py:237
 msgid "Page hidden (tab change or minimized window): session paused"
 msgstr ""
 
-#: core/replayscheduler.py:238
+#: core/replayscheduler.py:239 core/replayscheduler.py:239 core/replayscheduler.py:239
 msgid "Session paused (pause dialog after the page was hidden)"
 msgstr ""
 
-#: core/replayscheduler.py:637
+#: core/replayscheduler.py:647 core/replayscheduler.py:647 core/replayscheduler.py:647
 msgid "Keyboard history:"
 msgstr ""
 
-#: core/replayscheduler.py:773
+#: core/replayscheduler.py:783 core/replayscheduler.py:783 core/replayscheduler.py:783
 msgid "held"
 msgstr ""
 
@@ -148,31 +148,31 @@ msgstr ""
 msgid "Error on line %s. %s "
 msgstr ""
 
-#: core/selector.py:128
+#: core/selector.py:166
 msgid "Select a scenario"
 msgstr ""
 
-#: core/selector.py:128
+#: core/selector.py:166
 msgid "Select a session"
 msgstr ""
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "Esc: Quit"
 msgstr ""
 
-#: core/selector.py:50
+#: core/selector.py:60
 msgid "(empty)"
 msgstr ""
 
-#: core/selector.py:191
+#: core/selector.py:242
 msgid "No files found"
 msgstr ""
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "Enter: Select"
 msgstr ""
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "UP/DOWN: Navigate"
 msgstr ""
 
@@ -264,27 +264,27 @@ msgstr ""
 msgid "min."
 msgstr ""
 
-#: core/window.py:367
+#: core/window.py:373
 msgid "You hit the Escape key"
 msgstr ""
 
-#: core/window.py:372
+#: core/window.py:378
 msgid "Pause"
 msgstr ""
 
-#: core/window.py:166
+#: core/window.py:172
 msgid "Session ID: %s"
 msgstr ""
 
-#: core/window.py:367
+#: core/window.py:373
 msgid "Exit OpenMATB?"
 msgstr ""
 
-#: core/window.py:184
+#: core/window.py:190
 msgid "In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected."
 msgstr ""
 
-#: core/window.py:423
+#: core/window.py:429
 msgid "Error. No placement found for the [%s] alias"
 msgstr ""
 
@@ -296,19 +296,19 @@ msgstr ""
 msgid "Communications"
 msgstr ""
 
-#: plugins/communications.py:153
-msgid "Sound path %s does not exist. Check voiceidiom/voicegender combination."
+#: plugins/communications.py:199
+msgid "Callsign \t\t %s"
 msgstr ""
 
-#: plugins/communications.py:203
-msgid "Callsign \t\t %s"
+#: plugins/communications.py:153
+msgid "Sound path %s does not exist. Check voiceidiom/voicegender combination."
 msgstr ""
 
 #: plugins/communications.py:167
 msgid " does not exist"
 msgstr ""
 
-#: plugins/genericscales.py:38
+#: plugins/genericscales.py:39 plugins/genericscales.py:39 plugins/genericscales.py:39
 msgid "Press SPACE to validate"
 msgstr ""
 
@@ -376,15 +376,15 @@ msgstr ""
 msgid "Pump status"
 msgstr ""
 
-#: plugins/scheduling.py:23
+#: plugins/scheduling.py:24
 msgid "Scheduling"
 msgstr ""
 
-#: plugins/scheduling.py:164
+#: plugins/scheduling.py:165
 msgid "Remaining time"
 msgstr ""
 
-#: plugins/scheduling.py:164
+#: plugins/scheduling.py:165
 msgid "Elapsed time"
 msgstr ""
 

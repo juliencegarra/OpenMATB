@@ -1,7 +1,8 @@
+# title: Guided tour (English)
 # OpenMATB demonstration scenario
 
 # Welcome message
-0:00:00;instructions;filename;default_en/welcome_screen.txt
+0:00:00;instructions;filename;guided_tour_en/welcome_screen.txt
 0:00:00;instructions;start
 
 # View the full environment for ten seconds
@@ -20,7 +21,7 @@
 0:00:10;scheduling;pause
 0:00:10;communications;hide
 0:00:10;communications;pause
-0:00:10;instructions;filename;default_en/sysmon.txt
+0:00:10;instructions;filename;guided_tour_en/sysmon.txt
 0:00:10;instructions;start
 
 
@@ -34,7 +35,7 @@
 0:00:25;track;resume
 0:00:25;sysmon;hide
 0:00:25;sysmon;pause
-0:00:25;instructions;filename;default_en/track.txt
+0:00:25;instructions;filename;guided_tour_en/track.txt
 0:00:25;instructions;start
 
 
@@ -43,18 +44,18 @@
 0:00:45;communications;resume
 0:00:45;track;hide
 0:00:45;track;pause
-0:00:45;instructions;filename;default_en/communications.txt
+0:00:45;instructions;filename;guided_tour_en/communications.txt
 0:00:45;instructions;start
 
-0:00:48;communications;radioprompt;own
+0:00:46;communications;radioprompt;own
 
 # Resman presentation
-0:01:05;resman;show
-0:01:05;resman;resume
-0:01:05;communications;hide
-0:01:05;communications;pause
-0:01:05;instructions;filename;default_en/resman.txt
-0:01:05;instructions;start
+0:01:10;resman;show
+0:01:10;resman;resume
+0:01:10;communications;hide
+0:01:10;communications;pause
+0:01:10;instructions;filename;guided_tour_en/resman.txt
+0:01:10;instructions;start
 
 0:01:10;resman;pump-1-state;failure
 
@@ -67,7 +68,7 @@
 
 
 0:01:35;scheduling;resume
-0:01:35;instructions;filename;default_en/scheduling.txt
+0:01:35;instructions;filename;guided_tour_en/scheduling.txt
 0:01:35;instructions;start
 
 0:01:40;sysmon;automaticsolver;true
@@ -76,7 +77,7 @@
 0:01:45;track;show
 0:01:45;communications;show
 0:01:45;resman;show
-0:01:45;instructions;filename;default_en/full.txt
+0:01:45;instructions;filename;guided_tour_en/full.txt
 0:01:45;instructions;start
 0:01:55;sysmon;automaticsolver;false
 

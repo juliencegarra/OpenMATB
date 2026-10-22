@@ -12,6 +12,7 @@ from pyglet.text import Label
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.constants import Group as G
+from core.constants import scaled
 from core.widgets.abstractwidget import AbstractWidget
 from core.window import Window
 
@@ -29,7 +30,7 @@ class Schedule(AbstractWidget):
             font_size=F["MEDIUM"],
             font_name=self.font_name,
             x=self.container.cx,
-            y=self.container.y2 - 15,
+            y=self.container.y2 - scaled(15),
             anchor_x="center",
             anchor_y="top",
             color=C["BLACK"],

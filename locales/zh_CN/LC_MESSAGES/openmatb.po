@@ -57,23 +57,23 @@ msgstr "退出"
 msgid "Continue"
 msgstr "继续"
 
-#: core/replayscheduler.py:766
+#: core/replayscheduler.py:776 core/replayscheduler.py:776 core/replayscheduler.py:776
 msgid "Mouse:"
 msgstr "鼠标："
 
-#: core/replayscheduler.py:236
+#: core/replayscheduler.py:237 core/replayscheduler.py:237 core/replayscheduler.py:237
 msgid "Page hidden (tab change or minimized window): session paused"
 msgstr "页面已隐藏（切换标签页或窗口最小化）：会话已暂停"
 
-#: core/replayscheduler.py:238
+#: core/replayscheduler.py:239 core/replayscheduler.py:239 core/replayscheduler.py:239
 msgid "Session paused (pause dialog after the page was hidden)"
 msgstr "会话已暂停（页面隐藏后的暂停对话框）"
 
-#: core/replayscheduler.py:637
+#: core/replayscheduler.py:647 core/replayscheduler.py:647 core/replayscheduler.py:647
 msgid "Keyboard history:"
 msgstr "键盘历史："
 
-#: core/replayscheduler.py:773
+#: core/replayscheduler.py:783 core/replayscheduler.py:783 core/replayscheduler.py:783
 msgid "held"
 msgstr "按住"
 
@@ -153,31 +153,31 @@ msgstr "第 %s 行警告。参数 (%s) 没有验证方法"
 msgid "Error on line %s. %s "
 msgstr "第 %s 行出错。%s "
 
-#: core/selector.py:128
+#: core/selector.py:166
 msgid "Select a scenario"
 msgstr "选择场景"
 
-#: core/selector.py:128
+#: core/selector.py:166
 msgid "Select a session"
 msgstr "选择会话"
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "Esc: Quit"
 msgstr "Esc：退出"
 
-#: core/selector.py:50
+#: core/selector.py:60
 msgid "(empty)"
 msgstr "（空）"
 
-#: core/selector.py:191
+#: core/selector.py:242
 msgid "No files found"
 msgstr "未找到文件"
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "Enter: Select"
 msgstr "Enter：选择"
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "UP/DOWN: Navigate"
 msgstr "上/下：浏览"
 
@@ -269,27 +269,27 @@ msgstr "应为 (R,G,B,a) 值，每个值介于 0 和 255 之间（而不是 %s�
 msgid "min."
 msgstr "分钟"
 
-#: core/window.py:367
+#: core/window.py:373
 msgid "You hit the Escape key"
 msgstr "您按下了 Esc 键"
 
-#: core/window.py:372
+#: core/window.py:378
 msgid "Pause"
 msgstr "暂停"
 
-#: core/window.py:166
+#: core/window.py:172
 msgid "Session ID: %s"
 msgstr "会话 ID：%s"
 
-#: core/window.py:367
+#: core/window.py:373
 msgid "Exit OpenMATB?"
 msgstr "退出 OpenMATB？"
 
-#: core/window.py:184
+#: core/window.py:190
 msgid "In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected."
 msgstr "config.ini 中指定的屏幕编号超过了可用屏幕数量 (%s)。已选择最后一个屏幕。"
 
-#: core/window.py:423
+#: core/window.py:429
 msgid "Error. No placement found for the [%s] alias"
 msgstr "错误。未找到别名 [%s] 的位置"
 
@@ -301,19 +301,19 @@ msgstr "手动"
 msgid "Communications"
 msgstr "通信"
 
+#: plugins/communications.py:199
+msgid "Callsign \t\t %s"
+msgstr "呼号 \t\t %s"
+
 #: plugins/communications.py:153
 msgid "Sound path %s does not exist. Check voiceidiom/voicegender combination."
 msgstr "音频路径 %s 不存在。请检查 voiceidiom/voicegender 组合。"
-
-#: plugins/communications.py:203
-msgid "Callsign \t\t %s"
-msgstr "呼号 \t\t %s"
 
 #: plugins/communications.py:167
 msgid " does not exist"
 msgstr " 不存在"
 
-#: plugins/genericscales.py:38
+#: plugins/genericscales.py:39 plugins/genericscales.py:39 plugins/genericscales.py:39
 msgid "Press SPACE to validate"
 msgstr "按空格键确认"
 
@@ -381,17 +381,17 @@ msgstr "资源管理"
 msgid "Pump status"
 msgstr "油泵状态"
 
-#: plugins/scheduling.py:19
+#: plugins/scheduling.py:24
 msgid "Scheduling"
 msgstr "任务计划"
 
-#: plugins/scheduling.py:149
-msgid "Elapsed time"
-msgstr "已用时间"
-
-#: plugins/scheduling.py:156
+#: plugins/scheduling.py:165
 msgid "Remaining time"
 msgstr "剩余时间"
+
+#: plugins/scheduling.py:165
+msgid "Elapsed time"
+msgstr "已用时间"
 
 #: plugins/sysmon.py:21
 msgid "System monitoring"

@@ -57,23 +57,23 @@ msgstr "خروج"
 msgid "Continue"
 msgstr "متابعة"
 
-#: core/replayscheduler.py:766
+#: core/replayscheduler.py:776 core/replayscheduler.py:776 core/replayscheduler.py:776
 msgid "Mouse:"
 msgstr "الفأرة:"
 
-#: core/replayscheduler.py:236
+#: core/replayscheduler.py:237 core/replayscheduler.py:237 core/replayscheduler.py:237
 msgid "Page hidden (tab change or minimized window): session paused"
 msgstr "الصفحة مخفية (تغيير علامة التبويب أو تصغير النافذة): الجلسة متوقفة مؤقتاً"
 
-#: core/replayscheduler.py:238
+#: core/replayscheduler.py:239 core/replayscheduler.py:239 core/replayscheduler.py:239
 msgid "Session paused (pause dialog after the page was hidden)"
 msgstr "الجلسة متوقفة مؤقتاً (مربع الإيقاف بعد إخفاء الصفحة)"
 
-#: core/replayscheduler.py:637
+#: core/replayscheduler.py:647 core/replayscheduler.py:647 core/replayscheduler.py:647
 msgid "Keyboard history:"
 msgstr "سجل لوحة المفاتيح:"
 
-#: core/replayscheduler.py:773
+#: core/replayscheduler.py:783 core/replayscheduler.py:783 core/replayscheduler.py:783
 msgid "held"
 msgstr "مضغوط"
 
@@ -153,31 +153,31 @@ msgstr "تحذير في السطر %s. المعامل (%s) ليس له طريق�
 msgid "Error on line %s. %s "
 msgstr "خطأ في السطر %s. %s "
 
-#: core/selector.py:128
+#: core/selector.py:166
 msgid "Select a scenario"
 msgstr "اختر سيناريو"
 
-#: core/selector.py:128
+#: core/selector.py:166
 msgid "Select a session"
 msgstr "اختر جلسة"
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "Esc: Quit"
 msgstr "Esc: خروج"
 
-#: core/selector.py:50
+#: core/selector.py:60
 msgid "(empty)"
 msgstr "(فارغ)"
 
-#: core/selector.py:191
+#: core/selector.py:242
 msgid "No files found"
 msgstr "لم يتم العثور على ملفات"
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "Enter: Select"
 msgstr "Enter: اختيار"
 
-#: core/selector.py:143
+#: core/selector.py:181
 msgid "UP/DOWN: Navigate"
 msgstr "أعلى/أسفل: تنقل"
 
@@ -269,27 +269,27 @@ msgstr "يجب أن تكون قيم (R,G,B,a) كل منها بين 0 و255 (ول
 msgid "min."
 msgstr "د"
 
-#: core/window.py:367
+#: core/window.py:373
 msgid "You hit the Escape key"
 msgstr "لقد ضغطت على مفتاح Esc"
 
-#: core/window.py:372
+#: core/window.py:378
 msgid "Pause"
 msgstr "إيقاف مؤقت"
 
-#: core/window.py:166
+#: core/window.py:172
 msgid "Session ID: %s"
 msgstr "معرّف الجلسة: %s"
 
-#: core/window.py:367
+#: core/window.py:373
 msgid "Exit OpenMATB?"
 msgstr "الخروج من OpenMATB؟"
 
-#: core/window.py:184
+#: core/window.py:190
 msgid "In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected."
 msgstr "رقم الشاشة المحدد في config.ini يتجاوز عدد الشاشات المتاحة (%s). تم اختيار الشاشة الأخيرة."
 
-#: core/window.py:423
+#: core/window.py:429
 msgid "Error. No placement found for the [%s] alias"
 msgstr "خطأ. لم يتم العثور على موضع للاسم المستعار [%s]"
 
@@ -301,19 +301,19 @@ msgstr "يدوي"
 msgid "Communications"
 msgstr "الاتصالات"
 
+#: plugins/communications.py:199
+msgid "Callsign \t\t %s"
+msgstr "رمز النداء \t\t %s"
+
 #: plugins/communications.py:153
 msgid "Sound path %s does not exist. Check voiceidiom/voicegender combination."
 msgstr "مسار الصوت %s غير موجود. تحقق من تركيبة voiceidiom/voicegender."
-
-#: plugins/communications.py:203
-msgid "Callsign \t\t %s"
-msgstr "رمز النداء \t\t %s"
 
 #: plugins/communications.py:167
 msgid " does not exist"
 msgstr " غير موجود"
 
-#: plugins/genericscales.py:38
+#: plugins/genericscales.py:39 plugins/genericscales.py:39 plugins/genericscales.py:39
 msgid "Press SPACE to validate"
 msgstr "اضغط على مفتاح المسافة للتأكيد"
 
@@ -381,17 +381,17 @@ msgstr "إدارة الموارد"
 msgid "Pump status"
 msgstr "حالة المضخات"
 
-#: plugins/scheduling.py:19
+#: plugins/scheduling.py:24
 msgid "Scheduling"
 msgstr "الجدولة"
 
-#: plugins/scheduling.py:149
-msgid "Elapsed time"
-msgstr "الوقت المنقضي"
-
-#: plugins/scheduling.py:156
+#: plugins/scheduling.py:165
 msgid "Remaining time"
 msgstr "الوقت المتبقي"
+
+#: plugins/scheduling.py:165
+msgid "Elapsed time"
+msgstr "الوقت المنقضي"
 
 #: plugins/sysmon.py:21
 msgid "System monitoring"

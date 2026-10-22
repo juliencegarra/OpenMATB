@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
+from core.pyglet_compat import ITALIC
 from core.widgets.abstractwidget import *
 
 
@@ -16,12 +17,13 @@ class Simpletext(AbstractWidget):
         container: Any,
         text: str,
         draw_order: int = 1,
-        font_size: int = F["SMALL"],
+        font_size: int | None = None,  # F["SMALL"] (not as a default value: it is scaled to the window)
         x: float = 0.5,
         y: float = 0.5,
         wrap_width: float = 1,
         color: tuple[int, ...] = C["BLACK"],
         bold: bool = False,
+        italic: bool = False,
         anchor_x: str = "center",
     ) -> None:
         super().__init__(name, container)
@@ -31,7 +33,7 @@ class Simpletext(AbstractWidget):
         wrap_width_px: float = max(self.container.w * wrap_width, 1)  # pyglet needs a positive width
 
         label_kwargs: dict = dict(
-            font_size=font_size,
+            font_size=F["SMALL"] if font_size is None else font_size,
             x=x_pos,
             y=y_pos,
             align=anchor_x,  # A right (left) anchored text is aligned on it: its box is the wrap width
@@ -45,6 +47,8 @@ class Simpletext(AbstractWidget):
         )
         if bold:
             label_kwargs["weight"] = "bold"
+        if italic:
+            label_kwargs.update(ITALIC)
         self.vertex["text"] = Label(text, **label_kwargs)
 
     def set_text(self, text: str) -> None:

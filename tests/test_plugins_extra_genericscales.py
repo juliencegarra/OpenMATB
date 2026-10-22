@@ -260,7 +260,7 @@ class TestFirstPage:
         question = scales.widgets["genericscales_label_1"].container
         slider = scales.sliders["slider_1"].container
         assert slider.b + slider.h == pytest.approx(question.b)
-        assert question.b + question.h == pytest.approx(title.b)
+        assert question.b + question.h == pytest.approx(title.b - scales.title_question_gap * scales.container.h)
 
     def test_widgets_areas_are_logged(self, scales, mock_logger):
         logged = [c.args[1] for c in mock_logger.record_aoi.call_args_list]

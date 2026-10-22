@@ -251,6 +251,61 @@ class TestPerfOverlayCursor:
         overlay.update_cursor(5.0)  # Should not raise
 
 
+class TestPerfOverlayHiddenPeriods:
+    def _series(self):
+        return {
+            "track": [(0.0, {"center_deviation": "0.0"}), (10.0, {"center_deviation": "5.0"})],
+            "sysmon": [(5.0, {"signal_detection": "HIT"})],
+        }
+
+    def _grey(self, overlay):
+        from core.perfoverlay import COLOR_HIDDEN
+
+        return [s for s in overlay._shapes if getattr(s, "color", None) == COLOR_HIDDEN]
+
+    def test_grey_over_each_period_of_its_task_row(self, perf_container, mock_batch):
+        hidden = {"sysmon": [(2.0, 4.0)], "track": [(5.0, 10.0)], "scheduling": [(0.0, 10.0)]}
+        overlay = PerfOverlay(perf_container, mock_batch, self._series(), 10.0, hidden)
+        grey = sorted(self._grey(overlay), key=lambda r: r.x)
+        assert len(grey) == 2  # No row for scheduling
+        width = overlay._sparkline_width
+        track, sysmon = sorted(grey, key=lambda r: -r.y)  # Track: the first row, at the top
+        assert sysmon.x == pytest.approx(overlay._x_min + 0.2 * width)
+        assert sysmon.width == pytest.approx(0.2 * width)
+        assert (sysmon.y, sysmon.height) == (900, 50)
+        assert track.x == pytest.approx(overlay._x_min + 0.5 * width)
+        assert (track.y, track.height) == (950, 50)
+
+    def test_no_grey_shorter_than_a_pixel(self, perf_container, mock_batch):
+        overlay = PerfOverlay(perf_container, mock_batch, self._series(), 10.0, {"track": [(0.0, 0.001)]})
+        assert self._grey(overlay) == []
+
+    def test_grey_kept_in_the_strip(self, perf_container, mock_batch):
+        overlay = PerfOverlay(perf_container, mock_batch, self._series(), 10.0, {"track": [(8.0, 12.0)]})
+        (grey,) = self._grey(overlay)
+        assert grey.x + grey.width == pytest.approx(overlay._x_max)
+
+    def _lines(self, overlay):
+        from core.perfoverlay import COLOR_TRACK
+
+        return [s for s in overlay._shapes if tuple(getattr(s, "color", ()))[:3] == COLOR_TRACK]
+
+    def test_no_plot_in_a_grey_period(self, perf_container, mock_batch):
+        """Regression: the last point before a questionnaire was joined to the first one after it, over the grey."""
+        series = {
+            "track": [(t, {"center_deviation": str(t)}) for t in (1.0, 2.0, 3.0, 5.0, 7.0, 8.0)],
+            "sysmon": [(4.0, {"signal_detection": "MISS"}), (9.0, {"signal_detection": "HIT"})],
+        }
+        hidden = {"track": [(3.0, 7.0)], "sysmon": [(3.5, 4.5)]}
+        overlay = PerfOverlay(perf_container, mock_batch, series, 10.0, hidden)
+        x_of = overlay._time_to_x
+        segments = sorted((round(line.x, 3), round(line.x2, 3)) for line in self._lines(overlay))
+        expected = [(x_of(1.0), x_of(2.0)), (x_of(2.0), x_of(3.0)), (x_of(7.0), x_of(8.0))]
+        assert segments == [(round(a, 3), round(b, 3)) for a, b in expected]
+        markers = [s for s in overlay._shapes if hasattr(s, "radius")]
+        assert [round(m.x, 3) for m in markers] == [round(x_of(9.0), 3)]
+
+
 class TestPerfOverlayDestroy:
     def test_destroy_clears_shapes(self, perf_container, mock_batch):
         series = {
