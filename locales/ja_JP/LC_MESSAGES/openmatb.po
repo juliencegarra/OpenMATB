@@ -386,12 +386,12 @@ msgid "Scheduling"
 msgstr "スケジュール"
 
 #: plugins/scheduling.py:149
-msgid "Elapsed time \t %s"
-msgstr "経過時間 \t %s"
+msgid "Elapsed time"
+msgstr "経過時間"
 
 #: plugins/scheduling.py:156
-msgid "Remaining time \t %s"
-msgstr "残り時間 \t %s"
+msgid "Remaining time"
+msgstr "残り時間"
 
 #: plugins/sysmon.py:21
 msgid "System monitoring"

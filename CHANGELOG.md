@@ -2,6 +2,10 @@
 
 The main changes of each version of OpenMATB. The releases and their files are on [GitHub](https://github.com/juliencegarra/OpenMATB/releases).
 
+## Unreleased
+  **Bug Fixes**
+  - Fix the scheduling chronometer in a window narrower than 1920 px: separated from its time by a tab, its name wrapped onto two lines, the second one below the task area. They are now side by side, centered together
+
 ## Version 1.5.2
   **New Features**
   - `maxdurationsec` in instructions and questionnaires: each page is shown at most this duration (seconds, real time, pauses excluded; 0: no limit). A page ended this way is logged as a `timeout` input and a `page_timeout` performance, and is ended at the same time in the replay

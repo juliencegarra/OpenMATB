@@ -391,12 +391,12 @@ msgid "Scheduling"
 msgstr "Planning"
 
 #: plugins/scheduling.py:149
-msgid "Elapsed time \t %s"
-msgstr "Temps passé \t %s"
+msgid "Elapsed time"
+msgstr "Temps passé"
 
 #: plugins/scheduling.py:156
-msgid "Remaining time \t %s"
-msgstr "Temps restant \t %s"
+msgid "Remaining time"
+msgstr "Temps restant"
 
 #: plugins/sysmon.py:21
 msgid "System monitoring"

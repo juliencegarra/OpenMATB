@@ -26,11 +26,14 @@ def _new_widget(fullname, container, **kwargs):
     return MagicMock(fullname=fullname, container=container, kwargs=kwargs)
 
 
-def _create_widgets(scheduling):
+def _create_widgets(scheduling, text_width=60):
+    """Every text is text_width pixels wide."""
+
     def base_create_widgets(plugin):
         plugin.task_container = Container("task", 0, 0, 400, 300)
 
     with (
+        patch("plugins.scheduling.PygletLabel", return_value=MagicMock(content_width=text_width)),
         patch.object(AbstractPlugin, "create_widgets", base_create_widgets),
         patch("plugins.scheduling.Timeline", side_effect=_new_widget),
         patch("plugins.scheduling.Simpletext", side_effect=_new_widget),
@@ -120,10 +123,25 @@ class TestCreateWidgets:
         assert (c.l, c.b, c.w, c.h) == pytest.approx((40, 60, 68, 210))
         assert timeline.kwargs == {"max_time_minute": 8}
 
-    def test_chronometer_text_at_the_bottom(self, with_widgets):
-        chrono = with_widgets.widgets["scheduling_elapsed_time"]
-        assert chrono.container is with_widgets.task_container
-        assert chrono.kwargs == {"text": "Elapsed time \t 00:00:00", "y": 0.05}
+    def test_chronometer_name_and_time_side_by_side_at_the_bottom(self, with_widgets):
+        """Centered together (the name was separated from the time by a tab, which made the text wrap)."""
+        name = with_widgets.widgets["scheduling_chrono_label"]
+        time = with_widgets.widgets["scheduling_elapsed_time"]
+        assert name.container is time.container is with_widgets.task_container
+        assert (name.kwargs["text"], name.kwargs["anchor_x"]) == ("Elapsed time", "right")
+        assert (time.kwargs["text"], time.kwargs["anchor_x"]) == ("00:00:00", "left")
+        assert name.kwargs["y"] == time.kwargs["y"] == 0.05
+        # 60 px each, 8 px apart, centered in the 400 px task area: the name ends at 196, the time starts at 204
+        assert name.kwargs["x"] * 400 == pytest.approx(196)
+        assert time.kwargs["x"] * 400 == pytest.approx(204)
+
+    def test_chronometer_name_above_its_time_in_a_narrow_task_area(self, scheduling):
+        _create_widgets(scheduling, text_width=200)
+        name = scheduling.widgets["scheduling_chrono_label"]
+        time = scheduling.widgets["scheduling_elapsed_time"]
+        assert name.kwargs["anchor_x"] == time.kwargs["anchor_x"] == "center"
+        assert name.kwargs["x"] == time.kwargs["x"] == 0.5
+        assert name.kwargs["y"] > time.kwargs["y"]
 
     def test_one_labelled_schedule_per_task_side_by_side(self, with_widgets):
         schedules = [with_widgets.widgets[f"scheduling_{t}"] for t in TASKS]
@@ -373,18 +391,20 @@ class TestRefreshWidgets:
         loaded.parameters["minduration"] = 5
         _refresh(loaded)
         loaded.widgets["scheduling_timeline"].set_max_time.assert_called_with(5)
-        loaded.widgets["scheduling_elapsed_time"].set_text.assert_called_with("Elapsed time \t 00:01:05")
+        loaded.widgets["scheduling_elapsed_time"].set_text.assert_called_with("00:01:05")
 
     def test_reversed_chronometer_counts_down_to_the_last_event(self, loaded):
         loaded.parameters["reversechronometer"] = True
         loaded.scenario_time = 20
         _refresh(loaded)
-        loaded.widgets["scheduling_elapsed_time"].set_text.assert_called_with("Remaining time \t 00:11:40")
+        loaded.widgets["scheduling_elapsed_time"].set_text.assert_called_with("00:11:40")
+        loaded.widgets["scheduling_chrono_label"].set_text.assert_called_with("Remaining time")
 
     def test_hidden_chronometer_shows_no_text(self, loaded):
         loaded.parameters["displaychronometer"] = False
         _refresh(loaded)
         loaded.widgets["scheduling_elapsed_time"].set_text.assert_called_with("")
+        loaded.widgets["scheduling_chrono_label"].set_text.assert_called_with("")
 
     def test_nothing_is_refreshed_when_hidden(self, loaded):
         with patch.object(AbstractPlugin, "refresh_widgets", return_value=False):

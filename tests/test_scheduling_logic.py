@@ -46,17 +46,17 @@ class TestGetElapsedTimeString:
     def test_zero_seconds(self):
         """0 seconds formats as 00:00:00."""
         s = _make_scheduling(scenario_time=0)
-        assert s.get_elapsed_time_string() == "Elapsed time \t 00:00:00"
+        assert s.get_elapsed_time_string() == "00:00:00"
 
     def test_one_minute_five_seconds(self):
         """65 seconds formats as 00:01:05."""
         s = _make_scheduling(scenario_time=65)
-        assert s.get_elapsed_time_string() == "Elapsed time \t 00:01:05"
+        assert s.get_elapsed_time_string() == "00:01:05"
 
     def test_one_hour_two_min_three_sec(self):
         """3723 seconds formats as 01:02:03."""
         s = _make_scheduling(scenario_time=3723)
-        assert s.get_elapsed_time_string() == "Elapsed time \t 01:02:03"
+        assert s.get_elapsed_time_string() == "01:02:03"
 
 
 # ── get_remaining_time_sec ───────────────────────
@@ -81,12 +81,12 @@ class TestGetRemainingTimeString:
     def test_full_remaining(self):
         """480 sec remaining formats as 00:08:00."""
         s = _make_scheduling(scenario_time=0, maximum_time_sec=480)
-        assert s.get_remaining_time_string() == "Remaining time \t 00:08:00"
+        assert s.get_remaining_time_string() == "00:08:00"
 
     def test_partial_remaining(self):
         """240 sec remaining formats as 00:04:00."""
         s = _make_scheduling(scenario_time=240, maximum_time_sec=480)
-        assert s.get_remaining_time_string() == "Remaining time \t 00:04:00"
+        assert s.get_remaining_time_string() == "00:04:00"
 
 
 # ── get_chrono_str ───────────────────────────────
@@ -98,21 +98,20 @@ class TestGetChronoStr:
         s = _make_scheduling(scenario_time=100)
         s.parameters["displaychronometer"] = False
         assert s.get_chrono_str() == ""
+        assert s.get_chrono_label() == ""
 
     def test_elapsed_mode(self):
         """Forward chronometer delegates to elapsed time string."""
         s = _make_scheduling(scenario_time=65)
         s.parameters["displaychronometer"] = True
         s.parameters["reversechronometer"] = False
-        result = s.get_chrono_str()
-        assert "Elapsed" in result
-        assert "00:01:05" in result
+        assert s.get_chrono_str() == "00:01:05"
+        assert s.get_chrono_label() == "Elapsed time"
 
     def test_remaining_mode(self):
         """Reverse chronometer delegates to remaining time string."""
         s = _make_scheduling(scenario_time=0, maximum_time_sec=480)
         s.parameters["displaychronometer"] = True
         s.parameters["reversechronometer"] = True
-        result = s.get_chrono_str()
-        assert "Remaining" in result
-        assert "00:08:00" in result
+        assert s.get_chrono_str() == "00:08:00"
+        assert s.get_chrono_label() == "Remaining time"

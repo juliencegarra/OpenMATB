@@ -7,9 +7,13 @@ from __future__ import annotations
 from time import gmtime, strftime
 from typing import Any, Callable
 
+from pyglet.text import Label as PygletLabel
+
 from core import validation
 from core.constants import COLORS as C
+from core.constants import FONT_SIZES as F
 from core.container import Container
+from core.utils import get_conf_value
 from core.widgets import Schedule, Simpletext, Timeline
 from plugins.abstractplugin import AbstractPlugin
 
@@ -66,7 +70,7 @@ class Scheduling(AbstractPlugin):
             "timeline", Timeline, container=timeline_container, max_time_minute=self.parameters["minduration"]
         )
 
-        self.add_widget("elapsed_time", Simpletext, container=self.task_container, text=self.get_chrono_str(), y=0.05)
+        self.add_chronometer_widgets()
 
         for p, name in enumerate(self.planning.keys()):
             planning_container: Container = Container(
@@ -86,6 +90,7 @@ class Scheduling(AbstractPlugin):
         # This plugin can not be paused for now.
         # When visible, it is just synchronized with the elapsed time
         self.widgets["scheduling_timeline"].set_max_time(self.parameters["minduration"])
+        self.widgets[f"{self.alias}_chrono_label"].set_text(self.get_chrono_label())
         self.widgets[f"{self.alias}_elapsed_time"].set_text(self.get_chrono_str())
         self.update_relative_plannings()
 
@@ -132,6 +137,32 @@ class Scheduling(AbstractPlugin):
             else:
                 self.widgets[wdgt_adress].hide()
 
+    def add_chronometer_widgets(self) -> None:
+        # Its name and its time side by side, centered together: two labels (they were separated by a tab, which
+        # made the text wrap in a narrow window, below the task area). Stacked if the window is too narrow
+        c: Container = self.task_container
+        gap: float = 8
+        label_w: float = self._text_width(self.get_chrono_label())
+        time_w: float = self._text_width("00:00:00")
+        positions: dict[str, tuple[float, float, str]]
+        if label_w + gap + time_w <= c.w * 0.95:
+            label_x: float = c.cx - (label_w + gap + time_w) / 2 + label_w
+            positions = dict(chrono_label=(label_x, 0.05, "right"), elapsed_time=(label_x + gap, 0.05, "left"))
+        else:
+            positions = dict(chrono_label=(c.cx, 0.075, "center"), elapsed_time=(c.cx, 0.03, "center"))
+        for name, text in [("chrono_label", self.get_chrono_label()), ("elapsed_time", self.get_chrono_str())]:
+            x, y, anchor_x = positions[name]
+            self.add_widget(name, Simpletext, container=c, text=text, x=(x - c.l) / c.w, y=y, anchor_x=anchor_x)
+
+    def _text_width(self, text: str) -> float:
+        font_name: str = get_conf_value("Openmatb", "font_name")
+        return PygletLabel(text, font_size=F["SMALL"], font_name=font_name).content_width
+
+    def get_chrono_label(self) -> str:
+        if not self.parameters["displaychronometer"]:
+            return ""
+        return _("Remaining time") if self.parameters["reversechronometer"] else _("Elapsed time")
+
     def get_chrono_str(self) -> str:
         if self.parameters["displaychronometer"]:
             if self.parameters["reversechronometer"]:
@@ -145,15 +176,13 @@ class Scheduling(AbstractPlugin):
         return int(self.scenario_time)
 
     def get_elapsed_time_string(self) -> str:
-        str_time: str = strftime("%H:%M:%S", gmtime(self.get_elapsed_time_sec()))
-        return _("Elapsed time \t %s") % str_time
+        return strftime("%H:%M:%S", gmtime(self.get_elapsed_time_sec()))
 
     def get_remaining_time_sec(self) -> int:
         return int(self.maximum_time_sec) - int(self.scenario_time)
 
     def get_remaining_time_string(self) -> str:
-        str_time: str = strftime("%H:%M:%S", gmtime(self.get_remaining_time_sec()))
-        return _("Remaining time \t %s") % str_time
+        return strftime("%H:%M:%S", gmtime(self.get_remaining_time_sec()))
 
     def on_scenario_loaded(self, scenario: Any) -> None:
         events: list[Any] = scenario.events
