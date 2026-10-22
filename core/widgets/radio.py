@@ -32,19 +32,25 @@ class Radio(AbstractWidget):
         self.label: str = label
         self.is_selected: bool = on
 
-        # Radio label #
-        self.vertex["radio_frequency"] = Label(
-            self.get_frequency_string(frequency),
-            font_size=F["SMALL"],
-            x=self.container.cx,
-            y=self.container.cy,
-            font_name=self.font_name,
-            anchor_x="center",
-            anchor_y="center",
-            color=C["BLACK"],
-            batch=Window.MainWindow.batch,
-            group=G(self.m_draw + 1),
-        )
+        # Radio name and frequency, on each side of the center: two labels, as a tab has no width in a
+        # single-line label (Windows), which glued them or overlapped their digits
+        gap: float = self.container.w * 0.025
+        for vertex_name, text, x, anchor_x in [
+            ("radio_name", self.label.replace("_", " "), self.container.cx - gap, "right"),
+            ("radio_frequency", self.get_frequency_string(frequency), self.container.cx + gap, "left"),
+        ]:
+            self.vertex[vertex_name] = Label(
+                text,
+                font_size=F["SMALL"],
+                x=x,
+                y=self.container.cy,
+                font_name=self.font_name,
+                anchor_x=anchor_x,
+                anchor_y="center",
+                color=C["BLACK"],
+                batch=Window.MainWindow.batch,
+                group=G(self.m_draw + 1),
+            )
 
         # Arrow shapes — created with actual positions, hidden by default
         for arrow_name, info in self.arrows.items():
@@ -89,7 +95,7 @@ class Radio(AbstractWidget):
             self.show_arrows()
 
     def get_frequency_string(self, frequency: float) -> str:
-        return f"{self.label.replace('_', ' ')}\t\t\t\t\t\t\t{round(frequency, 1)}"
+        return str(round(frequency, 1))
 
     def get_position(self) -> Any:
         return self.pos
