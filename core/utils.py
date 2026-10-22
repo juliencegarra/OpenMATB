@@ -23,7 +23,8 @@ _CONFIG_DEFAULTS: dict[tuple[str, str], Any] = {
     ("Openmatb", "bottom_bounds"): [0.30, 0.85],
     ("Openmatb", "font_name"): "",
     ("Openmatb", "language"): "en_EN",
-    ("Openmatb", "scenario_path"): "",  # As the empty value of the default config.ini: the scenario selector opens
+    ("Openmatb", "scenario_path"): "",
+    ("Openmatb", "random_seed"): "session",  # As the empty value of the default config.ini: the scenario selector opens
 }
 
 
@@ -100,6 +101,22 @@ def find_the_last_session_number() -> int:
     if len(session_numbers) == 0:
         return 0
     return max(session_numbers)
+
+
+def get_random_seed() -> int | None:
+    """random_seed of config.ini: an integer gives the same pseudorandom draws to every participant, None (session)
+    the draws of the session number (see core/pseudorandom.py)."""
+    value: str = str(get_conf_value("Openmatb", "random_seed")).strip()
+    if value.lower() in ("", "session"):
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        _warn_conf_value(
+            _("In config.ini, [random_seed] parameter must be session or an integer (not %s). Defaulting to session")
+            % value
+        )
+        return None
 
 
 def has_conf_value(section: str, key: str) -> bool:

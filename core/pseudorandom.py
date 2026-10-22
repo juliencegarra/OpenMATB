@@ -10,7 +10,7 @@ from rstr import xeger as rstrxeger
 
 from core.constants import REPLAY_MODE
 from core.logger import get_logger
-from core.utils import find_the_last_session_number
+from core.utils import find_the_last_session_number, get_random_seed
 
 T = TypeVar("T")
 
@@ -18,7 +18,8 @@ plugins_using_seed: list[str] = ["communications", "sysmon"]  # Used to convert 
 # a unique integer
 
 
-# In replay, the seeds are those of the replayed session (set by the replay scheduler once the session is loaded)
+# In replay, the seeds are those of the replayed session (set by the replay scheduler once the session is loaded):
+# its random_seed, else its session number
 _replay_session_id: int | None = None
 
 
@@ -28,8 +29,10 @@ def set_replay_session_id(session_id: int | None) -> None:
 
 
 def _get_session_id() -> int:
+    """The base of the seeds: the session number, or random_seed of config.ini (the same draws for everyone)"""
     if not REPLAY_MODE:
-        return get_logger().session_id
+        random_seed: int | None = get_random_seed()
+        return random_seed if random_seed is not None else get_logger().session_id
     if _replay_session_id is not None:
         return _replay_session_id
     return find_the_last_session_number()

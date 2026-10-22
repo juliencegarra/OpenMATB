@@ -50,7 +50,7 @@ file every 10 s keeps the data of a session interrupted by a closed tab or a cra
   A file is never overwritten by another session: if the name is already used, the session is sent as `<name>_2.csv`.
   In the browser, the session numbers are random 6-digit numbers (each participant has its own pseudorandom draws:
   callsigns, frequencies, failure sides...). Two participants may rarely get the same number: their files differ by
-  their date and time.
+  their date and time. For the same draws for every participant, set `random_seed` to an integer in `config.ini`.
 - **JATOS**: upload the files of `web/dist` as the files of a JATOS study (one HTML component, `index.html`). The
   session file is saved as a gzip result file, `<N>_<yymmdd>_<hhmmss>.csv.gz`, replaced every 10 s, and the study run
   is ended at the end of the session (JATOS end page, or the end redirect set in JATOS, e.g. to Prolific). The result

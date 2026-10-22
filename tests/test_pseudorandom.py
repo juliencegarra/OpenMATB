@@ -47,6 +47,27 @@ class TestReplaySeed:
                 pseudorandom.set_replay_session_id(None)
 
 
+class TestRandomSeed:
+    """random_seed of config.ini: the same draws for every participant (each had the draws of its session number)."""
+
+    def test_the_same_draws_whatever_the_session(self, mock_logger):
+        import core.pseudorandom as pseudorandom
+
+        draws = []
+        for session_id in (3, 731004):
+            mock_logger.session_id = session_id
+            with patch.object(pseudorandom, "get_random_seed", return_value=42):
+                draws.append(pseudorandom.set_seed("sysmon", 100))
+        assert draws[0] == draws[1]
+
+    def test_the_session_number_by_default(self, mock_logger):
+        import core.pseudorandom as pseudorandom
+
+        mock_logger.session_id = 3
+        with patch.object(pseudorandom, "get_random_seed", return_value=None):
+            assert pseudorandom.set_seed("sysmon", 100) == 3 + 1 + 100 + 0
+
+
 class TestSetSeed:
     def test_deterministic(self):
         """Same inputs should produce the same seed."""

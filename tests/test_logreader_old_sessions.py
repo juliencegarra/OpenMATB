@@ -95,3 +95,15 @@ def test_stops_of_a_session_quit_at_the_next_whole_second(tmp_path):
     )
     stops = [line for line in lr.contents if line.endswith(";stop")]
     assert stops == ["0:00:50;sysmon;stop", "0:01:41;track;stop"]
+
+
+def test_replay_seeded_with_the_random_seed_of_the_session(tmp_path):
+    """random_seed (config.ini): the draws of the session were seeded with it, not with its session number."""
+    rows = [
+        (100.0, 0.0, "session_id", "", "", "731004"),
+        (100.0, 0.0, "random_seed", "", "", "42"),
+        (100.0, 0.0, "event", "track", "self", "start"),
+    ]
+    lr = _reader(tmp_path, rows, name="731004_261022_100000.csv")
+    assert (lr.replay_session_id, lr.replay_seed) == (731004, 42)
+    assert _reader(tmp_path, rows[:1] + rows[2:], name="731004_261022_100000.csv").replay_seed == 731004

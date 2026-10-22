@@ -461,6 +461,7 @@ def _logreader(keyboard=(), joystick=(), mouse=(), states=(), perf_series=None):
     lr.mouse_inputs = rows(mouse)
     lr.states = rows(states)
     lr.contents = ["0:00:00;sysmon;start"]
+    lr.replay_seed = None  # No random_seed in the session
     lr.perf_series = perf_series
     lr.duration_sec = 300
     lr.session_duration = 300
@@ -564,6 +565,19 @@ class TestSetScenario:
         rs = _make_replay(logreader=None, _session_path="4_250101_120000.csv", _perf_overlay=None)
         rs.set_scenario()
         mock_set_id.assert_called_once_with(4)
+
+    @patch("core.replayscheduler.set_replay_session_id")
+    @patch("core.replayscheduler.Scheduler.set_scenario")
+    @patch("core.replayscheduler.LogReader")
+    @patch("core.replayscheduler.Window")
+    def test_pseudorandom_seeds_of_the_random_seed_of_the_session(self, mock_win, mock_lr, _set_scenario, mock_set_id):
+        """A session with random_seed (config.ini) was seeded with it, not with its session number."""
+        lr = _logreader()
+        lr.replay_session_id, lr.replay_seed = 4, 42
+        mock_lr.return_value = lr
+        rs = _make_replay(logreader=None, _session_path="4_250101_120000.csv", _perf_overlay=None)
+        rs.set_scenario()
+        mock_set_id.assert_called_once_with(42)
 
     @patch("core.replayscheduler.PerfOverlay")
     @patch("core.replayscheduler.Scheduler.set_scenario")

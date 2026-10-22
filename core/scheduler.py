@@ -19,6 +19,7 @@ from core.joystick import joystick
 from core.logger import get_logger
 from core.platform import IS_WEB, browser_environment, notify_page
 from core.scenario import Scenario
+from core.utils import get_random_seed
 from core.window import Window
 
 # Browser: how often the session file is saved to persistent storage (seconds)
@@ -42,6 +43,8 @@ class Scheduler:
             get_logger().log_manual_entry(f.read().strip(), key="version")
         # The replay draws the same pseudorandom values with it: read from the file, which may be renamed
         get_logger().log_manual_entry(get_logger().session_id, key="session_id")
+        if get_random_seed() is not None:  # The seeds of the draws, instead of the session number
+            get_logger().log_manual_entry(get_random_seed(), key="random_seed")
         for key, value in browser_environment():  # Browser, version and system (timing differs between them)
             get_logger().log_manual_entry(value, key=key)
         # The size of the window (a page in the browser): the replay places the mouse inputs with it

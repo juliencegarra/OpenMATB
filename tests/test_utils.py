@@ -373,3 +373,33 @@ class TestHasConfValue:
         config = configparser.ConfigParser()
         with patch("core.utils.CONFIG", config):
             assert has_conf_value("NoSection", "key") is False
+
+
+class TestRandomSeedOption:
+    @pytest.mark.parametrize("value, expected", [("session", None), ("", None), ("42", 42), (" 7 ", 7)])
+    def test_values(self, value, expected):
+        from core.utils import get_random_seed
+
+        with patch("core.utils.get_conf_value", return_value=value):
+            assert get_random_seed() == expected
+
+    def test_an_invalid_value_is_reported_and_ignored(self):
+        from core.utils import get_random_seed
+
+        with (
+            patch("core.utils.get_conf_value", return_value="fourty-two"),
+            patch("core.utils._warn_conf_value") as warn,
+        ):
+            assert get_random_seed() is None
+        warn.assert_called_once()
+
+    def test_session_without_the_option(self):
+        """A config.ini of a former version (without random_seed): the draws of the session number."""
+        import configparser
+
+        from core.utils import get_random_seed
+
+        config = configparser.ConfigParser()
+        config.read_dict({"Openmatb": {"language": "en_EN"}})
+        with patch("core.utils.CONFIG", config):
+            assert get_random_seed() is None

@@ -36,6 +36,7 @@ class LogReader:
     def __init__(self, replay_session_id: int | None = None, session_path: str | None = None) -> None:
         self.session_file_path: Path | None = None
         self.replay_session_id: int | None = replay_session_id
+        self.replay_seed: int | None = None  # The base of its seeds: its random_seed, else its session ID
 
         if session_path is not None:
             # Direct path provided (from file selector)
@@ -150,6 +151,15 @@ class LogReader:
             if row["type"] == "session_id":
                 try:
                     self.replay_session_id = int(row["value"])
+                except ValueError:
+                    pass
+                break
+        # Unless the session had a random_seed (config.ini): its draws were seeded with it
+        self.replay_seed = self.replay_session_id
+        for row in all_rows:
+            if row["type"] == "random_seed":
+                try:
+                    self.replay_seed = int(row["value"])
                 except ValueError:
                     pass
                 break

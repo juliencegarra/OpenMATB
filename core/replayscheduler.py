@@ -135,7 +135,8 @@ class ReplayScheduler(Scheduler):
             else:
                 self.logreader = LogReader(replay_session_id)
             # The plugins draw their pseudorandom values from the seeds of the replayed session
-            set_replay_session_id(self.logreader.replay_session_id)
+            seed: int | None = getattr(self.logreader, "replay_seed", None)
+            set_replay_session_id(seed if seed is not None else self.logreader.replay_session_id)
             # Pre-compute sorted time arrays for O(log n) bisect lookup
             self._key_times: list[float] = [float(i["scenario_time"]) for i in self.logreader.keyboard_inputs]
             self._joy_times: list[float] = [float(i["scenario_time"]) for i in self.logreader.joystick_inputs]

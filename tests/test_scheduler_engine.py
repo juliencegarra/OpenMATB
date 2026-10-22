@@ -113,6 +113,19 @@ class TestInit:
         assert sched.scenario_time == 0
 
 
+    def test_the_random_seed_is_logged(self, mock_logger, window):
+        """random_seed (config.ini) seeds the draws: the replay reads it from the session file."""
+        from core.scheduler import Scheduler
+
+        scenario = MagicMock(events=[], plugins={})
+        with (
+            patch("core.scheduler.Clock"),
+            patch("core.scheduler.Scenario", return_value=scenario),
+            patch("core.scheduler.get_random_seed", return_value=42),
+        ):
+            Scheduler(scenario_path="my.txt")
+        mock_logger.log_manual_entry.assert_any_call(42, key="random_seed")
+
     def test_session_file_written_to_the_disk_every_second(self, mock_logger, window):
         """Desktop: never flushed during the session, a killed process lost the rows still buffered."""
         from core.scheduler import Scheduler
