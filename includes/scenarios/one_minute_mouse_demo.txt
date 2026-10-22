@@ -1,3 +1,4 @@
+# title: One-minute mouse demo
 # Demo of the website (Demo tab, ?demo=1): the basic scenario for visitors
 # English voice, no questionnaire, and every task can be done with the mouse (no numeric keypad on laptops)
 

@@ -1,3 +1,4 @@
+# title: Basic scenario template
 # Scenario template
 # Durations are expressed in milliseconds
 # Timestamps are stated in the following format H:MM:SS

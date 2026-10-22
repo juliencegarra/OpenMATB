@@ -1,3 +1,4 @@
+# title: In-task self-assessment
 # In-task self-assessment: a one-item workload rating every 2 minutes, during a 10-minute session whose
 # workload rises then falls (low, high, low). The rating (1 to 5, inspired by the Instantaneous Self-Assessment
 # technique) pauses the tasks for 10 s at most: without an answer, the page closes and the timeout is logged.

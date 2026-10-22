@@ -1,3 +1,4 @@
+# title: Guided tour (English)
 # OpenMATB demonstration scenario
 
 # Welcome message

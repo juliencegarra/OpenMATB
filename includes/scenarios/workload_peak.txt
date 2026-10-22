@@ -1,3 +1,4 @@
+# title: Workload peak
 # Workload peak: a sudden overload of two minutes between two moderate phases (10 minutes)
 # Studies the reaction to an overload (task shedding, priorities) and the recovery after it.
 # The peak has about 8 system monitoring failures and 3 radio prompts per minute, and frequent pump failures.

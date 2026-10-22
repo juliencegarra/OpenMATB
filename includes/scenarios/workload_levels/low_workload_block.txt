@@ -1,3 +1,4 @@
+# title: Workload levels: low workload block
 # Workload levels: low workload block (5 minutes), followed by the NASA-TLX
 # The three blocks (low, medium and high) have the same structure and differ only by the number of events
 # and the task difficulty: run them in the order of your design (e.g. counterbalanced across participants).

@@ -1,3 +1,4 @@
+# title: Multitasking cost
 # Multitasking cost: each task alone (2 minutes each), then the four tasks together (4 minutes)
 # Each task has the same difficulty and the same number of events per minute when alone and when combined:
 # the performance difference between the single-task and the multitask phases is the cost of multitasking.

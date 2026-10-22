@@ -53,3 +53,18 @@ def test_bundled_scenario_has_no_error(path, tmp_path, mock_logger):
     log = tmp_path / "errors.log"
     assert errors.errors_list == [], log.read_text(encoding="utf-8") if log.exists() else ""
     assert len(scenario.plugins) > 0
+
+
+@pytest.mark.parametrize(
+    "path", sorted((ROOT / "includes" / "scenarios").glob("**/*.txt")), ids=lambda p: p.relative_to(ROOT).as_posix()
+)
+def test_bundled_scenario_has_a_title(path):
+    """Each scenario of the selector has a "# title: ..." comment before its first command."""
+    from core.selector import TITLE_PATTERN
+
+    header = []
+    for line in path.read_text(encoding="utf-8-sig").splitlines():
+        if line.strip() and not line.strip().startswith("#"):
+            break
+        header.append(line.strip())
+    assert any(TITLE_PATTERN.fullmatch(line) for line in header)

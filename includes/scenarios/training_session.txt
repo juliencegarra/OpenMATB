@@ -1,3 +1,4 @@
+# title: Training session
 # Training session (about 10 minutes): each task alone with its instructions, then all the tasks, easy then medium
 # Positive feedbacks are on to help the learning. Run it before the experimental blocks.
 

@@ -1,3 +1,4 @@
+# title: Visite guidée (français)
 # Scénario de démonstration du OpenMATB
 
 # Message d'accueil

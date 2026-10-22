@@ -1,3 +1,4 @@
+# title: LSL synchronized session
 # Physiological synchronization: a resting baseline, then a 5-minute block, with Lab Streaming Layer markers
 # For EEG, ECG, fNIRS or eye tracking recordings: record the OpenMATB stream and the sensor streams with the
 # LabRecorder (they share the LSL clock). pauseatstart displays a pause to add the OpenMATB stream in the
