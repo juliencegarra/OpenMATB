@@ -51,6 +51,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the communications response times, too short by up to a task step (80 ms, 40 ms on average): the end of a prompt was only seen at the task steps, it is seen at each frame
   - Fix the replay of a key logged just after an event (e.g. an agent key 5 ms after a resman start): in a seek, or within a frame, it was replayed before the event (to a task not started yet). The keys logged before an event are replayed before it, the others after
   - Fix the stimulus onsets (the start of the human response times), stamped before the frame was drawn and shown: they are stamped after the swap of its buffers (once shown), the response times were longer by up to a refresh (16.7 ms at 60 Hz)
+  - Fix the session exporter questionnaire columns: the pages ended by maxdurationsec made a scale column (`scale_page_timeout_<n>`, the number of the last page timed out); they are counted in `scale_pages_timed_out_<n>`
   - Fix the scenario generator with a fractional event duration (e.g. an alerttimeout of 10500 ms, a refractory duration of 0.5 s): the times, truncated to the second when written, could bring two events closer than planned, and a light was failed again while still on failure (the failure was then ignored). The events take whole seconds, rounded up, and the refractory duration slider has a 1 s step
 
 ## Version 1.5.2

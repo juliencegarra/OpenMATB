@@ -949,6 +949,17 @@ class TestComputeSummary:
         assert s.scales["scale_Effort_2"] == pytest.approx(70.0)
         assert "scale_presentation_number_1" not in s.scales
 
+    def test_scales_pages_timed_out(self) -> None:
+        """Pages ended by maxdurationsec: counted, not a scale (it was scale_page_timeout_2, the last page number)."""
+        perf = [
+            _perf(60.0, "genericscales", "page_timeout", "1"),
+            _perf(60.0, "genericscales", "page_timeout", "3"),
+            _perf(60.0, "genericscales", "presentation_number", "2"),
+            _perf(60.0, "genericscales", "Effort", "50"),
+        ]
+        s = compute_summary("s", perf, [], [], [])
+        assert s.scales == {"scale_pages_timed_out_2": 2.0, "scale_Effort_2": 50.0}
+
     def test_scales_without_presentation_number_backward_compat(self) -> None:
         """Old format: no presentation_number, uses counting fallback."""
         perf = [

@@ -684,6 +684,12 @@ def compute_summary(
             for row in group:
                 if row.address == "presentation_number":
                     continue
+                if row.address == "page_timeout":
+                    # Not a scale: the number of pages ended by maxdurationsec (their answers are the values shown,
+                    # the defaults if untouched). It was a scale column, with the number of the last page timed out
+                    col = "scale_pages_timed_out" + (f"_{pres_num}" if pres_num is not None else "")
+                    summary.scales[col] = summary.scales.get(col, 0.0) + 1
+                    continue
                 title = row.address.replace(" ", "_")
                 if pres_num is not None:
                     n = pres_num
