@@ -105,7 +105,9 @@ def apply(label: DocumentLabel) -> None:
         visual, line_order = bidi.visual_line(line, paragraph_rtl)
         text.extend("\0" if c == OBJECT and shaped[start + i] == "\0" else c for c, i in zip(visual, line_order))
         order.extend(start + i for i in line_order)
-        if paragraph_rtl:
+        # Not an empty line, e.g. after the <br> of a page title: its paragraph style was set to the whole paragraph
+        # (a line separator does not end it), and the centered title was aligned to the right
+        if paragraph_rtl and len(text) > line_start:
             rtl_paragraphs.append((line_start, len(text)))
         if ending:
             text.append(ending)

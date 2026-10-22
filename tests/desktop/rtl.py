@@ -97,6 +97,10 @@ html = pyglet.text.HTMLLabel(
     x=650, y=590, width=340, multiline=True, anchor_y="top", batch=batch,
     location=pyglet.resource.FileLocation("includes/img"),
 )  # fmt: skip
+# A page title of the instructions and questionnaires (SimpleHTML <h1>): centered, followed by a line break
+title = pyglet.text.HTMLLabel(
+    "<center><strong>استبيان</strong></center><br>", x=10, y=200, width=600, multiline=True, batch=batch
+)
 screenshot("labels", batch)
 
 result["labels"] = {
@@ -123,6 +127,7 @@ result["labels"] = {
         ],
         "paragraphs": [p for p in html.document.text.replace("\u2029", "\n").split("\n")],
     },
+    "title": {"align": title.document.get_style("align", 0)},
 }
 
 # Changing the text: back to left-to-right, then right-to-left again

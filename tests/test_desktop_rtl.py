@@ -112,6 +112,10 @@ class TestHtml:
         expected = ["center", "right"] + (["right"] if html["image"] else []) + [None]
         assert [a if a != "left" else None for a in html["aligns"]] == expected
 
+    def test_page_title_stays_centered(self, result):
+        """A centered title followed by <br> (the <h1> of the questionnaires) was aligned to the right."""
+        assert result["labels"]["title"]["align"] == "center"
+
     def test_ltr_paragraph_unchanged(self, result):
         assert "An English paragraph stays on the left." in result["labels"]["html"]["paragraphs"]
 
