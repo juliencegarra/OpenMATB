@@ -12,11 +12,16 @@ from pyglet.window import mouse as winmouse
 
 from core import validation
 from core.constants import COLORS as C
-from core.constants import REPLAY_MODE
+from core.constants import PLUGIN_TITLE_HEIGHT_PROPORTION, REPLAY_MODE
 from core.container import Container
 from core.utils import clamp
 from core.widgets import Reticle
 from plugins.abstractplugin import AbstractPlugin
+
+# The reticle size (px) in a 1920 x 1080 window, where the speed of the joystick (joystickforce px per step, 50 px/s)
+# was set against the disturbance. In another window, the inputs are scaled as the reticle (and the disturbance): the
+# disturbance followed the reticle, the joystick did not (25 % harder in 1440p). Version 1.1 was in reticle units too
+REFERENCE_RETICLE_SIZE: float = 0.8 * (1 - PLUGIN_TITLE_HEIGHT_PROPORTION) * 1080 / 2
 
 
 class Track(AbstractPlugin):
@@ -59,6 +64,7 @@ class Track(AbstractPlugin):
         self.x_input: float = 0
         self.y_input: float = 0
         self._mouse_dragging: bool = False
+        self.input_scale: float = 1.0  # The inputs scaled as the reticle (see REFERENCE_RETICLE_SIZE)
         self._drag_origin_x: int = 0
         self._drag_origin_y: int = 0
 
@@ -88,6 +94,7 @@ class Track(AbstractPlugin):
 
         # Compute cursor movement constraints as soon as the reticle is created
         self.reticle_container: Container = self.reticle.container
+        self.input_scale = h / REFERENCE_RETICLE_SIZE  # 1 in a 1920 x 1080 window
         self.xgain: float = (self.reticle_container.w * self.gain_ratio) / 2
         self.ygain: float = (self.reticle_container.h * self.gain_ratio) / 2
         self.cursor_position = next(self.cursor_path_gen)
@@ -218,8 +225,8 @@ class Track(AbstractPlugin):
                 else:
                     compx, compy = -self.x_input, self.y_input
 
-                compx = compx * self.parameters["joystickforce"]
-                compy = compy * self.parameters["joystickforce"]
+                compx = compx * self.parameters["joystickforce"] * getattr(self, "input_scale", 1.0)
+                compy = compy * self.parameters["joystickforce"] * getattr(self, "input_scale", 1.0)
 
                 moffx = moffx + compx
                 moffy = moffy + compy

@@ -42,6 +42,7 @@ def track(mock_logger):
     t.scenario_time = 1
     t.joystick = None
     _create_widgets(t)
+    t.input_scale = 1.0  # The inputs of a 1920 x 1080 window (the reticle of this task area is smaller)
     return t
 
 
@@ -207,6 +208,24 @@ class TestComputeNextPluginState:
         _step(track, in_target=True)
         _step(track, in_target=True)
         assert "response_time" not in track.performance
+
+    def test_joystick_input_scaled_as_the_reticle(self, mock_logger):
+        """The disturbance follows the reticle, the joystick did not: 25 % harder in 1440p than in 1080p."""
+        from plugins.track import REFERENCE_RETICLE_SIZE
+
+        track = Track()
+        track.paused, track.visible, track.can_execute_keys, track.scenario_time, track.joystick = (
+            False,
+            True,
+            True,
+            1,
+            None,
+        )
+        _create_widgets(track)  # A reticle of 240 px (0.8 x 300)
+        assert REFERENCE_RETICLE_SIZE == pytest.approx(388.8)  # In a 1920 x 1080 window
+        track.get_joystick_inputs(5, 0)
+        _step(track, in_target=True)
+        assert track.cursor_position[0] == pytest.approx(sin(0.010) * 96 + 5 * 240 / 388.8)
 
     def test_joystick_input_offsets_the_cursor(self, track):
         track.get_joystick_inputs(5, 0)
