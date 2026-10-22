@@ -415,6 +415,17 @@ class TestCheckIfMustExit:
         sched.check_if_must_exit()
         sched.exit.assert_called_once()
 
+    def test_no_exit_under_a_dialog(self, window):
+        """A pause as the last event (system;pause after the stops) is shown, the session ends when it is closed."""
+        sched = _make_scheduler({"p": _make_plugin(alive=False)})
+        sched.exit = MagicMock()
+        window.modal_dialog = MagicMock()
+        sched.check_if_must_exit()
+        sched.exit.assert_not_called()
+        window.modal_dialog = None
+        sched.check_if_must_exit()
+        sched.exit.assert_called_once()
+
     def test_no_exit_while_plugin_alive(self, window):
         """An alive plugin keeps the scheduler running."""
         sched = _make_scheduler({"p": _make_plugin(alive=True)})

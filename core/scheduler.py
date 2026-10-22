@@ -182,11 +182,13 @@ class Scheduler:
                     self.joystick.reset_key_change(k)
 
     def check_if_must_exit(self) -> None:
-        # If no active plugin, and no remaining events (queued or to come), close the OpenMATB
+        # If no active plugin, and no remaining events (queued or to come), close the OpenMATB. Not under a dialog:
+        # a pause as the last event (e.g. to wait for the experimenter) was closed before it was shown
         if (
             len(self.get_active_plugins()) == 0
             and len(self.events_queue) == 0
             and self._event_cursor >= len(self.events)
+            and Window.MainWindow.modal_dialog is None
         ):
             self.exit()
 

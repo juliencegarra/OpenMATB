@@ -27,6 +27,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the communications own targets, on all the radios: they are now on the radios of `promptlist`, as the other ones
   - Fix a scenario with an instructions or questionnaire file name containing a space, refused ("my file.txt" read "myfile.txt")
   - Fix the check of a file name before the start of instructions or a questionnaire: it follows the times of the events, not their order in the file (a questionnaire could start without its file, and be skipped)
+  - Fix a `system;pause` as the last event of a scenario, never shown: the session ended at once
 
 ## Version 1.5.2
   **New Features**
