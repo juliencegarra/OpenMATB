@@ -341,10 +341,11 @@ class LogReader:
             if row["type"] != "state" or row["address"] != "foreground, visibility":
                 continue
             since: float | None = hidden_since.setdefault(row["module"], 0.0)  # Not visible before its start
-            if row["value"] == "False" and since is not None:
+            # True/False, or 1/0 before 1.5
+            if row["value"] in ("False", "0", "0.0") and since is not None:
                 self.task_hidden_periods.setdefault(row["module"], []).append((since, row["normalized_logtime"]))
                 hidden_since[row["module"]] = None
-            elif row["value"] == "True" and since is None:
+            elif row["value"] in ("True", "1", "1.0") and since is None:
                 hidden_since[row["module"]] = row["normalized_logtime"]
         for module, since in hidden_since.items():
             if since is not None:  # Still hidden at the end of the session
