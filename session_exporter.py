@@ -73,7 +73,7 @@ class CommsTrial:
     response_deviation: str
     response_time_ms: float  # milliseconds or NaN
     resolved_by: str
-    prompt_number: str = ""  # The answers of a prompt share it (since 1.5.3); empty for an answer without target
+    prompt_number: str = ""  # The answers of a prompt share it (since 1.5.5); empty for an answer without target
 
 
 @dataclass
@@ -413,7 +413,7 @@ def extract_comms_trials(
 def _comms_prompt_outcomes(trials: list[CommsTrial]) -> list[tuple[CommsTrial, int]]:
     """The outcome of each prompt, with its number of answers: its correct answer (HIT), else its last answer. A
     target answered wrong stays active, to be corrected: its answers share its prompt_number, and an expiry after a
-    wrong answer logs no MISS (since 1.5.3). Older sessions have no prompt_number: each answer is a trial (and a
+    wrong answer logs no MISS (since 1.5.5). Older sessions have no prompt_number: each answer is a trial (and a
     wrong answer not corrected is followed by a MISS of the same prompt)."""
     outcomes: dict[object, list[CommsTrial]] = {}
     for n, t in enumerate(trials):
@@ -556,7 +556,7 @@ def compute_summary(
     deviation_vals: list[float] = []
     relative_deviation_vals: list[float] = []
     track_excursion_rts: list[float] = []
-    # Sessions without center_deviation_relative (before 1.5.3): the deviation in px over the half-size of the reticle
+    # Sessions without center_deviation_relative (before 1.5.5): the deviation in px over the half-size of the reticle
     reticle_half: float | None = _reticle_half_size(event_rows)
 
     # The steps caught up in one update (several 20 ms steps per frame) share a scenario_time: split them
@@ -779,7 +779,7 @@ def build_timeseries(
     last_track_in: str = ""
     last_track_dev: str = ""
     last_track_dev_relative: str = ""
-    # Sessions without center_deviation_relative (before 1.5.3): the deviation in px over the half-size of the reticle
+    # Sessions without center_deviation_relative (before 1.5.5): the deviation in px over the half-size of the reticle
     reticle_half: float | None = _reticle_half_size(event_rows)
     last_res_a_tol: str = ""
     last_res_b_tol: str = ""
