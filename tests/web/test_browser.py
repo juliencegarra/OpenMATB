@@ -58,6 +58,8 @@ def fine_timers() -> None:
 
     It rounds setTimeout to the Windows timer resolution (15.6 ms): the loop wakes every ~31 ms, where
     Safari, Chrome and Firefox wake every ~8-10 ms. Plugin pace and the rest are still tested.
+    Chrome on Windows also rounds them in some sessions, but its loop still wakes every ~10 ms (median) and
+    these tests pass: measuring setTimeout (15.6 ms in both) would not tell the two apart.
     """
     if ENGINE == "webkit" and sys.platform == "win32":
         pytest.skip("Playwright WebKit on Windows rounds its timers to 15.6 ms (not representative of Safari)")
