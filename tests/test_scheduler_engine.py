@@ -633,6 +633,28 @@ class TestExecuteOneEvent:
         assert e.done == 1
         mock_logger.record_event.assert_called_once_with(e)
 
+    def test_stopped_time_not_in_the_task_time(self, window, mock_logger):
+        """A stopped plugin is no longer updated: its start closed the pause of its stop at the time of the stop, and
+        the stopped time was counted in its response times (track: 101.5 s instead of 1.5 s)."""
+        from plugins.abstractplugin import AbstractPlugin
+
+        plugin = object.__new__(AbstractPlugin)
+        plugin.__dict__.update(alias="p", verbose=False, scenario_time=300.0, alive=True, paused=False, parameters={})
+        sched = _make_scheduler({"p": plugin})
+        with (
+            patch.object(AbstractPlugin, "hide"),
+            patch.object(AbstractPlugin, "show"),
+            patch.object(AbstractPlugin, "create_widgets"),
+            patch.object(AbstractPlugin, "log_all_parameters"),
+            patch.object(AbstractPlugin, "update_can_receive_key"),
+        ):
+            sched.scenario_time = 300.0
+            sched.execute_one_event(Event(1, 300, "p", "stop"))
+            sched.scenario_time = 400.0
+            sched.execute_one_event(Event(2, 400, "p", "start"))
+        plugin.scenario_time = 400.5  # Its next update
+        assert plugin.task_time == pytest.approx(300.5)
+
     def test_parameter_event(self, window, mock_logger):
         """A two-word command updates a plugin parameter."""
         p = _make_plugin()

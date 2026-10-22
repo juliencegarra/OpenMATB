@@ -130,6 +130,7 @@ class TestExecuteSystemCommand:
         sched = object.__new__(Scheduler)
         mock_plugin = MagicMock()
         sched.plugins = {"sysmon": mock_plugin}
+        sched.scenario_time = 0
 
         event = Event(1, 0, "sysmon", ["start"])
         sched.execute_one_event(event)

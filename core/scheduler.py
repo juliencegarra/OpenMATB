@@ -269,6 +269,9 @@ class Scheduler:
 
         # Set the plugin corresponding to the event
         plugin: Any = self.plugins[event.plugin]
+        # At the current time: a stopped plugin is no longer updated, its start closed the pause of its stop at the
+        # time of the stop (the stopped time was then counted in its response times, e.g. 100 s more)
+        plugin.scenario_time = self.scenario_time
 
         # If one argument, assume it is a plugin method to execute
         if len(event.command) == 1:
