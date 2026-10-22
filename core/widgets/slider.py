@@ -60,7 +60,10 @@ class Slider(AbstractWidget):
         if interactive:
             Window.MainWindow.push_handlers(self.on_mouse_press, self.on_mouse_drag, self.on_mouse_release)
 
-    def set_sub_containers(self, slider_width: float = 0.6) -> None:
+    track_width: float = 0.9  # Proportion of the slide container, between the bounds
+    groove_height: float = 0.2  # Proportion of the slide container (also the groove radius)
+
+    def set_sub_containers(self, slider_width: float = 0.5) -> None:
         l: float = self.container.l
         n_labels: int = 3 if self.showvalue else 2
         label_w: float = self.container.w * (1 - slider_width) / n_labels
@@ -79,17 +82,21 @@ class Slider(AbstractWidget):
             self.containers["value"] = Container(
                 "container_value", bounds[3], self.container.b, label_w, self.container.h
             )
-        for name in ["min", "max"]:
-            x: float = self.containers[name].cx
-            y: float = self.containers[name].cy
+        # The bounds are next to the ends of the track, beyond the groove radius (they were centered in their column)
+        slide: Container = self.containers["slide"]
+        track_inset: float = slide.w * (1 - self.track_width) / 2
+        bound_gap: float = slide.h * self.groove_height + 12
+        bound_x: dict[str, float] = dict(
+            min=slide.l + track_inset - bound_gap, max=slide.l + slide.w - track_inset + bound_gap
+        )
+        for name, anchor in [("min", "right"), ("max", "left")]:
             self.vertex[name] = Label(
                 getattr(self, f"label_{name}"),
                 font_name=self.font_name,
-                align="center",
-                anchor_x="center",
+                anchor_x=anchor,
                 anchor_y="center",
-                x=x,
-                y=y,
+                x=bound_x[name],
+                y=slide.cy,
                 color=C["TEXTGREY"],
                 group=G(self.draw_order),
                 font_size=F["MEDIUM"],
@@ -111,9 +118,9 @@ class Slider(AbstractWidget):
             )
 
     def set_slider_thumb_and_groove(self) -> None:
-        slider_groove_h: float = 0.2
+        slider_groove_h: float = self.groove_height
         slider_thumb_h: float = 0.05
-        slider_thumb_w: float = 0.9
+        slider_thumb_w: float = self.track_width
 
         self.containers["thumb"] = self.containers["slide"].get_reduced(slider_thumb_w, slider_thumb_h)
 

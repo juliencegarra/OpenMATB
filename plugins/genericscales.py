@@ -58,11 +58,17 @@ class Genericscales(BlockingPlugin):
         self.slider_height: tuple[float, float] = (0.05, 0.03)  # (Default, minimum)
         self.scale_gap: tuple[float, float] = (0.05, 0.012)  # Between two scales
         self.title_question_gap: float = 0.006
-        # ... then uses smaller texts: (scale title, question) sizes, the first ones that fit
-        self.text_sizes: list[tuple[int, int]] = [(F["LARGE"], F["MEDIUM"]), (F["MEDIUM"], F["MEDIUM"])]
+        # ... then uses smaller titles, then longer lines: (scale title size, question size, maximum text width), the
+        # first that fits. Lines of about 100 characters at most (in pixels, as the font sizes) are easier to follow,
+        # and the texts never take more than 80% of the window width
+        self.text_layouts: list[tuple[int, int, int | None]] = [
+            (F["LARGE"], F["MEDIUM"], 1000),
+            (F["MEDIUM"], F["MEDIUM"], 1000),
+            (F["MEDIUM"], F["MEDIUM"], None),
+        ]
         # The scales stay between these limits, so as not to cover the page title or the response text
-        self.top_limit: dict[bool, float] = {True: 0.86, False: 0.96}  # With / without a page title
-        self.bottom_limit: dict[bool, float] = {True: 0.13, False: 0.04}  # With / without a response text
+        self.top_limit: dict[bool, float] = {True: 0.84, False: 0.96}  # With / without a page title
+        self.bottom_limit: dict[bool, float] = {True: 0.14, False: 0.04}  # With / without a response text
 
     def start(self) -> None:
         self._presentation_count += 1
@@ -134,9 +140,9 @@ class Genericscales(BlockingPlugin):
         n: int = len(items)
 
         # The largest texts whose scales fit in it, with their minimum spacing
-        wrap_px: float = self.container.w * 0.8
         padding: int = 4
-        for title_size, question_size in self.text_sizes:
+        for title_size, question_size, max_width in self.text_layouts:
+            wrap_px: float = self.container.w * 0.8 if max_width is None else min(self.container.w * 0.8, max_width)
             for item in items:
                 item["title_h"] = (
                     self._measure_text_height(item["title"], title_size, wrap_px, bold=True) + padding
@@ -162,6 +168,7 @@ class Genericscales(BlockingPlugin):
 
         L: float = self.container.l
         W: float = self.container.w
+        text_l: float = self.container.cx - wrap_px / 2
         for item in items:
             number: int = item["number"]
             title = item["title"] if item["title"] is not None else item["label"]
@@ -170,9 +177,8 @@ class Genericscales(BlockingPlugin):
                 self.add_widget(
                     f"title_{number}",
                     Simpletext,
-                    container=Container("title", L, y, W, item["title_h"]),
+                    container=Container("title", text_l, y, wrap_px, item["title_h"]),
                     text=title,
-                    wrap_width=0.8,
                     font_size=title_size,
                     bold=True,
                     draw_order=self.m_draw,
@@ -183,9 +189,8 @@ class Genericscales(BlockingPlugin):
             self.add_widget(
                 f"label_{number}",
                 Simpletext,
-                container=Container("question", L, y, W, item["question_h"]),
+                container=Container("question", text_l, y, wrap_px, item["question_h"]),
                 text=item["label"],
-                wrap_width=0.8,
                 font_size=question_size,
                 draw_order=self.m_draw,
             )
@@ -222,7 +227,7 @@ class Genericscales(BlockingPlugin):
             container=self.container,
             text=self.parameters["response"]["text"],
             wrap_width=0.5,
-            y=0.1,
+            y=0.07,  # Lower than in the instructions: more space for the scales, and a clear margin above it
             font_size=F["MEDIUM"],
             color=C["TEXTGREY"],
             italic=True,

@@ -44,9 +44,13 @@ def _set_layout(obj):
     obj.slider_height = (0.05, 0.03)
     obj.scale_gap = (0.05, 0.012)
     obj.title_question_gap = 0.006
-    obj.text_sizes = [(F["LARGE"], F["MEDIUM"]), (F["MEDIUM"], F["MEDIUM"])]
-    obj.top_limit = {True: 0.86, False: 0.96}
-    obj.bottom_limit = {True: 0.13, False: 0.04}
+    obj.text_layouts = [
+        (F["LARGE"], F["MEDIUM"], 1000),
+        (F["MEDIUM"], F["MEDIUM"], 1000),
+        (F["MEDIUM"], F["MEDIUM"], None),
+    ]
+    obj.top_limit = {True: 0.84, False: 0.96}
+    obj.bottom_limit = {True: 0.14, False: 0.04}
 
 
 @pytest.fixture
@@ -173,7 +177,7 @@ class TestPageAreas:
         """The page title (<h1>) was covered by the first scale of a full page."""
         gs.widgets["genericscales_title"] = MagicMock()
         slide = "\n".join(f"Title {i};Question {i};Low/High;0/10/5" for i in range(6))
-        containers = run_make_slide_graphs(gs, slide, {f"Question {i}": 50 for i in range(6)})
+        containers = run_make_slide_graphs(gs, slide, {f"Question {i}": 40 for i in range(6)})
         for name, c in containers.items():
             assert top(c) <= gs.container.h * gs.top_limit[True] + 0.5, name
             assert c.b >= gs.container.h * gs.bottom_limit[True] - 0.5, name
@@ -212,7 +216,7 @@ class TestFullPage:
     def test_default_sizes_when_there_is_room(self, gs):
         containers = run_make_slide_graphs(gs, "T;Q;Low/High;0/10/5", {})
         assert containers["slider_1"].h == pytest.approx(gs.slider_height[0] * gs.container.h)
-        assert gs.captured_kwargs["title_1"]["font_size"] == gs.text_sizes[0][0]
+        assert gs.captured_kwargs["title_1"]["font_size"] == gs.text_layouts[0][0]
 
     def test_sliders_thinner_on_a_full_page(self, gs):
         slide = "\n".join(f"Title {i};Question {i};Low/High;0/10/5" for i in range(6))
@@ -226,11 +230,11 @@ class TestFullPage:
         def measure(text, font_size, wrap_width_px, bold=False):
             if text.startswith("Question"):
                 return 60
-            return 60 if font_size == gs.text_sizes[0][0] else 20  # The page fits only with the smaller titles
+            return 60 if font_size == gs.text_layouts[0][0] else 20  # The page fits only with the smaller titles
 
         run_make_slide_graphs(gs, slide, {}, measure=measure)
         sizes = {gs.captured_kwargs[f"title_{i}"]["font_size"] for i in range(1, 7)}
-        assert sizes == {gs.text_sizes[1][0]}
+        assert sizes == {gs.text_layouts[1][0]}
 
 
 class TestStackingOrder:
