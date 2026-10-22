@@ -17,7 +17,7 @@ class Simpletext(AbstractWidget):
         container: Any,
         text: str,
         draw_order: int = 1,
-        font_size: int = F["SMALL"],
+        font_size: int | None = None,  # F["SMALL"] (not as a default value: it is scaled to the window)
         x: float = 0.5,
         y: float = 0.5,
         wrap_width: float = 1,
@@ -33,7 +33,7 @@ class Simpletext(AbstractWidget):
         wrap_width_px: float = max(self.container.w * wrap_width, 1)  # pyglet needs a positive width
 
         label_kwargs: dict = dict(
-            font_size=font_size,
+            font_size=F["SMALL"] if font_size is None else font_size,
             x=x_pos,
             y=y_pos,
             align=anchor_x,  # A right (left) anchored text is aligned on it: its box is the wrap width

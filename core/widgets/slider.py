@@ -13,6 +13,7 @@ from pyglet.text import Label
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.constants import Group as G
+from core.constants import scaled
 from core.container import Container
 from core.widgets import AbstractWidget
 from core.window import Window
@@ -85,7 +86,7 @@ class Slider(AbstractWidget):
         # The bounds are next to the ends of the track, beyond the groove radius (they were centered in their column)
         slide: Container = self.containers["slide"]
         track_inset: float = slide.w * (1 - self.track_width) / 2
-        bound_gap: float = slide.h * self.groove_height + 12
+        bound_gap: float = slide.h * self.groove_height + scaled(12)
         bound_x: dict[str, float] = dict(
             min=slide.l + track_inset - bound_gap, max=slide.l + slide.w - track_inset + bound_gap
         )

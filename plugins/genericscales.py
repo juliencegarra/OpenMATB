@@ -13,7 +13,7 @@ from core import validation
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
 from core.constants import PATHS as P
-from core.constants import REPLAY_MODE
+from core.constants import REPLAY_MODE, scaled
 from core.container import Container
 from core.utils import get_conf_value
 from core.widgets import Simpletext, Slider
@@ -61,9 +61,9 @@ class Genericscales(BlockingPlugin):
         # ... then uses smaller titles, then longer lines: (scale title size, question size, maximum text width), the
         # first that fits. Lines of about 100 characters at most (in pixels, as the font sizes) are easier to follow,
         # and the texts never take more than 80% of the window width
-        self.text_layouts: list[tuple[int, int, int | None]] = [
-            (F["LARGE"], F["MEDIUM"], 1000),
-            (F["MEDIUM"], F["MEDIUM"], 1000),
+        self.text_layouts: list[tuple[int, int, float | None]] = [
+            (F["LARGE"], F["MEDIUM"], scaled(1000)),
+            (F["MEDIUM"], F["MEDIUM"], scaled(1000)),
             (F["MEDIUM"], F["MEDIUM"], None),
         ]
         # The scales stay between these limits, so as not to cover the page title or the response text

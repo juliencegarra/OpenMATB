@@ -232,7 +232,8 @@ class Resman(AbstractPlugin):
             from_cont: Container = tanks[this_pump["_fromtank"]]["widget"].container
             to_cont: Container = tanks[this_pump["_totank"]]["widget"].container
             y_offset: float = 0.055 * self.task_container.h if pump_number == "7" else 0  # Raise the 7th pump
-            pump_width: float = 0.028 * self.task_container.w
+            # Wide enough for its number (in a narrow window, e.g. 1024 px: 16 px wide, the number overflowed)
+            pump_width: float = max(0.028 * self.task_container.w, 2.1 * F["SMALL"])
 
             # Pump is not specified by a container (None), but by two containers (from-to)
             this_pump["widget"] = self.add_widget(

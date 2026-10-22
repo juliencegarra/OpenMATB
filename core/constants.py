@@ -73,6 +73,25 @@ C = COLORS
 
 FONT_SIZES: dict[str, int] = dict(SMALL=12, MEDIUM=16, LARGE=20, XLARGE=30)
 F = FONT_SIZES
+_BASE_FONT_SIZES: dict[str, int] = dict(FONT_SIZES)  # For a 1920 x 1080 window
+_font_scale: float = 1.0
+
+
+def scale_font_sizes(width: float, height: float, minimum: float = 0.75) -> float:
+    """Scale the font sizes as the task areas, from a 1920 x 1080 window: smaller in a smaller window (at least by
+    minimum, to stay readable), larger in a larger one, so that the texts keep their place in every window.
+    Before any text is created: the widgets read FONT_SIZES when they are created."""
+    global _font_scale
+    _font_scale = max(minimum, min(width / 1920, height / 1080))
+    for name, size in _BASE_FONT_SIZES.items():
+        FONT_SIZES[name] = round(size * _font_scale)
+    return _font_scale
+
+
+def scaled(length: float) -> float:
+    """A length in pixels in a 1920 x 1080 window, at the scale of the fonts (e.g. a space next to a text)."""
+    return length * _font_scale
+
 
 # Proportion of the plugin title into its container
 PLUGIN_TITLE_HEIGHT_PROPORTION: float = 0.1

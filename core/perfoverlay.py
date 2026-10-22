@@ -9,6 +9,7 @@ from typing import Any
 from pyglet.shapes import Circle, Line, Rectangle
 from pyglet.text import Label
 
+from core.constants import FONT_SIZES as F
 from core.constants import Group as G
 from core.container import Container
 
@@ -106,7 +107,7 @@ class PerfOverlay:
                 TASK_LABELS.get(task_name, task_name.upper()),
                 x=l + 4,
                 y=row_mid,
-                font_size=9,
+                font_size=round(F["SMALL"] * 0.75),
                 color=(200, 200, 200, 255),
                 anchor_y="center",
                 batch=batch,
