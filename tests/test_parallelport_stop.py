@@ -40,3 +40,14 @@ def test_trigger_value_is_one_byte():
     assert is_trigger_value("255") == (255, None)
     assert is_trigger_value("256")[0] is None
     assert is_trigger_value("0")[0] is None
+
+
+@patch.object(AbstractPlugin, "pause")
+def test_pause_lowers_the_trigger_being_sent(_pause):
+    """Paused by instructions or a questionnaire just after a trigger: it stayed high during the whole pause."""
+    pp = _make_pp(_awaiting_triggers=[5])
+    pp.parameters["trigger"] = 99
+    pp.compute_next_plugin_state()
+    pp.pause()
+    pp._port.setData.assert_called_with(0)
+    assert pp._awaiting_triggers == [5]  # Sent after the resume

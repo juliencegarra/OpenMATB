@@ -122,6 +122,13 @@ class Parallelport(AbstractPlugin):
         low_since: float | None = getattr(self, "_low_since", None)
         return low_since is None or round((self.scenario_time - low_since) * 1000, 3) >= self.parameters["delayms"]
 
+    def pause(self) -> None:
+        # The steps no longer run while paused (instructions, questionnaire, pause dialog): a trigger being sent
+        # stayed high during the whole pause, instead of delayms. The triggers awaiting are sent after the resume
+        if self._port is not None and self.is_trigger_being_sent():
+            self.set_trigger_value(self._downvalue)
+        super().pause()
+
     def stop(self) -> None:
         # The steps no longer run: a trigger being sent (e.g. an end-of-block marker just before the stop) would
         # stay on the port after the session. The triggers awaiting are not sent
