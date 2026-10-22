@@ -12,6 +12,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix a hidden communications task heard: a prompt cut by a pause was played again when the task was resumed while still hidden (guided tours). A hidden task is now silent, in the replay too
   - Fix the guided tours: the communications prompt was cut before its frequency, and the French tour had the English voice; fix the demo prompt cut by the end
   - Fix the communications radios on desktop: the name and the frequency were glued ("NAV 1135.7"), their digits even overlapped with pyglet 3 (a tab has no width in a single-line label)
+  - Fix the communications callsign label: "Callsign" disappeared after the first frame, only the callsign remained
   - Fix in the browser the top right of italic letters cut (e.g. the dot of an italic i)
   - Fix a scenario path given on the command line from the current folder (e.g. `includes/scenarios/basic.txt`), looked for in the scenarios folder
 

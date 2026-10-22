@@ -565,7 +565,16 @@ class TestRefreshWidgets:
         radios[1]["widget"].hide_arrows.assert_called_once()
         radios[2]["widget"].show_arrows.assert_not_called()
         radios[2]["widget"].hide_arrows.assert_not_called()
-        comms.widgets["communications_callsign"].set_text.assert_called_once_with(comms.parameters["owncallsign"])
+        comms.widgets["communications_callsign"].set_text.assert_called_once_with(
+            _("Callsign 		 %s") % comms.parameters["owncallsign"]
+        )
+
+    def test_callsign_keeps_its_label(self, comms):
+        """Regression: the refresh replaced "Callsign <callsign>" by the callsign alone, from the second frame."""
+        comms.parameters["owncallsign"] = "GZ67"
+        comms.refresh_widgets()
+        text = comms.widgets["communications_callsign"].set_text.call_args[0][0]
+        assert text == comms.callsign_text() == _("Callsign 		 %s") % "GZ67"
 
     def test_frequencies_and_colors(self, comms):
         radios = comms.parameters["radios"]

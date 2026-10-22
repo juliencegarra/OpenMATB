@@ -194,13 +194,17 @@ class Communications(AbstractPlugin):
                 this_callsign = self.get_callsign()
             self.parameters["othercallsign"].append(this_callsign)
 
+    def callsign_text(self) -> str:
+        """The callsign label of the participant, at creation and at each refresh (the callsign can change)."""
+        return _("Callsign \t\t %s") % self.parameters["owncallsign"]
+
     def create_widgets(self) -> None:
         super().create_widgets()
         self.add_widget(
             "callsign",
             Simpletext,
             container=self.task_container,
-            text=_("Callsign \t\t %s") % self.parameters["owncallsign"],
+            text=self.callsign_text(),
             y=0.9,
         )
 
@@ -508,7 +512,7 @@ class Communications(AbstractPlugin):
         if not super().refresh_widgets():
             return
 
-        self.widgets["communications_callsign"].set_text(self.parameters["owncallsign"])
+        self.widgets["communications_callsign"].set_text(self.callsign_text())
 
         # Move arrow to active radio
         for _, radio in self.parameters["radios"].items():
