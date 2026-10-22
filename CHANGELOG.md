@@ -7,6 +7,8 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - New example scenarios: three workload levels (`workload_levels/`, 5-minute blocks with the NASA-TLX), the multitasking cost (each task alone, then together), a workload peak, a training session, a session synchronized with physiological recordings (resting baseline and LSL markers), and in-task workload ratings (a one-item scale every 2 minutes, closed after 10 s), with participant instructions (`includes/instructions/tasks_en`)
   - Scenarios with names that tell what they are: `guided_tour_en` and `guided_tour_fr` (formerly `default_en` and `default_fr`), `one_minute_mouse_demo` (formerly `demo`); the manual test scenarios moved to `tests/scenarios` (out of the scenario selection)
   - Scenario selector: each scenario is shown by its title, a `# title: Workload peak` comment before its first command (else its file name in words), sorted by title, with its file name in grey
+  - Questionnaires: a clearer layout. The scales are regularly spaced, the scale titles larger than the questions, the questions at most about 100 characters per line, the slider bounds next to the track, and the response text smaller, in grey. A full page brings its scales closer, then uses smaller titles and longer lines
+  - The English NASA-TLX is scored from 0 to 100 (was 0 to 10), as the original and the French version; the French version has the order of the original (Performance before Effort)
 
   **Bug Fixes**
   - Fix a hidden communications task heard: a prompt cut by a pause was played again when the task was resumed while still hidden (guided tours). A hidden task is now silent, in the replay too
@@ -15,6 +17,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the communications callsign label: "Callsign" disappeared after the first frame, only the callsign remained
   - Fix in the browser the top right of italic letters cut (e.g. the dot of an italic i)
   - Fix a scenario path given on the command line from the current folder (e.g. `includes/scenarios/basic.txt`), looked for in the scenarios folder
+  - Fix a questionnaire page title covering the first scale of a full page
   - Fix the scheduling chronometer in a window narrower than 1920 px: separated from its time by a tab, its name wrapped onto two lines, the second one below the task area. They are now side by side, centered together
 
 ## Version 1.5.2
