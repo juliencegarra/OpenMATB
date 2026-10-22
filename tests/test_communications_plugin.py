@@ -507,6 +507,19 @@ class TestComputeNextPluginState:
         assert radio["_response_start"] == 2
         comms.logger.log_manual_entry.assert_any_call("Target NAV_2:115.0")
 
+    def test_end_of_prompt_seen_at_the_next_frame(self, comms):
+        """Not at the next task step (80 ms): the response times were too short by up to a step."""
+        radio = _radio(comms, "NAV_2")
+        radio.update(targetfreq=115.0, is_prompting=True)
+        comms.scenario_time = 2.0
+        comms.player = MagicMock(source=object())  # Playing
+        comms.compute_next_plugin_state()  # A step: the prompt is playing
+        comms.player.source = None  # It ends just after
+        comms.refresh_widgets = MagicMock()
+        comms.update(2.016)  # The next frame, before the next step (2.08)
+        assert radio["is_prompting"] is False
+        assert radio["_response_start"] == pytest.approx(2.016)
+
     def test_prompt_still_playing(self, comms):
         radio = _radio(comms, "NAV_2")
         radio.update(targetfreq=115.0, is_prompting=True)

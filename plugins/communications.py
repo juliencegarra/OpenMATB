@@ -443,6 +443,27 @@ class Communications(AbstractPlugin):
         elif self.is_key_state(self.parameters["keys"]["tunefrequencyup"], True):
             self.get_active_radio_dict()["currentfreq"] += self.frequency_modulation
 
+    def update(self, scenario_time: float) -> None:
+        # The end of a prompt at each update (each frame), not only at each task step (80 ms by default): the
+        # response times were too short by up to a step (40 ms on average). The audio driver posts the end of the
+        # sound to the event loop (its source is then None): an end callback would not be seen sooner
+        self.scenario_time = scenario_time
+        if not self.paused:
+            self.check_prompt_ends()
+        super().update(scenario_time)
+
+    def check_prompt_ends(self) -> None:
+        """The targets whose prompt has ended (or could not be played: no player): the answers are accepted from
+        now on, their response time starts (in the update that sees the end: it started a step later, and an answer
+        in between took 0 ms)"""
+        for radio in self.get_target_radios_list():
+            if radio["is_prompting"] and self._prompt_has_ended(radio):
+                radio["is_prompting"] = False
+                self.logger.log_manual_entry(f"Target {radio['name']}:{radio['targetfreq']}")
+            if not radio["is_prompting"] and radio["_response_start"] is None:
+                # Starts when the prompt has ended (not displayed): only the response end is the input event
+                self.start_response_timer(radio, on_flip=False)
+
     def compute_next_plugin_state(self) -> None:
         if not super().compute_next_plugin_state():
             return
@@ -493,19 +514,9 @@ class Communications(AbstractPlugin):
         active: dict[str, Any] = self.get_active_radio_dict()
 
         # Browse targeted radios
+        self.check_prompt_ends()
         for radio in target_radios:
-            # If the radio prompt has just ended (or could not be played: no player)
-            if radio["is_prompting"] and self._prompt_has_ended(radio):
-                radio["is_prompting"] = False
-                self.logger.log_manual_entry(f"Target {radio['name']}:{radio['targetfreq']}")
-
-            # Start response timer as soon as auditory prompting has ended: in the step that sees its end, as the
-            # answers are accepted from then on (it started a step later, and an answer in between took 0 ms)
             if not radio["is_prompting"]:
-                if radio["_response_start"] is None:
-                    # Starts when the prompt has ended (not displayed): only the response end is the input event
-                    self.start_response_timer(radio, on_flip=False)
-
                 # Record potential target miss
                 if self._response_elapsed_ms(radio["_response_start"]) >= self.parameters["maxresponsedelay"]:
                     self.record_target_missing(radio)
