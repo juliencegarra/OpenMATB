@@ -23,6 +23,9 @@ from core.window import Window
 
 # Browser: how often the session file is saved to persistent storage (seconds)
 WEB_CHECKPOINT_INTERVAL: float = 10
+# Desktop: the session file written to the disk this often. Never flushed during the session, a killed process (Task
+# Manager, a crash of a graphics or audio driver) lost the rows still buffered: up to the whole end questionnaire
+DESKTOP_FLUSH_INTERVAL: float = 1
 # Browser: updates later than this (seconds) are logged as "freeze" (the browser paused the page, e.g. Firefox GC)
 WEB_FREEZE_THRESHOLD: float = 0.1
 
@@ -53,8 +56,8 @@ class Scheduler:
 
         self._exited: bool = False
         self.clock.schedule(self.update)
-        if IS_WEB:
-            pyglet.clock.schedule_interval(get_logger().checkpoint, WEB_CHECKPOINT_INTERVAL)
+        interval: float = WEB_CHECKPOINT_INTERVAL if IS_WEB else DESKTOP_FLUSH_INTERVAL
+        pyglet.clock.schedule_interval(get_logger().checkpoint, interval)
 
         self.joystick: Any = joystick
         self.set_scenario()

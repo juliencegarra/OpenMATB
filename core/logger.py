@@ -124,8 +124,9 @@ class Logger:
         self.file.close()
 
     def checkpoint(self, dt: float = 0) -> None:
-        """Browser: persist the session file written so far (in case the tab is closed), and let the page
-        send it to the server if configured (web_session_output, see web/session_output.js)."""
+        """Write the session file so far to the disk (in case the process is killed). Browser: persist it (in case
+        the tab is closed), and let the page send it to the server if configured (web_session_output, see
+        web/session_output.js)."""
         if REPLAY_MODE or self._ended or self.file is None:
             return
         self.file.flush()

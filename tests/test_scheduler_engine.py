@@ -113,6 +113,20 @@ class TestInit:
         assert sched.scenario_time == 0
 
 
+    def test_session_file_written_to_the_disk_every_second(self, mock_logger, window):
+        """Desktop: never flushed during the session, a killed process lost the rows still buffered."""
+        from core.scheduler import Scheduler
+
+        scenario = MagicMock(events=[], plugins={})
+        with (
+            patch("core.scheduler.Clock"),
+            patch("core.scheduler.Scenario", return_value=scenario),
+            patch("core.scheduler.pyglet.clock.schedule_interval") as schedule_interval,
+        ):
+            Scheduler(scenario_path="my.txt")
+        schedule_interval.assert_called_once_with(mock_logger.checkpoint, 1)
+
+
 class TestSetScenario:
     def test_events_sorted_by_time_then_line(self, window):
         """Loaded events are sorted by (time_sec, line)."""
