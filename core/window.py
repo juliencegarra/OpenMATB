@@ -113,7 +113,9 @@ class Window(Window):
                 self.fit_to_work_area()
 
         pyglet_compat.set_mouse_cursor_visible(self, REPLAY_MODE)
-        self.font_scale: float = scale_font_sizes(self._width, self._height)
+        # From the area of the tasks: the whole window in a session, smaller in the replay (strips around it)
+        tasks_area: Container = self.get_container("fullscreen")
+        self.font_scale: float = scale_font_sizes(tasks_area.w, tasks_area.h)
         HTMLDecoder.default_style["font_size"] = F["SMALL"]  # Dialogs, and instructions without size
 
         if HEADLESS_MODE:

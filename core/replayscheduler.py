@@ -260,7 +260,8 @@ class ReplayScheduler(Scheduler):
         key_container: Container = input_container.reduce_and_translate(width=0.9, height=0.66, y=0, x=0.5)
         # The text is centered in its area: keep the lines that fit in it (about 24 px each), whatever the screen
         self._max_keys_history: int = max(5, int(key_container.h / 24) - 1)
-        self.key_widget: SimpleHTML = SimpleHTML("replay_keys", key_container, "<strong>Keyboard history:\n</strong>")
+        # One key per line, under the title (a line break is a space in HTML: the first key was on the title line)
+        self.key_widget: SimpleHTML = SimpleHTML("replay_keys", key_container, "<strong>Keyboard history:</strong><br>")
         self.key_widget.show()
 
     def set_media_buttons(self) -> None:
@@ -288,7 +289,15 @@ class ReplayScheduler(Scheduler):
         )
         self.mute_button: MuteButton = MuteButton("mute_button", mute_container, self.toggle_mute)
 
-        self.slider: Slider = Slider("timeline", media_container, None, "", "", 0, 1, 0, 1)
+        # The timeline takes the space between the play button and the time (it was a centered half of the strip)
+        timeline_l: float = pp_container.l + pp_container.w
+        timeline_r: float = media_container.l + media_container.w * 0.70
+        timeline_container: Container = Container(
+            "timeline", timeline_l, media_container.b, timeline_r - timeline_l, media_container.h
+        )
+        self.slider: Slider = Slider(
+            "timeline", timeline_container, None, "", "", 0, 1, 0, 1, showvalue=False, slider_width=1
+        )
         self.time.show()
 
         # Inputs strip
@@ -632,7 +641,7 @@ class ReplayScheduler(Scheduler):
                 if len(self.keys_history) > getattr(self, "_max_keys_history", 30):
                     del self.keys_history[0]
 
-        history_str: str = "<strong>Keyboard history:\n</strong>" + "<br>".join(self.keys_history)
+        history_str: str = "<strong>Keyboard history:</strong><br>" + "<br>".join(self.keys_history)
         self.key_widget.set_text(history_str)
 
     def _rows_to_read(self, name: str, logtimes: list[float]) -> range:

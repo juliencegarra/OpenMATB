@@ -920,7 +920,8 @@ class TestEmulateKeyboardInputs:
             ("F1", "press", True),
         ]
         assert rs.keys_history == ["SPACE (press)", "F1 (press)"]
-        rs.key_widget.set_text.assert_called_with("<strong>Keyboard history:\n</strong>SPACE (press)<br>F1 (press)")
+        # One key per line, the first one under the title
+        rs.key_widget.set_text.assert_called_with("<strong>Keyboard history:</strong><br>SPACE (press)<br>F1 (press)")
 
     def test_keys_of_a_long_frame_are_sent(self):
         """A frame longer than 0.1 s (a GC pause, a dragged window, a throttled page) does not lose its keys."""

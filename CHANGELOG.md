@@ -9,7 +9,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Scenario selector: each scenario is shown by its title, a `# title: Workload peak` comment before its first command (else its file name in words), sorted by title, with its file name in grey
   - Questionnaires: a clearer layout. The scales are regularly spaced, the scale titles larger than the questions, the questions at most about 100 characters per line, the slider bounds next to the track, and the response text smaller, in grey. A full page brings its scales closer, then uses smaller titles and longer lines
   - The English NASA-TLX is scored from 0 to 100 (was 0 to 10), as the original and the French version; the French version has the order of the original (Performance before Effort)
-  - Texts scaled to the window, as the task areas: from a 1920 x 1080 window, smaller in a smaller one (at least 0.75, e.g. 9 pt for 12 pt texts) and larger in a larger one. In a 1366 x 768 window, texts overlapped (system monitoring, communications, scheduling); in a 2560 x 1440 one, they looked small. The scale is logged in the session file (`font_scale`)
+  - Texts scaled to the window, as the task areas: from a 1920 x 1080 window, smaller in a smaller one (at least 0.75, e.g. 9 pt for 12 pt texts) and larger in a larger one. In a 1366 x 768 window, texts overlapped (system monitoring, communications, scheduling); in a 2560 x 1440 one, they looked small. In the replay, the texts follow the reduced task areas, as in the session. The scale is logged in the session file (`font_scale`)
 
   **Bug Fixes**
   - Fix a hidden communications task heard: a prompt cut by a pause was played again when the task was resumed while still hidden (guided tours). A hidden task is now silent, in the replay too
@@ -20,6 +20,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix a scenario path given on the command line from the current folder (e.g. `includes/scenarios/basic.txt`), looked for in the scenarios folder
   - Fix a questionnaire page title covering the first scale of a full page
   - Fix the scheduling chronometer in a window narrower than 1920 px: separated from its time by a tab, its name wrapped onto two lines, the second one below the task area. They are now side by side, centered together
+  - Fix the replay keyboard history: the first key was on the title line, which wrapped in the narrow inputs strip. The replay timeline also takes the whole space between the play button and the time
 
 ## Version 1.5.2
   **New Features**

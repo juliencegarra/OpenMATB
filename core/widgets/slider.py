@@ -35,6 +35,7 @@ class Slider(AbstractWidget):
         interactive: bool = True,
         showvalue: bool = True,
         on_mouse_focus: Callable[[int], Any] | None = None,
+        slider_width: float = 0.5,  # Proportion of the container taken by the slide, between its bounds
     ) -> None:
         super().__init__(name, container)
 
@@ -54,7 +55,7 @@ class Slider(AbstractWidget):
         self.on_mouse_focus: Callable[[int], Any] | None = on_mouse_focus
 
         self.containers: dict[str, Container] = dict()
-        self.set_sub_containers()
+        self.set_sub_containers(slider_width)
         self.set_slider_thumb_and_groove()
         self.show()
 
