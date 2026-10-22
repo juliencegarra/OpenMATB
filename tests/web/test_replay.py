@@ -277,3 +277,19 @@ class TestReplaySpeed:
             "json.dumps([[e.time_sec, e.plugin, e.get_command_str()] for e in probe.PROBE['scheduler'].events if not e.done])"
         )
         assert end["events_done"] == end["events"], not_done
+
+
+class TestReplayExit:
+    def test_escape_then_q_opens_the_choice_of_the_session(self, replayed):
+        """Escape, then Q in the exit dialog: the menu opens again in replay mode, with the sessions to replay
+        (last test: the replay is closed)."""
+        replay = replayed["app"]
+        replay.page.focus("#pygletCanvas")
+        replay.page.keyboard.press("Escape")
+        replay.page.wait_for_timeout(300)
+        replay.page.keyboard.press("q")
+        replay.page.wait_for_url("**mode=replay**", timeout=10_000)
+        replay.page.wait_for_selector("#menu:not([hidden])", timeout=10_000)
+        assert replay.page.input_value("#mode") == "replay"
+        assert replay.page.is_visible("#replay-options")
+        replay.page.wait_for_selector("#sessions-list li", timeout=60_000)  # Listed once OpenMATB is loaded

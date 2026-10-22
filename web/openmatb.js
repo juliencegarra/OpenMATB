@@ -650,6 +650,12 @@ $("mode").addEventListener("change", () => {
     showStoredSessions();
 });
 
+// Back from a replay (Escape, then Q): the menu opens on the choice of the session to replay
+if (new URLSearchParams(location.search).get("mode") === "replay" && !DEMO && !scorm && !cmi5) {
+    $("mode").value = "replay";
+    $("mode").dispatchEvent(new Event("change"));
+}
+
 $("start").addEventListener("click", async () => {
     // Once: a second click during the awaits below ran main.py twice (two schedulers, every row logged twice)
     if ($("start").disabled) {
@@ -724,9 +730,10 @@ $("start").addEventListener("click", async () => {
     }
 });
 
-// Back to the menu, keeping the chosen language
+// Back to the menu, keeping the chosen language (and the replay mode)
 const backToMenu = () => {
-    location.href = `${location.pathname}?lang=${$("lang").value}${DEMO ? "&demo=1" : ""}`;
+    const replay = $("mode").value === "replay" ? "&mode=replay" : "";
+    location.href = `${location.pathname}?lang=${$("lang").value}${DEMO ? "&demo=1" : ""}${replay}`;
 };
 $("back").addEventListener("click", backToMenu);
 
