@@ -24,6 +24,7 @@ class Simpletext(AbstractWidget):
         color: tuple[int, ...] = C["BLACK"],
         bold: bool = False,
         italic: bool = False,
+        anchor_x: str = "center",
     ) -> None:
         super().__init__(name, container)
 
@@ -35,8 +36,8 @@ class Simpletext(AbstractWidget):
             font_size=font_size,
             x=x_pos,
             y=y_pos,
-            align="center",
-            anchor_x="center",
+            align=anchor_x,  # A right (left) anchored text is aligned on it: its box is the wrap width
+            anchor_x=anchor_x,
             anchor_y="center",
             color=color,
             group=G(draw_order),

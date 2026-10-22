@@ -419,14 +419,12 @@ msgid "Pump status"
 msgstr "État des pompes"
 
 #: plugins/scheduling.py:131
-#, python-format
-msgid "Elapsed time \t %s"
-msgstr "Temps passé \t %s"
+msgid "Elapsed time"
+msgstr "Temps passé"
 
 #: plugins/scheduling.py:140
-#, python-format
-msgid "Remaining time \t %s"
-msgstr "Temps restant \t %s"
+msgid "Remaining time"
+msgstr "Temps restant"
 
 #: plugins/track.py:41
 msgid "No joystick found"

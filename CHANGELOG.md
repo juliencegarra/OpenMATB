@@ -15,6 +15,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the communications callsign label: "Callsign" disappeared after the first frame, only the callsign remained
   - Fix in the browser the top right of italic letters cut (e.g. the dot of an italic i)
   - Fix a scenario path given on the command line from the current folder (e.g. `includes/scenarios/basic.txt`), looked for in the scenarios folder
+  - Fix the scheduling chronometer in a window narrower than 1920 px: separated from its time by a tab, its name wrapped onto two lines, the second one below the task area. They are now side by side, centered together
 
 ## Version 1.5.2
   **New Features**
