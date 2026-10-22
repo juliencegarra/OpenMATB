@@ -156,7 +156,8 @@ class ReplayScheduler(Scheduler):
                     perfstrip_container,
                     Window.MainWindow.batch,
                     self.logreader.perf_series,
-                    self.logreader.duration_sec,
+                    self.logreader.session_duration,  # In replay time, as the timeline
+                    self.logreader.task_hidden_periods,
                 )
 
         self.sliding: bool = False
@@ -392,8 +393,7 @@ class ReplayScheduler(Scheduler):
         self.process_states()
 
         if self._perf_overlay is not None:
-            st: float = self.logreader.replay_to_scenario_time(self.replay_time)
-            self._perf_overlay.update_cursor(st)
+            self._perf_overlay.update_cursor(self.replay_time)
 
     def execute_due_events(self) -> None:
         """Fast-forward (seek): execute all the events due at the reached time.

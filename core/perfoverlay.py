@@ -21,6 +21,7 @@ COLOR_HIT: tuple[int, int, int] = (40, 200, 40)
 COLOR_MISS: tuple[int, int, int] = (200, 40, 40)
 COLOR_FA: tuple[int, int, int] = (220, 200, 40)
 COLOR_BAD: tuple[int, int, int] = (240, 130, 30)  # A communications answer on a wrong radio or frequency
+COLOR_HIDDEN: tuple[int, int, int, int] = (150, 150, 150, 110)  # A task not visible (instructions, questionnaire...)
 
 # Task display order and labels
 TASK_ORDER: list[str] = ["track", "resman", "sysmon", "communications"]
@@ -66,6 +67,7 @@ class PerfOverlay:
         batch: Any,
         perf_series: dict[str, list[tuple[float, dict[str, str]]]],
         duration_sec: float,
+        hidden_periods: dict[str, list[tuple[float, float]]] | None = None,
     ) -> None:
         self._container: Container = container
         self._batch: Any = batch
@@ -114,6 +116,10 @@ class PerfOverlay:
                 group=G(98),
             )
             self._labels.append(label)
+
+            # Grey over the periods when the task was not visible
+            for start, end in (hidden_periods or {}).get(task_name, []):
+                self._draw_hidden_period(start, end, row_bottom, row_height)
 
             # Separator line between rows (except at the bottom)
             if i < n_tasks - 1:
@@ -175,6 +181,16 @@ class PerfOverlay:
 
     def _time_to_x(self, t: float) -> float:
         return self._x_min + (t / self._duration) * self._sparkline_width
+
+    def _draw_hidden_period(self, start: float, end: float, y: float, height: float) -> None:
+        x_start: float = max(self._x_min, self._time_to_x(start))
+        x_end: float = min(self._x_max, self._time_to_x(end))
+        if x_end - x_start < 1:  # E.g. the instant before the start of a task
+            return
+        rect = Rectangle(
+            x=x_start, y=y, width=x_end - x_start, height=height, color=COLOR_HIDDEN, batch=self._batch, group=G(97)
+        )
+        self._shapes.append(rect)
 
     def _draw_continuous_sparkline(
         self,
@@ -239,10 +255,10 @@ class PerfOverlay:
             circle = Circle(x=x, y=y_mid, radius=4, color=color_map[sdt_val], batch=self._batch, group=G(98))
             self._shapes.append(circle)
 
-    def update_cursor(self, scenario_time: float) -> None:
+    def update_cursor(self, replay_time: float) -> None:
         if self._cursor is None:
             return
-        x: float = self._time_to_x(scenario_time)
+        x: float = self._time_to_x(replay_time)
         x = max(self._x_min, min(self._x_max, x))
         self._cursor.x = x
         self._cursor.x2 = x

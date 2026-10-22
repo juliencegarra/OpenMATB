@@ -73,6 +73,7 @@ class LogReader:
         self._bp_scenario_times: list[float] = [0.0]
         self.perf_rows: list[dict[str, Any]] = []
         self.perf_series: dict[str, list[tuple[float, dict[str, str]]]] = {}
+        self.task_hidden_periods: dict[str, list[tuple[float, float]]] = {}
         # Browser sessions only (see _read_page_events)
         self.environment: dict[str, str] = {}
         self.window_size: tuple[float, float] | None = None
@@ -97,6 +98,7 @@ class LogReader:
         self._bp_scenario_times = [0.0]
         self.perf_rows = []
         self.perf_series = {}
+        self.task_hidden_periods = {}
         self.environment = {}
         self.hidden_periods = []
         self.freezes = []
@@ -148,6 +150,7 @@ class LogReader:
         # Session duration based on logtime (includes blocking periods)
         self.session_duration = all_rows[-1]["normalized_logtime"]
         self._read_page_events(all_rows)
+        self._read_task_visibility(all_rows)
         self.window_size = self._read_window_size(all_rows)
 
         # Second pass: process rows (skip first row as before)
@@ -203,18 +206,22 @@ class LogReader:
         self._index_performance_data()
 
     def _index_performance_data(self) -> None:
-        """Group performance rows by module and scenario_time into sorted series."""
+        """Group performance rows by module and scenario_time into series sorted by replay time (normalized logtime,
+        of the first row of each group): the instructions and the questionnaires, which pause the scenario time,
+        keep their width on the performance strip, as on the timeline."""
         # Group by (module, scenario_time) → {address: value}. An address already in the group starts another one
         # at the same time: two outcomes of the same step (e.g. two sysmon failures timing out together) made
         # a single marker
         self.perf_series = {}
+        group_times: dict[str, float] = {}  # The scenario time of the last group of each module
         for row in self.perf_rows:
-            series: list[tuple[float, dict[str, str]]] = self.perf_series.setdefault(row["module"], [])
-            t: float = row["scenario_time"]
-            if series and series[-1][0] == t and row["address"] not in series[-1][1]:
+            module: str = row["module"]
+            series: list[tuple[float, dict[str, str]]] = self.perf_series.setdefault(module, [])
+            if series and group_times[module] == row["scenario_time"] and row["address"] not in series[-1][1]:
                 series[-1][1][row["address"]] = row["value"]
             else:
-                series.append((t, {row["address"]: row["value"]}))
+                series.append((row["normalized_logtime"], {row["address"]: row["value"]}))
+                group_times[module] = row["scenario_time"]
 
         # Sorted by time (the order of the rows is kept at the same time)
         for series in self.perf_series.values():
@@ -325,6 +332,23 @@ class LogReader:
                 hidden_since = None
         if hidden_since is not None:  # Still hidden at the end of the session
             self.hidden_periods.append(self._hidden_period(hidden_since, self.session_duration))
+
+    def _read_task_visibility(self, all_rows: list[dict[str, Any]]) -> None:
+        """The periods when each task was not visible, in replay time: before its start, hidden, during the
+        instructions and the questionnaires, after its stop. Its foreground covers it then (a logged state)."""
+        hidden_since: dict[str, float | None] = {}
+        for row in all_rows:
+            if row["type"] != "state" or row["address"] != "foreground, visibility":
+                continue
+            since: float | None = hidden_since.setdefault(row["module"], 0.0)  # Not visible before its start
+            if row["value"] == "False" and since is not None:
+                self.task_hidden_periods.setdefault(row["module"], []).append((since, row["normalized_logtime"]))
+                hidden_since[row["module"]] = None
+            elif row["value"] == "True" and since is None:
+                hidden_since[row["module"]] = row["normalized_logtime"]
+        for module, since in hidden_since.items():
+            if since is not None:  # Still hidden at the end of the session
+                self.task_hidden_periods.setdefault(module, []).append((since, self.session_duration))
 
     def _hidden_period(self, hidden: float, visible: float) -> tuple[float, float, float]:
         # The scenario time is frozen from when the page is hidden until the pause dialog is closed

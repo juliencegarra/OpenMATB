@@ -493,6 +493,8 @@ class TestSetScenario:
         assert rs._mouse_logtimes == [2.0]
         assert rs._joy_logtimes == []
         assert rs._perf_overlay is mock_overlay.return_value
+        # In replay time (the session duration, as the timeline), with the periods when each task was not visible
+        assert mock_overlay.call_args.args[3:] == (lr.session_duration, lr.task_hidden_periods)
         assert rs.slider.value_max == 300
         assert rs.sliding is False
         assert rs.is_paused is True
@@ -595,7 +597,7 @@ class TestUpdate:
         for name in self.INPUTS:
             getattr(rs, name).assert_called_once()
         rs._enforce_mute.assert_called_once()
-        rs._perf_overlay.update_cursor.assert_called_once_with(11)
+        rs._perf_overlay.update_cursor.assert_called_once_with(12)  # The strip is in replay time, as the timeline
 
     def test_inputs_deferred_while_events_are_queued(self):
         rs = self._replay(is_paused=True, events_queue=[MagicMock()])

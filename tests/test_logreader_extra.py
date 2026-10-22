@@ -362,12 +362,27 @@ class TestRowClassification:
         }
 
     def test_performance_series_grouped_and_sorted(self, lr):
-        """Performance rows are grouped by module and scenario_time, sorted by time."""
+        """Performance rows are grouped by module and scenario_time, sorted by replay time (the logtime of the
+        first row of the group)."""
         sysmon = lr.perf_series["sysmon"]
-        assert [t for t, _ in sysmon] == [1.0, 1.6]
-        assert sysmon[1][1] == {"signal_detection": "HIT", "response_time": "0.8"}
-        assert lr.perf_series["track"] == [(1.8, {"cursor_in_target": "1"})]
+        assert [t for t, _ in sysmon] == pytest.approx([1.6, 1.9])
+        assert sysmon[0][1] == {"signal_detection": "HIT", "response_time": "0.8"}
+        assert [(round(t, 6), values) for t, values in lr.perf_series["track"]] == [(1.8, {"cursor_in_target": "1"})]
         assert len(lr.perf_rows) == 4
+
+    def test_performance_series_in_replay_time(self, tmp_path):
+        """A questionnaire pauses the scenario time: the performance after it is placed by its replay time, as on
+        the timeline (it was at its scenario time, before the questionnaire on the strip)."""
+        lr = _reader(
+            tmp_path,
+            [
+                (100.0, 0.0, "event", "sysmon", "self", "start"),
+                (110.0, 10.0, "event", "genericscales", "self", "start"),
+                (140.0, 10.0, "performance", "genericscales", "Workload", "3"),
+                (145.0, 15.0, "performance", "sysmon", "signal_detection", "HIT"),
+            ],
+        )
+        assert lr.perf_series["sysmon"] == [(45.0, {"signal_detection": "HIT"})]
 
     def test_times(self, lr):
         """end_sec is the last scenario_time, session_duration the logtime span."""
@@ -385,6 +400,34 @@ class TestRowClassification:
         lr.reload_session()
         assert (lr.contents, len(lr.inputs), len(lr.states), lr.perf_series) == before
         assert lr.line_n == 2
+
+
+class TestTaskVisibility:
+    def test_hidden_periods_of_each_task(self, tmp_path):
+        """A task is not visible before its start, while its foreground covers it (e.g. during a questionnaire)
+        and after its stop, until the end of the session."""
+        lr = _reader(
+            tmp_path,
+            [
+                (100.0, 0.0, "version", "", "", "1.5.2"),
+                (102.0, 2.0, "state", "sysmon", "foreground, visibility", "True"),
+                (102.1, 2.1, "state", "sysmon", "foreground, visibility", "False"),
+                (110.0, 10.0, "state", "sysmon", "foreground, visibility", "True"),
+                (110.0, 10.0, "state", "resman", "status_foreground, visibility", "True"),
+                (140.0, 10.0, "state", "sysmon", "foreground, visibility", "False"),
+                (150.0, 20.0, "state", "sysmon", "foreground, visibility", "True"),
+                (160.0, 30.0, "state", "track", "cursor_proportional", "(0.0, 0.0)"),
+            ],
+        )
+        assert list(lr.task_hidden_periods) == ["sysmon"]
+        assert lr.task_hidden_periods["sysmon"] == [pytest.approx(p) for p in [(0.0, 2.1), (10.0, 40.0), (50.0, 60.0)]]
+
+    def test_no_period_without_visibility_states(self, tmp_path):
+        """Older sessions: no visibility state, no period."""
+        lr = _reader(
+            tmp_path, [(100.0, 0.0, "event", "sysmon", "self", "start"), (110.0, 10.0, "event", "a", "b", "c")]
+        )
+        assert lr.task_hidden_periods == {}
 
 
 # ──── Blocking segments and time mapping ────
