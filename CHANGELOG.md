@@ -11,6 +11,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - The English NASA-TLX is scored from 0 to 100 (was 0 to 10), as the original and the French version; the French version has the order of the original (Performance before Effort)
   - Texts scaled to the window, as the task areas: from a 1920 x 1080 window, smaller in a smaller one (at least 0.75, e.g. 9 pt for 12 pt texts) and larger in a larger one. In a 1366 x 768 window, texts overlapped (system monitoring, communications, scheduling); in a 2560 x 1440 one, they looked small. In the replay, the texts follow the reduced task areas, as in the session. The scale is logged in the session file (`font_scale`)
   - Replay: the performance strip greys each task while it was not visible (instructions, questionnaires, dialogs, before its start and after its stop). The strip is now in replay time, as the timeline: the instructions and questionnaires, which pause the scenario time, had no width on it
+  - `random_seed` in config.ini: an integer gives the same pseudorandom draws (callsigns, frequencies, failure sides, arrow moves...) to every participant, in the lab and online; `session` (default) keeps the draws of the session number. The seed is logged, and the replay draws the same values
 
   **Bug Fixes**
   - Fix a hidden communications task heard: a prompt cut by a pause was played again when the task was resumed while still hidden (guided tours). A hidden task is now silent, in the replay too
