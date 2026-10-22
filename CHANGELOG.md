@@ -58,6 +58,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the keys lost in the browser after the Tab key or a click out of the task area (the canvas lost the focus): every key of the tasks was ignored until a click on the tasks
   - Fix the numpad Enter key in the browser, which did not confirm a communications answer (NUM_ENTER instead of ENTER, as on desktop)
   - Fix a start page that never loaded with `?lang=constructor` (or another name of a JavaScript object property)
+  - Fix the browser sessions all numbered 1 (online, each participant has a fresh browser): every participant had the same pseudorandom draws (callsigns, frequencies, failure sides...). In the browser, the session numbers are random 6-digit numbers
   - Fix the scenario generator with a fractional event duration (e.g. an alerttimeout of 10500 ms, a refractory duration of 0.5 s): the times, truncated to the second when written, could bring two events closer than planned, and a light was failed again while still on failure (the failure was then ignored). The events take whole seconds, rounded up, and the refractory duration slider has a 1 s step
 
 ## Version 1.5.2

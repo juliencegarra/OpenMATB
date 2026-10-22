@@ -2,6 +2,7 @@
 # Institut National Universitaire Champollion (Albi, France).
 # License : CeCILL, version 2.1 (see the LICENSE file)
 import ast
+import random
 from pathlib import Path
 from typing import Any, Optional
 
@@ -9,7 +10,7 @@ from pyglet import font
 
 from core.constants import ARGS, CONFIG
 from core.constants import PATHS as P
-from core.platform import url_params
+from core.platform import IS_WEB, url_params
 
 _CONFIG_DEFAULTS: dict[tuple[str, str], Any] = {
     ("Openmatb", "fullscreen"): True,
@@ -51,9 +52,26 @@ def get_session_numbers() -> list[int]:
     return session_numbers
 
 
+# Browser: the session numbers are drawn among the 6-digit numbers (see find_the_first_available_session_number)
+WEB_SESSION_NUMBERS: range = range(100_000, 1_000_000)
+
+
 def find_the_first_available_session_number() -> int:
     session_numbers: list[int] = get_session_numbers()
     first_avail: Optional[int] = None
+
+    # Browser: a random 6-digit number, not the next number of this browser. Online, each participant has a fresh
+    # browser: every session was number 1, so every participant had the same pseudorandom draws (callsigns,
+    # frequencies, failure sides...: the seeds are made of the session number, see core/pseudorandom.py), and the
+    # session files differed only by their time. Two participants may still draw the same number (1 chance in
+    # 900,000 for two given sessions): they have the same draws then, their files differ by their date and time.
+    # Drawn by an independent generator: the random module is seeded by the pseudorandom draws
+    if IS_WEB:
+        generator: random.SystemRandom = random.SystemRandom()
+        while True:
+            number: int = generator.choice(WEB_SESSION_NUMBERS)
+            if number not in session_numbers:  # Not a session kept in this browser
+                return number
 
     # Take max session number + 1, and find the minimum available number into [1, max+1]
     # If no session has been manually removed, it will be max+1
@@ -71,6 +89,13 @@ def find_the_first_available_session_number() -> int:
 
 
 def find_the_last_session_number() -> int:
+    if IS_WEB:  # Random numbers: the last session is the most recent one (its file name: N_yymmdd_hhmmss.csv)
+        dated: list[tuple[str, int]] = []
+        for s in P["SESSIONS"].glob("**/*.csv"):
+            number, *date_time = s.stem.split("_")
+            if number.isdigit() and len(date_time) >= 2:
+                dated.append(("_".join(date_time[:2]), int(number)))
+        return max(dated)[1] if dated else 0
     session_numbers: list[int] = get_session_numbers()
     if len(session_numbers) == 0:
         return 0

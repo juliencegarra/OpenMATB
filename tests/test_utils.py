@@ -110,6 +110,44 @@ class TestFindFirstAvailableSessionNumber:
         assert find_the_first_available_session_number() == 1
 
 
+class TestBrowserSessionNumbers:
+    """Online, each participant has a fresh browser: every session was number 1, so every participant had the same
+    pseudorandom draws (the seeds are made of the session number)."""
+
+    @patch("core.utils.get_session_numbers", return_value=[])
+    def test_a_random_6_digit_number(self, _numbers):
+        with patch("core.utils.IS_WEB", True):
+            numbers = {find_the_first_available_session_number() for _ in range(50)}
+        assert all(100_000 <= n <= 999_999 for n in numbers)
+        assert len(numbers) > 40
+
+    def test_not_a_number_kept_in_the_browser(self):
+        with (
+            patch("core.utils.IS_WEB", True),
+            patch("core.utils.get_session_numbers", return_value=[123_456]),
+            patch("core.utils.random.SystemRandom") as generator,
+        ):
+            generator.return_value.choice.side_effect = [123_456, 654_321]
+            assert find_the_first_available_session_number() == 654_321
+
+    def test_the_draws_of_the_scenario_are_not_changed(self):
+        """Drawn by an independent generator: the random module is seeded by the pseudorandom draws."""
+        import random
+
+        random.seed(1)
+        expected = random.random()
+        random.seed(1)
+        with patch("core.utils.IS_WEB", True), patch("core.utils.get_session_numbers", return_value=[]):
+            find_the_first_available_session_number()
+        assert random.random() == expected
+
+    def test_the_last_session_is_the_most_recent(self, tmp_path):
+        for name in ["731004_261021_090000.csv", "120345_261022_101500.csv", "998877_261022_093000.csv"]:
+            (tmp_path / name).write_text("")
+        with patch("core.utils.IS_WEB", True), patch.dict("core.utils.P", {"SESSIONS": tmp_path}):
+            assert find_the_last_session_number() == 120_345
+
+
 class TestFindLastSessionNumber:
     @patch("core.utils.get_session_numbers")
     def test_returns_max(self, mock_get):

@@ -593,6 +593,8 @@ class TestTextRendering:
         descenders (a few pixels lower)."""
         image_module = pytest.importorskip("PIL.Image")
         app = page_factory()
+        # Texts at their size (scaled to the window): smaller, some letters touch and are not counted apart
+        app.page.set_viewport_size({"width": 1920, "height": 1080})
         app.start(LONG_SCENARIO, config={"display_session_number": "True"})
         app.wait_until(lambda s: s["modal"], timeout=10)
         app.page.wait_for_timeout(500)
@@ -769,6 +771,10 @@ class TestReplay:
         assert end["replay_time"] == pytest.approx(end["duration"], abs=0.01)
         assert end["keys_replayed"] == end["keys_in_log"]
         assert end["running"] and end["errors"] == []
+
+    def test_the_session_number_is_random(self, replay_run):
+        """A random 6-digit number: every online session was number 1 (a fresh browser), with the same draws."""
+        assert 100_000 <= replay_run["session_id"] <= 999_999
 
     def test_jump_to_the_end_executes_all_the_events(self, replay_run):
         """Regression: fast-forward ran one event per 0.1 s step, so simultaneous events at the end of the
