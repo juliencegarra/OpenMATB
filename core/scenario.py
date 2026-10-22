@@ -251,8 +251,11 @@ class Scenario:
                             eval_method, *method_args = eval_method
 
                         # Remove potential blank spaces in the command argument
-                        # (except is the eval_method is waiting for a string, like title)
-                        if eval_method.__name__ != "is_string":
+                        # (except is the eval_method is waiting for a string, like title, or a file name, which
+                        # may contain spaces: only those around it are removed)
+                        if eval_method.__name__ == "is_available_text_file":
+                            e.command[1] = e.command[1].strip()
+                        elif eval_method.__name__ != "is_string":
                             e.command[1] = e.command[1].replace(" ", "")
 
                         # ...extra arguments are unpacked here if present
