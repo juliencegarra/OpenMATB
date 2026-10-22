@@ -781,6 +781,25 @@ class TestComputeSummary:
         assert s.track_proportion_in_target == pytest.approx(0.0)
         assert s.track_mean_deviation == pytest.approx(100.0)
 
+    def test_track_relative_deviation(self) -> None:
+        """In half-sizes of the reticle (version 1.1): the px are 1.33 times larger in 1440p than in 1080p."""
+        perf = [
+            _perf(1.0, "track", "center_deviation", "95.5"),
+            _perf(1.0, "track", "center_deviation_relative", "0.5"),
+            _perf(2.0, "track", "center_deviation", "191.0"),
+            _perf(2.0, "track", "center_deviation_relative", "1.0"),
+        ]
+        s = compute_summary("s", perf, [], [], [])
+        assert s.track_mean_deviation_relative == pytest.approx(0.75)
+
+    def test_track_relative_deviation_of_a_former_session(self) -> None:
+        """Without center_deviation_relative: the px over the half-size of the reticle (its area of interest)."""
+        perf = [_perf(1.0, "track", "center_deviation", "95.5"), _perf(2.0, "track", "center_deviation", "191.0")]
+        reticle = _row(0.0, "aoi", "track", "reticle", "(961.0, 960.0, 1343.0, 578.0)")  # 382 px wide
+        s = compute_summary("s", perf, [], [], [reticle])
+        assert s.track_mean_deviation_relative == pytest.approx((95.5 + 191.0) / 2 / 191.0)
+        assert s.track_mean_deviation == pytest.approx(143.25)  # Still in px
+
     # ── Communications summary ───────────────────────────────────────────
 
     def test_comms_counts(self) -> None:

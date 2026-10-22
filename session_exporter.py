@@ -19,6 +19,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import ast
 import csv
 import math
 import re
@@ -110,6 +111,9 @@ class SessionSummary:
     track_proportion_in_target: float = float("nan")
     track_mean_deviation: float = float("nan")
     track_sd_deviation: float = float("nan")
+    # In half-sizes of the reticle (1: at its edge), as version 1.1: the same on every screen (the px are not)
+    track_mean_deviation_relative: float = float("nan")
+    track_sd_deviation_relative: float = float("nan")
     track_n_excursions: int = 0
     track_mean_excursion_rt_sec: float = float("nan")
     # Communications
@@ -178,7 +182,8 @@ def load_session(path: Path) -> tuple[list[RawRow], list[RawRow], list[RawRow]]:
     """Read a session CSV and categorise its rows.
 
     Returns (performance_rows, input_rows, event_rows).
-    *event_rows* includes both ``type='event'`` and ``type='parameter'`` rows.
+    *event_rows* includes the ``type='event'``, ``type='parameter'`` and ``type='aoi'`` rows (the areas of the
+    widgets: the size of the tracking reticle).
     """
     performance_rows: list[RawRow] = []
     input_rows: list[RawRow] = []
@@ -210,7 +215,7 @@ def load_session(path: Path) -> tuple[list[RawRow], list[RawRow], list[RawRow]]:
                 performance_rows.append(raw)
             elif raw.type == "input":
                 input_rows.append(raw)
-            elif raw.type in ("event", "parameter"):
+            elif raw.type in ("event", "parameter", "aoi"):
                 event_rows.append(raw)
 
     return performance_rows, input_rows, event_rows
@@ -467,6 +472,18 @@ def _build_running_intervals(event_rows: list[RawRow], module: str) -> list[tupl
     return intervals
 
 
+def _reticle_half_size(event_rows: list[RawRow]) -> float | None:
+    """Half the width (px) of the tracking reticle (a square), from its area of interest (x1, y1, x2, y2)."""
+    for row in event_rows:
+        if row.type == "aoi" and row.module == "track" and row.address == "reticle":
+            try:
+                x1, _y1, x2, _y2 = ast.literal_eval(row.value)
+            except (ValueError, SyntaxError, TypeError):
+                continue
+            return abs(float(x2) - float(x1)) / 2 or None
+    return None
+
+
 def _is_in_auto(t: float, intervals: list[tuple[float, float]]) -> bool:
     """Check if time *t* falls within any automation interval."""
     return any(start <= t < end for start, end in intervals)
@@ -536,7 +553,10 @@ def compute_summary(
 
     in_target_vals: list[bool] = []
     deviation_vals: list[float] = []
+    relative_deviation_vals: list[float] = []
     track_excursion_rts: list[float] = []
+    # Sessions without center_deviation_relative (before 1.5.3): the deviation in px over the half-size of the reticle
+    reticle_half: float | None = _reticle_half_size(event_rows)
 
     # The steps caught up in one update (several 20 ms steps per frame) share a scenario_time: split them
     track_steps = [
@@ -556,6 +576,13 @@ def compute_summary(
             v = parse_value(data["center_deviation"])
             if isinstance(v, (int, float)) and not math.isnan(v):
                 deviation_vals.append(float(v))
+                if "center_deviation_relative" not in data and reticle_half:
+                    relative_deviation_vals.append(float(v) / reticle_half)
+
+        if "center_deviation_relative" in data:
+            v = parse_value(data["center_deviation_relative"])
+            if isinstance(v, (int, float)) and not math.isnan(v):
+                relative_deviation_vals.append(float(v))
 
         if "response_time" in data:
             v = parse_value(data["response_time"])
@@ -566,6 +593,8 @@ def compute_summary(
         summary.track_proportion_in_target = sum(in_target_vals) / len(in_target_vals)
     summary.track_mean_deviation = _safe_mean(deviation_vals)
     summary.track_sd_deviation = _safe_stdev(deviation_vals)
+    summary.track_mean_deviation_relative = _safe_mean(relative_deviation_vals)
+    summary.track_sd_deviation_relative = _safe_stdev(relative_deviation_vals)
     summary.track_n_excursions = len(track_excursion_rts)
     summary.track_mean_excursion_rt_sec = _safe_mean(track_excursion_rts)
 
@@ -930,6 +959,8 @@ SUMMARY_FIXED_COLUMNS: list[str] = [
     "track_proportion_in_target",
     "track_mean_deviation",
     "track_sd_deviation",
+    "track_mean_deviation_relative",
+    "track_sd_deviation_relative",
     "track_n_excursions",
     "track_mean_excursion_rt_sec",
     # Communications
