@@ -19,7 +19,7 @@ class Parallelport(AbstractPlugin):
         super().__init__(_("Parallel port"), taskplacement, taskupdatetime)
 
         self.validation_dict: dict[str, Callable[..., Any]] = {
-            "trigger": validation.is_positive_integer,
+            "trigger": validation.is_trigger_value,
             "delayms": validation.is_positive_integer,
         }
 

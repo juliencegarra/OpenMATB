@@ -52,6 +52,15 @@ def is_positive_integer(x: str) -> ValidationResult:
         return None, _("should be a positive (0 excluded) integer (not %s).") % x
 
 
+def is_trigger_value(x: str) -> ValidationResult:
+    # A value of the 8 data lines of a parallel port (0 is the down value)
+    val, _err = is_positive_integer(x)
+    if val is not None and val <= 255:
+        return val, None
+    else:
+        return None, _("should be an integer from 1 to 255 (not %s).") % x
+
+
 def is_boolean(x: str) -> ValidationResult:
     if x.capitalize() in ["True", "False"]:
         return x.capitalize() == "True", None

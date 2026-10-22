@@ -31,3 +31,12 @@ def test_stop_drops_the_triggers_awaiting(_pause, _hide):
     pp.stop()
     assert pp._awaiting_triggers == []
     pp._port.setData.assert_not_called()  # Nothing was being sent
+
+
+def test_trigger_value_is_one_byte():
+    """The 8 data lines: 256 was accepted (sent as 0, or a crash of pyparallel on Linux)."""
+    from core.validation import is_trigger_value
+
+    assert is_trigger_value("255") == (255, None)
+    assert is_trigger_value("256")[0] is None
+    assert is_trigger_value("0")[0] is None
