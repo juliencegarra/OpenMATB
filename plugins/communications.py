@@ -637,6 +637,9 @@ class Communications(AbstractPlugin):
                 self.disable_radio_target(responded_radio)
                 self.set_feedback(responded_radio, ft="positive")
             else:
+                # TOCHECK: the target stays active after a wrong answer (BAD_FREQ, BAD_RADIO...), so that it can be
+                # corrected: without a correct answer, record_target_missing then logs a MISS for the same target,
+                # two trials for one prompt (also in the last 4 correct_radio of the performance plugin). Intended?
                 self.set_feedback(responded_radio, ft="negative")
 
     def set_feedback(self, radio: dict[str, Any], ft: str) -> None:

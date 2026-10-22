@@ -187,6 +187,8 @@ class AbstractPlugin:
         self.alive = True
         self.create_widgets()
         self.log_all_parameters(self.parameters)
+        # TOCHECK: a blocking plugin started again shows the widgets kept from its previous run (its last page, its
+        # sliders) during one frame, until its next update replaces them
         self.show()
         self.resume()
 

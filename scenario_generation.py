@@ -198,6 +198,9 @@ def distribute_events(
     for previous_delay, cmd in zip(random_delays, cmd_list):
         lastline += 1
         onset_sec += previous_delay
+        # TOCHECK: a fractional onset (e.g. an alerttimeout of 10500 ms) is truncated to the second when written
+        # (Event.get_time_hms_str): two events may be closer than single_duration, by less than 1 s. No overlap of
+        # two failures as long as the refractory duration is at least 1 s (the UI slider gives whole seconds)
         scenario_lines.append(Event(lastline, onset_sec, plugin_name, cmd))
         onset_sec += single_duration
     return scenario_lines
