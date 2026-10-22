@@ -74,6 +74,7 @@ class PerfOverlay:
         self._duration: float = max(duration_sec, 0.001)
         self._shapes: list[Any] = []
         self._labels: list[Any] = []
+        self._hidden = []  # The periods when the task of the row being drawn was not visible
 
         l, b, w, h = container.get_lbwh()
         self._label_width: float = 70.0
@@ -117,8 +118,9 @@ class PerfOverlay:
             )
             self._labels.append(label)
 
-            # Grey over the periods when the task was not visible
-            for start, end in (hidden_periods or {}).get(task_name, []):
+            # Grey over the periods when the task was not visible, without any plot in them
+            self._hidden: list[tuple[float, float]] = (hidden_periods or {}).get(task_name, [])
+            for start, end in self._hidden:
                 self._draw_hidden_period(start, end, row_bottom, row_height)
 
             # Separator line between rows (except at the bottom)
@@ -182,6 +184,11 @@ class PerfOverlay:
     def _time_to_x(self, t: float) -> float:
         return self._x_min + (t / self._duration) * self._sparkline_width
 
+    def _in_hidden_period(self, t_start: float, t_end: float) -> bool:
+        """Whether [t_start, t_end] (a point, or a segment between two points) enters a period of the task not
+        visible: its bounds may touch the period, as the last point before it and the first one after it"""
+        return any(start < t_end and t_start < end for start, end in self._hidden)
+
     def _draw_hidden_period(self, start: float, end: float, y: float, height: float) -> None:
         x_start: float = max(self._x_min, self._time_to_x(start))
         x_end: float = min(self._x_max, self._time_to_x(end))
@@ -208,7 +215,8 @@ class PerfOverlay:
                     val: float = float(data[address])
                 except (ValueError, TypeError):
                     continue
-                raw_points.append((t, val))
+                if not self._in_hidden_period(t, t):
+                    raw_points.append((t, val))
 
         if len(raw_points) < 2:
             return
@@ -222,8 +230,10 @@ class PerfOverlay:
         # Normalize Y coordinates
         ys: list[float] = normalize([v for _, v in points], y_bottom, y_top)
 
-        # Create line segments
+        # Create line segments, not across a period of the task not visible
         for j in range(len(xs) - 1):
+            if self._in_hidden_period(points[j][0], points[j + 1][0]):
+                continue
             line = Line(xs[j], ys[j], xs[j + 1], ys[j + 1], thickness=1, color=color, batch=self._batch, group=G(98))
             self._shapes.append(line)
 
@@ -248,7 +258,7 @@ class PerfOverlay:
             if sdt_key not in data:
                 continue
             sdt_val: str = data[sdt_key]
-            if sdt_val not in color_map:
+            if sdt_val not in color_map or self._in_hidden_period(t, t):
                 continue
 
             x: float = self._time_to_x(t)

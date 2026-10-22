@@ -285,6 +285,26 @@ class TestPerfOverlayHiddenPeriods:
         (grey,) = self._grey(overlay)
         assert grey.x + grey.width == pytest.approx(overlay._x_max)
 
+    def _lines(self, overlay):
+        from core.perfoverlay import COLOR_TRACK
+
+        return [s for s in overlay._shapes if tuple(getattr(s, "color", ()))[:3] == COLOR_TRACK]
+
+    def test_no_plot_in_a_grey_period(self, perf_container, mock_batch):
+        """Regression: the last point before a questionnaire was joined to the first one after it, over the grey."""
+        series = {
+            "track": [(t, {"center_deviation": str(t)}) for t in (1.0, 2.0, 3.0, 5.0, 7.0, 8.0)],
+            "sysmon": [(4.0, {"signal_detection": "MISS"}), (9.0, {"signal_detection": "HIT"})],
+        }
+        hidden = {"track": [(3.0, 7.0)], "sysmon": [(3.5, 4.5)]}
+        overlay = PerfOverlay(perf_container, mock_batch, series, 10.0, hidden)
+        x_of = overlay._time_to_x
+        segments = sorted((round(line.x, 3), round(line.x2, 3)) for line in self._lines(overlay))
+        expected = [(x_of(1.0), x_of(2.0)), (x_of(2.0), x_of(3.0)), (x_of(7.0), x_of(8.0))]
+        assert segments == [(round(a, 3), round(b, 3)) for a, b in expected]
+        markers = [s for s in overlay._shapes if hasattr(s, "radius")]
+        assert [round(m.x, 3) for m in markers] == [round(x_of(9.0), 3)]
+
 
 class TestPerfOverlayDestroy:
     def test_destroy_clears_shapes(self, perf_container, mock_batch):
