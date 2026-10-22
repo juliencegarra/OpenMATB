@@ -222,7 +222,7 @@ class TestComputeNextPluginState:
             None,
         )
         _create_widgets(track)  # A reticle of 240 px (0.8 x 300)
-        assert REFERENCE_RETICLE_SIZE == pytest.approx(388.8)  # In a 1920 x 1080 window
+        assert pytest.approx(388.8) == REFERENCE_RETICLE_SIZE  # In a 1920 x 1080 window
         track.get_joystick_inputs(5, 0)
         _step(track, in_target=True)
         assert track.cursor_position[0] == pytest.approx(sin(0.010) * 96 + 5 * 240 / 388.8)
