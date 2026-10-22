@@ -42,3 +42,13 @@ def test_session_in_the_windows_encoding_is_read(tmp_path):
     path.write_bytes(("\n".join(rows) + "\n").encode("cp1252"))
     lr = LogReader(session_path=str(path))
     assert lr.session_duration == 20.0
+
+
+def test_last_row_cut_in_its_scenario_time(tmp_path):
+    """A session killed while writing: its last row "120.0,20.003,..." cut to "120.0,2" (no end of line)."""
+    path = tmp_path / "12_260101_120000.csv"
+    rows = [HEADER, "100.0,0.0,event,track,self,start", "119.9,19.9,event,track,self,resume", "120.0,2"]
+    path.write_text("\n".join(rows), encoding="utf-8")
+    lr = LogReader(session_path=str(path))
+    assert lr.end_sec == 19.9
+    assert lr.replay_to_scenario_time(lr.session_duration) >= 19.9  # It went back to 2

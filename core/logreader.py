@@ -116,11 +116,10 @@ class LogReader:
         # A session killed while writing (power loss, crash) ends with a row cut anywhere, without its end of line
         cut_last_row: bool = not text.endswith(("\n", "\r"))
         for n, row in enumerate(rows):
+            cut: bool = cut_last_row and n == len(rows) - 1
             # A cut row keeps its time (the session lasted until then), but its incomplete content is not read
             # (an invalid scenario event, a mouse click or joystick value raising during the replay...)
-            if (cut_last_row and n == len(rows) - 1) or any(
-                row.get(k) is None for k in ("type", "module", "address", "value")
-            ):
+            if cut or any(row.get(k) is None for k in ("type", "module", "address", "value")):
                 row.update(type="", module=row.get("module") or "", address="", value="")
             # Skip a row without valid times (e.g. the last row of a session that crashed while writing it)
             try:
@@ -128,6 +127,10 @@ class LogReader:
                 row["scenario_time"] = float(row["scenario_time"])
             except (TypeError, ValueError):
                 continue
+            # A time cut in its digits is smaller than the real one (120.003 cut to 12): the times never go back
+            if cut and all_rows:
+                row["logtime"] = max(row["logtime"], all_rows[-1]["logtime"])
+                row["scenario_time"] = max(row["scenario_time"], all_rows[-1]["scenario_time"])
             all_rows.append(row)
 
         if not all_rows:
