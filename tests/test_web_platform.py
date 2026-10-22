@@ -115,11 +115,22 @@ class FakeDomain:
         return True
 
 
+def glyph_metrics(ascent: float, descent: float, left: float = 0.0, right: float = 6.4) -> SimpleNamespace:
+    """TextMetrics of a glyph of advance 6.4 (its ink from `left` before the origin to `right` after it)."""
+    return SimpleNamespace(
+        width=6.4,
+        actualBoundingBoxAscent=ascent,
+        actualBoundingBoxDescent=descent,
+        actualBoundingBoxLeft=left,
+        actualBoundingBoxRight=right,
+    )
+
+
 class FakeCanvasContext:
     """CanvasRenderingContext2D of the glyph canvas: measureText returns the metrics set for the test."""
 
     def __init__(self) -> None:
-        self.metrics = SimpleNamespace(width=6.4, actualBoundingBoxAscent=9.3, actualBoundingBoxDescent=0.2)
+        self.metrics = glyph_metrics(ascent=9.3, descent=0.2)
         self.drawn_at: list[tuple[str, float, float]] = []
         self.transforms: list[tuple] = []
 
@@ -243,7 +254,7 @@ class TestSetupWeb:
         """Regression: pyglet declared ceil(descent) but drew at ceil(ascent + descent) - ceil(ascent) from the
         bottom: with fractional metrics (Firefox), letters were one pixel too high or too low."""
         context, canvas = web_modules.font._font_context, web_modules.font._font_canvas
-        context.metrics = SimpleNamespace(width=6.4, actualBoundingBoxAscent=ascent, actualBoundingBoxDescent=descent)
+        context.metrics = glyph_metrics(ascent, descent)
         renderer = web_modules.font.PyodideGlyphRenderer()
         renderer.font = MagicMock(js_name="16px 'Noto Sans'")
 
@@ -256,6 +267,22 @@ class TestSetupWeb:
         assert baseline == drawn_baseline_from_bottom
         assert canvas.height >= drawn_y + descent  # The glyph fits in the canvas (not clipped)
         assert (left_bearing, advance) == (0, 7)
+
+    @pytest.mark.parametrize("left,right", [(0.0, 9.6), (1.2, 6.4), (0.4, 8.1)])
+    def test_glyph_canvas_spans_its_ink(self, web_modules, left, right):
+        """Regression: the canvas was as wide as the advance, which cut the ink beyond it (the dot of an italic i)."""
+        context, canvas = web_modules.font._font_context, web_modules.font._font_canvas
+        context.metrics = glyph_metrics(9.3, 0.2, left, right)
+        renderer = web_modules.font.PyodideGlyphRenderer()
+        renderer.font = MagicMock(js_name="italic 16px 'Noto Sans'")
+
+        renderer.render("i")
+
+        _, drawn_x, _ = context.drawn_at[-1]
+        _, left_bearing, advance = renderer.font.create_glyph.return_value.set_bearings.call_args[0]
+        assert drawn_x - left >= 0 and drawn_x + right <= canvas.width  # The ink fits in the canvas
+        assert left_bearing == -drawn_x  # The glyph origin stays at the pen position
+        assert advance == 7
 
     def test_webgl_multi_draw_is_disabled(self, web_modules):
         for domain in web_modules.domains:

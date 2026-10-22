@@ -64,7 +64,9 @@ def _patch_pyglet_glyph_baseline() -> None:
     """pyglet renders each glyph into a canvas of height ceil(ascent + descent), draws its baseline at ceil(ascent)
     from the top, but declares it at ceil(descent) from the bottom. The two differ by one pixel depending on the
     fractional metrics of each character (Firefox, display scaling): letters looked shifted up or down by one pixel.
-    Use a canvas of height ceil(ascent) + ceil(descent) so that the drawn and declared baselines match."""
+    Use a canvas of height ceil(ascent) + ceil(descent) so that the drawn and declared baselines match.
+    The canvas was also as wide as the advance: the ink beyond it was cut (the top right of italic letters, such as
+    the dot of an italic i). The canvas now spans the ink, and the glyph is shifted by its left bearing."""
     import math
 
     from pyglet.font import pyodide_js
@@ -75,7 +77,9 @@ def _patch_pyglet_glyph_baseline() -> None:
         context.font = self.font.js_name
         metrics = context.measureText(text)
         ascent: int = math.ceil(metrics.actualBoundingBoxAscent)
-        width: int = max(1, math.ceil(metrics.width))
+        advance: int = math.ceil(metrics.width)
+        left: int = max(0, math.ceil(metrics.actualBoundingBoxLeft))  # Ink left of the origin
+        width: int = max(1, left + max(advance, math.ceil(metrics.actualBoundingBoxRight)))
         height: int = max(1, ascent + math.ceil(metrics.actualBoundingBoxDescent))
 
         canvas.width = width  # Resizing the canvas resets the context settings
@@ -86,11 +90,11 @@ def _patch_pyglet_glyph_baseline() -> None:
         # Flipped: ImageData rows go top to bottom, pyglet images bottom to top
         context.translate(0, height)
         context.scale(1, -1)
-        context.fillText(text, 0, ascent)
+        context.fillText(text, left, ascent)
 
         image_data = context.getImageData(0, 0, width, height)
         glyph = self.font.create_glyph(ImageData(width, height, "RGBA", image_data.data))
-        glyph.set_bearings(height - ascent, 0, math.ceil(metrics.width))  # Pixels below the baseline
+        glyph.set_bearings(height - ascent, -left, advance)  # Pixels below the baseline
         return glyph
 
     pyodide_js.PyodideGlyphRenderer.render = render
