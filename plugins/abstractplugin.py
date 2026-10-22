@@ -681,6 +681,8 @@ class BlockingPlugin(AbstractPlugin):
         super().create_widgets()
         self.go_to_next_slide = True  # So the first slide appears as soon as possible
         self._page_number = 0  # The pages of this presentation (the plugin may be started again)
+        # Not the pages left by a presentation stopped before its end (a seek of the replay): shown before this one
+        self.slides = []
 
         # Create an input path if relevant
 

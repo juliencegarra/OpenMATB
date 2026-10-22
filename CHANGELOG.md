@@ -35,6 +35,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the replay of a session older than 1.5: its performance strip was all grey (the visibility was logged as 1/0)
   - Fix the replay of a session in the Windows encoding (before 1.5, e.g. "Temps passé"): it crashed
   - Fix the replay of a session whose last row is cut in its scenario time (crash while writing): the time went back at the end
+  - Fix the replay of instructions stopped by a seek before their last page: their pages left were shown before the next instructions of the same plugin
 
 ## Version 1.5.2
   **New Features**
