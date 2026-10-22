@@ -329,6 +329,8 @@ class TestDesktopFallbacks:
         platform.notify_page("openmatb-end")
         platform.download_file(tmp_path / "missing.csv")
         platform.on_visibility_change(MagicMock())
+        platform.on_fullscreen_exit(MagicMock())
+        platform.request_fullscreen()
 
 
 class TestBrowserEnvironment:
@@ -453,6 +455,23 @@ class TestPageHelpers:
         js.document.visibilityState = state
         listener(object())
         callback.assert_called_once_with(hidden)
+
+    @pytest.mark.parametrize("element,called", [(None, True), (object(), False)])
+    def test_fullscreen_exit(self, js, element, called):
+        """Only when the page leaves fullscreen, not when it enters it."""
+        callback = MagicMock()
+        platform.on_fullscreen_exit(callback)
+        event_name, listener = js.document.addEventListener.call_args[0]
+        assert event_name == "fullscreenchange"
+        js.document.fullscreenElement = element
+        listener(object())
+        assert callback.called == called
+
+    @pytest.mark.parametrize("element,requested", [(None, True), (object(), False)])
+    def test_request_fullscreen(self, js, element, requested):
+        js.document.fullscreenElement = element
+        platform.request_fullscreen()
+        assert js.document.documentElement.requestFullscreen.called == requested
 
     def test_notify_page_dispatches_a_custom_event(self, js):
         platform.notify_page("openmatb-end", "session.csv")
@@ -617,6 +636,75 @@ class TestHiddenTab:
             win = self._window()
             win.on_visibility_change(True)
         win.pause_prompt.assert_not_called()
+
+
+# ── Window: leaving fullscreen ──────────────────────────────────────────────
+
+
+class TestFullscreenExit:
+    def _window(self, **state):
+        from core.window import Window
+
+        win = SimpleNamespace(selector_visible=False, modal_dialog=None, alive=True, pause_prompt=MagicMock())
+        win.__dict__.update(state)
+        win.on_fullscreen_exit = Window.on_fullscreen_exit.__get__(win)
+        return win
+
+    def test_leaving_fullscreen_pauses_the_scenario(self, mock_logger):
+        """The display shrinks (bands on the sides): the scenario is paused, then fullscreen again."""
+        mock_logger.ended = False
+        win = self._window()
+        win.on_fullscreen_exit()
+        win.pause_prompt.assert_called_once()
+        assert win._fullscreen_left
+        mock_logger.log_manual_entry.assert_called_once_with("exit", key="fullscreen")
+
+    @pytest.mark.parametrize("state", [{"modal_dialog": object()}, {"selector_visible": True}])
+    def test_no_second_pause_over_a_dialog_or_the_selector(self, mock_logger, state):
+        """Fullscreen again all the same when the dialog is closed."""
+        mock_logger.ended = False
+        win = self._window(**state)
+        win.on_fullscreen_exit()
+        win.pause_prompt.assert_not_called()
+        assert win._fullscreen_left
+
+    def test_not_at_the_end_of_the_session(self, mock_logger):
+        """The page leaves fullscreen to show its end screen."""
+        mock_logger.ended = True
+        win = self._window()
+        win.on_fullscreen_exit()
+        win.pause_prompt.assert_not_called()
+        assert not hasattr(win, "_fullscreen_left")
+
+    def test_no_pause_in_replay(self, mock_logger):
+        mock_logger.ended = False
+        with patch("core.window.REPLAY_MODE", True):
+            win = self._window()
+            win.on_fullscreen_exit()
+        win.pause_prompt.assert_not_called()
+
+    def _release(self, win, closes: bool):
+        from core.window import Window
+
+        dialog = MagicMock()
+        dialog.on_key_release.side_effect = lambda *args: setattr(win, "modal_dialog", None) if closes else None
+        win.modal_dialog = dialog
+        win.keyboard = {}
+        Window.on_key_release(win, 32, 0)
+
+    @pytest.mark.parametrize("closes,requested", [(True, True), (False, False)])
+    def test_fullscreen_again_at_the_end_of_the_pause(self, closes, requested):
+        win = self._window(_fullscreen_left=True)
+        with patch("core.window.request_fullscreen") as request:
+            self._release(win, closes)
+        assert request.called == requested
+        assert win._fullscreen_left != requested
+
+    def test_not_after_a_dialog_while_in_fullscreen(self):
+        win = self._window(_fullscreen_left=False)
+        with patch("core.window.request_fullscreen") as request:
+            self._release(win, closes=True)
+        request.assert_not_called()
 
 
 # ── Scheduler: end of the session in the page ───────────────────────────────

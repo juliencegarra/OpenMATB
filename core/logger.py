@@ -123,6 +123,11 @@ class Logger:
     def close(self) -> None:
         self.file.close()
 
+    @property
+    def ended(self) -> bool:
+        """True once end_session() closed the session file."""
+        return self._ended
+
     def checkpoint(self, dt: float = 0) -> None:
         """Write the session file so far to the disk (in case the process is killed). Browser: persist it (in case
         the tab is closed), and let the page send it to the server if configured (web_session_output, see

@@ -181,6 +181,32 @@ def on_page_resize(callback: Callable[[], None]) -> None:
     js.window.addEventListener("resize", create_proxy(lambda event: callback()))
 
 
+def on_fullscreen_exit(callback: Callable[[], None]) -> None:
+    """Call callback() when the page leaves fullscreen (e.g. with Escape). No-op on desktop."""
+    if not IS_WEB:
+        return
+    import js
+    from pyodide.ffi import create_proxy
+
+    def listener(event: Any) -> None:
+        if not js.document.fullscreenElement:  # null is jsnull (falsy), not None
+            callback()
+
+    js.document.addEventListener("fullscreenchange", create_proxy(listener))
+
+
+def request_fullscreen() -> None:
+    """Browser: put the page in fullscreen again. It needs a user gesture (e.g. the key that closed a dialog): if the
+    browser refuses it, the page stays as it is. No-op on desktop."""
+    if not IS_WEB:
+        return
+    import js
+    from pyodide.ffi import create_proxy
+
+    if not js.document.fullscreenElement:
+        js.document.documentElement.requestFullscreen().catch(create_proxy(lambda error: None))
+
+
 def web_sessions_path() -> Path:
     """Sessions folder in the browser persistent storage (IndexedDB backed /data mount)."""
     import pyglet.storage

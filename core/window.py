@@ -36,7 +36,15 @@ from core.constants import Group as G
 from core.container import Container
 from core.logger import get_logger
 from core.modaldialog import ModalDialog
-from core.platform import IS_WEB, download_file, on_page_resize, on_visibility_change, viewport_size
+from core.platform import (
+    IS_WEB,
+    download_file,
+    on_fullscreen_exit,
+    on_page_resize,
+    on_visibility_change,
+    request_fullscreen,
+    viewport_size,
+)
 from core.utils import get_conf_value
 
 
@@ -134,6 +142,9 @@ class Window(Window):
 
         # In the browser, timers are throttled in hidden tabs: pause the scenario
         on_visibility_change(self.on_visibility_change)
+        # In the browser, leaving fullscreen shrinks the display (bands on the sides): pause, then fullscreen again
+        self._fullscreen_left: bool = False
+        on_fullscreen_exit(self.on_fullscreen_exit)
 
         # In the browser, the page can be resized (e.g. leaving fullscreen): scale the display to it
         self._device_pixel_ratio: float | None = self.scale if IS_WEB else None
@@ -162,6 +173,15 @@ class Window(Window):
     def on_visibility_change(self, hidden: bool) -> None:
         get_logger().log_manual_entry("hidden" if hidden else "visible", key="visibility")
         if hidden and not REPLAY_MODE and not self.selector_visible and self.modal_dialog is None:
+            self.pause_prompt()
+
+    def on_fullscreen_exit(self) -> None:
+        get_logger().log_manual_entry("exit", key="fullscreen")  # Dropped after the end of the session
+        # Not in the replay, nor at the end of the session (the page leaves fullscreen to show its end screen)
+        if REPLAY_MODE or not self.alive or get_logger().ended:
+            return
+        self._fullscreen_left = True
+        if not self.selector_visible and self.modal_dialog is None:
             self.pause_prompt()
 
     def display_session_id(self) -> None:
@@ -327,6 +347,11 @@ class Window(Window):
             self.modal_dialog.on_key_release(symbol, modifiers)
             # A key held when the dialog opened is no longer held (e.g. it would go on tuning a radio)
             self.keyboard[winkey.symbol_string(symbol)] = False
+            # The pause (or another dialog) ended after the page left fullscreen: fullscreen again, with the user
+            # gesture of this key (a browser accepts it for a few seconds after the key was pressed)
+            if self.modal_dialog is None and getattr(self, "_fullscreen_left", False) and self.alive:
+                self._fullscreen_left = False
+                request_fullscreen()
             return
 
         if REPLAY_MODE:
