@@ -123,7 +123,7 @@ class OpenMATBPage:
     def open_menu(self, params: str = "") -> None:
         """Open the start page and wait until OpenMATB is loaded (without starting it)."""
         self.page.goto(f"{self.url}/index.html?lang=en_EN{params}")
-        self.page.wait_for_function("() => window.openmatb !== undefined", timeout=BOOT_TIMEOUT_MS)
+        self.page.wait_for_selector("#menu-body:not([hidden])", timeout=BOOT_TIMEOUT_MS)
 
     def prepare(self, scenario: str, config: dict[str, str] | None = None, params: str = "") -> None:
         """Open the start page with the scenario and config.ini values of the test, ready to click Start.

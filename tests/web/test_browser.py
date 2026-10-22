@@ -264,7 +264,7 @@ class TestBrowserCheck:
         """Not only once OpenMATB is loaded (several seconds later)."""
         app = page_factory()
         app.page.goto(f"{app.url}/index.html?lang=en_EN")
-        app.page.wait_for_selector("#lang")
+        app.page.wait_for_selector("#loading-status")
         assert app.page.evaluate("() => window.openmatb === undefined")  # Still loading
         assert app.page.is_visible("#browser-warning") == (ENGINE == "firefox")
 

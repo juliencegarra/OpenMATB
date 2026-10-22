@@ -72,7 +72,6 @@ const TEXTS = {
         loading_python: "Loading Python…",
         loading_pyglet: "Loading pyglet…",
         loading_openmatb: "Loading OpenMATB…",
-        ready: "Ready",
         loading_failed: "Loading failed:",
         browser_warn: "The Firefox browser cannot guarantee the timing accuracy of the results, "
             + "prefer Chrome or Edge.",
@@ -136,7 +135,6 @@ const TEXTS = {
         loading_python: "Chargement de Python…",
         loading_pyglet: "Chargement de pyglet…",
         loading_openmatb: "Chargement d'OpenMATB…",
-        ready: "Prêt",
         loading_failed: "Échec du chargement :",
         browser_warn: "Le navigateur Firefox ne peut garantir la précision temporelle des résultats, "
             + "privilégiez Chrome ou Edge.",
@@ -180,7 +178,9 @@ const t = (key) => TEXTS[$("lang").value][key];
 let statusKey = null;
 const status = (key, detail = "") => {
     statusKey = key;
-    $("pygletStatus").textContent = key ? `${t(key)} ${detail}`.trim() : detail;
+    // While loading, in the box of the start page; then at the bottom of the page (an error starting a session)
+    const element = $("menu-body").hidden ? $("loading-status") : $("pygletStatus");
+    element.textContent = key ? `${t(key)} ${detail}`.trim() : detail;
 };
 
 function translatePage() {
@@ -510,12 +510,15 @@ async function boot() {
 
     window.openmatb = { pyodide }; // for debugging from the browser console
     storage = bridge;
-    status("ready");
     await cmi5Ready;
     const outputErrors = sessionOutputSettings(readAppConfig(pyodide)).errors;
     const deviceErrors = DEMO ? [] : await showDevices(readAppConfig(pyodide));
     const errors = [...lmsErrors, ...outputErrors, ...deviceErrors];
     $("start").disabled = !checkBrowser(pyodide) || !showConfigErrors(errors);
+    // Until then, only the title, the version, the address of the author and the loading step
+    status(null);
+    $("loading-status").hidden = true;
+    $("menu-body").hidden = false;
     return pyodide;
 }
 

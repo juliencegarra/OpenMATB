@@ -37,6 +37,11 @@
         h1 { margin: 0 0 4px; font-size: 1.6rem; }
         h1 .version { font-size: 0.55em; font-weight: 600; color: var(--muted); }
         .subtitle { margin: 0 0 24px; color: var(--muted); }
+        /* While loading, only the title and the subtitle: no empty space under them */
+        #menu .subtitle { margin-bottom: 0; }
+        #menu-body { margin-top: 24px; }
+        #loading-status { margin-top: 16px; overflow-wrap: anywhere; }
+        #loading-status[hidden] { display: none; }
         label { display: block; margin: 16px 0 6px; font-weight: 600; }
         label.inline { display: flex; gap: 8px; align-items: center; font-weight: 400; }
         select, input[type=file] { width: 100%; padding: 8px; font: inherit; border: 1px solid var(--border);
@@ -77,43 +82,48 @@
         <div class="panel">
             <h1>OpenMATB <span class="version">v{{VERSION}}</span></h1>
             <p class="subtitle">Julien.Cegarra@univ-jfc.fr</p>
-
-            <label for="lang" data-i18n="language">Language</label>
-            <select id="lang">
-                <option value="en_EN">English</option>
-                <option value="fr_FR">Français</option>
-            </select>
-
-            <label for="mode" data-i18n="mode">Mode</label>
-            <select id="mode">
-                <option value="scenario" data-i18n="run_scenario">Run a scenario</option>
-                <option value="replay" data-i18n="replay_session">Replay a session</option>
-            </select>
-            <p class="hint" data-i18n="choose_next">The scenario (or session) is chosen in the next screen.</p>
-
-            <div id="replay-options" hidden>
-                <label for="session-file" data-i18n="import_session">Import a session file (optional)</label>
-                <input id="session-file" type="file" accept=".csv,.gz">
-                <p class="hint" data-i18n="sessions_kept">Sessions run in this browser are kept and listed automatically.</p>
-                <label data-i18n="stored_sessions">Sessions kept in this browser</label>
-                <p id="sessions-empty" class="hint" data-i18n="no_session">No session yet.</p>
-                <ul id="sessions-list" class="sessions"></ul>
-                <button id="delete-all" type="button" class="secondary" data-i18n="delete_all" hidden>Delete all the sessions</button>
-            </div>
-
-            <label class="inline"><input id="fullscreen" type="checkbox" checked> <span data-i18n="fullscreen">Fullscreen</span></label>
-            <div id="trigger-options" hidden>
-                <label data-i18n="trigger_box">Trigger box (parallelport plugin)</label>
-                <p class="hint"><span id="trigger-port" data-i18n="no_port">No port chosen.</span></p>
-                <button id="trigger-choose" type="button" class="secondary" data-i18n="choose_port">Choose the port</button>
-            </div>
-            <p class="notice info"><span><span id="joystick-status" data-i18n="joystick_hint">Joystick: press one of its buttons to detect it.</span>
-                <strong id="joystick-name"></strong></span></p>
-
+            <p id="loading-status" class="hint" role="status"></p>
+            <!-- Shown as soon as the page opens: the browser can be changed before waiting for the loading -->
             <p id="browser-warning" class="notice warning" role="alert" hidden></p>
-            <p id="config-error" class="notice warning" role="alert" hidden></p>
 
-            <button id="start" disabled data-i18n="start">Start</button>
+            <!-- Shown once OpenMATB is loaded -->
+            <div id="menu-body" hidden>
+                <label for="lang" data-i18n="language">Language</label>
+                <select id="lang">
+                    <option value="en_EN">English</option>
+                    <option value="fr_FR">Français</option>
+                </select>
+
+                <label for="mode" data-i18n="mode">Mode</label>
+                <select id="mode">
+                    <option value="scenario" data-i18n="run_scenario">Run a scenario</option>
+                    <option value="replay" data-i18n="replay_session">Replay a session</option>
+                </select>
+                <p class="hint" data-i18n="choose_next">The scenario (or session) is chosen in the next screen.</p>
+
+                <div id="replay-options" hidden>
+                    <label for="session-file" data-i18n="import_session">Import a session file (optional)</label>
+                    <input id="session-file" type="file" accept=".csv,.gz">
+                    <p class="hint" data-i18n="sessions_kept">Sessions run in this browser are kept and listed automatically.</p>
+                    <label data-i18n="stored_sessions">Sessions kept in this browser</label>
+                    <p id="sessions-empty" class="hint" data-i18n="no_session">No session yet.</p>
+                    <ul id="sessions-list" class="sessions"></ul>
+                    <button id="delete-all" type="button" class="secondary" data-i18n="delete_all" hidden>Delete all the sessions</button>
+                </div>
+
+                <label class="inline"><input id="fullscreen" type="checkbox" checked> <span data-i18n="fullscreen">Fullscreen</span></label>
+                <div id="trigger-options" hidden>
+                    <label data-i18n="trigger_box">Trigger box (parallelport plugin)</label>
+                    <p class="hint"><span id="trigger-port" data-i18n="no_port">No port chosen.</span></p>
+                    <button id="trigger-choose" type="button" class="secondary" data-i18n="choose_port">Choose the port</button>
+                </div>
+                <p class="notice info"><span><span id="joystick-status" data-i18n="joystick_hint">Joystick: press one of its buttons to detect it.</span>
+                    <strong id="joystick-name"></strong></span></p>
+
+                <p id="config-error" class="notice warning" role="alert" hidden></p>
+
+                <button id="start" disabled data-i18n="start">Start</button>
+            </div>
             <p id="wasm-mime" class="hint" data-i18n-title="wasm_mime_detail" hidden>&#x26A0;&#xFE0F; <span data-i18n="wasm_mime"></span></p>
         </div>
     </main>

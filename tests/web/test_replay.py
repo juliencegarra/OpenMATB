@@ -289,7 +289,7 @@ class TestReplayExit:
         replay.page.wait_for_timeout(300)
         replay.page.keyboard.press("q")
         replay.page.wait_for_url("**mode=replay**", timeout=10_000)
-        replay.page.wait_for_selector("#menu:not([hidden])", timeout=10_000)
+        replay.page.wait_for_selector("#menu-body:not([hidden])", timeout=60_000)  # Once OpenMATB is loaded
         assert replay.page.input_value("#mode") == "replay"
         assert replay.page.is_visible("#replay-options")
-        replay.page.wait_for_selector("#sessions-list li", timeout=60_000)  # Listed once OpenMATB is loaded
+        replay.page.wait_for_selector("#sessions-list li", timeout=10_000)
