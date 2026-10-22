@@ -14,7 +14,13 @@ from core.constants import PATHS as P
 from core.error import get_errors
 from core.event import Event
 from core.logger import get_logger
-from core.utils import get_conf_value
+from core.platform import IS_WEB
+from core.utils import get_conf_value, has_conf_value
+
+# Browser: the destinations of web_session_output that limit the size of a session file, as (MB accepted, MB written
+# per hour of session once compressed): DataPipe accepts 32 MB per request (gzip + base64: about 19 MB per hour),
+# JATOS 30 MB per result file by default (gzip: about 14 MB per hour). See web/session_output.js
+SESSION_SIZE_LIMITS: dict[str, tuple[float, float]] = {"datapipe": (32, 19), "jatos": (30, 14)}
 
 
 def _agent_names() -> list[str]:
@@ -94,6 +100,31 @@ class Scenario:
             get_errors().add_error(
                 _("There were some errors in the scenario. See the %s file.") % P["SCENARIO_ERRORS"].name, fatal=True
             )
+        elif IS_WEB and not REPLAY_MODE:
+            self.check_session_size()
+
+    def check_session_size(self) -> None:
+        """Browser: a warning (the session can go on) if the session file of the scenario may exceed the limit of a
+        destination (web_session_output): it would not be received. Its size from the duration of the scenario (a
+        session writes about 70 MB of CSV per hour), 10 % of margin"""
+        if not self.events or not has_conf_value("Openmatb", "web_session_output"):
+            return
+        hours: float = max(e.time_sec for e in self.events) / 3600
+        destinations: str = str(get_conf_value("Openmatb", "web_session_output")).lower()
+        for destination in (d.strip() for d in destinations.split(",")):
+            if destination not in SESSION_SIZE_LIMITS:
+                continue
+            limit_mb, mb_per_hour = SESSION_SIZE_LIMITS[destination]
+            if hours * mb_per_hour > 0.9 * limit_mb:
+                max_minutes: int = int(0.9 * limit_mb / mb_per_hour * 60)
+                get_errors().add_error(
+                    _(
+                        "This scenario lasts %s min: its session file may exceed what %s accepts (about %s min of "
+                        "session). Split it into several scenarios, or choose another destination (web_session_output)."
+                    )
+                    % (round(hours * 60), destination, max_minutes),
+                    fatal=False,
+                )
 
     def reload_plugins(self) -> None:
         for name, plugin in self.plugins.items():
