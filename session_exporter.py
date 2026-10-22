@@ -90,6 +90,7 @@ class TimeSeriesRow:
     resman_b_deviation: str
     track_auto: int  # 1 or 0
     resman_auto: int  # 1 or 0
+    track_deviation_relative: str = ""  # In half-sizes of the reticle (1: at its edge), or ""
 
 
 @dataclass
@@ -777,6 +778,9 @@ def build_timeseries(
     series: list[TimeSeriesRow] = []
     last_track_in: str = ""
     last_track_dev: str = ""
+    last_track_dev_relative: str = ""
+    # Sessions without center_deviation_relative (before 1.5.3): the deviation in px over the half-size of the reticle
+    reticle_half: float | None = _reticle_half_size(event_rows)
     last_res_a_tol: str = ""
     last_res_b_tol: str = ""
     last_res_a_dev: str = ""
@@ -796,6 +800,11 @@ def build_timeseries(
                 last_track_in = obs_data["cursor_in_target"]
             if "center_deviation" in obs_data:
                 last_track_dev = obs_data["center_deviation"]
+                px = parse_value(last_track_dev)
+                if "center_deviation_relative" not in obs_data and reticle_half and isinstance(px, (int, float)):
+                    last_track_dev_relative = f"{float(px) / reticle_half:g}"
+            if "center_deviation_relative" in obs_data:
+                last_track_dev_relative = obs_data["center_deviation_relative"]
             track_idx += 1
 
         # Advance resman pointer
@@ -813,7 +822,7 @@ def build_timeseries(
 
         # A task paused or stopped: no value (its last one was repeated), nor after it until its next observation
         if not _is_in_auto(t, track_running):
-            last_track_in = last_track_dev = ""
+            last_track_in = last_track_dev = last_track_dev_relative = ""
         if not _is_in_auto(t, resman_running):
             last_res_a_tol = last_res_b_tol = last_res_a_dev = last_res_b_dev = ""
 
@@ -829,6 +838,7 @@ def build_timeseries(
                 resman_b_deviation=last_res_b_dev,
                 track_auto=1 if _is_in_auto(t, track_auto) else 0,
                 resman_auto=1 if _is_in_auto(t, resman_auto) else 0,
+                track_deviation_relative=last_track_dev_relative,
             )
         )
 
@@ -1027,6 +1037,7 @@ TIMESERIES_COLUMNS: list[str] = [
     "time_sec",
     "track_in_target",
     "track_deviation",
+    "track_deviation_relative",
     "resman_a_in_tolerance",
     "resman_b_in_tolerance",
     "resman_a_deviation",
@@ -1049,6 +1060,7 @@ def write_timeseries(series: list[TimeSeriesRow], output_path: Path, sep: str) -
                     f"{row.time_sec:g}",
                     _fmt_val(row.track_in_target),
                     _fmt_val(row.track_deviation),
+                    _fmt_val(row.track_deviation_relative),
                     _fmt_val(row.resman_a_in_tolerance),
                     _fmt_val(row.resman_b_in_tolerance),
                     _fmt_val(row.resman_a_deviation),

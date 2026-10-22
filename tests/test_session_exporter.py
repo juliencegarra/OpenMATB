@@ -1002,6 +1002,22 @@ class TestBuildTimeseries:
         series = build_timeseries("s", [], [], 1.0)
         assert series == []
 
+    def test_track_relative_deviation(self) -> None:
+        """In half-sizes of the reticle (1: at its edge): the same on every screen (the px are not)."""
+        perf = [
+            _perf(1.0, "track", "center_deviation", "95.5"),
+            _perf(1.0, "track", "center_deviation_relative", "0.5"),
+        ]
+        series = build_timeseries("s", perf, [], 1.0)
+        assert [(r.track_deviation, r.track_deviation_relative) for r in series] == [("", ""), ("95.5", "0.5")]
+
+    def test_track_relative_deviation_of_a_former_session(self) -> None:
+        """Without center_deviation_relative: the px over the half-size of the reticle (its area of interest)."""
+        perf = [_perf(1.0, "track", "center_deviation", "95.5")]
+        reticle = _row(0.0, "aoi", "track", "reticle", "(961.0, 960.0, 1343.0, 578.0)")  # 382 px wide
+        series = build_timeseries("s", perf, [reticle], 1.0)
+        assert series[1].track_deviation_relative == "0.5"
+
     def test_no_value_while_a_task_is_paused(self) -> None:
         """A paused task logs no performance: its last value was repeated over the whole pause."""
         perf = [
