@@ -180,7 +180,8 @@ class Scenario:
         for plug_name in self.get_plugins_name_list():
             plugin = self.plugins[plug_name]
             if plugin.blocking is True and getattr(plugin, "needs_input_file", True):
-                plug_events = self.get_plugin_events(plug_name)
+                # In the order of the session (the scheduler sorts the events by time), not of the file
+                plug_events = sorted(self.get_plugin_events(plug_name), key=lambda e: (e.time_sec, e.line))
                 for i, e in enumerate(plug_events):
                     if "start" in e.command:
                         preceding = plug_events[:i]

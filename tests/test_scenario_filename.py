@@ -44,3 +44,29 @@ def test_filename_with_a_space_is_accepted(tmp_path, mock_errors, mock_logger):
 
     errors = errors_path.read_text(encoding="utf-8")
     assert "No error" in errors, errors
+
+
+def _errors_of(tmp_path, scenario):
+    _Instructions.folder = tmp_path
+    (tmp_path / "q.txt").write_text("hello", encoding="utf-8")
+    scenario_path = tmp_path / "scenario.txt"
+    scenario_path.write_text(scenario, encoding="utf-8")
+    errors_path = tmp_path / "errors.log"
+    with (
+        patch("core.scenario.plugins", SimpleNamespace(Instructions=_Instructions)),
+        patch.dict(core.constants.PATHS, {"SCENARIO_ERRORS": errors_path}),
+    ):
+        Scenario(scenario_path=scenario_path)
+    return errors_path.read_text(encoding="utf-8")
+
+
+def test_filename_set_after_the_start_in_time_is_refused(tmp_path, mock_errors, mock_logger):
+    """Written above the start in the file, but later in time: the plugin started without its file."""
+    errors = _errors_of(tmp_path, "0:05:00;instructions;filename;q.txt\n0:00:10;instructions;start\n")
+    assert "without a preceding filename" in errors
+
+
+def test_filename_set_before_the_start_in_time_is_accepted(tmp_path, mock_errors, mock_logger):
+    """Written below the start in the file, but earlier in time."""
+    errors = _errors_of(tmp_path, "0:00:10;instructions;start\n0:00:05;instructions;filename;q.txt\n")
+    assert "No error" in errors, errors
