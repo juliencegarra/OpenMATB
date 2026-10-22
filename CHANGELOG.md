@@ -24,6 +24,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the replay keyboard history: the first key was on the title line, which wrapped in the narrow inputs strip. The replay timeline also takes the whole space between the play button and the time
   - Fix the system monitoring scale response times, one task step (200 ms) too long: the arrow entered its failure zone at the step after the start of the failure, when its response time had already started (the lights changed at once). A failure also ends the freeze of the arrow by the feedback of a previous one
   - Fix the communications tuning: a key press held for more than a task step tuned two steps. A press tunes one step, a key held tunes continuously after 0.3 s
+  - Fix the communications own targets, on all the radios: they are now on the radios of `promptlist`, as the other ones
 
 ## Version 1.5.2
   **New Features**

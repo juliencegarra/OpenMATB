@@ -452,7 +452,10 @@ class Communications(AbstractPlugin):
 
             # If the prompt is relevant (own), select a radio among (available) non-target radios
             if self.parameters["radioprompt"].lower() == "own":
-                non_target_radios: list[dict[str, Any]] = self.get_non_target_radios_list()
+                # Among the radios of promptlist, as the prompts of other callsigns
+                non_target_radios: list[dict[str, Any]] = [
+                    r for r in self.get_non_target_radios_list() if r["name"] in self.parameters["promptlist"]
+                ]
                 if len(non_target_radios) > 0:
                     radio_name_to_prompt = choice(non_target_radios, self.alias, self.scenario_time, 1)["name"]
             elif self.parameters["radioprompt"].lower() == "other":

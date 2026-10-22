@@ -416,6 +416,16 @@ class TestComputeNextPluginState:
         comms.compute_next_plugin_state()
         self.prompt.assert_called_once_with("other", "NAV_1")
 
+    def test_own_prompt_among_the_radios_of_the_promptlist(self, comms):
+        """communications;promptlist;NAV_1,COM_1: the own targets were also on NAV_2 and COM_2."""
+        value, error = comms.validation_dict["promptlist"][0]("NAV_1,COM_1", *comms.validation_dict["promptlist"][1:])
+        assert error is None
+        comms.set_parameter("promptlist", value)
+        _radio(comms, "NAV_1")["targetfreq"] = 120.0
+        comms.parameters["radioprompt"] = "own"
+        comms.compute_next_plugin_state()
+        self.prompt.assert_called_once_with("own", "COM_1")
+
     def test_new_prompt_interrupts_the_current_one(self, comms):
         radio = _radio(comms, "NAV_1")
         radio.update(targetfreq=115.0, is_prompting=True)
