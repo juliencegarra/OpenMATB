@@ -304,7 +304,7 @@ class TestRowClassification:
             (100.7, 0.7, "input", "track", "joystick_x", "0.5"),
             (100.8, 0.8, "input", "mouse", "x", "120"),
             (100.9, 0.9, "input", "other", "whatever", "1"),
-            (101.0, 1.0, "input", "labstreaminglayer", "x", "1"),
+            (101.0, 1.0, "input", "parallelport", "x", "1"),
             (101.1, 1.1, "state", "communications", "own_radio_frequency", "127.5"),
             (101.2, 1.2, "state", "track", "cursor_proportional", "(0.1, -0.2)"),
             (101.3, 1.3, "state", "resman", "slider_pump", "[1, 2]"),
@@ -350,7 +350,7 @@ class TestRowClassification:
     def test_all_inputs_kept_except_ignored_plugins(self, lr):
         """Every input row is kept in inputs, except those of ignored plugins."""
         assert len(lr.inputs) == 6
-        assert all(r["module"] != "labstreaminglayer" for r in lr.inputs)
+        assert all(r["module"] != "parallelport" for r in lr.inputs)
 
     def test_replayable_states_are_evaluated(self, lr):
         """Radio, cursor and slider states are kept with their evaluated value."""

@@ -15,8 +15,10 @@ from core.constants import PATHS as P
 from core.error import get_errors
 from core.event import Event
 
-# Some plugins must not be replayed for now
-IGNORE_PLUGINS: list[str] = ["labstreaminglayer", "parallelport"]
+# Some plugins must not be replayed for now. The lab streaming layer is replayed without its stream: its pause at
+# start is a blocking page (dropped, the following events ran at once, and the SPACE that closed it closed the next
+# page, e.g. a 120 s resting baseline)
+IGNORE_PLUGINS: list[str] = ["parallelport"]
 
 # Minimum logtime span (seconds) for a frozen scenario_time group to be
 # considered a blocking segment (filters out simultaneous events).
@@ -58,6 +60,8 @@ class LogReader:
         self.contents: list[str] = []
         # The ends of the communications prompts, as (scenario time, radio name): the replay ends them at these times
         self.prompt_ends: list[tuple[float, str]] = []
+        # Whether the lab streaming layer showed its pause at start (not without a stream, e.g. pylsl missing)
+        self.lsl_pause_shown: bool = False
         self.inputs: list[dict[str, Any]] = []
         self.states: list[dict[str, Any]] = []
         self.start_sec: float = 0
@@ -99,6 +103,7 @@ class LogReader:
         self.perf_rows = []
         self.perf_series = {}
         self.task_hidden_periods = {}
+        self.lsl_pause_shown = False
         self.environment = {}
         self.hidden_periods = []
         self.freezes = []
@@ -158,6 +163,11 @@ class LogReader:
         self.session_duration = all_rows[-1]["normalized_logtime"]
         self._read_page_events(all_rows)
         self._read_task_visibility(all_rows)
+        # Its page logged the areas of its widgets (title, text, response), not only its background
+        self.lsl_pause_shown = any(
+            row["type"] == "aoi" and row["module"] == "labstreaminglayer" and row["address"] != "background"
+            for row in all_rows
+        )
         self.window_size = self._read_window_size(all_rows)
 
         # Second pass: process rows (skip first row as before)

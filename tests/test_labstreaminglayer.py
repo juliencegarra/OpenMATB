@@ -95,3 +95,31 @@ class TestInTheBrowser:
             (("-1000.000000",), {"key": "lsl_offset"}),
             (("-1000.000300",), {"key": "lsl_offset"}),
         ]
+
+
+class TestInTheReplay:
+    """Replayed without its stream (the markers were sent in the session), its pause page as in the session."""
+
+    def _start(self, pause_shown):
+        lsl = _make_lsl()
+        lsl.parameters["pauseatstart"] = True
+        lsl.slides = []
+        lsl.replay_pause_shown = pause_shown
+        errors = MagicMock()
+        with (
+            patch.object(lsl_module, "REPLAY_MODE", True),
+            patch.object(lsl_module, "pylsl") as pylsl,
+            patch.object(lsl_module, "get_errors", return_value=errors),
+            patch("plugins.instructions.Instructions.start"),
+        ):
+            lsl.start()
+        pylsl.StreamOutlet.assert_not_called()
+        errors.add_error.assert_not_called()
+        return lsl
+
+    def test_pause_page_shown_in_the_session(self):
+        assert len(self._start(pause_shown=True).slides) == 1
+
+    def test_pause_page_skipped_in_the_session(self):
+        """E.g. pylsl missing: the replay must not wait for a SPACE that never came."""
+        assert self._start(pause_shown=False).slides == []

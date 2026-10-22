@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import Any
 
 from core import validation
+from core.constants import REPLAY_MODE
 from core.error import get_errors
 from core.platform import IS_WEB, web_lsl_outlet
 from plugins import Instructions
@@ -45,6 +46,12 @@ class Labstreaminglayer(Instructions):
         # If pylsl is not available this part should fail.
         # Create a LSL marker outlet.
         super().start()
+        if REPLAY_MODE:
+            # No stream (the markers were sent in the session). Its pause at start as in the session: a blocking
+            # page, closed by the replayed SPACE
+            if self.parameters["pauseatstart"] is True and getattr(self, "replay_pause_shown", False):
+                self.slides = [self.get_msg_slide_content(self.lsl_wait_msg)]
+            return
         if IS_WEB:
             # The markers go to web/lsl_bridge.py (web_lsl_bridge in config.ini), which creates the same stream
             self.stream_outlet = web_lsl_outlet()

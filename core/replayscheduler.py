@@ -147,6 +147,8 @@ class ReplayScheduler(Scheduler):
 
         super().set_scenario(self.logreader.contents)
         self._give_prompt_ends()
+        if "labstreaminglayer" in self.plugins:  # Its pause at start only if the session showed it
+            self.plugins["labstreaminglayer"].replay_pause_shown = self.logreader.lsl_pause_shown
 
         # Create performance overlay if data is available
         if self._perf_overlay is None:

@@ -45,6 +45,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the overdue alarm of a task shown again after being hidden: it flickered (toggled at each frame) until it caught up its blinks
   - Fix a task stopped then started again: the stopped time was counted in its response times (e.g. a tracking response time of 101.5 s instead of 1.5 s, a communications target missed at once), the stopped plugin starting with the time of its stop
   - Fix a parallel port trigger sent just before instructions, a questionnaire or the pause dialog: it stayed high during the whole pause, instead of delayms
+  - Fix the replay of a session with a lab streaming layer pause at start: the page was dropped, the following events ran at once, and the SPACE that closed it closed the next page (e.g. the 120 s resting baseline of the LSL scenario). The plugin is replayed without its stream, with its page if the session showed it
   - Fix the scenario generator with a fractional event duration (e.g. an alerttimeout of 10500 ms, a refractory duration of 0.5 s): the times, truncated to the second when written, could bring two events closer than planned, and a light was failed again while still on failure (the failure was then ignored). The events take whole seconds, rounded up, and the refractory duration slider has a 1 s step
 
 ## Version 1.5.2

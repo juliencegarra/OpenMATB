@@ -52,3 +52,29 @@ def test_last_row_cut_in_its_scenario_time(tmp_path):
     lr = LogReader(session_path=str(path))
     assert lr.end_sec == 19.9
     assert lr.replay_to_scenario_time(lr.session_duration) >= 19.9  # It went back to 2
+
+
+def _lsl_rows(page_shown):
+    rows = [
+        (100.0, 0.0, "event", "labstreaminglayer", "pauseatstart", "True"),
+        (100.0, 0.0, "aoi", "labstreaminglayer", "background", "(0, 1061, 1920, 0)"),
+        (100.0, 0.0, "event", "labstreaminglayer", "self", "start"),
+    ]
+    if page_shown:
+        rows.append((100.1, 0.0, "aoi", "labstreaminglayer", "press_space", "(0, 1061, 1920, 0)"))
+    return rows + [
+        (102.0, 0.0, "event", "instructions", "self", "start"),
+        (110.0, 8.0, "event", "track", "self", "stop"),
+    ]
+
+
+def test_lab_streaming_layer_replayed_with_its_pause_page(tmp_path):
+    """Its events were dropped: its pause page did not block, the SPACE that closed it closed the next page."""
+    lr = _reader(tmp_path, _lsl_rows(page_shown=True))
+    assert any("labstreaminglayer" in line and "start" in line for line in lr.contents)
+    assert lr.lsl_pause_shown is True
+
+
+def test_lab_streaming_layer_pause_page_not_shown(tmp_path):
+    """Without a stream (e.g. pylsl missing), the session skipped the page: the replay must not wait for it."""
+    assert _reader(tmp_path, _lsl_rows(page_shown=False)).lsl_pause_shown is False

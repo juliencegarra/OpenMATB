@@ -262,8 +262,9 @@ class TestReloadSession:
 
 class TestIgnorePlugins:
     def test_contains_expected_plugins(self):
-        """Blacklist includes hardware-only plugins."""
-        assert "labstreaminglayer" in IGNORE_PLUGINS
+        """Blacklist includes hardware-only plugins. The lab streaming layer is replayed (its pause at start is a
+        blocking page), without its stream."""
+        assert "labstreaminglayer" not in IGNORE_PLUGINS
         assert "parallelport" in IGNORE_PLUGINS
 
     def test_does_not_contain_logic_plugins(self):
