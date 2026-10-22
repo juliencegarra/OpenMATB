@@ -495,18 +495,17 @@ class TestComputeNextPluginState:
         comms.modulate_frequency.assert_called_once()
 
     def test_end_of_prompt_starts_the_response_timer(self, comms):
+        """In the step that sees the end of the prompt: the answers are accepted from then on (it started a step
+        later, and an answer in between was a HIT of 0 ms)."""
         radio = _radio(comms, "NAV_2")
         radio.update(targetfreq=115.0, is_prompting=True)
         comms.player = MagicMock(source=None)  # The prompt has ended
 
-        comms.compute_next_plugin_state()
-        assert radio["is_prompting"] is False
-        assert radio["_response_start"] is None
-        comms.logger.log_manual_entry.assert_any_call("Target NAV_2:115.0")
-
         comms.scenario_time = 2
         comms.compute_next_plugin_state()
+        assert radio["is_prompting"] is False
         assert radio["_response_start"] == 2
+        comms.logger.log_manual_entry.assert_any_call("Target NAV_2:115.0")
 
     def test_prompt_still_playing(self, comms):
         radio = _radio(comms, "NAV_2")

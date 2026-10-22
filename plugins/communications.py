@@ -494,7 +494,13 @@ class Communications(AbstractPlugin):
 
         # Browse targeted radios
         for radio in target_radios:
-            # Start response timer as soon as auditory prompting has ended
+            # If the radio prompt has just ended (or could not be played: no player)
+            if radio["is_prompting"] and self._prompt_has_ended(radio):
+                radio["is_prompting"] = False
+                self.logger.log_manual_entry(f"Target {radio['name']}:{radio['targetfreq']}")
+
+            # Start response timer as soon as auditory prompting has ended: in the step that sees its end, as the
+            # answers are accepted from then on (it started a step later, and an answer in between took 0 ms)
             if not radio["is_prompting"]:
                 if radio["_response_start"] is None:
                     # Starts when the prompt has ended (not displayed): only the response end is the input event
@@ -503,11 +509,6 @@ class Communications(AbstractPlugin):
                 # Record potential target miss
                 if self._response_elapsed_ms(radio["_response_start"]) >= self.parameters["maxresponsedelay"]:
                     self.record_target_missing(radio)
-
-            # If the radio prompt has just ended (or could not be played: no player)
-            elif self._prompt_has_ended(radio):
-                radio["is_prompting"] = False
-                self.logger.log_manual_entry(f"Target {radio['name']}:{radio['targetfreq']}")
 
         # Automatic solver logic is handled by the agent via on_plugin_update
 
