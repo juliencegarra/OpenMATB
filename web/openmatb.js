@@ -162,7 +162,7 @@ const TEXTS = {
 // ?lang= in the URL, otherwise the first browser language OpenMATB is translated in, otherwise English
 function detectLanguage() {
     const requested = new URLSearchParams(location.search).get("lang");
-    if (requested in TEXTS) {
+    if (requested !== null && Object.hasOwn(TEXTS, requested)) { // Not "in": ?lang=constructor matched Object.prototype
         return requested;
     }
     for (const language of navigator.languages || [navigator.language]) {

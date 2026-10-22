@@ -1891,3 +1891,12 @@ class TestKeyboardFocus:
         app.page.evaluate("() => document.activeElement.blur()")  # E.g. a click in a margin
         app.page.mouse.click(5, 5)
         assert app.page.evaluate("() => document.activeElement.id") == "pygletCanvas"
+
+
+class TestLanguageParameter:
+    def test_an_object_property_name_is_not_a_language(self, page_factory):
+        """?lang=constructor matched Object.prototype ("in"): an empty language box, the start page never loaded."""
+        app = page_factory()
+        app.page.goto(f"{app.url}/index.html?lang=constructor")
+        app.page.wait_for_selector("#start:not([disabled])", timeout=120_000)
+        assert not app.errors
