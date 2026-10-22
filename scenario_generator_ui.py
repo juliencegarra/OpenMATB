@@ -1645,10 +1645,10 @@ class ScenarioGeneratorUI:
             "Refractory duration:",
             0,
             5,
-            0.5,
+            1,  # Whole seconds, as the scenario times
             1,
             self.batch,
-            fmt="{:.1f}",
+            fmt="{:.0f}",
             suffix=" s",
         )
         self._all_widgets.append(self.refract_slider)

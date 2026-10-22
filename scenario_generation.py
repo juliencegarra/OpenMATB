@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from math import gcd
+from math import ceil, gcd
 from pathlib import Path
 from random import randint, shuffle
 from time import time
@@ -88,6 +88,13 @@ def get_part_durations(duration_sec: float, part_number: int) -> list[float]:
     parts[0] += fraction_sec
     shuffle(parts)
     return parts
+
+
+def event_duration_sec(stimulus_sec: float, refractory_sec: float) -> int:
+    """The time taken by an event (its stimulus and the refractory duration after it), in whole seconds: the scenario
+    times are whole seconds. A fraction was truncated when the scenario was written, so two events could be closer
+    than planned (e.g. a light failed again while still on failure, the failure was then ignored)"""
+    return ceil(stimulus_sec + refractory_sec)
 
 
 def reduce(p: float, q: float) -> tuple[int, int]:
@@ -178,7 +185,7 @@ def get_task_current_state(scenario_lines: list[str | Event], plugin: str) -> li
 def distribute_events(
     scenario_lines: list[str | Event],
     start_sec: int,
-    single_duration: float,
+    single_duration: int,
     cmd_list: list[list[Any]],
     plugin_name: str,
     step_duration_sec: int,
@@ -198,9 +205,6 @@ def distribute_events(
     for previous_delay, cmd in zip(random_delays, cmd_list):
         lastline += 1
         onset_sec += previous_delay
-        # TOCHECK: a fractional onset (e.g. an alerttimeout of 10500 ms) is truncated to the second when written
-        # (Event.get_time_hms_str): two events may be closer than single_duration, by less than 1 s. No overlap of
-        # two failures as long as the refractory duration is at least 1 s (the UI slider gives whole seconds)
         scenario_lines.append(Event(lastline, onset_sec, plugin_name, cmd))
         onset_sec += single_duration
     return scenario_lines
@@ -262,7 +266,7 @@ def add_scenario_phase(
             for e in get_events_from_scenario(scenario_lines):
                 if e.plugin == "sysmon" and len(e.command) == 2 and e.command[0] == "alerttimeout":
                     alerttimeout = float(e.command[1])
-            failure_duration_sec: float = alerttimeout / 1000 + config.events_refractory_duration
+            failure_duration_sec: int = event_duration_sec(alerttimeout / 1000, config.events_refractory_duration)
             single_failure_ratio: float = failure_duration_sec / block_duration_sec
             max_events_N: int = int(1 / single_failure_ratio)
             difficulty_events_N: int = int(difficulty / single_failure_ratio)
@@ -295,7 +299,7 @@ def add_scenario_phase(
         elif plugin_name == "communications":
             print("Communications | computing events")
             averaged_duration_sec: int = config.average_auditory_prompt_duration
-            single_duration_sec: float = averaged_duration_sec + config.events_refractory_duration
+            single_duration_sec: int = event_duration_sec(averaged_duration_sec, config.events_refractory_duration)
             communication_ratio: float = difficulty
             single_event_ratio: float = single_duration_sec / block_duration_sec
             max_event_num: int = int(block_duration_sec / single_duration_sec)

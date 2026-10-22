@@ -22,6 +22,7 @@ from scenario_generation import (
     add_scenario_phase,
     choices,
     distribute_events,
+    event_duration_sec,
     generate_scenario,
     get_events_from_scenario,
     get_part_durations,
@@ -542,7 +543,7 @@ class TestGenerateScenario:
         assert "Block" in comments[1]
 
     def test_half_second_refractory_duration(self):
-        """The UI refractory slider has a 0.5 s step."""
+        """A refractory duration of 1.5 s (e.g. an older saved configuration): failures of 12 s (11.5 rounded up)."""
         random.seed(1)
         config = ScenarioConfig(
             events_refractory_duration=1.5,
@@ -673,3 +674,34 @@ class TestCustomScenario:
         sysmon = Sysmon()
         generate_scenario(ScenarioConfig(custom_scenario_path=custom), {"sysmon": sysmon})
         assert sysmon.parameters["alerttimeout"] == 10000
+
+
+class TestWholeSecondEvents:
+    """The scenario times are whole seconds: a fractional event duration (e.g. an alerttimeout of 10500 ms) was
+    truncated when written, and two events could be closer than planned."""
+
+    def test_event_duration_rounded_up(self):
+        assert event_duration_sec(10, 1) == 11
+        assert event_duration_sec(10.5, 0) == 11
+        assert event_duration_sec(10.5, 1.5) == 12
+
+    def test_gauges_never_failed_again_while_on_failure(self):
+        """alerttimeout 10.5 s, no refractory duration: a light was failed again 10 s after (1 block in 4)."""
+        plugins = TestGenerateScenario._make_full_plugins(None)
+        plugins["sysmon"].parameters["alerttimeout"] = 10500
+        config = ScenarioConfig(events_refractory_duration=0, blocks=[BlockConfig(60, {"sysmon": 1.0})])
+        for seed in range(100):
+            random.seed(seed)
+            failures = [
+                e
+                for e in get_events_from_scenario(generate_scenario(config, plugins))
+                if e.command[0].endswith("failure")
+            ]
+            for gauges in ("lights", "scales"):
+                written = [
+                    Event.parse_from_string(0, e.get_line_str()).time_sec
+                    for e in failures
+                    if e.command[0].startswith(gauges)
+                ]
+                assert len(written) == 5
+                assert all(b - a >= 11 for a, b in zip(written, written[1:])), written
