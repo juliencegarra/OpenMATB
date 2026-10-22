@@ -187,8 +187,6 @@ class AbstractPlugin:
         self.alive = True
         self.create_widgets()
         self.log_all_parameters(self.parameters)
-        # TOCHECK: a blocking plugin started again shows the widgets kept from its previous run (its last page, its
-        # sliders) during one frame, until its next update replaces them
         self.show()
         self.resume()
 
@@ -661,6 +659,20 @@ class BlockingPlugin(AbstractPlugin):
         self._page_elapsed: float = 0.0
         self._page_tick: float | None = None
 
+    def show(self) -> None:
+        if self.current_slide is not None:
+            super().show()
+            return
+        # No page yet (its next update shows the first one): only its background. Started again, it showed the
+        # widgets kept from its previous run (its last page, its sliders) during one frame
+        widgets: dict[str, Any] = self.widgets
+        background: str = self.get_widget_fullname("background")
+        self.widgets = {name: widget for name, widget in widgets.items() if name == background}
+        try:
+            super().show()
+        finally:
+            self.widgets = widgets
+
     def pause(self) -> None:
         self._page_tick = None  # The time paused (e.g. the pause dialog) is not counted
         super().pause()
@@ -683,6 +695,7 @@ class BlockingPlugin(AbstractPlugin):
         super().create_widgets()
         self.go_to_next_slide = True  # So the first slide appears as soon as possible
         self._page_number = 0  # The pages of this presentation (the plugin may be started again)
+        self.current_slide = None  # No page shown yet: see show()
         # Not the pages left by a presentation stopped before its end (a seek of the replay): shown before this one
         self.slides = []
 

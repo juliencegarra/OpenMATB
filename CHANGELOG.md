@@ -37,6 +37,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the replay of a session whose last row is cut in its scenario time (crash while writing): the time went back at the end
   - Fix the replay of instructions stopped by a seek before their last page: their pages left were shown before the next instructions of the same plugin
   - Fix the scenario generators, which did not start without a language in config.ini, or with a language without translation
+  - Fix instructions or a questionnaire started again: the last page and the sliders of their previous run were shown during one frame
 
 ## Version 1.5.2
   **New Features**
