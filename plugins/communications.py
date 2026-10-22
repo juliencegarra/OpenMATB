@@ -24,6 +24,9 @@ from core.widgets import Radio, Simpletext
 from plugins.abstractplugin import AbstractPlugin
 
 CALLSIGN_MAX_ATTEMPTS: int = 100
+# A prompt not ended by its audio this long (s) after the duration of its sounds is ended (see _prompt_has_ended):
+# beyond the decoding wait of the browser sounds (core.audio.DECODING_TIMEOUT)
+PROMPT_END_MARGIN: float = 3.0
 # A press tunes one step, a key held tunes continuously after this delay (s), as a key repeat: a press held for more
 # than a task step tuned two steps
 TUNE_REPEAT_DELAY: float = 0.3
@@ -351,6 +354,8 @@ class Communications(AbstractPlugin):
             radio["_prompt_start"] = self.scenario_time
 
         sounds: list[Any] = self.group_audio_files(callsign, radio_name, random_frequency)
+        self._prompt_sounds: list[Any] = sounds
+        self._prompt_task_start: float = self.task_time
 
         try:
             self.player: SequencePlayer = SequencePlayer(sounds)
@@ -369,7 +374,22 @@ class Communications(AbstractPlugin):
             if ended and hasattr(self, "player"):
                 self.player.pause()
             return ended
-        return not hasattr(self, "player") or self.player.source is None
+        if not hasattr(self, "player") or self.player.source is None:
+            return True
+        # Not ended by its audio after the duration of its sounds (a browser audio context suspended, e.g. Safari, or
+        # without audio output: the end of a sound is never signalled): the prompt never ended, its target could not
+        # be answered nor missed. Its sounds have their duration once decoded (browser)
+        durations: list[float] = [
+            getattr(sound, "duration", None) or 0 for sound in getattr(self, "_prompt_sounds", [])
+        ]
+        if durations and all(durations):
+            deadline: float = self._prompt_task_start + sum(durations) + PROMPT_END_MARGIN
+            if self.task_time >= deadline:
+                self.logger.log_manual_entry("Prompt ended by its duration: its audio did not end")
+                self.player.delete()
+                del self.player
+                return True
+        return False
 
     def get_rand_frequency(self, radio_n: int) -> float:
         return round(

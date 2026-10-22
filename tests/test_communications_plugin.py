@@ -507,6 +507,40 @@ class TestComputeNextPluginState:
         assert radio["_response_start"] == 2
         comms.logger.log_manual_entry.assert_any_call("Target NAV_2:115.0")
 
+    def test_a_prompt_whose_audio_never_ends_is_ended_by_its_duration(self, comms):
+        """A browser audio context suspended (e.g. Safari): the end of a sound was never signalled, the prompt never
+        ended, its target could not be answered nor missed."""
+        from types import SimpleNamespace
+
+        from plugins.communications import PROMPT_END_MARGIN
+
+        radio = _radio(comms, "NAV_2")
+        radio.update(targetfreq=115.0, is_prompting=True)
+        comms.player = MagicMock(source=object())  # Still "playing"
+        comms._prompt_sounds = [SimpleNamespace(duration=2.0)] * 3
+        comms._prompt_task_start = 1.0
+        comms.scenario_time = 1.0 + 6.0 + PROMPT_END_MARGIN - 0.1
+        comms.compute_next_plugin_state()
+        assert radio["is_prompting"] is True  # Not before its duration (and the margin)
+        comms.scenario_time += 0.2
+        comms.compute_next_plugin_state()
+        assert radio["is_prompting"] is False
+        assert radio["_response_start"] is not None  # It can be answered, or missed
+        comms.logger.log_manual_entry.assert_any_call("Prompt ended by its duration: its audio did not end")
+
+    def test_no_fallback_before_the_sounds_are_decoded(self, comms):
+        """Browser sounds have their duration once decoded: no deadline before."""
+        from types import SimpleNamespace
+
+        radio = _radio(comms, "NAV_2")
+        radio.update(targetfreq=115.0, is_prompting=True)
+        comms.player = MagicMock(source=object())
+        comms._prompt_sounds = [SimpleNamespace(duration=0)]
+        comms._prompt_task_start = 1.0
+        comms.scenario_time = 100.0
+        comms.compute_next_plugin_state()
+        assert radio["is_prompting"] is True
+
     def test_end_of_prompt_seen_at_the_next_frame(self, comms):
         """Not at the next task step (80 ms): the response times were too short by up to a step."""
         radio = _radio(comms, "NAV_2")

@@ -1906,3 +1906,24 @@ class TestLanguageParameter:
         app.page.goto(f"{app.url}/index.html?lang=constructor")
         app.page.wait_for_selector("#start:not([disabled])", timeout=120_000)
         assert not app.errors
+
+
+class TestSuspendedAudio:
+    def test_a_prompt_ends_without_audio(self, page_factory):
+        """The browser audio context suspended (e.g. Safari): the end of a sound was never signalled, the prompt
+        never ended, its target could not be answered nor missed. It is ended by the duration of its sounds."""
+        app = page_factory()
+        app.start("0:00:00;communications;start\n0:00:02;communications;radioprompt;own\n0:00:59;communications;stop\n")
+        app.python("import pyglet.media.drivers\npyglet.media.drivers.get_audio_driver().ctx.suspend()\n")
+        code = (
+            "import _openmatb_probe as probe\n"
+            "radios = probe.PROBE['scheduler'].plugins['communications'].parameters['radios'].values()\n"
+            "[r['_response_start'] for r in radios if r['targetfreq'] is not None]\n"
+        )
+        app.page.wait_for_timeout(5_000)  # The prompt has started
+        for _ in range(40):
+            starts = app.python(code)
+            if starts and starts[0] is not None:
+                break
+            app.page.wait_for_timeout(1_000)
+        assert starts and starts[0] is not None, "the prompt never ended"

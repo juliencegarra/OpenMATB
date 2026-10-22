@@ -63,6 +63,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the tracking difficulty, which depended on the screen: the disturbance followed the size of the reticle, the joystick (and the mouse) did not (25 % harder in 1440p than in 1080p). The inputs are scaled as the reticle, from a 1920 x 1080 window (where nothing changes)
   - Tracking: the deviation is also logged in half-sizes of the reticle (`center_deviation_relative`, 1: at its edge), as in version 1.1: the same on every screen (`center_deviation` is in px, 1.33 times larger in 1440p)
   - Session exporter: the mean and SD of the tracking deviation in half-sizes of the reticle (`track_mean_deviation_relative`, `track_sd_deviation_relative`), also for the former sessions (from the size of their reticle)
+  - Fix a communications prompt that never ended when the browser audio was suspended (e.g. Safari, or without audio output): its target could not be answered nor missed. A prompt not ended by its audio is ended by the duration of its sounds (logged)
   - Fix the scenario generator with a fractional event duration (e.g. an alerttimeout of 10500 ms, a refractory duration of 0.5 s): the times, truncated to the second when written, could bring two events closer than planned, and a light was failed again while still on failure (the failure was then ignored). The events take whole seconds, rounded up, and the refractory duration slider has a 1 s step
 
 ## Version 1.5.2
