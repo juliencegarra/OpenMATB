@@ -110,6 +110,14 @@ class Parallelport(AbstractPlugin):
         get_logger().record_state(f"{self.alias}_trigger", "value", value)
         self._last_trigger = value
 
+    def stop(self) -> None:
+        # The steps no longer run: a trigger being sent (e.g. an end-of-block marker just before the stop) would
+        # stay on the port after the session. The triggers awaiting are not sent
+        if self._port is not None and self.is_trigger_being_sent():
+            self.set_trigger_value(self._downvalue)
+        self._awaiting_triggers = []
+        super().stop()
+
     def compute_next_plugin_state(self) -> None:
         """Send the trigger value defined in upvalue, lasting for delayms"""
         if self._port is None:
