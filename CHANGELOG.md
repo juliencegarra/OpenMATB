@@ -22,6 +22,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix a questionnaire page title covering the first scale of a full page
   - Fix the scheduling chronometer in a window narrower than 1920 px: separated from its time by a tab, its name wrapped onto two lines, the second one below the task area. They are now side by side, centered together
   - Fix the replay keyboard history: the first key was on the title line, which wrapped in the narrow inputs strip. The replay timeline also takes the whole space between the play button and the time
+  - Fix the system monitoring scale response times, one task step (200 ms) too long: the arrow entered its failure zone at the step after the start of the failure, when its response time had already started (the lights changed at once). A failure also ends the freeze of the arrow by the feedback of a previous one
 
 ## Version 1.5.2
   **New Features**

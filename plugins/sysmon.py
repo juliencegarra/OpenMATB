@@ -254,6 +254,12 @@ class Sysmon(AbstractPlugin):
                     gauge["_zone"] = choice([-1, 1], self.alias, self.scenario_time, int(add))
                 else:
                     gauge["_zone"] = gauge["side"]
+                # The arrow enters its failure zone now, on the frame that stamps the onset of the response time
+                # (it entered it at the next step, a taskupdatetime later), and is no longer frozen by a feedback
+                gauge["_freezetimer"] = None
+                gauge["_pos"] = sample(
+                    self.scale_zones[gauge["_zone"]], self.alias, self.scenario_time, int(self.get_gauge_key(gauge))
+                )
         gauge["failure"] = False
         self.start_response_timer(gauge)
 
