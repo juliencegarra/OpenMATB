@@ -721,14 +721,25 @@ $("start").addEventListener("click", async () => {
         await importSession(pyodide, file, bytes);
     }
     status(null);
+    if ($("mode").value !== "replay" && !DEMO) {
+        window.addEventListener("beforeunload", warnBeforeLeaving);
+    }
     try {
         await pyodide.runPythonAsync(`import runpy; runpy.run_path("main.py", run_name="__main__")`);
         $("pygletCanvas").focus();
     } catch (error) {
+        window.removeEventListener("beforeunload", warnBeforeLeaving); // Not started
         status(null, String(error));
         console.error(error);
     }
 });
+
+// While a session runs, closing or reloading the page (Ctrl+W, Ctrl+R, a back swipe) asks for a confirmation: the
+// session would end at once, not downloaded nor sent (only kept in the browser, up to its last checkpoint)
+function warnBeforeLeaving(event) {
+    event.preventDefault();
+    event.returnValue = ""; // Older browsers
+}
 
 // Back to the menu, keeping the chosen language (and the replay mode)
 const backToMenu = () => {
@@ -739,6 +750,7 @@ $("back").addEventListener("click", backToMenu);
 
 // Dispatched when OpenMATB closes (end of scenario, replay closed or selection cancelled)
 document.addEventListener("openmatb-exit", () => {
+    window.removeEventListener("beforeunload", warnBeforeLeaving);
     if ($("end").hidden) {
         // cmi5: reloading the page would fail (the LMS gives its token only once)
         cmi5 ? returnToCourse() : backToMenu();
@@ -788,6 +800,7 @@ document.addEventListener("openmatb-end", async (event) => {
     }
     const output = sessionOutput || new SessionOutput(sessionOutputSettings(""));
     const results = await output.finish(relativePath, readSessionFile(pyodide, event.detail));
+    window.removeEventListener("beforeunload", warnBeforeLeaving); // Downloaded and/or sent
     results.push(...await closeDevices());
     if (scorm) {
         const ok = scorm.complete(relativePath);

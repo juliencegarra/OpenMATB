@@ -1856,3 +1856,25 @@ class TestResponseTimeGain:
         [pressed] = app.page.evaluate("() => window.__keydowns")
         assert handled - pressed >= 15
         assert input_time == pytest.approx(pressed, abs=0.01)
+
+
+class TestLeavingThePage:
+    def test_closing_the_page_during_a_session_asks_for_a_confirmation(self, page_factory):
+        """Ctrl+W, Ctrl+R or a back swipe ended the session at once, not downloaded nor sent."""
+        app = page_factory()
+        app.start("0:00:00;sysmon;start\n0:00:30;sysmon;stop\n")
+        dialogs = []
+        app.page.on("dialog", lambda dialog: (dialogs.append(dialog.type), dialog.dismiss()))
+        app.page.close(run_before_unload=True)
+        app.page.wait_for_timeout(500)
+        assert dialogs == ["beforeunload"]
+
+    def test_no_confirmation_once_the_session_is_sent(self, page_factory):
+        app = page_factory()
+        app.start("0:00:00;sysmon;start\n0:00:01;sysmon;stop\n")
+        app.page.wait_for_selector("#end-destinations li.ok, #end-destinations li.failed", timeout=20_000)
+        dialogs = []
+        app.page.on("dialog", lambda dialog: (dialogs.append(dialog.type), dialog.dismiss()))
+        app.page.close(run_before_unload=True)
+        app.page.wait_for_event("close", timeout=5_000)  # Closed without a confirmation
+        assert dialogs == []
