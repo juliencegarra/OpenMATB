@@ -447,6 +447,26 @@ def _build_auto_intervals(event_rows: list[RawRow], module: str) -> list[tuple[f
     return intervals
 
 
+def _build_running_intervals(event_rows: list[RawRow], module: str) -> list[tuple[float, float]]:
+    """``(start, end)`` intervals where the task runs: from its start or resume to its pause or stop. A task paused
+    logs no performance: its last values were repeated over the whole pause. Always running without these events."""
+    rows = sorted([r for r in event_rows if r.module == module and r.address == "self"], key=lambda r: r.scenario_time)
+    if not any(r.value in ("start", "resume") for r in rows):
+        return [(float("-inf"), float("inf"))]
+
+    intervals: list[tuple[float, float]] = []
+    since: float | None = None
+    for row in rows:
+        if row.value in ("start", "resume") and since is None:
+            since = row.scenario_time
+        elif row.value in ("pause", "stop") and since is not None:
+            intervals.append((since, row.scenario_time))
+            since = None
+    if since is not None:
+        intervals.append((since, float("inf")))
+    return intervals
+
+
 def _is_in_auto(t: float, intervals: list[tuple[float, float]]) -> bool:
     """Check if time *t* falls within any automation interval."""
     return any(start <= t < end for start, end in intervals)
@@ -714,6 +734,9 @@ def build_timeseries(
     # Automation state
     track_auto = _build_auto_intervals(event_rows, "track")
     resman_auto = _build_auto_intervals(event_rows, "resman")
+    # Running state: no value while a task is paused or stopped
+    track_running = _build_running_intervals(event_rows, "track")
+    resman_running = _build_running_intervals(event_rows, "resman")
 
     # LOCF resampling
     series: list[TimeSeriesRow] = []
@@ -752,6 +775,12 @@ def build_timeseries(
             if "b_deviation" in obs_data:
                 last_res_b_dev = obs_data["b_deviation"]
             resman_idx += 1
+
+        # A task paused or stopped: no value (its last one was repeated), nor after it until its next observation
+        if not _is_in_auto(t, track_running):
+            last_track_in = last_track_dev = ""
+        if not _is_in_auto(t, resman_running):
+            last_res_a_tol = last_res_b_tol = last_res_a_dev = last_res_b_dev = ""
 
         series.append(
             TimeSeriesRow(

@@ -972,6 +972,21 @@ class TestBuildTimeseries:
         series = build_timeseries("s", [], [], 1.0)
         assert series == []
 
+    def test_no_value_while_a_task_is_paused(self) -> None:
+        """A paused task logs no performance: its last value was repeated over the whole pause."""
+        perf = [
+            _perf(1.0, "resman", "a_deviation", "-104"),
+            _perf(2.0, "resman", "a_deviation", "-100"),
+            _perf(7.0, "resman", "a_deviation", "-50"),
+        ]
+        events = [
+            _event(0.0, "resman", "self", "start"),
+            _event(3.0, "resman", "self", "pause"),
+            _event(6.0, "resman", "self", "resume"),
+        ]
+        series = build_timeseries("s", perf, events, 1.0)
+        assert [r.resman_a_deviation for r in series] == ["", "-104", "-100", "", "", "", "", "-50"]
+
     def test_locf_resampling(self) -> None:
         perf = [
             _perf(0.5, "track", "cursor_in_target", "1"),
