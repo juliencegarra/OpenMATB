@@ -72,6 +72,7 @@ class CommsTrial:
     response_deviation: str
     response_time_ms: float  # milliseconds or NaN
     resolved_by: str
+    prompt_number: str = ""  # The answers of a prompt share it (since 1.5.3); empty for an answer without target
 
 
 @dataclass
@@ -112,7 +113,9 @@ class SessionSummary:
     track_n_excursions: int = 0
     track_mean_excursion_rt_sec: float = float("nan")
     # Communications
-    comms_n_trials: int = 0
+    comms_n_trials: int = 0  # Prompts (and answers without target), not answers: see _comms_prompt_outcomes
+    comms_n_answers: int = 0
+    comms_corrected_count: int = 0  # Prompts answered wrong, then right
     comms_hit_count: int = 0
     comms_miss_count: int = 0
     comms_fa_count: int = 0
@@ -394,10 +397,25 @@ def extract_comms_trials(
                 response_deviation=data.get("response_deviation", ""),
                 response_time_ms=rt_ms,
                 resolved_by=resolved,
+                prompt_number=_fmt_val(data.get("prompt_number", "")),
             )
         )
 
     return trials
+
+
+def _comms_prompt_outcomes(trials: list[CommsTrial]) -> list[tuple[CommsTrial, int]]:
+    """The outcome of each prompt, with its number of answers: its correct answer (HIT), else its last answer. A
+    target answered wrong stays active, to be corrected: its answers share its prompt_number, and an expiry after a
+    wrong answer logs no MISS (since 1.5.3). Older sessions have no prompt_number: each answer is a trial (and a
+    wrong answer not corrected is followed by a MISS of the same prompt)."""
+    outcomes: dict[object, list[CommsTrial]] = {}
+    for n, t in enumerate(trials):
+        key: object = t.prompt_number if t.prompt_number not in ("", "nan", "None") else ("answer", n)
+        outcomes.setdefault(key, []).append(t)
+    return [
+        (next((t for t in answers if t.sdt_value == "HIT"), answers[-1]), len(answers)) for answers in outcomes.values()
+    ]
 
 
 # ── Automation intervals ─────────────────────────────────────────────────────
@@ -532,8 +550,12 @@ def compute_summary(
     summary.track_mean_excursion_rt_sec = _safe_mean(track_excursion_rts)
 
     # ── Communications ────────────────────────────────────────────────────
-    human_comms = [t for t in comms_trials if t.resolved_by not in ("agent", "auto")]
+    human_answers = [t for t in comms_trials if t.resolved_by not in ("agent", "auto")]
+    prompt_outcomes = _comms_prompt_outcomes(human_answers)
+    human_comms = [outcome for outcome, _ in prompt_outcomes]  # One trial per prompt: its outcome
     summary.comms_n_trials = len(human_comms)
+    summary.comms_n_answers = len(human_answers)
+    summary.comms_corrected_count = sum(1 for t, n in prompt_outcomes if t.sdt_value == "HIT" and n > 1)
     summary.comms_hit_count = sum(1 for t in human_comms if t.sdt_value == "HIT")
     summary.comms_miss_count = sum(1 for t in human_comms if t.sdt_value == "MISS")
     summary.comms_fa_count = sum(1 for t in human_comms if t.sdt_value == "FA")
@@ -795,6 +817,7 @@ TRIALS_COLUMNS: list[str] = [
     "response_deviation",
     "response_time_sec",
     "resolved_by",
+    "prompt_number",
 ]
 
 
@@ -824,6 +847,7 @@ def write_trials(sysmon_trials: list[SysmonTrial], comms_trials: list[CommsTrial
                     "",  # comms columns empty
                     rt_sec,
                     t.resolved_by,
+                    "",  # prompt_number (communications only)
                 ]
             )
 
@@ -847,6 +871,7 @@ def write_trials(sysmon_trials: list[SysmonTrial], comms_trials: list[CommsTrial
                     _fmt_val(t.response_deviation),
                     rt_sec,
                     t.resolved_by,
+                    t.prompt_number,
                 ]
             )
 
@@ -874,6 +899,8 @@ SUMMARY_FIXED_COLUMNS: list[str] = [
     "track_mean_excursion_rt_sec",
     # Communications
     "comms_n_trials",
+    "comms_n_answers",
+    "comms_corrected_count",
     "comms_hit_count",
     "comms_miss_count",
     "comms_fa_count",

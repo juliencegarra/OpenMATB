@@ -38,6 +38,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - Fix the replay of instructions stopped by a seek before their last page: their pages left were shown before the next instructions of the same plugin
   - Fix the scenario generators, which did not start without a language in config.ini, or with a language without translation
   - Fix instructions or a questionnaire started again: the last page and the sliders of their previous run were shown during one frame
+  - Fix the communications prompts answered wrong and not corrected: a MISS was also logged when they expired, two trials for one prompt. A wrong answer is now the outcome of its prompt (a MISS is a prompt without any answer); the answers of a prompt share a `prompt_number` (logged). The session exporter counts the trials by prompt (its correct answer, else its last answer), with the number of answers and of corrected prompts (`comms_n_answers`, `comms_corrected_count`, `prompt_number` in trials.csv), and the performance bar uses the last 4 prompts, not answers
   - Fix the scenario generator with a fractional event duration (e.g. an alerttimeout of 10500 ms, a refractory duration of 0.5 s): the times, truncated to the second when written, could bring two events closer than planned, and a light was failed again while still on failure (the failure was then ignored). The events take whole seconds, rounded up, and the refractory duration slider has a 1 s step
 
 ## Version 1.5.2

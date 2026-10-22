@@ -175,3 +175,22 @@ class TestDisplayedLevel:
         perf.plugins["sysmon"].performance["signal_detection"] += ["MISS"] * 4
         perf.update(2)
         assert perf.current_level == 0
+
+
+class TestCommunicationsPrompts:
+    def test_last_four_prompts_not_answers(self, make_perf):
+        """A prompt answered wrong then corrected is one good prompt (it was a bad and a good answer)."""
+        comms = _task(
+            prompt_number=[1, 2, 3, 4, 4],
+            correct_radio=[True] * 5,
+            response_deviation=[0.0, 0.0, 0.0, 0.3, 0.0],
+        )
+        perf = make_perf({"communications": comms})
+        perf.update(1)
+        assert perf.performance_levels["communications"] == 1  # Prompt 4 corrected (the last 4 answers: 0.75)
+
+    def test_not_four_prompts_yet(self, make_perf):
+        comms = _task(prompt_number=[1, 1, 1, 2], correct_radio=[True] * 4, response_deviation=[0.3, 0.3, 0.3, 0.0])
+        perf = make_perf({"communications": comms})
+        perf.update(1)
+        assert "communications" not in perf.performance_levels

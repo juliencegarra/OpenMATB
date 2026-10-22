@@ -802,6 +802,23 @@ class TestComputeSummary:
         # hit_rate = 1 / (1 + 1 + 1 + 1) = 0.25  (FA excluded from denom)
         assert s.comms_hit_rate == pytest.approx(0.25)
 
+    def test_comms_one_trial_per_prompt(self) -> None:
+        """The answers of a prompt (prompt_number): its outcome is its correct answer, else its last answer."""
+        trials = [
+            CommsTrial("s", 10, 1, "BAD_FREQ", "1", "NAV_2", "NAV_2", "114.2", "114.5", "1", "0.3", 4000, "human", "1"),
+            CommsTrial("s", 12, 2, "HIT", "1", "NAV_2", "NAV_2", "114.2", "114.2", "1", "0.0", 6000, "human", "1"),
+            CommsTrial(
+                "s", 30, 3, "BAD_RADIO", "1", "COM_1", "COM_2", "128.1", "128.1", "0", "0.0", 3000, "human", "2"
+            ),
+            CommsTrial("s", 50, 4, "MISS", "1", "NAV_1", "nan", "120.0", "nan", "0", "nan", float("nan"), "", "3"),
+        ]
+        perf = [_perf(0.0, "track", "cursor_in_target", "1")]
+        s = compute_summary("s", perf, [], trials, [])
+        assert (s.comms_n_trials, s.comms_n_answers, s.comms_corrected_count) == (3, 4, 1)
+        assert (s.comms_hit_count, s.comms_bad_radio_count, s.comms_bad_freq_count, s.comms_miss_count) == (1, 1, 0, 1)
+        assert s.comms_hit_rate == pytest.approx(1 / 3)
+        assert s.comms_mean_rt_sec == pytest.approx(4.5)  # The final answers: 6 s (corrected) and 3 s
+
     def test_comms_rt_excludes_miss(self) -> None:
         trials = [
             CommsTrial("s", 10, 1, "HIT", "1", "NAV_2", "NAV_2", "114.2", "114.2", "1", "0.0", 2000, "human"),

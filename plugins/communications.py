@@ -129,6 +129,8 @@ class Communications(AbstractPlugin):
                 "pos": r,
                 "_response_start": None,
                 "_prompt_start": None,  # The scenario time of the last prompt of the radio
+                "_prompt_number": None,  # The number of its target prompt (logged with each answer to it)
+                "_answered": False,  # Its target got a wrong answer (see record_target_missing)
                 "_hint_color": None,
                 "is_active": False,
                 "is_prompting": False,
@@ -136,6 +138,7 @@ class Communications(AbstractPlugin):
                 "_feedbacktype": None,
             }
         self.lastradioselected: int | None = None
+        self._prompt_count: int = 0  # The own prompts (targets) given so far
         self.frequency_modulation: float = 0.1
         self._tune_pressed_at: float | None = None  # The scenario time of the last press of a tuning key
         self.sound_path: Path | None = None
@@ -340,6 +343,9 @@ class Communications(AbstractPlugin):
             )
 
         if destination == "own":
+            self._prompt_count += 1
+            radio["_prompt_number"] = self._prompt_count
+            radio["_answered"] = False
             radio["targetfreq"] = random_frequency
             radio["is_prompting"] = True
             radio["_prompt_start"] = self.scenario_time
@@ -547,6 +553,19 @@ class Communications(AbstractPlugin):
         radio["targetfreq"] = None
 
     def record_target_missing(self, target_radio: dict[str, Any]) -> None:
+        """The target was not answered correctly before maxresponsedelay.
+
+        A target stays active after a wrong answer (BAD_RADIO, BAD_FREQ, BAD_RADIO_FREQ), so that it can be corrected.
+        If it was not, its last wrong answer is its outcome, as with a single answer: no MISS is logged then (it
+        made two trials of one prompt, e.g. BAD_FREQ then MISS, and a MISS of a prompt answered). A MISS is a
+        prompt without any answer. The answers of a prompt share its prompt_number; its expiry time is the end of
+        the prompt (its "Target" manual row) + maxresponsedelay."""
+        if target_radio.get("_answered"):
+            self.disable_radio_target(target_radio)
+            self.set_feedback(target_radio, ft="negative")
+            return
+
+        self.log_performance("prompt_number", target_radio.get("_prompt_number"))
         self.log_performance("response_was_needed", True)
         self.log_performance("target_radio", target_radio["name"])
         self.log_performance("responded_radio", float("nan"))
@@ -608,7 +627,9 @@ class Communications(AbstractPlugin):
         rt: int | float
         target_frequency: float | None
         target_radio_name: str | float
+        prompt_number: int | float = float("nan")  # An answer without target (FA) answers no prompt
         if measure_radio is not None:
+            prompt_number = measure_radio.get("_prompt_number")
             target_frequency = measure_radio["targetfreq"]
             target_radio_name = measure_radio["name"]
             deviation = round(responded_radio["currentfreq"] - target_frequency, 1)
@@ -618,6 +639,7 @@ class Communications(AbstractPlugin):
 
         sdt: str | None = self.get_sdt_value(response_needed, True, good_radio, deviation)
 
+        self.log_performance("prompt_number", prompt_number)
         self.log_performance("response_was_needed", response_needed)
         self.log_performance("target_radio", target_radio_name)
         self.log_performance("responded_radio", responded_radio["name"])
@@ -637,9 +659,9 @@ class Communications(AbstractPlugin):
                 self.disable_radio_target(responded_radio)
                 self.set_feedback(responded_radio, ft="positive")
             else:
-                # TOCHECK: the target stays active after a wrong answer (BAD_FREQ, BAD_RADIO...), so that it can be
-                # corrected: without a correct answer, record_target_missing then logs a MISS for the same target,
-                # two trials for one prompt (also in the last 4 correct_radio of the performance plugin). Intended?
+                # The target stays active, to be corrected: its expiry logs no MISS (see record_target_missing)
+                if measure_radio is not None:
+                    measure_radio["_answered"] = True
                 self.set_feedback(responded_radio, ft="negative")
 
     def set_feedback(self, radio: dict[str, Any], ft: str) -> None:

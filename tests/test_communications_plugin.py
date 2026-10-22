@@ -689,6 +689,46 @@ class TestConfirmResponse:
         assert _radio(comms, "NAV_1")["_feedbacktimer"] is None
 
 
+class TestAnswersOfAPrompt:
+    """A target answered wrong stays active, to be corrected: its answers share its prompt_number, and its expiry
+    after a wrong answer logs no MISS (it made two trials of one prompt: BAD_FREQ then MISS)."""
+
+    @pytest.fixture
+    def target(self, comms, no_modal_dialog):
+        with patch("plugins.communications.SequencePlayer"):
+            comms.prompt_for_a_new_target("own", "NAV_1")
+        radio = _radio(comms, "NAV_1")
+        radio["is_prompting"] = False
+        comms.compute_next_plugin_state()  # The response timer starts
+        return radio
+
+    def _expire(self, comms):
+        comms.scenario_time += comms.parameters["maxresponsedelay"] / 1000 + 1
+        comms.compute_next_plugin_state()
+
+    def test_no_miss_after_a_wrong_answer(self, comms, target):
+        target["currentfreq"] = target["targetfreq"] + 0.3
+        comms.confirm_response()
+        self._expire(comms)
+        assert comms.performance["sdt_value"] == ["BAD_FREQ"]
+        assert target["targetfreq"] is None  # Expired all the same
+
+    def test_miss_without_answer(self, comms, target):
+        self._expire(comms)
+        assert comms.performance["sdt_value"] == ["MISS"]
+        assert comms.performance["prompt_number"] == [1]
+
+    def test_answers_of_a_prompt_share_its_number(self, comms, target):
+        target["currentfreq"] = target["targetfreq"] + 0.3
+        comms.confirm_response()
+        target["currentfreq"] = target["targetfreq"]
+        comms.confirm_response()
+        comms.confirm_response()  # No target any more: a false alarm, of no prompt
+        assert comms.performance["sdt_value"] == ["BAD_FREQ", "HIT", "FA"]
+        assert comms.performance["prompt_number"][:2] == [1, 1]
+        assert math.isnan(comms.performance["prompt_number"][2])
+
+
 class TestDoOnKey:
     @pytest.fixture(autouse=True)
     def window(self, no_modal_dialog):

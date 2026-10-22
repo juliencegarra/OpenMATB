@@ -122,11 +122,18 @@ class Performance(AbstractPlugin):
 
                 #       Communications
                 elif p == "communications":
-                    if len(plugin.performance["correct_radio"]) >= 4:
-                        perf_radio: list[bool] = plugin.performance["correct_radio"][-4:]
-                        perf_freq: list[float] = plugin.performance["response_deviation"][-4:]
-                        all_good: list[bool] = [r and round(f, 1) == 0 for r, f in zip(perf_radio, perf_freq)]
-
+                    # The last 4 prompts, not answers: a prompt answered wrong then corrected is one good prompt.
+                    # An answer without target (FA, no prompt_number) counts as a bad prompt of its own
+                    numbers: list[Any] = plugin.performance.get("prompt_number", [])
+                    prompts_good: dict[Any, bool] = dict()
+                    for n, (r, f) in enumerate(
+                        zip(plugin.performance["correct_radio"], plugin.performance["response_deviation"])
+                    ):
+                        number: Any = numbers[n] if n < len(numbers) else None
+                        key: Any = number if isinstance(number, int) else ("answer", n)
+                        prompts_good[key] = prompts_good.get(key, False) or bool(r and round(f, 1) == 0)
+                    if len(prompts_good) >= 4:
+                        all_good: list[bool] = list(prompts_good.values())[-4:]
                         self.performance_levels[p] = sum(all_good) / len(all_good)
 
         if len(self.performance_levels) > 0:
