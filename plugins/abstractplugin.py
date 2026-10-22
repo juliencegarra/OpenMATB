@@ -760,18 +760,20 @@ class BlockingPlugin(AbstractPlugin):
         self.current_slide = "\n".join(slide_content)
 
         if self.parameters["allowkeypress"]:
-            key_name: str = self.parameters["response"]["key"].lower()
-            response_text: str = "<center><p>" + self.parameters["response"]["text"] + "</p></center>"
-            self.add_widget(
-                f"press_{key_name}",
-                SimpleHTML,
-                container=self.container,
-                draw_order=self.m_draw + 1,
-                text=response_text,
-                wrap_width=0.5,
-                x=0.5,
-                y=0.1,
-            )
+            self.make_response_widget(f"press_{self.parameters['response']['key'].lower()}")
+
+    def make_response_widget(self, name: str) -> None:
+        response_text: str = "<center><p>" + self.parameters["response"]["text"] + "</p></center>"
+        self.add_widget(
+            name,
+            SimpleHTML,
+            container=self.container,
+            draw_order=self.m_draw + 1,
+            text=response_text,
+            wrap_width=0.5,
+            x=0.5,
+            y=0.1,
+        )
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if self.parameters["allowkeypress"]:

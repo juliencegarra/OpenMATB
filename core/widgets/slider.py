@@ -90,7 +90,7 @@ class Slider(AbstractWidget):
                 anchor_y="center",
                 x=x,
                 y=y,
-                color=C["BLACK"],
+                color=C["TEXTGREY"],
                 group=G(self.draw_order),
                 font_size=F["MEDIUM"],
             )

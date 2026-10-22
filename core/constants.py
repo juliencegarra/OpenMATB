@@ -64,6 +64,7 @@ COLORS: dict[str, tuple[int, int, int, int]] = dict(
     LIGHTGREY=(220, 220, 220, 255),
     DARKGREY=(50, 50, 50, 255),
     GREY=(200, 200, 200, 255),
+    TEXTGREY=(110, 110, 110, 255),  # Secondary text (still readable on the background)
     BLUE=(153, 204, 255, 255),
     CYAN=(0, 190, 255, 255),
     YELLOW=(255, 220, 50, 255),

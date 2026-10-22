@@ -1,7 +1,7 @@
 """Tests for plugins/genericscales.py — dynamic layout logic.
 
-Verifies that title, question, and slider containers never overlap
-and always stay within the parent scale_container bounds.
+Verifies that title, question, and slider containers never overlap, are regularly spaced
+and stay between the page title and the response text.
 """
 
 from unittest.mock import MagicMock, patch
@@ -37,6 +37,18 @@ def within(child, parent, tol=0.5):
 # ── Fixture ──────────────────────────────────────
 
 
+def _set_layout(obj):
+    """The layout attributes set by Genericscales.__init__."""
+    from core.constants import FONT_SIZES as F
+
+    obj.slider_height = (0.05, 0.03)
+    obj.scale_gap = (0.05, 0.012)
+    obj.title_question_gap = 0.006
+    obj.text_sizes = [(F["LARGE"], F["MEDIUM"]), (F["MEDIUM"], F["MEDIUM"])]
+    obj.top_limit = {True: 0.86, False: 0.96}
+    obj.bottom_limit = {True: 0.13, False: 0.04}
+
+
 @pytest.fixture
 def gs():
     """Create a Genericscales without triggering __init__ chain."""
@@ -50,16 +62,14 @@ def gs():
     obj.widgets = {}
     obj.container = Container("fullscreen", 0, 0, 1920, 1080)
     obj.regex_scale_pattern = SCALE_PATTERN
-    obj.question_height_ratio = 0.1
-    obj.question_interspace = 0.05
-    obj.top_to_top = 0.15
+    _set_layout(obj)
     obj.m_draw = 1
-    obj.parameters = {"showvalue": False}
+    obj.parameters = {"showvalue": False, "allowkeypress": True}
     obj.verbose = False
     return obj
 
 
-def run_make_slide_graphs(gs, slide_text, measure_heights):
+def run_make_slide_graphs(gs, slide_text, measure_heights, measure=None):
     """Call make_slide_graphs with mocked dependencies, return captured containers.
 
     Parameters
@@ -76,16 +86,18 @@ def run_make_slide_graphs(gs, slide_text, measure_heights):
     gs.current_slide = slide_text
 
     captured = {}
+    gs.captured_kwargs = {}
 
     def fake_add_widget(name, cls, container, **kwargs):
         captured[name] = container
+        gs.captured_kwargs[name] = kwargs
         return MagicMock()
 
     def fake_measure(text, font_size, wrap_width_px, bold=False):
         return measure_heights.get(text, 20)
 
     gs.add_widget = fake_add_widget
-    gs._measure_text_height = fake_measure
+    gs._measure_text_height = measure or fake_measure
     gs.get_widget_fullname = lambda name: f"genericscales_{name}"
 
     with patch("plugins.abstractplugin.BlockingPlugin.make_slide_graphs"):
@@ -146,73 +158,79 @@ class TestDynamicLayoutNoOverlap:
         assert not overlaps_vertically(title_c, slider_c)
 
 
-class TestDynamicLayoutBounds:
-    """All sub-containers must stay within the parent scale_container."""
+class TestPageAreas:
+    """The scales stay between the page title and the response text."""
 
-    def _get_scale_container(self, gs):
-        """Reproduce the scale_container for a single-question slide."""
-        all_scales = gs.container.get_reduced(1, gs.top_to_top * 1)
-        height_prop = (gs.question_height_ratio * gs.container.h) / all_scales.h
-        return all_scales.reduce_and_translate(height=height_prop, y=1)
+    def test_within_free_area(self, gs):
+        slide = "Title A;Question A;Low/High;0/100/50\nTitle B;Question B;Bad/Good;1/10/5"
+        containers = run_make_slide_graphs(gs, slide, {})
+        top_limit = gs.container.h * gs.top_limit[False]
+        bottom_limit = gs.container.h * gs.bottom_limit[True]
+        for name, c in containers.items():
+            assert c.b >= bottom_limit - 0.5 and top(c) <= top_limit + 0.5, name
 
-    def test_short_text_within_bounds(self, gs):
-        slide = "Title;Question;Low/High;0/100/50"
-        containers = run_make_slide_graphs(gs, slide, {"Title": 20, "Question": 20})
+    def test_below_the_page_title(self, gs):
+        """The page title (<h1>) was covered by the first scale of a full page."""
+        gs.widgets["genericscales_title"] = MagicMock()
+        slide = "\n".join(f"Title {i};Question {i};Low/High;0/10/5" for i in range(6))
+        containers = run_make_slide_graphs(gs, slide, {f"Question {i}": 50 for i in range(6)})
+        for name, c in containers.items():
+            assert top(c) <= gs.container.h * gs.top_limit[True] + 0.5, name
+            assert c.b >= gs.container.h * gs.bottom_limit[True] - 0.5, name
 
-        parent = self._get_scale_container(gs)
-        for name in ["title_1", "label_1", "slider_1"]:
-            assert within(containers[name], parent), f"{name} outside parent: {containers[name]} vs {parent}"
+    def test_starts_under_the_page_title(self, gs):
+        gs.widgets["genericscales_title"] = MagicMock()
+        containers = run_make_slide_graphs(gs, "T;Q;Low/High;0/10/5", {})
+        assert top(containers["title_1"]) == pytest.approx(gs.container.h * gs.top_limit[True])
 
-    def test_long_text_within_bounds(self, gs):
-        """Long texts may also use the space between two scales (above the scale container)."""
-        slide = "Title;A long question;Low/High;0/100/50"
-        containers = run_make_slide_graphs(gs, slide, {"Title": 30, "A long question": 80})
-
-        scale = self._get_scale_container(gs)
-        interspace = gs.question_interspace * gs.container.h
-        parent = Container("scale_and_interspace", scale.l, scale.b, scale.w, scale.h + interspace)
-        for name in ["title_1", "label_1", "slider_1"]:
-            assert within(containers[name], parent), f"{name} outside parent: {containers[name]} vs {parent}"
+    def test_centered_without_page_title(self, gs):
+        containers = run_make_slide_graphs(gs, "T;Q;Low/High;0/10/5", {})
+        free_center = gs.container.h * (gs.top_limit[False] + gs.bottom_limit[True]) / 2
+        block_center = (top(containers["title_1"]) + containers["slider_1"].b) / 2
+        assert block_center == pytest.approx(free_center)
 
 
-class TestLongTextNotShrunk:
-    """Long texts use the space between scales rather than being squeezed on top of each other."""
+class TestRegularSpacing:
+    """Each scale reads as a block: the same gap between scales, larger than inside a scale."""
+
+    def test_same_gap_whatever_the_question_height(self, gs):
+        slide = "\n".join(f"Title {i};Question {i};Low/High;0/10/5" for i in range(4))
+        heights = {"Question 0": 50, "Question 1": 20, "Question 2": 50, "Question 3": 20}
+        containers = run_make_slide_graphs(gs, slide, heights)
+        gaps = [containers[f"slider_{i}"].b - top(containers[f"title_{i + 1}"]) for i in range(1, 4)]
+        assert gaps == pytest.approx([gaps[0]] * 3)
+        assert gaps[0] > containers["title_1"].b - top(containers["label_1"])
 
     def test_texts_keep_their_height(self, gs):
-        slide = "Title;A long question;Low/High;0/100/50"
-        containers = run_make_slide_graphs(gs, slide, {"Title": 30, "A long question": 80})
-
-        assert containers["title_1"].h == pytest.approx(30 + 4)
+        containers = run_make_slide_graphs(gs, "Title;A long question;Low/High;0/100/50", {"A long question": 80})
         assert containers["label_1"].h == pytest.approx(80 + 4)
-        assert containers["title_1"].b >= containers["label_1"].b + containers["label_1"].h - 0.5
 
 
-class TestSliderMinimumHeight:
-    """Slider always gets at least 40% of the scale_container height."""
+class TestFullPage:
+    """A full page thins its sliders and gaps, then uses smaller texts."""
 
-    def test_slider_minimum_40_percent(self, gs):
-        slide = "Title;Question;Low/High;0/100/50"
-        containers = run_make_slide_graphs(gs, slide, {"Title": 200, "Question": 200})
+    def test_default_sizes_when_there_is_room(self, gs):
+        containers = run_make_slide_graphs(gs, "T;Q;Low/High;0/10/5", {})
+        assert containers["slider_1"].h == pytest.approx(gs.slider_height[0] * gs.container.h)
+        assert gs.captured_kwargs["title_1"]["font_size"] == gs.text_sizes[0][0]
 
-        all_scales = gs.container.get_reduced(1, gs.top_to_top * 1)
-        height_prop = (gs.question_height_ratio * gs.container.h) / all_scales.h
-        scale_container = all_scales.reduce_and_translate(height=height_prop, y=1)
+    def test_sliders_thinner_on_a_full_page(self, gs):
+        slide = "\n".join(f"Title {i};Question {i};Low/High;0/10/5" for i in range(6))
+        containers = run_make_slide_graphs(gs, slide, {f"Question {i}": 70 for i in range(6)})
+        assert containers["slider_1"].h < gs.slider_height[0] * gs.container.h
+        assert containers["slider_1"].h >= gs.slider_height[1] * gs.container.h - 0.5
 
-        slider_c = containers["slider_1"]
-        min_h = scale_container.h * 0.40
-        assert slider_c.h >= min_h - 0.5  # tolerance for float rounding
+    def test_smaller_titles_when_texts_do_not_fit(self, gs):
+        slide = "\n".join(f"Title {i};Question {i};Low/High;0/10/5" for i in range(6))
 
-    def test_short_text_slider_gets_remaining_space(self, gs):
-        """When text is small, the slider gets more than 40%."""
-        slide = "T;Q;Low/High;0/100/50"
-        containers = run_make_slide_graphs(gs, slide, {"T": 10, "Q": 10})
+        def measure(text, font_size, wrap_width_px, bold=False):
+            if text.startswith("Question"):
+                return 60
+            return 60 if font_size == gs.text_sizes[0][0] else 20  # The page fits only with the smaller titles
 
-        all_scales = gs.container.get_reduced(1, gs.top_to_top * 1)
-        height_prop = (gs.question_height_ratio * gs.container.h) / all_scales.h
-        scale_container = all_scales.reduce_and_translate(height=height_prop, y=1)
-
-        slider_c = containers["slider_1"]
-        assert slider_c.h > scale_container.h * 0.40
+        run_make_slide_graphs(gs, slide, {}, measure=measure)
+        sizes = {gs.captured_kwargs[f"title_{i}"]["font_size"] for i in range(1, 7)}
+        assert sizes == {gs.text_sizes[1][0]}
 
 
 class TestStackingOrder:
@@ -302,9 +320,7 @@ def gs_with_keys(mock_window):
     obj.widgets = {}
     obj.container = Container("fullscreen", 0, 0, 1920, 1080)
     obj.regex_scale_pattern = SCALE_PATTERN
-    obj.question_height_ratio = 0.1
-    obj.question_interspace = 0.05
-    obj.top_to_top = 0.15
+    _set_layout(obj)
     obj.m_draw = 1
     obj.parameters = {"showvalue": False, "response": {"text": "Press SPACE to validate", "key": "SPACE"}}
     obj.verbose = False

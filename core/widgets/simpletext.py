@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from core.constants import COLORS as C
 from core.constants import FONT_SIZES as F
+from core.pyglet_compat import ITALIC
 from core.widgets.abstractwidget import *
 
 
@@ -22,6 +23,7 @@ class Simpletext(AbstractWidget):
         wrap_width: float = 1,
         color: tuple[int, ...] = C["BLACK"],
         bold: bool = False,
+        italic: bool = False,
     ) -> None:
         super().__init__(name, container)
 
@@ -44,6 +46,8 @@ class Simpletext(AbstractWidget):
         )
         if bold:
             label_kwargs["weight"] = "bold"
+        if italic:
+            label_kwargs.update(ITALIC)
         self.vertex["text"] = Label(text, **label_kwargs)
 
     def set_text(self, text: str) -> None:
