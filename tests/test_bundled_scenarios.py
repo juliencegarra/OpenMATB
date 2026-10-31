@@ -56,7 +56,9 @@ def test_bundled_scenario_has_no_error(path, tmp_path, mock_logger):
 
 
 @pytest.mark.parametrize(
-    "path", sorted((ROOT / "includes" / "scenarios").glob("**/*.txt")), ids=lambda p: p.relative_to(ROOT).as_posix()
+    "path",
+    [p for p in BUNDLED_SCENARIOS if p.is_relative_to(SCENARIOS_DIR)],
+    ids=lambda p: p.relative_to(ROOT).as_posix(),
 )
 def test_bundled_scenario_has_a_title(path):
     """Each scenario of the selector has a "# title: ..." comment before its first command."""
