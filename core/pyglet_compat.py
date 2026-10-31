@@ -7,12 +7,13 @@
 The browser version needs pyglet 3 (only a development version for now); the desktop version keeps the released
 pyglet 2. Everything that differs between them is here: remove this module when the desktop moves to pyglet 3.
 
-The desktop then needs a pyglet 3 with pyglet#1528: before it, consecutive tabs in a multiline label (instructions,
-questionnaires) crash on Windows.
+Up to pyglet 3.0.dev11, consecutive tabs in a multiline label (e.g. the callsign of communications, instructions,
+questionnaires) crash on Windows: fixed upstream by pyglet#1528, carried here until the next pyglet 3 release.
 """
 
 from __future__ import annotations
 
+import sys
 from typing import Any
 
 import pyglet
@@ -101,3 +102,41 @@ def set_mouse_cursor_visible(window: Any, visible: bool) -> None:
 def default_font_name() -> str | None:
     """The default font of the platform (None: pyglet 2 chooses it)."""
     return pyglet.font.manager.get_platform_default_name() if PYGLET_3 else None
+
+
+def _carry_pyglet_1528() -> None:
+    """pyglet 3 on Windows, up to 3.0.dev11: DirectWrite gives a run without glyphs (consecutive tabs) one glyph for
+    all its characters, and a multiline layout, which needs one per character, raised an IndexError (e.g. the callsign
+    label of communications, at its start). pyglet#1528 (merged after 3.0.dev11) gives one empty glyph per
+    character: the text renderer of pyglet is replaced by one doing the same. Harmless once pyglet has the fix.
+    To remove with the next pyglet 3 release."""
+    from ctypes import cast, create_unicode_buffer, py_object
+
+    try:
+        from pyglet.font import dwrite
+        from pyglet.font.base import GlyphPosition
+    except ImportError:  # Another font backend
+        return
+    if not hasattr(dwrite, "_DWriteTextRenderer") or not hasattr(dwrite, "_renderer"):
+        return  # pyglet changed: nothing to carry
+
+    class _TextRenderer(dwrite._DWriteTextRenderer):
+        _interfaces_ = [dwrite.IDWriteTextRenderer]  # noqa: RUF012 (a COM subclass builds its own vtable)
+
+        def DrawGlyphRun(  # The COM method name
+            self, context: Any, x: float, y: float, mode: int, run: Any, description: Any, effect: Any
+        ) -> int:
+            if run.contents.glyphCount != 0:
+                return super().DrawGlyphRun(context, x, y, mode, run, description, effect)
+            glyph_renderer: Any = cast(context, py_object).value
+            length: int = len(create_unicode_buffer(description.contents.text)[: description.contents.textLength])
+            for _ in range(length):
+                glyph_renderer.current_glyphs.append(glyph_renderer.font._zero_glyph)
+                glyph_renderer.current_offsets.append(GlyphPosition(0, 0, 0, 0))
+            return 0
+
+    dwrite._renderer = _TextRenderer()
+
+
+if PYGLET_3 and sys.platform == "win32":
+    _carry_pyglet_1528()
