@@ -29,3 +29,5 @@ tests/test_humanlike_agent.py
 .vs/
 # Screenshots taken in the replay (saved at the root)
 screenshot_*.png
+# Scenarios written by the generator: they stay on the computer that made them
+includes/scenarios/generated/
