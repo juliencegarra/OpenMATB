@@ -2,7 +2,7 @@
 # Workload levels: low workload block (5 minutes), followed by the NASA-TLX
 # The three blocks (low, medium and high) have the same structure and differ only by the number of events
 # and the task difficulty: run them in the order of your design (e.g. counterbalanced across participants).
-# Per minute: 1 system monitoring failures, 0.8 radio prompts (half of them to the participant), 0.2 pump failures.
+# Per minute: 1 system monitoring failure, 0.8 radio prompts (half of them to the participant), 0.2 pump failures.
 # Tracking target: 0.75 of the area; tanks A and B lose 300 per minute (the difficulty mapping of the scenario generator).
 
 # 1. Start all the tasks
