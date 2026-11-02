@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import gettext
+import importlib.util
 import re
 import sys
 from pathlib import Path
@@ -20,9 +21,14 @@ LANGUAGES: list[str] = [path.parents[1].name for path in PO_FILES]
 SOURCE_LANGUAGE: str = "en_EN"  # The messages are written in English
 POT_MESSAGES: list[str] = list(build.read_po(build.POT)[1])
 
+# The languages kept complete: every message is translated (test_complete). A new language (e.g. started in Weblate)
+# is only checked for consistency (placeholders, compiled .mo...), its untranslated messages are shown in English:
+# add it here once it is complete
+COMPLETE_LANGUAGES: tuple[str, ...] = ("en_EN", "fr_FR", "de_DE", "es_ES", "it_IT", "pt_BR", "zh_CN", "ja_JP", "ar_SA")
+
 
 def test_languages():
-    assert {"en_EN", "fr_FR", "de_DE", "es_ES", "it_IT", "zh_CN", "ja_JP", "ar_SA"} <= set(LANGUAGES)
+    assert set(COMPLETE_LANGUAGES) <= set(LANGUAGES)
 
 
 def test_pot_is_up_to_date():
@@ -113,8 +119,11 @@ class TestCatalogs:
             assert header.get("Plural-Forms", "").startswith("nplurals=")
 
     def test_complete(self, catalog):
-        """Every message of the code is translated (en_EN too: its translations are the messages themselves)."""
-        _, _, translations = catalog
+        """Every message is translated in the complete languages (en_EN too: its translations are the messages
+        themselves)."""
+        language, _, translations = catalog
+        if language not in COMPLETE_LANGUAGES:
+            pytest.skip(f"{language} is being translated (not in COMPLETE_LANGUAGES)")
         missing = [m for m in POT_MESSAGES if not translations.get(m)]
         assert not missing
 
@@ -161,44 +170,56 @@ class TestCatalogs:
 
 
 # ──────────────────────────────────────────────
-# Start page of the web version (web/index.html, web/openmatb.js)
+# Start page of the web version (web/index.html, web/openmatb.js, web/texts.json)
 # ──────────────────────────────────────────────
 
 INDEX: str = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
 SCRIPT: str = (ROOT / "web" / "openmatb.js").read_text(encoding="utf-8")
 
 
-def _web_texts() -> dict[str, dict[str, str]]:
-    """The TEXTS of web/openmatb.js: {language: {key: text}} (string concatenations joined)."""
-    block: str = SCRIPT[SCRIPT.index("const TEXTS = {") : SCRIPT.index("\n};", SCRIPT.index("const TEXTS = {"))]
-    texts: dict[str, dict[str, str]] = {}
-    for language, body in re.findall(r"\n    (\w+): \{(.*?)\n    \},", block, re.S):
-        texts[language] = {}
-        for key, value in re.findall(r"\n        (\w+): ((?:\"(?:[^\"\\]|\\.)*\"\s*\+?\s*)+),", body):
-            texts[language][key] = "".join(re.findall(r"\"((?:[^\"\\]|\\.)*)\"", value))
-    return texts
+def _web_build():
+    spec = importlib.util.spec_from_file_location("_web_build_texts", ROOT / "web" / "build.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
-WEB_TEXTS: dict[str, dict[str, str]] = _web_texts()
+# The texts of the start page in each language, as web/build.py writes them (texts.js): {language: {key: text}}
+WEB_TEXTS: dict[str, dict[str, str]] = _web_build().start_page_texts()
+ENGLISH: dict[str, str] = build.web_texts()
 
 
 class TestWebStartPage:
-    def test_menu_has_every_language(self):
-        options: list[str] = re.findall(r'<option value="(\w\w_\w\w)">', INDEX)
-        assert sorted(options) == sorted(LANGUAGES)
-
-    def test_texts_of_every_language(self):
+    def test_every_language_is_offered(self):
+        """The menu of the page is made of the languages of locales/, English first."""
+        assert list(WEB_TEXTS)[0] == "en_EN"
         assert sorted(WEB_TEXTS) == sorted(LANGUAGES)
+        assert '<select id="lang"></select>' in INDEX
 
     @pytest.mark.parametrize("language", LANGUAGES)
-    def test_texts_complete(self, language):
-        assert set(WEB_TEXTS[language]) == set(WEB_TEXTS["en_EN"])
+    def test_texts_of_each_language(self, language):
+        """Every text is there, translated or (language being translated) in English."""
+        assert list(WEB_TEXTS[language]) == list(ENGLISH)
         assert all(WEB_TEXTS[language].values())
+
+    @pytest.mark.parametrize("language", [language for language in LANGUAGES if language in COMPLETE_LANGUAGES])
+    def test_texts_translated(self, language):
+        """In a complete language, every text of the page comes from the catalog."""
+        translations: dict[str, str] = build.read_po(build.LOCALES / language / "LC_MESSAGES" / "openmatb.po")[1]
+        assert [text for text in ENGLISH.values() if not translations.get(text)] == []
 
     @pytest.mark.parametrize("language", LANGUAGES)
     def test_texts_placeholders(self, language):
-        for key, text in WEB_TEXTS["en_EN"].items():
+        for key, text in ENGLISH.items():
             assert sorted(re.findall(r"\{\w+\}", WEB_TEXTS[language][key])) == sorted(re.findall(r"\{\w+\}", text))
+
+    def test_keys_used_by_the_page_exist(self):
+        """The keys of the page (data-i18n of index.html, t("...") and status("...") of openmatb.js) are in
+        web/texts.json."""
+        used: set[str] = set(re.findall(r'data-i18n(?:-title)?="(\w+)"', INDEX))
+        used |= set(re.findall(r'\b(?:t|status)\("(\w+)"', SCRIPT))
+        assert used
+        assert used <= set(ENGLISH), used - set(ENGLISH)
 
     def test_rtl_languages_as_in_core_bidi(self):
         listed: str = re.search(r"const RTL_LANGUAGES = \[(.*?)\];", SCRIPT).group(1)

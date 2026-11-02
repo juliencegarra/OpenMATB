@@ -475,3 +475,238 @@ msgstr "Escape"
 #: plugins/abstractplugin.py:287
 msgid "AUTO"
 msgstr "AUTO"
+
+#: web/texts.json:2
+msgid "Language"
+msgstr "Language"
+
+#: web/texts.json:3
+msgid "Mode"
+msgstr "Mode"
+
+#: web/texts.json:4
+msgid "Run a scenario"
+msgstr "Run a scenario"
+
+#: web/texts.json:5
+msgid "Replay a session"
+msgstr "Replay a session"
+
+#: web/texts.json:6
+msgid "The scenario (or session) is chosen in the next screen."
+msgstr "The scenario (or session) is chosen in the next screen."
+
+#: web/texts.json:7
+msgid "Import a session file (optional)"
+msgstr "Import a session file (optional)"
+
+#: web/texts.json:8
+msgid "Sessions run in this browser are kept and listed automatically."
+msgstr "Sessions run in this browser are kept and listed automatically."
+
+#: web/texts.json:9
+msgid "Fullscreen"
+msgstr "Fullscreen"
+
+#: web/texts.json:10
+msgid "Start"
+msgstr "Start"
+
+#: web/texts.json:11
+msgid "Session ended"
+msgstr "Session ended"
+
+#: web/texts.json:12
+msgid "The log file"
+msgstr "The log file"
+
+#: web/texts.json:13
+msgid "It is also kept in this browser for replay."
+msgstr "It is also kept in this browser for replay."
+
+#: web/texts.json:14
+msgid "Sending…"
+msgstr "Sending…"
+
+#: web/texts.json:15
+msgid "End of the study…"
+msgstr "End of the study…"
+
+#: web/texts.json:16
+msgid "The study could not be ended in JATOS:"
+msgstr "The study could not be ended in JATOS:"
+
+#: web/texts.json:17
+msgid "Downloaded on this computer"
+msgstr "Downloaded on this computer"
+
+#: web/texts.json:18
+msgid "Downloaded on this computer, because it could not be sent"
+msgstr "Downloaded on this computer, because it could not be sent"
+
+#: web/texts.json:19
+msgid "Sent to the server (WebDAV)"
+msgstr "Sent to the server (WebDAV)"
+
+#: web/texts.json:20
+msgid "Sent to JATOS"
+msgstr "Sent to JATOS"
+
+#: web/texts.json:21
+msgid "Sent to DataPipe"
+msgstr "Sent to DataPipe"
+
+#: web/texts.json:22 web/texts.json:23
+msgid "Activity completed in the learning platform (LMS)"
+msgstr "Activity completed in the learning platform (LMS)"
+
+#: web/texts.json:24
+msgid "Not recorded as completed: the learning platform (LMS) opened the activity in browse or review mode"
+msgstr "Not recorded as completed: the learning platform (LMS) opened the activity in browse or review mode"
+
+#: web/texts.json:25
+msgid "Back to the course…"
+msgstr "Back to the course…"
+
+#: web/texts.json:26
+msgid "Not sent anywhere (web_session_output=none)"
+msgstr "Not sent anywhere (web_session_output=none)"
+
+#: web/texts.json:27
+msgid "This was a demo: the session was not recorded."
+msgstr "This was a demo: the session was not recorded."
+
+#: web/texts.json:28
+msgid "Restart the demo"
+msgstr "Restart the demo"
+
+#: web/texts.json:29
+#, python-brace-format
+msgid "Not sent to {destination}:"
+msgstr "Not sent to {destination}:"
+
+#: web/texts.json:30
+msgid "Configuration error (config.ini):"
+msgstr "Configuration error (config.ini):"
+
+#: web/texts.json:31
+msgid "Sessions kept in this browser"
+msgstr "Sessions kept in this browser"
+
+#: web/texts.json:32
+msgid "No session yet."
+msgstr "No session yet."
+
+#: web/texts.json:33
+msgid "Download"
+msgstr "Download"
+
+#: web/texts.json:34
+msgid "Delete"
+msgstr "Delete"
+
+#: web/texts.json:35
+msgid "Delete all the sessions"
+msgstr "Delete all the sessions"
+
+#: web/texts.json:36
+#, python-brace-format
+msgid "Delete the session {name} from this browser?"
+msgstr "Delete the session {name} from this browser?"
+
+#: web/texts.json:37
+#, python-brace-format
+msgid "Delete the {count} sessions kept in this browser?"
+msgstr "Delete the {count} sessions kept in this browser?"
+
+#: web/texts.json:38
+msgid "Back to menu"
+msgstr "Back to menu"
+
+#: web/texts.json:39
+msgid "Joystick: press one of its buttons to detect it."
+msgstr "Joystick: press one of its buttons to detect it."
+
+#: web/texts.json:40
+msgid "Joystick detected:"
+msgstr "Joystick detected:"
+
+#: web/texts.json:41
+msgid "Loading Python…"
+msgstr "Loading Python…"
+
+#: web/texts.json:42
+msgid "Loading pyglet…"
+msgstr "Loading pyglet…"
+
+#: web/texts.json:43
+msgid "Loading OpenMATB…"
+msgstr "Loading OpenMATB…"
+
+#: web/texts.json:44
+msgid "Ready"
+msgstr "Ready"
+
+#: web/texts.json:45
+msgid "Loading failed:"
+msgstr "Loading failed:"
+
+#: web/texts.json:46
+msgid "The Firefox browser cannot guarantee the timing accuracy of the results, prefer Chrome or Edge."
+msgstr "The Firefox browser cannot guarantee the timing accuracy of the results, prefer Chrome or Edge."
+
+#: web/texts.json:47
+msgid "This experiment requires Chrome or Edge: Firefox pauses for 0.1 to 1 s every few seconds, which makes timing unreliable."
+msgstr "This experiment requires Chrome or Edge: Firefox pauses for 0.1 to 1 s every few seconds, which makes timing unreliable."
+
+#: web/texts.json:48
+msgid "Slow loading"
+msgstr "Slow loading"
+
+#: web/texts.json:49
+msgid "The server does not send the .wasm files as application/wasm (Moodle: Site administration > Server > File types)."
+msgstr "The server does not send the .wasm files as application/wasm (Moodle: Site administration > Server > File types)."
+
+#: web/texts.json:50
+msgid "Trigger box (parallelport plugin)"
+msgstr "Trigger box (parallelport plugin)"
+
+#: web/texts.json:51
+msgid "No port chosen."
+msgstr "No port chosen."
+
+#: web/texts.json:52
+msgid "Choose the port"
+msgstr "Choose the port"
+
+#: web/texts.json:53
+msgid "web_serial_trigger: this browser cannot use serial ports (use Chrome or Edge)"
+msgstr "web_serial_trigger: this browser cannot use serial ports (use Chrome or Edge)"
+
+#: web/texts.json:54
+msgid "Choose the port of the trigger box"
+msgstr "Choose the port of the trigger box"
+
+#: web/texts.json:55
+msgid "The port of the trigger box cannot be opened:"
+msgstr "The port of the trigger box cannot be opened:"
+
+#: web/texts.json:56
+#, python-brace-format
+msgid "Trigger box: {count} values written"
+msgstr "Trigger box: {count} values written"
+
+#: web/texts.json:57
+#, python-brace-format
+msgid "Trigger box: {count} values not written:"
+msgstr "Trigger box: {count} values not written:"
+
+#: web/texts.json:58
+#, python-brace-format
+msgid "LSL bridge: {count} markers sent"
+msgstr "LSL bridge: {count} markers sent"
+
+#: web/texts.json:59
+#, python-brace-format
+msgid "LSL bridge: {count} markers not sent (bridge disconnected)"
+msgstr "LSL bridge: {count} markers not sent (bridge disconnected)"

@@ -12,17 +12,26 @@ editor or [Poedit](https://poedit.net/)) is compiled into `openmatb.mo` (read by
 
 After a change of the messages of the code: `pot`, `update`, translate the new messages, `mo`. Messages translated
 through a variable (plugin titles, key names) cannot be found in the code: they are listed in `DYNAMIC_MESSAGES` of
-`locales/build.py`.
+`locales/build.py`. A message with several placeholders names them (`%(line)s`), so that a translation can change
+their order.
+
+The texts of the start page of the web version are in the catalogs too: their English is in `web/texts.json` (key:
+text), and `web/build.py` writes them in each language into `web/dist/texts.js`, from which the page makes its menu
+of the languages. A language of `locales/` is thus offered by the page, and a text not translated yet is shown in
+English (as in OpenMATB).
 
 ## Adding a language
 
 1. Copy `locales/openmatb.pot` to `locales/xx_XX/LC_MESSAGES/openmatb.po`, set its `Language` and `Plural-Forms`
-   headers, translate every message (keep `%s`, `{error}`, the tabs and the spaces at both ends), then
-   `python locales/build.py mo`.
-2. Web version: add the language to the menu of `web/index.html` and its texts to `TEXTS` in `web/openmatb.js`.
-3. Optionally, the instructions (`includes/instructions`), questionnaires (`includes/questionnaires`), scenarios
-   (`includes/scenarios`) and voices of the communications task (`includes/sounds/<idiom>/<gender>`).
-4. `tests/test_locales.py` checks the catalogs (complete, compiled, placeholders kept) and the web start page.
+   headers, translate the messages (keep `%s`, `%(line)s`, `{error}`, the tabs and the spaces at both ends), then
+   `python locales/build.py mo`. Or add the language in Weblate (below).
+2. The language is then offered by OpenMATB (`language=xx_XX`) and by the start page of the web version, named in
+   its own language (`Intl.DisplayNames`), its untranslated messages in English.
+3. Once every message is translated, add it to `COMPLETE_LANGUAGES` of `tests/test_locales.py`: the tests then keep
+   it complete. Until then, they only check its consistency (placeholders kept, `.mo` compiled...).
+4. Optionally, the instructions (`includes/instructions`), questionnaires (`includes/questionnaires`), scenarios
+   (`includes/scenarios`) and voices of the communications task (`includes/sounds/<idiom>/<gender>`). For a
+   questionnaire such as the NASA-TLX, use a validated translation of the literature.
 
 Chinese and Japanese are drawn with the fonts of the system (desktop and browser). If `font_name` is set in
 config.ini, the font must have their characters.
@@ -61,7 +70,8 @@ Settings of the Weblate component:
 | File mask | `locales/*/LC_MESSAGES/openmatb.po` |
 | Template for new translations | `locales/openmatb.pot` |
 | Source language | English |
-| Language filter | `^(?!en_EN$).*$` (en_EN, the messages themselves, is not to translate) |
+| Language filter | `^(?!en_EN$).+$` (en_EN, the messages themselves, is not to translate) |
+| Language code style | POSIX style using underscore as a separator, including country code (`pt_BR`, `ko_KR`) |
 
 - **Validation**: enable the reviews in the access control of the project, and add the reviewers. A translation is
   then *translated* until a reviewer *approves* it. A translation marked *Needs editing* is written as `fuzzy` in the
@@ -71,9 +81,9 @@ Settings of the Weblate component:
   (fewer differences in the commits).
 - **Repository**: let Weblate know the pushes (the GitHub webhook of Weblate), so that it merges the commits of the
   workflow before its next push.
-- **Tests**: `tests/test_locales.py` requires every message to be translated, so a pull request with an incomplete
-  language fails until it is complete. A new language also needs the menu of `web/index.html` and its `TEXTS` in
-  `web/openmatb.js` (step 2 of *Adding a language*): these texts are not in the catalogs, so not in Weblate.
+- **Tests**: `tests/test_locales.py` requires every message of the languages of `COMPLETE_LANGUAGES` to be
+  translated. A new language started in Weblate is accepted while it is being translated (step 3 of *Adding a
+  language*), and appears in the web version with its texts.
 - The instructions, questionnaires and voices (`includes/`) are not translated in Weblate.
 
 ## Locale codes

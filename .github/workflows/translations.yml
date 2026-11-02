@@ -1,16 +1,18 @@
 name: Translations
 
 # Keeps the translation files in step with the code and with the online translation (Weblate, see locales/README.md):
-# after a push, the messages of the code are extracted into locales/openmatb.pot, added to each openmatb.po
-# (untranslated), and every openmatb.po is compiled into openmatb.mo. Weblate only writes the .po files: the .mo
-# files are compiled here. The changes, if any, are committed to the pushed branch (a commit made with the
-# GITHUB_TOKEN does not run the workflows again). It can also be run by hand (Actions > Translations > Run workflow).
+# after a push, the messages of the code and the texts of the web start page (web/texts.json) are extracted into
+# locales/openmatb.pot, added to each openmatb.po (untranslated), and every openmatb.po is compiled into openmatb.mo.
+# Weblate only writes the .po files: the .mo files are compiled here. The changes, if any, are committed to the
+# pushed branch (a commit made with the GITHUB_TOKEN does not run the workflows again). It can also be run by hand
+# (Actions > Translations > Run workflow).
 on:
   push:
     branches: [master, translations-rtl]
     paths:
       - "**.py"
       - "locales/**"
+      - "web/texts.json"
   workflow_dispatch:
 
 permissions:

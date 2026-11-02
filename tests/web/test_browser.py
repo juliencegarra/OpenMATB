@@ -1354,9 +1354,10 @@ class TestCmi5:
         assert lms.verbs() == ["initialized", "terminated"]
 
     def test_language_of_the_learner(self, page_factory):
-        """Without ?lang=, the language preference of the learner in the LMS."""
+        """Without ?lang=, the language preference of the learner in the LMS (the first one OpenMATB is translated
+        in: not Korean)."""
         app = page_factory()
-        lms = FakeLMS(app, language="pt-BR,fr-FR")
+        lms = FakeLMS(app, language="ko-KR,fr-FR")
         app.page.goto(f"{app.url}/index.html?{lms.params()[1:]}")
         app.page.wait_for_function("() => document.getElementById('lang').value === 'fr_FR'", timeout=30_000)
         assert app.page.text_content("#start") == "Démarrer"

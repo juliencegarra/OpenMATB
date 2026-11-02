@@ -470,3 +470,238 @@ msgstr "Esc"
 #: plugins/abstractplugin.py:287
 msgid "AUTO"
 msgstr "自動"
+
+#: web/texts.json:2
+msgid "Language"
+msgstr "言語"
+
+#: web/texts.json:3
+msgid "Mode"
+msgstr "モード"
+
+#: web/texts.json:4
+msgid "Run a scenario"
+msgstr "シナリオを実行"
+
+#: web/texts.json:5
+msgid "Replay a session"
+msgstr "セッションをリプレイ"
+
+#: web/texts.json:6
+msgid "The scenario (or session) is chosen in the next screen."
+msgstr "シナリオ（またはセッション）は次の画面で選択します。"
+
+#: web/texts.json:7
+msgid "Import a session file (optional)"
+msgstr "セッションファイルを読み込む（任意）"
+
+#: web/texts.json:8
+msgid "Sessions run in this browser are kept and listed automatically."
+msgstr "このブラウザで実行したセッションは保存され、自動的に一覧表示されます。"
+
+#: web/texts.json:9
+msgid "Fullscreen"
+msgstr "全画面"
+
+#: web/texts.json:10
+msgid "Start"
+msgstr "開始"
+
+#: web/texts.json:11
+msgid "Session ended"
+msgstr "セッション終了"
+
+#: web/texts.json:12
+msgid "The log file"
+msgstr "ログファイル"
+
+#: web/texts.json:13
+msgid "It is also kept in this browser for replay."
+msgstr "リプレイ用にこのブラウザにも保存されます。"
+
+#: web/texts.json:14
+msgid "Sending…"
+msgstr "送信中…"
+
+#: web/texts.json:15
+msgid "End of the study…"
+msgstr "研究を終了しています…"
+
+#: web/texts.json:16
+msgid "The study could not be ended in JATOS:"
+msgstr "JATOS で研究を終了できませんでした："
+
+#: web/texts.json:17
+msgid "Downloaded on this computer"
+msgstr "このコンピュータにダウンロードしました"
+
+#: web/texts.json:18
+msgid "Downloaded on this computer, because it could not be sent"
+msgstr "送信できなかったため、このコンピュータにダウンロードしました"
+
+#: web/texts.json:19
+msgid "Sent to the server (WebDAV)"
+msgstr "サーバーに送信しました (WebDAV)"
+
+#: web/texts.json:20
+msgid "Sent to JATOS"
+msgstr "JATOS に送信しました"
+
+#: web/texts.json:21
+msgid "Sent to DataPipe"
+msgstr "DataPipe に送信しました"
+
+#: web/texts.json:22 web/texts.json:23
+msgid "Activity completed in the learning platform (LMS)"
+msgstr "学習プラットフォーム (LMS) でアクティビティを完了しました"
+
+#: web/texts.json:24
+msgid "Not recorded as completed: the learning platform (LMS) opened the activity in browse or review mode"
+msgstr "完了として記録されていません：学習プラットフォーム (LMS) がアクティビティを閲覧モードまたはレビューモードで開きました"
+
+#: web/texts.json:25
+msgid "Back to the course…"
+msgstr "コースに戻る…"
+
+#: web/texts.json:26
+msgid "Not sent anywhere (web_session_output=none)"
+msgstr "どこにも送信されていません (web_session_output=none)"
+
+#: web/texts.json:27
+msgid "This was a demo: the session was not recorded."
+msgstr "これはデモでした：セッションは記録されていません。"
+
+#: web/texts.json:28
+msgid "Restart the demo"
+msgstr "デモを再開"
+
+#: web/texts.json:29
+#, python-brace-format
+msgid "Not sent to {destination}:"
+msgstr "{destination} に送信されていません："
+
+#: web/texts.json:30
+msgid "Configuration error (config.ini):"
+msgstr "設定エラー (config.ini)："
+
+#: web/texts.json:31
+msgid "Sessions kept in this browser"
+msgstr "このブラウザに保存されたセッション"
+
+#: web/texts.json:32
+msgid "No session yet."
+msgstr "まだセッションはありません。"
+
+#: web/texts.json:33
+msgid "Download"
+msgstr "ダウンロード"
+
+#: web/texts.json:34
+msgid "Delete"
+msgstr "削除"
+
+#: web/texts.json:35
+msgid "Delete all the sessions"
+msgstr "すべてのセッションを削除"
+
+#: web/texts.json:36
+#, python-brace-format
+msgid "Delete the session {name} from this browser?"
+msgstr "セッション {name} をこのブラウザから削除しますか？"
+
+#: web/texts.json:37
+#, python-brace-format
+msgid "Delete the {count} sessions kept in this browser?"
+msgstr "このブラウザに保存された {count} 件のセッションを削除しますか？"
+
+#: web/texts.json:38
+msgid "Back to menu"
+msgstr "メニューに戻る"
+
+#: web/texts.json:39
+msgid "Joystick: press one of its buttons to detect it."
+msgstr "ジョイスティック：検出するにはいずれかのボタンを押してください。"
+
+#: web/texts.json:40
+msgid "Joystick detected:"
+msgstr "ジョイスティックを検出しました："
+
+#: web/texts.json:41
+msgid "Loading Python…"
+msgstr "Python を読み込み中…"
+
+#: web/texts.json:42
+msgid "Loading pyglet…"
+msgstr "pyglet を読み込み中…"
+
+#: web/texts.json:43
+msgid "Loading OpenMATB…"
+msgstr "OpenMATB を読み込み中…"
+
+#: web/texts.json:44
+msgid "Ready"
+msgstr "準備完了"
+
+#: web/texts.json:45
+msgid "Loading failed:"
+msgstr "読み込みに失敗しました："
+
+#: web/texts.json:46
+msgid "The Firefox browser cannot guarantee the timing accuracy of the results, prefer Chrome or Edge."
+msgstr "Firefox ブラウザでは結果の時間精度を保証できません。Chrome または Edge を使用してください。"
+
+#: web/texts.json:47
+msgid "This experiment requires Chrome or Edge: Firefox pauses for 0.1 to 1 s every few seconds, which makes timing unreliable."
+msgstr "この実験には Chrome または Edge が必要です：Firefox は数秒ごとに 0.1〜1 秒停止するため、時間計測の信頼性が損なわれます。"
+
+#: web/texts.json:48
+msgid "Slow loading"
+msgstr "読み込みが遅い"
+
+#: web/texts.json:49
+msgid "The server does not send the .wasm files as application/wasm (Moodle: Site administration > Server > File types)."
+msgstr "サーバーが .wasm ファイルを application/wasm として送信していません（Moodle：サイト管理 > サーバー > ファイルタイプ）。"
+
+#: web/texts.json:50
+msgid "Trigger box (parallelport plugin)"
+msgstr "トリガーボックス（parallelport プラグイン）"
+
+#: web/texts.json:51
+msgid "No port chosen."
+msgstr "ポートが選択されていません。"
+
+#: web/texts.json:52
+msgid "Choose the port"
+msgstr "ポートを選択"
+
+#: web/texts.json:53
+msgid "web_serial_trigger: this browser cannot use serial ports (use Chrome or Edge)"
+msgstr "web_serial_trigger：このブラウザではシリアルポートを使用できません（Chrome または Edge を使用してください）"
+
+#: web/texts.json:54
+msgid "Choose the port of the trigger box"
+msgstr "トリガーボックスのポートを選択してください"
+
+#: web/texts.json:55
+msgid "The port of the trigger box cannot be opened:"
+msgstr "トリガーボックスのポートを開けません："
+
+#: web/texts.json:56
+#, python-brace-format
+msgid "Trigger box: {count} values written"
+msgstr "トリガーボックス：{count} 個の値を書き込みました"
+
+#: web/texts.json:57
+#, python-brace-format
+msgid "Trigger box: {count} values not written:"
+msgstr "トリガーボックス：{count} 個の値を書き込めませんでした："
+
+#: web/texts.json:58
+#, python-brace-format
+msgid "LSL bridge: {count} markers sent"
+msgstr "LSL ブリッジ：{count} 個のマーカーを送信しました"
+
+#: web/texts.json:59
+#, python-brace-format
+msgid "LSL bridge: {count} markers not sent (bridge disconnected)"
+msgstr "LSL ブリッジ：{count} 個のマーカーを送信できませんでした（ブリッジ切断）"

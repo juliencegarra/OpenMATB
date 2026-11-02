@@ -8,16 +8,18 @@
     python locales/build.py update     Add the new messages of openmatb.pot to each openmatb.po (untranslated)
     python locales/build.py mo         Compile each openmatb.po into openmatb.mo
 
-The .po files can also be edited with Poedit, or online with Weblate (see locales/README.md). After a change of the
-code: pot, update, translate, mo (.github/workflows/translations.yml runs them after each push). update keeps the
-fuzzy translations (to review); mo leaves them out, as msgfmt does. pot keeps the file unchanged when its messages
-are, so that only real changes are committed.
+The messages are those of the code, _("..."), and the texts of the start page of the web version (web/texts.json,
+written in each language by web/build.py). The .po files can also be edited with Poedit, or online with Weblate (see
+locales/README.md). After a change of the code: pot, update, translate, mo (.github/workflows/translations.yml runs
+them after each push). update keeps the fuzzy translations (to review); mo leaves them out, as msgfmt does. pot keeps
+the file unchanged when its messages are, so that only real changes are committed.
 """
 
 from __future__ import annotations
 
 import ast
 import datetime
+import json
 import re
 import struct
 import subprocess
@@ -27,6 +29,8 @@ from pathlib import Path
 ROOT: Path = Path(__file__).resolve().parents[1]
 LOCALES: Path = ROOT / "locales"
 POT: Path = LOCALES / "openmatb.pot"
+# The texts of the start page of the web version, in English (key: text): web/build.py writes them in each language
+WEB_TEXTS: Path = ROOT / "web" / "texts.json"
 
 # Messages translated through a variable, _(name), so not found by the extraction
 DYNAMIC_MESSAGES: dict[str, str] = {
@@ -40,7 +44,8 @@ DYNAMIC_MESSAGES: dict[str, str] = {
 
 
 def extract() -> dict[str, list[str]]:
-    """The messages of the code, _("..."), with their locations (file:line), in order of appearance."""
+    """The messages of the code, _("..."), then the texts of the web start page, with their locations (file:line),
+    in order of appearance."""
     listed: str = subprocess.run(["git", "ls-files", "*.py"], cwd=ROOT, capture_output=True, text=True).stdout
     files: list[str] = [f for f in listed.split() if not f.startswith(("tests/", "locales/"))]
     messages: dict[str, list[str]] = {}
@@ -58,7 +63,16 @@ def extract() -> dict[str, list[str]]:
                 messages.setdefault(node.args[0].value, []).append(f"{file}:{node.lineno}")
     for message, location in DYNAMIC_MESSAGES.items():
         messages.setdefault(message, [location])
+    lines: list[str] = WEB_TEXTS.read_text(encoding="utf-8").splitlines()
+    for key, text in web_texts().items():
+        line: int = next(n for n, content in enumerate(lines, 1) if content.strip().startswith(f'"{key}":'))
+        messages.setdefault(text, []).append(f"web/texts.json:{line}")
     return messages
+
+
+def web_texts() -> dict[str, str]:
+    """The texts of the start page of the web version (key: English text), in their order."""
+    return json.loads(WEB_TEXTS.read_text(encoding="utf-8"))
 
 
 def read_po(path: Path) -> tuple[dict[str, str], dict[str, str]]:

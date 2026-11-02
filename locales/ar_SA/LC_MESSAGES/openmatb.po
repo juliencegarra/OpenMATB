@@ -470,3 +470,238 @@ msgstr "Esc"
 #: plugins/abstractplugin.py:287
 msgid "AUTO"
 msgstr "تلقائي"
+
+#: web/texts.json:2
+msgid "Language"
+msgstr "اللغة"
+
+#: web/texts.json:3
+msgid "Mode"
+msgstr "الوضع"
+
+#: web/texts.json:4
+msgid "Run a scenario"
+msgstr "تشغيل سيناريو"
+
+#: web/texts.json:5
+msgid "Replay a session"
+msgstr "إعادة عرض جلسة"
+
+#: web/texts.json:6
+msgid "The scenario (or session) is chosen in the next screen."
+msgstr "يتم اختيار السيناريو (أو الجلسة) في الشاشة التالية."
+
+#: web/texts.json:7
+msgid "Import a session file (optional)"
+msgstr "استيراد ملف جلسة (اختياري)"
+
+#: web/texts.json:8
+msgid "Sessions run in this browser are kept and listed automatically."
+msgstr "يتم حفظ الجلسات التي تُجرى في هذا المتصفح وعرضها تلقائياً."
+
+#: web/texts.json:9
+msgid "Fullscreen"
+msgstr "ملء الشاشة"
+
+#: web/texts.json:10
+msgid "Start"
+msgstr "ابدأ"
+
+#: web/texts.json:11
+msgid "Session ended"
+msgstr "انتهت الجلسة"
+
+#: web/texts.json:12
+msgid "The log file"
+msgstr "ملف السجل"
+
+#: web/texts.json:13
+msgid "It is also kept in this browser for replay."
+msgstr "يتم حفظه أيضاً في هذا المتصفح لإعادة عرضه."
+
+#: web/texts.json:14
+msgid "Sending…"
+msgstr "جارٍ الإرسال…"
+
+#: web/texts.json:15
+msgid "End of the study…"
+msgstr "جارٍ إنهاء الدراسة…"
+
+#: web/texts.json:16
+msgid "The study could not be ended in JATOS:"
+msgstr "تعذر إنهاء الدراسة في JATOS:"
+
+#: web/texts.json:17
+msgid "Downloaded on this computer"
+msgstr "تم التنزيل على هذا الحاسوب"
+
+#: web/texts.json:18
+msgid "Downloaded on this computer, because it could not be sent"
+msgstr "تم التنزيل على هذا الحاسوب لأنه تعذر إرساله"
+
+#: web/texts.json:19
+msgid "Sent to the server (WebDAV)"
+msgstr "تم الإرسال إلى الخادم (WebDAV)"
+
+#: web/texts.json:20
+msgid "Sent to JATOS"
+msgstr "تم الإرسال إلى JATOS"
+
+#: web/texts.json:21
+msgid "Sent to DataPipe"
+msgstr "تم الإرسال إلى DataPipe"
+
+#: web/texts.json:22 web/texts.json:23
+msgid "Activity completed in the learning platform (LMS)"
+msgstr "اكتمل النشاط في منصة التعلم (LMS)"
+
+#: web/texts.json:24
+msgid "Not recorded as completed: the learning platform (LMS) opened the activity in browse or review mode"
+msgstr "لم يُسجَّل كمكتمل: فتحت منصة التعلم (LMS) النشاط في وضع التصفح أو المراجعة"
+
+#: web/texts.json:25
+msgid "Back to the course…"
+msgstr "العودة إلى المقرر…"
+
+#: web/texts.json:26
+msgid "Not sent anywhere (web_session_output=none)"
+msgstr "لم يُرسل إلى أي مكان (web_session_output=none)"
+
+#: web/texts.json:27
+msgid "This was a demo: the session was not recorded."
+msgstr "كان هذا عرضاً تجريبياً: لم يتم تسجيل الجلسة."
+
+#: web/texts.json:28
+msgid "Restart the demo"
+msgstr "إعادة تشغيل العرض التجريبي"
+
+#: web/texts.json:29
+#, python-brace-format
+msgid "Not sent to {destination}:"
+msgstr "لم يُرسل إلى {destination}:"
+
+#: web/texts.json:30
+msgid "Configuration error (config.ini):"
+msgstr "خطأ في الإعدادات (config.ini):"
+
+#: web/texts.json:31
+msgid "Sessions kept in this browser"
+msgstr "الجلسات المحفوظة في هذا المتصفح"
+
+#: web/texts.json:32
+msgid "No session yet."
+msgstr "لا توجد جلسات بعد."
+
+#: web/texts.json:33
+msgid "Download"
+msgstr "تنزيل"
+
+#: web/texts.json:34
+msgid "Delete"
+msgstr "حذف"
+
+#: web/texts.json:35
+msgid "Delete all the sessions"
+msgstr "حذف جميع الجلسات"
+
+#: web/texts.json:36
+#, python-brace-format
+msgid "Delete the session {name} from this browser?"
+msgstr "حذف الجلسة {name} من هذا المتصفح؟"
+
+#: web/texts.json:37
+#, python-brace-format
+msgid "Delete the {count} sessions kept in this browser?"
+msgstr "حذف الجلسات المحفوظة في هذا المتصفح ({count})؟"
+
+#: web/texts.json:38
+msgid "Back to menu"
+msgstr "العودة إلى القائمة"
+
+#: web/texts.json:39
+msgid "Joystick: press one of its buttons to detect it."
+msgstr "عصا التحكم: اضغط على أحد أزرارها لاكتشافها."
+
+#: web/texts.json:40
+msgid "Joystick detected:"
+msgstr "تم اكتشاف عصا التحكم:"
+
+#: web/texts.json:41
+msgid "Loading Python…"
+msgstr "جارٍ تحميل Python…"
+
+#: web/texts.json:42
+msgid "Loading pyglet…"
+msgstr "جارٍ تحميل pyglet…"
+
+#: web/texts.json:43
+msgid "Loading OpenMATB…"
+msgstr "جارٍ تحميل OpenMATB…"
+
+#: web/texts.json:44
+msgid "Ready"
+msgstr "جاهز"
+
+#: web/texts.json:45
+msgid "Loading failed:"
+msgstr "فشل التحميل:"
+
+#: web/texts.json:46
+msgid "The Firefox browser cannot guarantee the timing accuracy of the results, prefer Chrome or Edge."
+msgstr "لا يضمن متصفح Firefox دقة توقيت النتائج، يُفضَّل استخدام Chrome أو Edge."
+
+#: web/texts.json:47
+msgid "This experiment requires Chrome or Edge: Firefox pauses for 0.1 to 1 s every few seconds, which makes timing unreliable."
+msgstr "تتطلب هذه التجربة Chrome أو Edge: يتوقف Firefox من 0.1 إلى 1 ثانية كل بضع ثوانٍ، مما يجعل قياس الوقت غير موثوق."
+
+#: web/texts.json:48
+msgid "Slow loading"
+msgstr "تحميل بطيء"
+
+#: web/texts.json:49
+msgid "The server does not send the .wasm files as application/wasm (Moodle: Site administration > Server > File types)."
+msgstr "لا يرسل الخادم ملفات .wasm بالنوع application/wasm (Moodle: إدارة الموقع > الخادم > أنواع الملفات)."
+
+#: web/texts.json:50
+msgid "Trigger box (parallelport plugin)"
+msgstr "صندوق المشغّلات (الإضافة parallelport)"
+
+#: web/texts.json:51
+msgid "No port chosen."
+msgstr "لم يتم اختيار منفذ."
+
+#: web/texts.json:52
+msgid "Choose the port"
+msgstr "اختر المنفذ"
+
+#: web/texts.json:53
+msgid "web_serial_trigger: this browser cannot use serial ports (use Chrome or Edge)"
+msgstr "web_serial_trigger: لا يستطيع هذا المتصفح استخدام المنافذ التسلسلية (استخدم Chrome أو Edge)"
+
+#: web/texts.json:54
+msgid "Choose the port of the trigger box"
+msgstr "اختر منفذ صندوق المشغّلات"
+
+#: web/texts.json:55
+msgid "The port of the trigger box cannot be opened:"
+msgstr "تعذر فتح منفذ صندوق المشغّلات:"
+
+#: web/texts.json:56
+#, python-brace-format
+msgid "Trigger box: {count} values written"
+msgstr "صندوق المشغّلات: تمت كتابة {count} قيمة"
+
+#: web/texts.json:57
+#, python-brace-format
+msgid "Trigger box: {count} values not written:"
+msgstr "صندوق المشغّلات: لم تتم كتابة {count} قيمة:"
+
+#: web/texts.json:58
+#, python-brace-format
+msgid "LSL bridge: {count} markers sent"
+msgstr "جسر LSL: تم إرسال {count} علامة"
+
+#: web/texts.json:59
+#, python-brace-format
+msgid "LSL bridge: {count} markers not sent (bridge disconnected)"
+msgstr "جسر LSL: لم يتم إرسال {count} علامة (الجسر غير متصل)"

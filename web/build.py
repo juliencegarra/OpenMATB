@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import functools
 import http.server
+import importlib.util
 import io
 import json
 import re
@@ -123,6 +124,38 @@ def is_excluded(relative: str) -> bool:
     return any(relative == e or relative.startswith(e + "/") for e in EXCLUDED)
 
 
+def _locales_build():
+    """locales/build.py (the catalogs), imported from its file (it is not a package)."""
+    spec = importlib.util.spec_from_file_location("locales_build", ROOT / "locales" / "build.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def start_page_texts() -> dict[str, dict[str, str]]:
+    """The texts of the start page in each language of locales/ ({language: {key: text}}), English first: the
+    texts of web/texts.json, translated by the catalogs (a text not translated yet stays in English). The menu of
+    the languages is made of them, so a language added to locales/ (e.g. in Weblate) is offered by the page."""
+    catalogs = _locales_build()
+    english: dict[str, str] = catalogs.web_texts()
+    texts: dict[str, dict[str, str]] = {"en_EN": english}
+    for path in catalogs.po_files():
+        language: str = path.parents[1].name
+        if language != "en_EN":
+            translations: dict[str, str] = catalogs.read_po(path)[1]
+            texts[language] = {key: translations.get(text) or text for key, text in english.items()}
+    return texts
+
+
+def write_start_page_texts() -> None:
+    texts: str = json.dumps(start_page_texts(), ensure_ascii=False, indent=1)
+    (DIST / "texts.js").write_text(
+        "// Written by web/build.py: web/texts.json in each language of locales/ (the catalogs)\n"
+        f"export const TEXTS = {texts};\n",
+        encoding="utf-8",
+    )
+
+
 def build_app_zip() -> int:
     count: int = 0
     with zipfile.ZipFile(DIST / "app.zip", "w", zipfile.ZIP_DEFLATED) as archive:
@@ -207,6 +240,7 @@ def build(pyodide: str = "cdn") -> None:
     download_fonts()
     for module in PAGE_MODULES:
         shutil.copy(WEB / module, DIST / module)
+    write_start_page_texts()
     version: str = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
     if pyodide == "local":
         download_pyodide()

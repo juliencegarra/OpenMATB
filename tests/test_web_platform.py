@@ -668,7 +668,8 @@ class TestWebBuild:
         imported = set()
         for module in build_module.PAGE_MODULES:
             imported |= set(re.findall(r'from "\./([\w.]+\.js)"', (ROOT / "web" / module).read_text(encoding="utf-8")))
-        copied_elsewhere = {"pyglet_emscripten.js"}  # Extracted from the pyglet wheel
+        # Extracted from the pyglet wheel, written from the catalogs (write_start_page_texts)
+        copied_elsewhere = {"pyglet_emscripten.js", "texts.js"}
         assert imported - copied_elsewhere <= set(build_module.PAGE_MODULES)
         assert "session_output.js" in imported
 
