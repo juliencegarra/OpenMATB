@@ -1,6 +1,7 @@
 [![CI](https://github.com/juliencegarra/OpenMATB/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/juliencegarra/OpenMATB/actions/workflows/tests.yml)
 ![Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/juliencegarra/5d551479385698a23440737307999f72/raw/OpenMATB-junit-tests.json)
 ![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/juliencegarra/5d551479385698a23440737307999f72/raw/OpenMATB-cobertura-coverage.json)
+[![Translation status](https://hosted.weblate.org/widget/openmatb/svg-badge.svg)](https://hosted.weblate.org/engage/openmatb/)
 
 > [!NOTE]
 > **Web version.** Since version 1.5, OpenMATB also runs in a web browser, with no installation, thanks to Pyodide and pyglet 3 ([try the demo](https://juliencegarra.github.io/OpenMATB/)). Chrome or Edge are recommended: Firefox and Safari also work, but Firefox pauses the page for 0.1 to 1 s every few seconds, which affects timing. Joysticks are supported through the browser Gamepad API. Session files are downloaded, or sent to JATOS, DataPipe (Google Drive, Dataverse or Zenodo) or a WebDAV folder, and can be replayed in the browser; OpenMATB can also run from an LMS (SCORM, cmi5). A USB trigger box replaces the parallel port, and Lab Streaming Layer goes through a bridge. Response times are measured from the frame showing the stimulus to the browser timestamp of the key; screen and keyboard latencies are not measured. See [WEB.md](WEB.md) to build and host it.
@@ -73,3 +74,7 @@ What happened during the session is stored as a CSV file in the `sessions` direc
 - [The wiki](https://github.com/juliencegarra/OpenMATB/wiki): the details of each task and plugin, [the scenario file](https://github.com/juliencegarra/OpenMATB/wiki/How-to-build-a-scenario-file), [the configuration file](https://github.com/juliencegarra/OpenMATB/wiki/The-configuration-file-(config.ini)), [the session file](https://github.com/juliencegarra/OpenMATB/wiki/The-session-log-file), [questionnaires](https://github.com/juliencegarra/OpenMATB/wiki/Write-a-questionnaire), [translations](https://github.com/juliencegarra/OpenMATB/wiki/Internationalization)
 - [WEB.md](WEB.md): building and hosting the web version
 - [CHANGELOG.md](CHANGELOG.md): the changes of each version
+
+## Translations
+
+The interface is available in English, French, German, Spanish, Italian, Chinese, Japanese and Arabic. It is translated online with [Weblate](https://hosted.weblate.org/projects/openmatb/): you are welcome to translate it into your language, or to review a translation. See [locales/README.md](locales/README.md) to translate the files directly.
