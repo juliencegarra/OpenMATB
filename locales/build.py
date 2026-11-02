@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import ast
 import datetime
+import re
 import struct
 import subprocess
 import sys
@@ -100,6 +101,22 @@ def _read_po(path: Path, fuzzy_entries: bool) -> tuple[dict[str, str], dict[str,
     return header, entries
 
 
+# The placeholders of a message, as xgettext finds them: Weblate (and msgfmt -c) then checks that the translation keeps
+# them. The messages are formatted with %, or with str.format for {error}
+PYTHON_FORMAT: re.Pattern[str] = re.compile(r"%(?:\(\w+\))?[#0 +-]*(?:\d+|\*)?(?:\.\d+)?[diouxXeEfFgGcrsa]")
+PYTHON_BRACE_FORMAT: re.Pattern[str] = re.compile(r"\{\w*(?:![rsa])?(?::[^{}]*)?\}")
+
+
+def flags(msgid: str) -> list[str]:
+    """The format flags of a message (python-format, python-brace-format), written on the "#," line."""
+    found: list[str] = []
+    if PYTHON_FORMAT.search(msgid.replace("%%", "")):
+        found.append("python-format")
+    if PYTHON_BRACE_FORMAT.search(msgid):
+        found.append("python-brace-format")
+    return found
+
+
 def _quote(text: str) -> str:
     return '"' + text.replace("\\", "\\\\").replace('"', '\\"').replace("\t", "\\t").replace("\n", "\\n") + '"'
 
@@ -111,15 +128,17 @@ def write_po(
     translations: dict[str, str],
     fuzzy: dict[str, str] | None = None,
 ) -> None:
-    """Write a .po file: the messages in order, with their translation, or their fuzzy translation (to review)."""
+    """Write a .po file: the messages in order, with their format flags, and their translation, or their fuzzy
+    translation (to review)."""
     fuzzy = fuzzy or {}
     lines: list[str] = ["# OpenMATB translations (see locales/build.py).", "#", 'msgid ""', 'msgstr ""']
     lines += [_quote(f"{name}: {value}\n") for name, value in header.items()]
     for msgid, locations in messages.items():
         is_fuzzy: bool = not translations.get(msgid) and bool(fuzzy.get(msgid))
         lines += ["", "#: " + " ".join(locations)]
-        if is_fuzzy:
-            lines.append("#, fuzzy")
+        entry_flags: list[str] = (["fuzzy"] if is_fuzzy else []) + flags(msgid)
+        if entry_flags:
+            lines.append("#, " + ", ".join(entry_flags))
         lines += [
             "msgid " + _quote(msgid),
             "msgstr " + _quote(fuzzy[msgid] if is_fuzzy else translations.get(msgid, "")),

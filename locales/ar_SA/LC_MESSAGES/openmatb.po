@@ -42,10 +42,12 @@ msgid "Warning, queue is empty"
 msgstr "تحذير: قائمة الانتظار فارغة"
 
 #: core/logreader.py:49
+#, python-format
 msgid "The desired session file (ID=%s) does not exist"
 msgstr "ملف الجلسة المطلوب (ID=%s) غير موجود"
 
 #: core/logreader.py:53
+#, python-format
 msgid "Multiple session files match the desired session ID (%s)"
 msgstr "عدة ملفات جلسات تطابق معرّف الجلسة المطلوب (%s)"
 
@@ -82,74 +84,92 @@ msgid "No error"
 msgstr "لا يوجد خطأ"
 
 #: core/scenario.py:95
+#, python-format
 msgid "There were some errors in the scenario. See the %s file."
 msgstr "يحتوي السيناريو على أخطاء. راجع الملف %s."
 
 #: core/scenario.py:48
+#, python-format
 msgid "%s was not found"
 msgstr "لم يتم العثور على %s"
 
 #: core/scenario.py:76
+#, python-format
 msgid "Scenario error: %s is not a valid plugin name (l. %s)"
 msgstr "خطأ في السيناريو: %s ليس اسم إضافة صالحاً (السطر %s)"
 
 #: core/scenario.py:118
+#, python-format
 msgid "Line %s: '%s' is deprecated and will be ignored"
 msgstr "السطر %s: '%s' متقادم وسيتم تجاهله"
 
 #: core/scenario.py:166
+#, python-format
 msgid "The (%s) plugin does not have a start command."
 msgstr "الإضافة (%s) لا تحتوي على أمر start."
 
 #: core/scenario.py:213
+#, python-format
 msgid "Error on line %s. This event does not trigger any command."
 msgstr "خطأ في السطر %s. هذا الحدث لا يشغّل أي أمر."
 
 #: core/scenario.py:60
+#, python-format
 msgid "Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)"
 msgstr "خطأ في السيناريو: السطر %s ليس بالصيغة H:MM:SS;plugin;command (%s)"
 
 #: core/scenario.py:197 core/scenario.py:208
+#, python-format
 msgid "Error on line %s. Invalid system command: %s"
 msgstr "خطأ في السطر %s. أمر نظام غير صالح: %s"
 
 #: core/scenario.py:217
+#, python-format
 msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
 msgstr "خطأ في السطر %s. يحتوي الحدث على عنصرين على الأكثر (parameter;value)."
 
 #: core/scenario.py:173
+#, python-format
 msgid "The (%s) plugin does not have a stop command."
 msgstr "الإضافة (%s) لا تحتوي على أمر stop."
 
 #: core/scenario.py:199
+#, python-format
 msgid "Error on line %s. Agent command requires a name argument"
 msgstr "خطأ في السطر %s. يتطلب الأمر agent اسماً كوسيط"
 
 #: core/scenario.py:189
+#, python-format
 msgid "The (%s) plugin has a start command without a preceding filename command."
 msgstr "الإضافة (%s) تحتوي على أمر start دون أمر filename قبله."
 
 #: core/scenario.py:202
+#, python-format
 msgid "Error on line %s. Unknown agent: %s"
 msgstr "خطأ في السطر %s. وكيل غير معروف: %s"
 
 #: core/scenario.py:224
+#, python-format
 msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
 msgstr "خطأ في السطر %s. الطريقة (%s) غير متاحة للإضافة (%s)"
 
 #: core/scenario.py:206
+#, python-format
 msgid "Error on line %s. mousecontrol command requires True/False argument"
 msgstr "خطأ في السطر %s. يتطلب الأمر mousecontrol الوسيط True/False"
 
 #: core/scenario.py:271
+#, python-format
 msgid "Error on line %s. The %s plugin does not have a %s parameter"
 msgstr "خطأ في السطر %s. الإضافة %s لا تحتوي على المعامل %s"
 
 #: core/scenario.py:245
+#, python-format
 msgid "Warning on line %s. Parameter (%s) has no verification method"
 msgstr "تحذير في السطر %s. المعامل (%s) ليس له طريقة تحقق"
 
 #: core/scenario.py:263
+#, python-format
 msgid "Error on line %s. %s "
 msgstr "خطأ في السطر %s. %s "
 
@@ -182,18 +202,22 @@ msgid "UP/DOWN: Navigate"
 msgstr "أعلى/أسفل: تنقل"
 
 #: core/utils.py:113
+#, python-format
 msgid "In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False"
 msgstr "في config.ini، يجب أن يكون المعامل [%s] قيمة منطقية (true أو false، وليس %s). القيمة الافتراضية: False"
 
 #: core/utils.py:123
+#, python-format
 msgid "In config.ini, [%s] parameter must be an integer (not %s)"
 msgstr "في config.ini، يجب أن يكون المعامل [%s] عدداً صحيحاً (وليس %s)"
 
 #: core/utils.py:132
+#, python-format
 msgid "In config.ini, [%s] parameter must be a float (not %s)"
 msgstr "في config.ini، يجب أن يكون المعامل [%s] عدداً عشرياً (وليس %s)"
 
 #: core/utils.py:142
+#, python-format
 msgid "In config.ini, [%s] parameter must be a list of floats (not %s)"
 msgstr "في config.ini، يجب أن يكون المعامل [%s] قائمة أعداد عشرية (وليس %s)"
 
@@ -202,66 +226,82 @@ msgid "In config.ini, the specified font is not available. A default font will b
 msgstr "الخط المحدد في config.ini غير متاح. سيتم استخدام خط افتراضي."
 
 #: core/validation.py:35
+#, python-format
 msgid "should be a natural (0 included) integer (not %s)."
 msgstr "يجب أن يكون عدداً طبيعياً (بما في ذلك 0) (وليس %s)."
 
 #: core/validation.py:97
+#, python-format
 msgid "should be a positive float (not %s)"
 msgstr "يجب أن يكون عدداً عشرياً موجباً (وليس %s)"
 
 #: core/validation.py:216
+#, python-format
 msgid "should be a float between 0 and 1 (included) (not %s)"
 msgstr "يجب أن يكون عدداً عشرياً بين 0 و1 (ضمناً) (وليس %s)"
 
 #: core/validation.py:167 core/validation.py:163
+#, python-format
 msgid "should be an acceptable joystick key value (not %s). See documentation."
 msgstr "يجب أن يكون زراً صالحاً لعصا التحكم (وليس %s). راجع الوثائق."
 
 #: core/validation.py:179
+#, python-format
 msgid "should be an acceptable (keyboard or joystick) key value (not %s). See documentation."
 msgstr "يجب أن يكون مفتاحاً صالحاً (للوحة المفاتيح أو لعصا التحكم) (وليس %s). راجع الوثائق."
 
 #: core/validation.py:31
+#, python-format
 msgid "should be a string (not %s)."
 msgstr "يجب أن يكون سلسلة نصية (وليس %s)."
 
 #: core/validation.py:52
+#, python-format
 msgid "should be a positive (0 excluded) integer (not %s)."
 msgstr "يجب أن يكون عدداً صحيحاً موجباً (باستثناء 0) (وليس %s)."
 
 #: core/validation.py:130
+#, python-format
 msgid "should be comprised in %s (not %s)"
 msgstr "يجب أن يكون ضمن %s (وليس %s)"
 
 #: core/validation.py:147
+#, python-format
 msgid "should be an acceptable keyboard key value (not %s). See documentation."
 msgstr "يجب أن يكون مفتاحاً صالحاً للوحة المفاتيح (وليس %s). راجع الوثائق."
 
 #: core/validation.py:197
+#, python-format
 msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
 msgstr "يجب أن يتكون من حروف [a-z] أو أرقام [0-9] (وليس %s في %s)"
 
 #: core/validation.py:212
+#, python-format
 msgid "should be composed of valid callsigns (not %s)"
 msgstr "يجب أن يتكون من رموز نداء صالحة (وليس %s)"
 
 #: core/validation.py:235
+#, python-format
 msgid "should be available either in the Instruction or Questionnaire folder (not %s)"
 msgstr "يجب أن يكون موجوداً في المجلد Instruction أو Questionnaire (وليس %s)"
 
 #: core/validation.py:61
+#, python-format
 msgid "should be a boolean (not %s)."
 msgstr "يجب أن يكون قيمة منطقية (وليس %s)."
 
 #: core/validation.py:137
+#, python-format
 msgid "should be a valid regex expression (not %s)"
 msgstr "يجب أن يكون تعبيراً نمطياً (regex) صالحاً (وليس %s)"
 
 #: core/validation.py:78
+#, python-format
 msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
 msgstr "يجب أن تكون القيمة اسم لون (%s) أو قيم (R,G,B,a) أو قيمة سداسية عشرية (مثلاً #00ff00) (وليس %s)"
 
 #: core/validation.py:92
+#, python-format
 msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
 msgstr "يجب أن تكون قيم (R,G,B,a) كل منها بين 0 و255 (وليس %s)"
 
@@ -278,6 +318,7 @@ msgid "Pause"
 msgstr "إيقاف مؤقت"
 
 #: core/window.py:172
+#, python-format
 msgid "Session ID: %s"
 msgstr "معرّف الجلسة: %s"
 
@@ -286,10 +327,12 @@ msgid "Exit OpenMATB?"
 msgstr "الخروج من OpenMATB؟"
 
 #: core/window.py:190
+#, python-format
 msgid "In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected."
 msgstr "رقم الشاشة المحدد في config.ini يتجاوز عدد الشاشات المتاحة (%s). تم اختيار الشاشة الأخيرة."
 
 #: core/window.py:429
+#, python-format
 msgid "Error. No placement found for the [%s] alias"
 msgstr "خطأ. لم يتم العثور على موضع للاسم المستعار [%s]"
 
@@ -302,10 +345,12 @@ msgid "Communications"
 msgstr "الاتصالات"
 
 #: plugins/communications.py:199
+#, python-format
 msgid "Callsign \t\t %s"
 msgstr "رمز النداء \t\t %s"
 
 #: plugins/communications.py:153
+#, python-format
 msgid "Sound path %s does not exist. Check voiceidiom/voicegender combination."
 msgstr "مسار الصوت %s غير موجود. تحقق من تركيبة voiceidiom/voicegender."
 
@@ -366,6 +411,7 @@ msgid "Parallel port not found. Ensure /dev/parport0 exists and you have read/wr
 msgstr "لم يتم العثور على المنفذ المتوازي. تأكد من وجود /dev/parport0 ومن امتلاكك صلاحيات القراءة والكتابة (جرّب: sudo chmod 666 /dev/parport0)."
 
 #: plugins/parallelport.py:99
+#, python-brace-format
 msgid "Parallel port error: {error}"
 msgstr "خطأ في المنفذ المتوازي: {error}"
 

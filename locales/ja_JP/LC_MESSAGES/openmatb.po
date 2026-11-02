@@ -42,10 +42,12 @@ msgid "Warning, queue is empty"
 msgstr "警告：キューが空です"
 
 #: core/logreader.py:49
+#, python-format
 msgid "The desired session file (ID=%s) does not exist"
 msgstr "指定されたセッションファイル (ID=%s) は存在しません"
 
 #: core/logreader.py:53
+#, python-format
 msgid "Multiple session files match the desired session ID (%s)"
 msgstr "指定されたセッション ID (%s) に一致するセッションファイルが複数あります"
 
@@ -82,74 +84,92 @@ msgid "No error"
 msgstr "エラーなし"
 
 #: core/scenario.py:95
+#, python-format
 msgid "There were some errors in the scenario. See the %s file."
 msgstr "シナリオにエラーがあります。ファイル %s を参照してください。"
 
 #: core/scenario.py:48
+#, python-format
 msgid "%s was not found"
 msgstr "%s が見つかりません"
 
 #: core/scenario.py:76
+#, python-format
 msgid "Scenario error: %s is not a valid plugin name (l. %s)"
 msgstr "シナリオエラー：%s は有効なプラグイン名ではありません（%s 行目）"
 
 #: core/scenario.py:118
+#, python-format
 msgid "Line %s: '%s' is deprecated and will be ignored"
 msgstr "%s 行目：'%s' は非推奨のため無視されます"
 
 #: core/scenario.py:166
+#, python-format
 msgid "The (%s) plugin does not have a start command."
 msgstr "プラグイン (%s) に start コマンドがありません。"
 
 #: core/scenario.py:213
+#, python-format
 msgid "Error on line %s. This event does not trigger any command."
 msgstr "%s 行目でエラー。このイベントはどのコマンドも実行しません。"
 
 #: core/scenario.py:60
+#, python-format
 msgid "Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)"
 msgstr "シナリオエラー：%s 行目が H:MM:SS;プラグイン;コマンド の形式ではありません (%s)"
 
 #: core/scenario.py:197 core/scenario.py:208
+#, python-format
 msgid "Error on line %s. Invalid system command: %s"
 msgstr "%s 行目でエラー。無効なシステムコマンド：%s"
 
 #: core/scenario.py:217
+#, python-format
 msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
 msgstr "%s 行目でエラー。イベントの要素は最大 2 つです（パラメータ;値）。"
 
 #: core/scenario.py:173
+#, python-format
 msgid "The (%s) plugin does not have a stop command."
 msgstr "プラグイン (%s) に stop コマンドがありません。"
 
 #: core/scenario.py:199
+#, python-format
 msgid "Error on line %s. Agent command requires a name argument"
 msgstr "%s 行目でエラー。agent コマンドには名前の引数が必要です"
 
 #: core/scenario.py:189
+#, python-format
 msgid "The (%s) plugin has a start command without a preceding filename command."
 msgstr "プラグイン (%s) の start コマンドの前に filename コマンドがありません。"
 
 #: core/scenario.py:202
+#, python-format
 msgid "Error on line %s. Unknown agent: %s"
 msgstr "%s 行目でエラー。不明なエージェント：%s"
 
 #: core/scenario.py:224
+#, python-format
 msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
 msgstr "%s 行目でエラー。メソッド (%s) はプラグイン (%s) では使用できません"
 
 #: core/scenario.py:206
+#, python-format
 msgid "Error on line %s. mousecontrol command requires True/False argument"
 msgstr "%s 行目でエラー。mousecontrol コマンドには True/False の引数が必要です"
 
 #: core/scenario.py:271
+#, python-format
 msgid "Error on line %s. The %s plugin does not have a %s parameter"
 msgstr "%s 行目でエラー。%s プラグインに %s パラメータはありません"
 
 #: core/scenario.py:245
+#, python-format
 msgid "Warning on line %s. Parameter (%s) has no verification method"
 msgstr "%s 行目で警告。パラメータ (%s) に検証方法がありません"
 
 #: core/scenario.py:263
+#, python-format
 msgid "Error on line %s. %s "
 msgstr "%s 行目でエラー。%s "
 
@@ -182,18 +202,22 @@ msgid "UP/DOWN: Navigate"
 msgstr "上/下：移動"
 
 #: core/utils.py:113
+#, python-format
 msgid "In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False"
 msgstr "config.ini のパラメータ [%s] はブール値（true または false）である必要があります（%s ではなく）。False を使用します"
 
 #: core/utils.py:123
+#, python-format
 msgid "In config.ini, [%s] parameter must be an integer (not %s)"
 msgstr "config.ini のパラメータ [%s] は整数である必要があります（%s ではなく）"
 
 #: core/utils.py:132
+#, python-format
 msgid "In config.ini, [%s] parameter must be a float (not %s)"
 msgstr "config.ini のパラメータ [%s] は小数である必要があります（%s ではなく）"
 
 #: core/utils.py:142
+#, python-format
 msgid "In config.ini, [%s] parameter must be a list of floats (not %s)"
 msgstr "config.ini のパラメータ [%s] は小数のリストである必要があります（%s ではなく）"
 
@@ -202,66 +226,82 @@ msgid "In config.ini, the specified font is not available. A default font will b
 msgstr "config.ini で指定されたフォントは使用できません。既定のフォントを使用します。"
 
 #: core/validation.py:35
+#, python-format
 msgid "should be a natural (0 included) integer (not %s)."
 msgstr "は 0 以上の整数である必要があります（%s ではなく）。"
 
 #: core/validation.py:97
+#, python-format
 msgid "should be a positive float (not %s)"
 msgstr "は正の小数である必要があります（%s ではなく）"
 
 #: core/validation.py:216
+#, python-format
 msgid "should be a float between 0 and 1 (included) (not %s)"
 msgstr "は 0 以上 1 以下の小数である必要があります（%s ではなく）"
 
 #: core/validation.py:167 core/validation.py:163
+#, python-format
 msgid "should be an acceptable joystick key value (not %s). See documentation."
 msgstr "は有効なジョイスティックのボタンである必要があります（%s ではなく）。ドキュメントを参照してください。"
 
 #: core/validation.py:179
+#, python-format
 msgid "should be an acceptable (keyboard or joystick) key value (not %s). See documentation."
 msgstr "は有効な（キーボードまたはジョイスティックの）キーである必要があります（%s ではなく）。ドキュメントを参照してください。"
 
 #: core/validation.py:31
+#, python-format
 msgid "should be a string (not %s)."
 msgstr "は文字列である必要があります（%s ではなく）。"
 
 #: core/validation.py:52
+#, python-format
 msgid "should be a positive (0 excluded) integer (not %s)."
 msgstr "は正の整数（0 を除く）である必要があります（%s ではなく）。"
 
 #: core/validation.py:130
+#, python-format
 msgid "should be comprised in %s (not %s)"
 msgstr "は %s のいずれかである必要があります（%s ではなく）"
 
 #: core/validation.py:147
+#, python-format
 msgid "should be an acceptable keyboard key value (not %s). See documentation."
 msgstr "は有効なキーボードのキーである必要があります（%s ではなく）。ドキュメントを参照してください。"
 
 #: core/validation.py:197
+#, python-format
 msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
 msgstr "は英字 [a-z] または数字 [0-9] で構成する必要があります（%s を含めないでください：%s）"
 
 #: core/validation.py:212
+#, python-format
 msgid "should be composed of valid callsigns (not %s)"
 msgstr "は有効なコールサインで構成する必要があります（%s ではなく）"
 
 #: core/validation.py:235
+#, python-format
 msgid "should be available either in the Instruction or Questionnaire folder (not %s)"
 msgstr "は Instruction または Questionnaire フォルダにある必要があります（%s ではなく）"
 
 #: core/validation.py:61
+#, python-format
 msgid "should be a boolean (not %s)."
 msgstr "はブール値である必要があります（%s ではなく）。"
 
 #: core/validation.py:137
+#, python-format
 msgid "should be a valid regex expression (not %s)"
 msgstr "は有効な正規表現である必要があります（%s ではなく）"
 
 #: core/validation.py:78
+#, python-format
 msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
 msgstr "は色の名前（%s）、(R,G,B,a) または 16 進数（例：#00ff00）の値である必要があります（%s ではなく）"
 
 #: core/validation.py:92
+#, python-format
 msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
 msgstr "はそれぞれ 0 から 255 の (R,G,B,a) 値である必要があります（%s ではなく）"
 
@@ -278,6 +318,7 @@ msgid "Pause"
 msgstr "一時停止"
 
 #: core/window.py:172
+#, python-format
 msgid "Session ID: %s"
 msgstr "セッション ID：%s"
 
@@ -286,10 +327,12 @@ msgid "Exit OpenMATB?"
 msgstr "OpenMATB を終了しますか？"
 
 #: core/window.py:190
+#, python-format
 msgid "In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected."
 msgstr "config.ini で指定された画面番号が使用可能な画面数 (%s) を超えています。最後の画面を使用します。"
 
 #: core/window.py:429
+#, python-format
 msgid "Error. No placement found for the [%s] alias"
 msgstr "エラー。エイリアス [%s] の配置が見つかりません"
 
@@ -302,10 +345,12 @@ msgid "Communications"
 msgstr "通信"
 
 #: plugins/communications.py:199
+#, python-format
 msgid "Callsign \t\t %s"
 msgstr "コールサイン \t\t %s"
 
 #: plugins/communications.py:153
+#, python-format
 msgid "Sound path %s does not exist. Check voiceidiom/voicegender combination."
 msgstr "音声のパス %s は存在しません。voiceidiom/voicegender の組み合わせを確認してください。"
 
@@ -366,6 +411,7 @@ msgid "Parallel port not found. Ensure /dev/parport0 exists and you have read/wr
 msgstr "パラレルポートが見つかりません。/dev/parport0 が存在し、読み書き権限があることを確認してください（例：sudo chmod 666 /dev/parport0）。"
 
 #: plugins/parallelport.py:99
+#, python-brace-format
 msgid "Parallel port error: {error}"
 msgstr "パラレルポートのエラー：{error}"
 

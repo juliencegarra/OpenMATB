@@ -47,10 +47,12 @@ msgid "Warning, queue is empty"
 msgstr "Warning, queue is empty"
 
 #: core/logreader.py:49
+#, python-format
 msgid "The desired session file (ID=%s) does not exist"
 msgstr "The desired session file (ID=%s) does not exist"
 
 #: core/logreader.py:53
+#, python-format
 msgid "Multiple session files match the desired session ID (%s)"
 msgstr "Multiple session files match the desired session ID (%s)"
 
@@ -87,74 +89,92 @@ msgid "No error"
 msgstr "No error"
 
 #: core/scenario.py:95
+#, python-format
 msgid "There were some errors in the scenario. See the %s file."
 msgstr "There were some errors in the scenario. See the %s file."
 
 #: core/scenario.py:48
+#, python-format
 msgid "%s was not found"
 msgstr "%s was not found"
 
 #: core/scenario.py:76
+#, python-format
 msgid "Scenario error: %s is not a valid plugin name (l. %s)"
 msgstr "Scenario error: %s is not a valid plugin name (l. %s)"
 
 #: core/scenario.py:118
+#, python-format
 msgid "Line %s: '%s' is deprecated and will be ignored"
 msgstr "Line %s: '%s' is deprecated and will be ignored"
 
 #: core/scenario.py:166
+#, python-format
 msgid "The (%s) plugin does not have a start command."
 msgstr "The (%s) plugin does not have a start command."
 
 #: core/scenario.py:213
+#, python-format
 msgid "Error on line %s. This event does not trigger any command."
 msgstr "Error on line %s. This event does not trigger any command."
 
 #: core/scenario.py:60
+#, python-format
 msgid "Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)"
 msgstr "Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)"
 
 #: core/scenario.py:197 core/scenario.py:208
+#, python-format
 msgid "Error on line %s. Invalid system command: %s"
 msgstr "Error on line %s. Invalid system command: %s"
 
 #: core/scenario.py:217
+#, python-format
 msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
 msgstr "Error on line %s. Maximum length of an event is 2 (parameter;value)."
 
 #: core/scenario.py:173
+#, python-format
 msgid "The (%s) plugin does not have a stop command."
 msgstr "The (%s) plugin does not have a stop command."
 
 #: core/scenario.py:199
+#, python-format
 msgid "Error on line %s. Agent command requires a name argument"
 msgstr "Error on line %s. Agent command requires a name argument"
 
 #: core/scenario.py:189
+#, python-format
 msgid "The (%s) plugin has a start command without a preceding filename command."
 msgstr "The (%s) plugin has a start command without a preceding filename command."
 
 #: core/scenario.py:202
+#, python-format
 msgid "Error on line %s. Unknown agent: %s"
 msgstr "Error on line %s. Unknown agent: %s"
 
 #: core/scenario.py:224
+#, python-format
 msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
 msgstr "Error on line %s. Method (%s) is not available for the plugin (%s)"
 
 #: core/scenario.py:206
+#, python-format
 msgid "Error on line %s. mousecontrol command requires True/False argument"
 msgstr "Error on line %s. mousecontrol command requires True/False argument"
 
 #: core/scenario.py:271
+#, python-format
 msgid "Error on line %s. The %s plugin does not have a %s parameter"
 msgstr "Error on line %s. The %s plugin does not have a %s parameter"
 
 #: core/scenario.py:245
+#, python-format
 msgid "Warning on line %s. Parameter (%s) has no verification method"
 msgstr "Warning on line %s. Parameter (%s) has no verification method"
 
 #: core/scenario.py:263
+#, python-format
 msgid "Error on line %s. %s "
 msgstr "Error on line %s. %s "
 
@@ -187,18 +207,22 @@ msgid "UP/DOWN: Navigate"
 msgstr "UP/DOWN: Navigate"
 
 #: core/utils.py:113
+#, python-format
 msgid "In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False"
 msgstr "In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False"
 
 #: core/utils.py:123
+#, python-format
 msgid "In config.ini, [%s] parameter must be an integer (not %s)"
 msgstr "In config.ini, [%s] parameter must be an integer (not %s)"
 
 #: core/utils.py:132
+#, python-format
 msgid "In config.ini, [%s] parameter must be a float (not %s)"
 msgstr "In config.ini, [%s] parameter must be a float (not %s)"
 
 #: core/utils.py:142
+#, python-format
 msgid "In config.ini, [%s] parameter must be a list of floats (not %s)"
 msgstr "In config.ini, [%s] parameter must be a list of floats (not %s)"
 
@@ -207,66 +231,82 @@ msgid "In config.ini, the specified font is not available. A default font will b
 msgstr "In config.ini, the specified font is not available. A default font will be used."
 
 #: core/validation.py:35
+#, python-format
 msgid "should be a natural (0 included) integer (not %s)."
 msgstr "should be a natural (0 included) integer (not %s)."
 
 #: core/validation.py:97
+#, python-format
 msgid "should be a positive float (not %s)"
 msgstr "should be a positive float (not %s)"
 
 #: core/validation.py:216
+#, python-format
 msgid "should be a float between 0 and 1 (included) (not %s)"
 msgstr "should be a float between 0 and 1 (included) (not %s)"
 
 #: core/validation.py:167 core/validation.py:163
+#, python-format
 msgid "should be an acceptable joystick key value (not %s). See documentation."
 msgstr "should be an acceptable joystick key value (not %s). See documentation."
 
 #: core/validation.py:179
+#, python-format
 msgid "should be an acceptable (keyboard or joystick) key value (not %s). See documentation."
 msgstr "should be an acceptable (keyboard or joystick) key value (not %s). See documentation."
 
 #: core/validation.py:31
+#, python-format
 msgid "should be a string (not %s)."
 msgstr "should be a string (not %s)."
 
 #: core/validation.py:52
+#, python-format
 msgid "should be a positive (0 excluded) integer (not %s)."
 msgstr "should be a positive (0 excluded) integer (not %s)."
 
 #: core/validation.py:130
+#, python-format
 msgid "should be comprised in %s (not %s)"
 msgstr "should be comprised in %s (not %s)"
 
 #: core/validation.py:147
+#, python-format
 msgid "should be an acceptable keyboard key value (not %s). See documentation."
 msgstr "should be an acceptable keyboard key value (not %s). See documentation."
 
 #: core/validation.py:197
+#, python-format
 msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
 msgstr "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
 
 #: core/validation.py:212
+#, python-format
 msgid "should be composed of valid callsigns (not %s)"
 msgstr "should be composed of valid callsigns (not %s)"
 
 #: core/validation.py:235
+#, python-format
 msgid "should be available either in the Instruction or Questionnaire folder (not %s)"
 msgstr "should be available either in the Instruction or Questionnaire folder (not %s)"
 
 #: core/validation.py:61
+#, python-format
 msgid "should be a boolean (not %s)."
 msgstr "should be a boolean (not %s)."
 
 #: core/validation.py:137
+#, python-format
 msgid "should be a valid regex expression (not %s)"
 msgstr "should be a valid regex expression (not %s)"
 
 #: core/validation.py:78
+#, python-format
 msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
 msgstr "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
 
 #: core/validation.py:92
+#, python-format
 msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
 msgstr "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
 
@@ -283,6 +323,7 @@ msgid "Pause"
 msgstr "Pause"
 
 #: core/window.py:172
+#, python-format
 msgid "Session ID: %s"
 msgstr "Session ID: %s"
 
@@ -291,10 +332,12 @@ msgid "Exit OpenMATB?"
 msgstr "Exit OpenMATB?"
 
 #: core/window.py:190
+#, python-format
 msgid "In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected."
 msgstr "In config.ini, the specified screen index exceeds the number of available screens (%s). Last screen selected."
 
 #: core/window.py:429
+#, python-format
 msgid "Error. No placement found for the [%s] alias"
 msgstr "Error. No placement found for the [%s] alias"
 
@@ -307,10 +350,12 @@ msgid "Communications"
 msgstr "Communications"
 
 #: plugins/communications.py:199
+#, python-format
 msgid "Callsign \t\t %s"
 msgstr "Callsign \t\t %s"
 
 #: plugins/communications.py:153
+#, python-format
 msgid "Sound path %s does not exist. Check voiceidiom/voicegender combination."
 msgstr "Sound path %s does not exist. Check voiceidiom/voicegender combination."
 
@@ -371,6 +416,7 @@ msgid "Parallel port not found. Ensure /dev/parport0 exists and you have read/wr
 msgstr "Parallel port not found. Ensure /dev/parport0 exists and you have read/write permissions (try: sudo chmod 666 /dev/parport0)."
 
 #: plugins/parallelport.py:99
+#, python-brace-format
 msgid "Parallel port error: {error}"
 msgstr "Parallel port error: {error}"
 

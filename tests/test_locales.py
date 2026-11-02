@@ -51,6 +51,29 @@ def test_update_keeps_the_fuzzy_translations(tmp_path):
     assert build.read_po(po)[1] == {"Continue": "Weiter"}
 
 
+def test_format_flags(tmp_path):
+    """The messages with placeholders are flagged as xgettext does, so that Weblate checks the translations, and the
+    flags are written with fuzzy."""
+    assert build.flags("Session ID: %s") == ["python-format"]
+    assert build.flags("Parallel port error: {error}") == ["python-brace-format"]
+    assert build.flags("Continue") == []
+    assert build.flags("100%% done") == []
+    assert build.flags("(R,G,B,a) values") == []
+
+    po: Path = tmp_path / "openmatb.po"
+    build.write_po(po, {}, {"%s was not found": ["a.py:1"]}, {}, {"%s was not found": "%s introuvable"})
+    assert '#, fuzzy, python-format\nmsgid "%s was not found"' in po.read_text(encoding="utf-8")
+    assert build.read_fuzzy(po) == {"%s was not found": "%s introuvable"}
+
+
+def test_pot_flags_the_placeholders():
+    """Every message of the .pot with a placeholder is flagged (python locales/build.py pot after a change)."""
+    text: str = build.POT.read_text(encoding="utf-8")
+    for message in POT_MESSAGES:
+        if build.flags(message):
+            assert f"#, {', '.join(build.flags(message))}\nmsgid {build._quote(message)}" in text, message
+
+
 def test_dynamic_messages_are_translated_through_a_variable():
     """The messages added by hand to the .pot are not found in the code as _("...") (otherwise remove them)."""
     listed = build.extract
