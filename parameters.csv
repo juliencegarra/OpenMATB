@@ -9,12 +9,12 @@ sysmon,taskupdatetime,Delay between plugin updates (ms),(positive integer),200
 sysmon,alerttimeout,Maximum duration of a failure (ms),(positive integer),10000
 sysmon,automaticsolver,"When True, any failure will be automatically corrected after an `automaticsolverdelay` duration",(boolean),False
 sysmon,automaticsolverdelay,"Delay (ms) between a failure onset and its automatic correction, if `automaticsolver` == True",(positive integer),1000
-sysmon,displayautomationstate,"If True, the current automation state (MANUAL vs AUTO ON) of the task is displayed.",(boolean),True
+sysmon,displayautomationstate,"If True, the current automation state (MANUAL vs AUTO) of the task is displayed.",(boolean),True
 sysmon,allowanykey,"If True, the subject can use any system monitoring key, or SPACE, to signal a failure. For instance, he or she could use the F2 key to signal a failure for the F4 gauge. The key of a failing gauge resolves it; any other key resolves the first failure. Without failure, the key is a false alarm.",(boolean),False
 sysmon,feedbackduration,"Duration (ms) of feedbacks, if enabled",(positive integer),1500
 sysmon,feedbacks-positive-active,Is the positive feedback (correct response) enabled?,(boolean),True
 sysmon,feedbacks-positive-color,Color of the positive feedback if enabled,"`WHITE`, `BLACK`, `GREEN`, `RED`, `BACKGROUND`, `LIGHTGREY`, `DARKGREY`, `GREY`, `BLUE`, `CYAN`, `YELLOW`, `WHITE_TRANSLUCENT`, a hexadecimal value (`#RRGGBB`) or `(R,G,B,a)` (0-255)",GREEN
-sysmon,feedbacks-negative-active,Is the negative feedback (correct response) enabled?,(boolean),True
+sysmon,feedbacks-negative-active,Is the negative feedback (wrong response or missed failure) enabled?,(boolean),True
 sysmon,feedbacks-negative-color,Color of the negative feedback if enabled,"`WHITE`, `BLACK`, `GREEN`, `RED`, `BACKGROUND`, `LIGHTGREY`, `DARKGREY`, `GREY`, `BLUE`, `CYAN`, `YELLOW`, `WHITE_TRANSLUCENT`, a hexadecimal value (`#RRGGBB`) or `(R,G,B,a)` (0-255)",RED
 sysmon,lights-1-name,Name of the first (left) light,(string),F5
 sysmon,lights-1-failure,Set this to True if you want to trigger a failure,(boolean),False
@@ -50,7 +50,7 @@ track,taskupdatetime,Delay between plugin updates (ms),(positive integer),20
 track,cursorcolor,Color of the moving cursor,"`WHITE`, `BLACK`, `GREEN`, `RED`, `BACKGROUND`, `LIGHTGREY`, `DARKGREY`, `GREY`, `BLUE`, `CYAN`, `YELLOW`, `WHITE_TRANSLUCENT`, a hexadecimal value (`#RRGGBB`) or `(R,G,B,a)` (0-255)",BLACK
 track,cursorcoloroutside,Color of the moving cursor when outside the target area,"`WHITE`, `BLACK`, `GREEN`, `RED`, `BACKGROUND`, `LIGHTGREY`, `DARKGREY`, `GREY`, `BLUE`, `CYAN`, `YELLOW`, `WHITE_TRANSLUCENT`, a hexadecimal value (`#RRGGBB`) or `(R,G,B,a)` (0-255)",RED
 track,automaticsolver,"When True, the cursor movement is automatically compensated toward the center",(boolean),False
-track,displayautomationstate,"If True, the current automation state (MANUAL vs AUTO ON) of the task is displayed.",(boolean),True
+track,displayautomationstate,"If True, the current automation state (MANUAL vs AUTO) of the task is displayed.",(boolean),True
 track,targetproportion,Radius proportion of the target area. 0.1 means that the radius of the target area is 10% of the task total width. 0 means no target area at all.,(unit_interval=[0:1]),0.25
 track,joystickforce,"The smaller this factor, the more the joystick movement is attenuated. Greater values leads to a more sensitive joystick.",(integer),1
 track,inverseaxis,Set this to True if joystick actions should be inverted,(boolean),False
@@ -61,11 +61,12 @@ scheduling,minduration,Duration (minutes) of the displayed scheduling,(positive 
 scheduling,displaychronometer,Should the elapsed time be displayed?,(boolean),True
 scheduling,reversechronometer,Should elapsed time be turned to remaining time?,(boolean),False
 scheduling,displayedplugins,List of plugin schedules to display,"(list of task plugins alias = `sysmon`, `track`, `communications`, `resman`)","[`sysmon`, `track`, `communications`, `resman`]"
+scheduling,labels,Letters displayed above each timeline,"(subset of `S`, `T`, `C`, `R`)","[`S`, `T`, `C`, `R`]"
 communications,title,"Title of the task, displayed if the plugin is visible",(string),Communications
 communications,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",bottomleft
 communications,taskupdatetime,Delay between plugin updates (ms),(positive integer),80
 communications,automaticsolver,"When True, the target frequency is automatically set by an automation",(boolean),False
-communications,displayautomationstate,"If True, the current automation state (MANUAL vs AUTO ON) of the task is displayed.",(boolean),True
+communications,displayautomationstate,"If True, the current automation state (MANUAL vs AUTO) of the task is displayed.",(boolean),True
 communications,callsignregex,Regular expression pattern for callsign generation,(regular expression),[A-Z][A-Z][A-Z]\d\d\d
 communications,owncallsign,"Callsign of the subject. If empty, automatically generated according to callsignregex",(string),(empty)
 communications,othercallsignnumber,Number of irrelevant distracting callsigns,(positive integer),5
@@ -82,13 +83,18 @@ communications,maxresponsedelay,Maximum response delay (ms),(positive integer),2
 communications,feedbackduration,Duration (ms) of the feedbacks when enabled,(positive integer),1500
 communications,feedbacks-positive-active,Is the positive feedback (correct response) enabled?,(boolean),False
 communications,feedbacks-positive-color,Color of the positive feedback if enabled,"`WHITE`, `BLACK`, `GREEN`, `RED`, `BACKGROUND`, `LIGHTGREY`, `DARKGREY`, `GREY`, `BLUE`, `CYAN`, `YELLOW`, `WHITE_TRANSLUCENT`, a hexadecimal value (`#RRGGBB`) or `(R,G,B,a)` (0-255)",GREEN
-communications,feedbacks-negative-active,Is the negative feedback (correct response) enabled?,(boolean),False
+communications,feedbacks-negative-active,Is the negative feedback (wrong response or missed prompt) enabled?,(boolean),False
 communications,feedbacks-negative-color,Color of the negative feedback if enabled,"`WHITE`, `BLACK`, `GREEN`, `RED`, `BACKGROUND`, `LIGHTGREY`, `DARKGREY`, `GREY`, `BLUE`, `CYAN`, `YELLOW`, `WHITE_TRANSLUCENT`, a hexadecimal value (`#RRGGBB`) or `(R,G,B,a)` (0-255)",RED
+communications,keys-selectradioup,Key to select the radio above,(keyboard or joystick key),UP
+communications,keys-selectradiodown,Key to select the radio below,(keyboard or joystick key),DOWN
+communications,keys-tunefrequencyup,Key to increase the frequency of the selected radio,(keyboard or joystick key),RIGHT
+communications,keys-tunefrequencydown,Key to decrease the frequency of the selected radio,(keyboard or joystick key),LEFT
+communications,keys-validateresponse,Key to validate the response,(keyboard or joystick key),ENTER
 resman,title,"Title of the task, displayed if the plugin is visible",(string),Resources management
 resman,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",bottommid
 resman,taskupdatetime,Delay between plugin updates (ms),(positive integer),2000
 resman,automaticsolver,"When True, the target frequency is automatically set by an automation",(boolean),False
-resman,displayautomationstate,"If True, the current automation state (MANUAL vs AUTO ON) of the task is displayed.",(boolean),True
+resman,displayautomationstate,"If True, the current automation state (MANUAL vs AUTO) of the task is displayed.",(boolean),True
 resman,toleranceradius,Radius of the tolerance area (0=do not display tolerance area),(integer),250
 resman,tolerancecolor,Color of the tolerance area when volume is inside it,"`WHITE`, `BLACK`, `GREEN`, `RED`, `BACKGROUND`, `LIGHTGREY`, `DARKGREY`, `GREY`, `BLUE`, `CYAN`, `YELLOW`, `WHITE_TRANSLUCENT`, a hexadecimal value (`#RRGGBB`) or `(R,G,B,a)` (0-255)",BLACK
 resman,tolerancecoloroutside,Color of the tolerance area when volume is outside it,"`WHITE`, `BLACK`, `GREEN`, `RED`, `BACKGROUND`, `LIGHTGREY`, `DARKGREY`, `GREY`, `BLUE`, `CYAN`, `YELLOW`, `WHITE_TRANSLUCENT`, a hexadecimal value (`#RRGGBB`) or `(R,G,B,a)` (0-255)",BLACK
@@ -151,20 +157,23 @@ resman,pump-7-key,Keyboard key to toggle the pump,(keyboard key),NUM_7
 resman,pump-8-flow,Pump debit per minute,(positive integer),400
 resman,pump-8-state,Current state of the pump,`on` or `off` or `failure`,off
 resman,pump-8-key,Keyboard key to toggle the pump,(keyboard key),NUM_8
-instructions,title,"Title of the task, displayed if the plugin is visible",(string),Instructions
+instructions,title,"Title of the plugin (not displayed: the title of a blocking plugin is not displayed)",(string),(empty)
 instructions,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",fullscreen
 instructions,taskupdatetime,Delay between plugin updates (ms),(positive integer),15
-instructions,filename,Name of the instructions file to use,(string),(empty)
+instructions,filename,"Name of the instructions file to use, in includes/instructions (may include a subfolder, e.g. guided_tour_en/full.txt)",(string),(empty)
 instructions,response-text,String chain to prompt the subject to press a continuing key,(string),'Press SPACE to continue’
-instructions,response-key,Keyboard key to continue,(keyboard key),space
+instructions,response-key,Keyboard key to continue,"(keyboard key: pyglet key name, uppercase, e.g. `SPACE`, `ENTER`)",SPACE
 instructions,maxdurationsec,"Maximum displaying duration of each page (seconds, 0: no limit)",(positive integer),0
-genericscales,title,"Title of the task, displayed if the plugin is visible",(string),Generic scales
+instructions,allowkeypress,Can the participant go to the next page with the response key?,(boolean),True
+genericscales,title,"Title of the plugin (not displayed: the title of a blocking plugin is not displayed)",(string),(empty)
 genericscales,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",fullscreen
 genericscales,taskupdatetime,Delay between plugin updates (ms),(positive integer),15
-genericscales,filename,Name of the instructions file to use,(string),(empty)
+genericscales,filename,"Name of the questionnaire file to use, in includes/questionnaires (may include a subfolder)",(string),(empty)
 genericscales,response-text,String chain to prompt the subject to press a continuing key,(string),'Press SPACE to validate’
-genericscales,response-key,Keyboard key to continue,(keyboard key),space
+genericscales,response-key,Keyboard key to validate,"(keyboard key: pyglet key name, uppercase, e.g. `SPACE`, `ENTER`)",SPACE
 genericscales,maxdurationsec,"Maximum displaying duration of each page (seconds, 0: no limit)",(positive integer),0
+genericscales,allowkeypress,"Are the keys enabled (the arrow keys and the response key)? With False, the scales can only be set with the mouse, and only maxdurationsec ends a screen",(boolean),True
+genericscales,showvalue,Should the current value of each scale be displayed next to it?,(boolean),False
 performance,title,"Title of the task, displayed if the plugin is visible",(string),Performance
 performance,taskplacement,Task location in a 3x2 canvas,"`topleft`, `topmid`, `topright`, `bottomleft`, `bottommid`, `bottomright`, `fullscreen`",topright
 performance,taskupdatetime,Delay between plugin updates (ms),(positive integer),50
@@ -178,7 +187,7 @@ performance,criticalcolor,Color of the performance bar when performance is criti
 labstreaminglayer,marker,Set this parameter with a string chain to send it through LSL,(string),(empty)
 labstreaminglayer,streamsession,Should the whole session log be streamed through LSL?,(boolean),False
 labstreaminglayer,pauseatstart,"Should a pause screen be proposed at LSL start, to allow the user to add the stream in the LabRecorder?",(boolean),False
-parallelport,trigger,"Set this parameter with a 8-bit integer (1-256), to change the parallel port state",(positive integer),0
+parallelport,trigger,"Set this parameter with a 8-bit integer (1-255), to change the parallel port state",(positive integer),0
 parallelport,delayms,Delay (ms) before the parallel port is set back to its default value (0),(positive integer),5
 generictrigger,state,"Set the state of the trigger",(string),""
 
