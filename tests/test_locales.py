@@ -30,6 +30,27 @@ def test_pot_is_up_to_date():
     assert set(POT_MESSAGES) == set(build.extract())
 
 
+def test_update_keeps_the_fuzzy_translations(tmp_path):
+    """A translation to review (fuzzy, e.g. "Needs editing" in Weblate) is kept by update, and not compiled. The
+    wrapped lines, the previous message (#|) and the obsolete entries (#~) written by Weblate are read."""
+    po: Path = tmp_path / "openmatb.po"
+    po.write_text(
+        'msgid ""\nmsgstr ""\n"Language: de_DE\\n"\n\n'
+        '#, fuzzy\n#| msgid "Warn"\nmsgid "Warning"\nmsgstr ""\n"Warn"\n"ung?"\n\n'
+        'msgid "Continue"\nmsgstr "Weiter"\n\n#~ msgid "Old message"\n#~ msgstr "Alte Nachricht"\n',
+        encoding="utf-8",
+    )
+    header, translations = build.read_po(po)
+    assert header == {"Language": "de_DE"}
+    assert translations == {"Continue": "Weiter"}
+    assert build.read_fuzzy(po) == {"Warning": "Warnung?"}
+
+    build.write_po(po, header, {"Warning": ["a.py:1"], "Continue": ["a.py:2"]}, translations, build.read_fuzzy(po))
+    assert '#, fuzzy\nmsgid "Warning"\nmsgstr "Warnung?"' in po.read_text(encoding="utf-8")
+    assert build.read_fuzzy(po) == {"Warning": "Warnung?"}
+    assert build.read_po(po)[1] == {"Continue": "Weiter"}
+
+
 def test_dynamic_messages_are_translated_through_a_variable():
     """The messages added by hand to the .pot are not found in the code as _("...") (otherwise remove them)."""
     listed = build.extract

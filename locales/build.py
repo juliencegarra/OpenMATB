@@ -8,7 +8,10 @@
     python locales/build.py update     Add the new messages of openmatb.pot to each openmatb.po (untranslated)
     python locales/build.py mo         Compile each openmatb.po into openmatb.mo
 
-The .po files can also be edited with Poedit. After a change of the code: pot, update, translate, mo.
+The .po files can also be edited with Poedit, or online with Weblate (see locales/README.md). After a change of the
+code: pot, update, translate, mo (.github/workflows/translations.yml runs them after each push). update keeps the
+fuzzy translations (to review); mo leaves them out, as msgfmt does. pot keeps the file unchanged when its messages
+are, so that only real changes are committed.
 """
 
 from __future__ import annotations
@@ -60,6 +63,16 @@ def extract() -> dict[str, list[str]]:
 def read_po(path: Path) -> tuple[dict[str, str], dict[str, str]]:
     """The header of a .po file (its fields), and its translations (msgid: msgstr). Fuzzy entries are ignored, as
     msgfmt does."""
+    return _read_po(path, fuzzy_entries=False)
+
+
+def read_fuzzy(path: Path) -> dict[str, str]:
+    """The fuzzy entries of a .po file (msgid: msgstr): translations to review (e.g. marked "Needs editing" in
+    Weblate). They are not compiled, but update keeps them."""
+    return _read_po(path, fuzzy_entries=True)[1]
+
+
+def _read_po(path: Path, fuzzy_entries: bool) -> tuple[dict[str, str], dict[str, str]]:
     entries: dict[str, str] = {}
     # Entries are separated by blank lines: comments ("#," gives the flags), msgid, msgstr and their continuations
     for block in path.read_text(encoding="utf-8-sig").replace("\r\n", "\n").split("\n\n"):
@@ -75,7 +88,9 @@ def read_po(path: Path) -> tuple[dict[str, str], dict[str, str]]:
                 fields[field] = ast.literal_eval(value)
             elif line.startswith('"') and field:
                 fields[field] += ast.literal_eval(line)
-        if "msgid" in fields and (not fuzzy or fields["msgid"] == ""):
+        if "msgid" not in fields:  # Comments only, or an obsolete entry (#~ msgid ...)
+            continue
+        if fields["msgid"] == "" or fuzzy == fuzzy_entries:  # The header is read with both
             entries[fields["msgid"]] = fields.get("msgstr", "")
 
     header: dict[str, str] = {}
@@ -89,15 +104,25 @@ def _quote(text: str) -> str:
     return '"' + text.replace("\\", "\\\\").replace('"', '\\"').replace("\t", "\\t").replace("\n", "\\n") + '"'
 
 
-def write_po(path: Path, header: dict[str, str], messages: dict[str, list[str]], translations: dict[str, str]) -> None:
+def write_po(
+    path: Path,
+    header: dict[str, str],
+    messages: dict[str, list[str]],
+    translations: dict[str, str],
+    fuzzy: dict[str, str] | None = None,
+) -> None:
+    """Write a .po file: the messages in order, with their translation, or their fuzzy translation (to review)."""
+    fuzzy = fuzzy or {}
     lines: list[str] = ["# OpenMATB translations (see locales/build.py).", "#", 'msgid ""', 'msgstr ""']
     lines += [_quote(f"{name}: {value}\n") for name, value in header.items()]
     for msgid, locations in messages.items():
+        is_fuzzy: bool = not translations.get(msgid) and bool(fuzzy.get(msgid))
+        lines += ["", "#: " + " ".join(locations)]
+        if is_fuzzy:
+            lines.append("#, fuzzy")
         lines += [
-            "",
-            "#: " + " ".join(locations),
             "msgid " + _quote(msgid),
-            "msgstr " + _quote(translations.get(msgid, "")),
+            "msgstr " + _quote(fuzzy[msgid] if is_fuzzy else translations.get(msgid, "")),
         ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
@@ -133,6 +158,8 @@ def po_files() -> list[Path]:
 def main(command: str) -> None:
     now: str = datetime.datetime.now().astimezone().strftime("%Y-%m-%d %H:%M%z")
     if command == "pot":
+        messages: dict[str, list[str]] = extract()
+        previous: str | None = POT.read_text(encoding="utf-8") if POT.exists() else None
         header: dict[str, str] = {
             "Project-Id-Version": "OpenMATB",
             "POT-Creation-Date": now,
@@ -140,16 +167,25 @@ def main(command: str) -> None:
             "Content-Type": "text/plain; charset=UTF-8",
             "Content-Transfer-Encoding": "8bit",
         }
-        messages: dict[str, list[str]] = extract()
-        write_po(POT, header, messages, {})
+        if previous is not None:
+            # Same messages at the same places: the file is kept as it is (its date too), so that the automatic
+            # update (.github/workflows/translations.yml) commits only real changes
+            header["POT-Creation-Date"] = read_po(POT)[0].get("POT-Creation-Date", now)
+            write_po(POT, header, messages, {})
+            if POT.read_text(encoding="utf-8") != previous:
+                header["POT-Creation-Date"] = now
+                write_po(POT, header, messages, {})
+        else:
+            write_po(POT, header, messages, {})
         print(f"{POT.relative_to(ROOT)}: {len(messages)} messages")
     elif command == "update":
         pot_messages: dict[str, list[str]] = extract()
         for path in po_files():
             header, translations = read_po(path)
-            missing: list[str] = [m for m in pot_messages if m not in translations]
-            write_po(path, header, pot_messages, translations)
-            print(f"{path.relative_to(ROOT)}: {len(missing)} new messages to translate")
+            fuzzy: dict[str, str] = read_fuzzy(path)
+            missing: list[str] = [m for m in pot_messages if not translations.get(m)]
+            write_po(path, header, pot_messages, translations, fuzzy)
+            print(f"{path.relative_to(ROOT)}: {len(missing)} messages to translate")
     elif command == "mo":
         for path in po_files():
             header, translations = read_po(path)
