@@ -42,6 +42,40 @@ sample of the Unicode conformance tests), and with a display, `OPENMATB_DESKTOP_
 `tests/test_desktop_rtl.py` (labels, glyphs of every translation, OpenMATB in each language), `OPENMATB_BROWSER_TESTS=1`
 for `TestLanguages` of `tests/web/test_browser.py`.
 
+## Translating online (Weblate)
+
+The catalogs can be translated and reviewed in a browser with [Weblate](https://weblate.org) (free hosting for
+libre projects on [Hosted Weblate](https://hosted.weblate.org)), without Python nor Git for the translators. Weblate
+writes the `.po` files only; the rest is done by GitHub Actions (`.github/workflows/translations.yml`): after each
+push to `master` or `translations-rtl` that changes the code or `locales`, it runs `pot`, `update` and `mo`, and
+commits the result. So a message added to the code appears in Weblate after the push, and a translation validated in
+Weblate is compiled after Weblate pushed it.
+
+Settings of the Weblate component:
+
+| Setting | Value |
+|---|---|
+| Version control system | GitHub pull request (the changes come as pull requests to review), or Git (pushed to the branch) |
+| Source code repository, branch | `https://github.com/juliencegarra/OpenMATB.git`, `translations-rtl` (or `master`) |
+| File format | gettext PO file |
+| File mask | `locales/*/LC_MESSAGES/openmatb.po` |
+| Template for new translations | `locales/openmatb.pot` |
+| Source language | English |
+| Language filter | `^(?!en_EN$).*$` (en_EN, the messages themselves, is not to translate) |
+
+- **Validation**: enable the reviews in the access control of the project, and add the reviewers. A translation is
+  then *translated* until a reviewer *approves* it. A translation marked *Needs editing* is written as `fuzzy` in the
+  `.po` file: it is kept by `update`, but not compiled (OpenMATB shows the English message).
+- **Add-ons**: do not enable *Update PO files to match POT* nor the compilation of the MO files (the workflow does
+  both). The *Customize gettext output* add-on, without line wrapping, keeps the files as `build.py` writes them
+  (fewer differences in the commits).
+- **Repository**: let Weblate know the pushes (the GitHub webhook of Weblate), so that it merges the commits of the
+  workflow before its next push.
+- **Tests**: `tests/test_locales.py` requires every message to be translated, so a pull request with an incomplete
+  language fails until it is complete. A new language also needs the menu of `web/index.html` and its `TEXTS` in
+  `web/openmatb.js` (step 2 of *Adding a language*): these texts are not in the catalogs, so not in Weblate.
+- The instructions, questionnaires and voices (`includes/`) are not translated in Weblate.
+
 ## Locale codes
 
 Below you can find a list a locale short codes
