@@ -1,0 +1,48 @@
+name: Translations
+
+# Keeps the translation files in step with the code and with the online translation (Weblate, see locales/README.md):
+# after a push, the messages of the code are extracted into locales/openmatb.pot, added to each openmatb.po
+# (untranslated), and every openmatb.po is compiled into openmatb.mo. Weblate only writes the .po files: the .mo
+# files are compiled here. The changes, if any, are committed to the pushed branch (a commit made with the
+# GITHUB_TOKEN does not run the workflows again). It can also be run by hand (Actions > Translations > Run workflow).
+on:
+  push:
+    branches: [master, translations-rtl]
+    paths:
+      - "**.py"
+      - "locales/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: translations-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Extract, update and compile the catalogs
+        run: |
+          python locales/build.py pot
+          python locales/build.py update
+          python locales/build.py mo
+      - name: Commit the changes
+        run: |
+          if git diff --quiet -- locales; then
+            echo "The translation files are up to date"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add locales
+          git commit -m "Translations: the catalogs updated and compiled (locales/build.py)"
+          # Another push (e.g. from Weblate) may have come in the meantime
+          git pull --rebase
+          git push

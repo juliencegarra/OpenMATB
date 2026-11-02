@@ -29,6 +29,10 @@ jobs:
       # The browser clock tests (tests/test_web_timing.py) use the pyglet 3 wheel of the web build
       - name: Build the web version
         run: python web/build.py
+      # The .po files changed online (Weblate) are compiled after the push, by translations.yml: compile them here
+      # too, so that a pull request from Weblate is tested with its translations
+      - name: Compile the translations
+        run: python locales/build.py mo
       - run: python -m pytest tests/ -v --cov=core --cov=plugins --cov-report=term-missing --cov-report=xml --junitxml=report.xml
       - name: Publish badges
         if: matrix.python-version == '3.11' && github.event_name == 'push' && github.ref == 'refs/heads/master'
