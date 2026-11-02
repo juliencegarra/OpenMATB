@@ -57,8 +57,8 @@ class Scenario:
                 self.events.append(Event.parse_from_string(line_n, line_str))
             except ValueError:  # e.g. a line without ';' separators or with a wrong time
                 get_errors().add_error(
-                    _("Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)")
-                    % (line_n, line_str.strip()),
+                    _("Scenario error: line %(line)s is not formatted as H:MM:SS;plugin;command (%(text)s)")
+                    % {"line": line_n, "text": line_str.strip()},
                     fatal=True,
                 )
 
@@ -73,7 +73,9 @@ class Scenario:
                 continue
             if not hasattr(plugins, event.plugin.capitalize()):
                 get_errors().add_error(
-                    _("Scenario error: %s is not a valid plugin name (l. %s)") % (event.plugin, event.line), fatal=True
+                    _("Scenario error: %(plugin)s is not a valid plugin name (l. %(line)s)")
+                    % {"plugin": event.plugin, "line": event.line},
+                    fatal=True,
                 )
 
         if get_errors().some_fatals:
@@ -115,7 +117,10 @@ class Scenario:
         for _n, e in enumerate(self.events):
             # If plugin or command is DEPRECATED, ignore the event
             if e.is_deprecated():
-                get_errors().add_error(_("Line %s: '%s' is deprecated and will be ignored") % (e.line, e), fatal=False)
+                get_errors().add_error(
+                    _("Line %(line)s: '%(event)s' is deprecated and will be ignored") % {"line": e.line, "event": e},
+                    fatal=False,
+                )
 
             # For parameters
             # SYSMON now manages failures with two separated variables
@@ -194,18 +199,26 @@ class Scenario:
             # System pseudo-plugin: validate command and skip plugin checks
             if e.plugin == SYSTEM_PSEUDO_PLUGIN:
                 if len(e) == 0 or e.command[0] not in SYSTEM_COMMANDS:
-                    errors.append(_("Error on line %s. Invalid system command: %s") % (e.line, e.get_command_str()))
+                    errors.append(
+                        _("Error on line %(line)s. Invalid system command: %(command)s")
+                        % {"line": e.line, "command": e.get_command_str()}
+                    )
                 elif e.command[0] == "agent" and len(e.command) != 2:
                     errors.append(_("Error on line %s. Agent command requires a name argument") % e.line)
                 elif e.command[0] == "agent" and e.command[1] not in _agent_names():
                     # create_agent raised it during the session
-                    errors.append(_("Error on line %s. Unknown agent: %s") % (e.line, e.command[1]))
+                    errors.append(
+                        _("Error on line %(line)s. Unknown agent: %(agent)s") % {"line": e.line, "agent": e.command[1]}
+                    )
                 elif e.command[0] == "mousecontrol" and (
                     len(e.command) != 2 or validation.is_boolean(str(e.command[1]))[1] is not None
                 ):
                     errors.append(_("Error on line %s. mousecontrol command requires True/False argument") % e.line)
                 elif e.command[0] not in ("agent", "mousecontrol") and len(e.command) != 1:
-                    errors.append(_("Error on line %s. Invalid system command: %s") % (e.line, e.get_command_str()))
+                    errors.append(
+                        _("Error on line %(line)s. Invalid system command: %(command)s")
+                        % {"line": e.line, "command": e.get_command_str()}
+                    )
                 continue
 
             # Rule 2 - all events should trigger a command to a plugin
@@ -221,8 +234,8 @@ class Scenario:
             elif len(e) == 1:  # Method expected
                 if e.command[0] not in self.get_plugin_methods(e.plugin):
                     errors.append(
-                        _("Error on line %s. Method (%s) is not available for the plugin (%s)")
-                        % (e.line, e.command[0], e.plugin)
+                        _("Error on line %(line)s. Method (%(method)s) is not available for the plugin (%(plugin)s)")
+                        % {"line": e.line, "method": e.command[0], "plugin": e.plugin}
                     )
 
             elif len(e) == 2:  # Parameter expected
@@ -242,7 +255,8 @@ class Scenario:
                     else:
                         eval_method = None
                         errors.append(
-                            _("Warning on line %s. Parameter (%s) has no verification method") % (e.line, e.command[0])
+                            _("Warning on line %(line)s. Parameter (%(parameter)s) has no verification method")
+                            % {"line": e.line, "parameter": e.command[0]}
                         )
 
                     if eval_method is not None:
@@ -260,7 +274,10 @@ class Scenario:
                         eval_value, error = eval_method(*method_args)
 
                         if error is not None:
-                            preamble: str = _("Error on line %s. %s ") % (e.line, e.command[0])
+                            preamble: str = _("Error on line %(line)s. %(parameter)s ") % {
+                                "line": e.line,
+                                "parameter": e.command[0],
+                            }
                             error_msg: str = preamble + error
                             errors.append(error_msg)
                         else:
@@ -268,8 +285,8 @@ class Scenario:
                             e.command[1] = eval_value
                 else:
                     errors.append(
-                        _("Error on line %s. The %s plugin does not have a %s parameter")
-                        % (e.line, e.plugin, e.command[-2])
+                        _("Error on line %(line)s. The %(plugin)s plugin does not have a %(parameter)s parameter")
+                        % {"line": e.line, "plugin": e.plugin, "parameter": e.command[-2]}
                     )
         return errors
 

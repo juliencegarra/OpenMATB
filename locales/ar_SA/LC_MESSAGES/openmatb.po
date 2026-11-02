@@ -79,11 +79,11 @@ msgstr "سجل لوحة المفاتيح:"
 msgid "held"
 msgstr "مضغوط"
 
-#: core/scenario.py:91
+#: core/scenario.py:93
 msgid "No error"
 msgstr "لا يوجد خطأ"
 
-#: core/scenario.py:95
+#: core/scenario.py:97
 #, python-format
 msgid "There were some errors in the scenario. See the %s file."
 msgstr "يحتوي السيناريو على أخطاء. راجع الملف %s."
@@ -95,83 +95,83 @@ msgstr "لم يتم العثور على %s"
 
 #: core/scenario.py:76
 #, python-format
-msgid "Scenario error: %s is not a valid plugin name (l. %s)"
-msgstr "خطأ في السيناريو: %s ليس اسم إضافة صالحاً (السطر %s)"
+msgid "Scenario error: %(plugin)s is not a valid plugin name (l. %(line)s)"
+msgstr "خطأ في السيناريو: %(plugin)s ليس اسم إضافة صالحاً (السطر %(line)s)"
 
-#: core/scenario.py:118
+#: core/scenario.py:121
 #, python-format
-msgid "Line %s: '%s' is deprecated and will be ignored"
-msgstr "السطر %s: '%s' متقادم وسيتم تجاهله"
+msgid "Line %(line)s: '%(event)s' is deprecated and will be ignored"
+msgstr "السطر %(line)s: '%(event)s' متقادم وسيتم تجاهله"
 
-#: core/scenario.py:166
+#: core/scenario.py:171
 #, python-format
 msgid "The (%s) plugin does not have a start command."
 msgstr "الإضافة (%s) لا تحتوي على أمر start."
 
-#: core/scenario.py:213
+#: core/scenario.py:226
 #, python-format
 msgid "Error on line %s. This event does not trigger any command."
 msgstr "خطأ في السطر %s. هذا الحدث لا يشغّل أي أمر."
 
 #: core/scenario.py:60
 #, python-format
-msgid "Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)"
-msgstr "خطأ في السيناريو: السطر %s ليس بالصيغة H:MM:SS;plugin;command (%s)"
+msgid "Scenario error: line %(line)s is not formatted as H:MM:SS;plugin;command (%(text)s)"
+msgstr "خطأ في السيناريو: السطر %(line)s ليس بالصيغة H:MM:SS;plugin;command (%(text)s)"
 
-#: core/scenario.py:197 core/scenario.py:208
+#: core/scenario.py:203 core/scenario.py:219
 #, python-format
-msgid "Error on line %s. Invalid system command: %s"
-msgstr "خطأ في السطر %s. أمر نظام غير صالح: %s"
+msgid "Error on line %(line)s. Invalid system command: %(command)s"
+msgstr "خطأ في السطر %(line)s. أمر نظام غير صالح: %(command)s"
 
-#: core/scenario.py:217
+#: core/scenario.py:230
 #, python-format
 msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
 msgstr "خطأ في السطر %s. يحتوي الحدث على عنصرين على الأكثر (parameter;value)."
 
-#: core/scenario.py:173
+#: core/scenario.py:178
 #, python-format
 msgid "The (%s) plugin does not have a stop command."
 msgstr "الإضافة (%s) لا تحتوي على أمر stop."
 
-#: core/scenario.py:199
+#: core/scenario.py:207
 #, python-format
 msgid "Error on line %s. Agent command requires a name argument"
 msgstr "خطأ في السطر %s. يتطلب الأمر agent اسماً كوسيط"
 
-#: core/scenario.py:189
+#: core/scenario.py:194
 #, python-format
 msgid "The (%s) plugin has a start command without a preceding filename command."
 msgstr "الإضافة (%s) تحتوي على أمر start دون أمر filename قبله."
 
-#: core/scenario.py:202
+#: core/scenario.py:211
 #, python-format
-msgid "Error on line %s. Unknown agent: %s"
-msgstr "خطأ في السطر %s. وكيل غير معروف: %s"
+msgid "Error on line %(line)s. Unknown agent: %(agent)s"
+msgstr "خطأ في السطر %(line)s. وكيل غير معروف: %(agent)s"
 
-#: core/scenario.py:224
+#: core/scenario.py:237
 #, python-format
-msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
-msgstr "خطأ في السطر %s. الطريقة (%s) غير متاحة للإضافة (%s)"
+msgid "Error on line %(line)s. Method (%(method)s) is not available for the plugin (%(plugin)s)"
+msgstr "خطأ في السطر %(line)s. الطريقة (%(method)s) غير متاحة للإضافة (%(plugin)s)"
 
-#: core/scenario.py:206
+#: core/scenario.py:216
 #, python-format
 msgid "Error on line %s. mousecontrol command requires True/False argument"
 msgstr "خطأ في السطر %s. يتطلب الأمر mousecontrol الوسيط True/False"
 
-#: core/scenario.py:271
+#: core/scenario.py:288
 #, python-format
-msgid "Error on line %s. The %s plugin does not have a %s parameter"
-msgstr "خطأ في السطر %s. الإضافة %s لا تحتوي على المعامل %s"
+msgid "Error on line %(line)s. The %(plugin)s plugin does not have a %(parameter)s parameter"
+msgstr "خطأ في السطر %(line)s. الإضافة %(plugin)s لا تحتوي على المعامل %(parameter)s"
 
-#: core/scenario.py:245
+#: core/scenario.py:258
 #, python-format
-msgid "Warning on line %s. Parameter (%s) has no verification method"
-msgstr "تحذير في السطر %s. المعامل (%s) ليس له طريقة تحقق"
+msgid "Warning on line %(line)s. Parameter (%(parameter)s) has no verification method"
+msgstr "تحذير في السطر %(line)s. المعامل (%(parameter)s) ليس له طريقة تحقق"
 
-#: core/scenario.py:263
+#: core/scenario.py:277
 #, python-format
-msgid "Error on line %s. %s "
-msgstr "خطأ في السطر %s. %s "
+msgid "Error on line %(line)s. %(parameter)s "
+msgstr "خطأ في السطر %(line)s. %(parameter)s "
 
 #: core/selector.py:166
 msgid "Select a scenario"
@@ -203,25 +203,25 @@ msgstr "أعلى/أسفل: تنقل"
 
 #: core/utils.py:113
 #, python-format
-msgid "In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False"
-msgstr "في config.ini، يجب أن يكون المعامل [%s] قيمة منطقية (true أو false، وليس %s). القيمة الافتراضية: False"
+msgid "In config.ini, [%(key)s] parameter must be a boolean (true or false, not %(value)s). Defaulting to False"
+msgstr "في config.ini، يجب أن يكون المعامل [%(key)s] قيمة منطقية (true أو false، وليس %(value)s). القيمة الافتراضية: False"
 
-#: core/utils.py:123
+#: core/utils.py:127
 #, python-format
-msgid "In config.ini, [%s] parameter must be an integer (not %s)"
-msgstr "في config.ini، يجب أن يكون المعامل [%s] عدداً صحيحاً (وليس %s)"
+msgid "In config.ini, [%(key)s] parameter must be an integer (not %(value)s)"
+msgstr "في config.ini، يجب أن يكون المعامل [%(key)s] عدداً صحيحاً (وليس %(value)s)"
 
-#: core/utils.py:132
+#: core/utils.py:139
 #, python-format
-msgid "In config.ini, [%s] parameter must be a float (not %s)"
-msgstr "في config.ini، يجب أن يكون المعامل [%s] عدداً عشرياً (وليس %s)"
+msgid "In config.ini, [%(key)s] parameter must be a float (not %(value)s)"
+msgstr "في config.ini، يجب أن يكون المعامل [%(key)s] عدداً عشرياً (وليس %(value)s)"
 
-#: core/utils.py:142
+#: core/utils.py:150
 #, python-format
-msgid "In config.ini, [%s] parameter must be a list of floats (not %s)"
-msgstr "في config.ini، يجب أن يكون المعامل [%s] قائمة أعداد عشرية (وليس %s)"
+msgid "In config.ini, [%(key)s] parameter must be a list of floats (not %(value)s)"
+msgstr "في config.ini، يجب أن يكون المعامل [%(key)s] قائمة أعداد عشرية (وليس %(value)s)"
 
-#: core/utils.py:154
+#: core/utils.py:163
 msgid "In config.ini, the specified font is not available. A default font will be used."
 msgstr "الخط المحدد في config.ini غير متاح. سيتم استخدام خط افتراضي."
 
@@ -230,22 +230,22 @@ msgstr "الخط المحدد في config.ini غير متاح. سيتم استخ
 msgid "should be a natural (0 included) integer (not %s)."
 msgstr "يجب أن يكون عدداً طبيعياً (بما في ذلك 0) (وليس %s)."
 
-#: core/validation.py:97
+#: core/validation.py:96
 #, python-format
 msgid "should be a positive float (not %s)"
 msgstr "يجب أن يكون عدداً عشرياً موجباً (وليس %s)"
 
-#: core/validation.py:216
+#: core/validation.py:221
 #, python-format
 msgid "should be a float between 0 and 1 (included) (not %s)"
 msgstr "يجب أن يكون عدداً عشرياً بين 0 و1 (ضمناً) (وليس %s)"
 
-#: core/validation.py:167 core/validation.py:163
+#: core/validation.py:169 core/validation.py:165
 #, python-format
 msgid "should be an acceptable joystick key value (not %s). See documentation."
 msgstr "يجب أن يكون زراً صالحاً لعصا التحكم (وليس %s). راجع الوثائق."
 
-#: core/validation.py:179
+#: core/validation.py:181
 #, python-format
 msgid "should be an acceptable (keyboard or joystick) key value (not %s). See documentation."
 msgstr "يجب أن يكون مفتاحاً صالحاً (للوحة المفاتيح أو لعصا التحكم) (وليس %s). راجع الوثائق."
@@ -260,27 +260,27 @@ msgstr "يجب أن يكون سلسلة نصية (وليس %s)."
 msgid "should be a positive (0 excluded) integer (not %s)."
 msgstr "يجب أن يكون عدداً صحيحاً موجباً (باستثناء 0) (وليس %s)."
 
-#: core/validation.py:130
+#: core/validation.py:129
 #, python-format
-msgid "should be comprised in %s (not %s)"
-msgstr "يجب أن يكون ضمن %s (وليس %s)"
+msgid "should be comprised in %(accepted)s (not %(value)s)"
+msgstr "يجب أن يكون ضمن %(accepted)s (وليس %(value)s)"
 
-#: core/validation.py:147
+#: core/validation.py:149
 #, python-format
 msgid "should be an acceptable keyboard key value (not %s). See documentation."
 msgstr "يجب أن يكون مفتاحاً صالحاً للوحة المفاتيح (وليس %s). راجع الوثائق."
 
-#: core/validation.py:197
+#: core/validation.py:199
 #, python-format
-msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
-msgstr "يجب أن يتكون من حروف [a-z] أو أرقام [0-9] (وليس %s في %s)"
+msgid "should be composed of letters [a-z] or digits [0-9] (not %(characters)s in %(value)s)"
+msgstr "يجب أن يتكون من حروف [a-z] أو أرقام [0-9] (وليس %(characters)s في %(value)s)"
 
-#: core/validation.py:212
+#: core/validation.py:217
 #, python-format
 msgid "should be composed of valid callsigns (not %s)"
 msgstr "يجب أن يتكون من رموز نداء صالحة (وليس %s)"
 
-#: core/validation.py:235
+#: core/validation.py:240
 #, python-format
 msgid "should be available either in the Instruction or Questionnaire folder (not %s)"
 msgstr "يجب أن يكون موجوداً في المجلد Instruction أو Questionnaire (وليس %s)"
@@ -290,17 +290,17 @@ msgstr "يجب أن يكون موجوداً في المجلد Instruction أو Q
 msgid "should be a boolean (not %s)."
 msgstr "يجب أن يكون قيمة منطقية (وليس %s)."
 
-#: core/validation.py:137
+#: core/validation.py:139
 #, python-format
 msgid "should be a valid regex expression (not %s)"
 msgstr "يجب أن يكون تعبيراً نمطياً (regex) صالحاً (وليس %s)"
 
 #: core/validation.py:78
 #, python-format
-msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
-msgstr "يجب أن تكون القيمة اسم لون (%s) أو قيم (R,G,B,a) أو قيمة سداسية عشرية (مثلاً #00ff00) (وليس %s)"
+msgid "must be a color name (%(colors)s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %(value)s)"
+msgstr "يجب أن تكون القيمة اسم لون (%(colors)s) أو قيم (R,G,B,a) أو قيمة سداسية عشرية (مثلاً #00ff00) (وليس %(value)s)"
 
-#: core/validation.py:92
+#: core/validation.py:91
 #, python-format
 msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
 msgstr "يجب أن تكون قيم (R,G,B,a) كل منها بين 0 و255 (وليس %s)"

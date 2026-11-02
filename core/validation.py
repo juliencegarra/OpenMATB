@@ -75,10 +75,9 @@ def is_color(x: str) -> ValidationResult:  # Can be an hexadecimal value, a cons
         try:
             x = ast.literal_eval(x)
         except (ValueError, TypeError, SyntaxError):
-            return None, _("must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)") % (
-                ", ".join(C),
-                x,
-            )
+            return None, _(
+                "must be a color name (%(colors)s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %(value)s)"
+            ) % {"colors": ", ".join(C), "value": x}
         else:
             # Integers only: a string item raised a TypeError on the comparison, and True or 1.5 were accepted
             if (
@@ -127,7 +126,10 @@ def is_in_list(x: str, li: list[str]) -> ValidationResult:
                 x = x[0]
             return x, None
     else:
-        return None, _("should be comprised in %s (not %s)") % (li, ", ".join(errors))
+        return None, _("should be comprised in %(accepted)s (not %(value)s)") % {
+            "accepted": li,
+            "value": ", ".join(errors),
+        }
 
 
 def is_a_regex(x: str) -> ValidationResult:
@@ -194,7 +196,10 @@ def is_callsign(x: str) -> ValidationResult:
     else:
         # Get unallowed char
         errors: list[str] = [el for el in x if el.lower() not in allowed_char_list]
-        return None, _("should be composed of letters [a-z] or digits [0-9] (not %s in %s)") % ("".join(errors), x)
+        return None, _("should be composed of letters [a-z] or digits [0-9] (not %(characters)s in %(value)s)") % {
+            "characters": "".join(errors),
+            "value": x,
+        }
 
 
 def is_callsign_or_list_of(x: str) -> ValidationResult:

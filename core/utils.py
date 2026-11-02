@@ -110,8 +110,11 @@ def get_conf_value(section: str, key: str, val_type: Optional[type] = None) -> A
             return boolean
         # As the message says (it raised, and nothing caught it: the session did not start)
         _warn_conf_value(
-            _("In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False")
-            % (key, value)
+            _(
+                "In config.ini, [%(key)s] parameter must be a boolean (true or false, not %(value)s). "
+                "Defaulting to False"
+            )
+            % {"key": key, "value": value}
         )
         return False
 
@@ -120,7 +123,10 @@ def get_conf_value(section: str, key: str, val_type: Optional[type] = None) -> A
         try:
             value = int(value)
         except (ValueError, TypeError):
-            raise TypeError(_("In config.ini, [%s] parameter must be an integer (not %s)") % (key, value)) from None
+            raise TypeError(
+                _("In config.ini, [%(key)s] parameter must be an integer (not %(value)s)")
+                % {"key": key, "value": value}
+            ) from None
         else:
             return value
 
@@ -129,7 +135,9 @@ def get_conf_value(section: str, key: str, val_type: Optional[type] = None) -> A
         try:
             value = float(value)
         except (ValueError, TypeError):
-            raise TypeError(_("In config.ini, [%s] parameter must be a float (not %s)") % (key, value)) from None
+            raise TypeError(
+                _("In config.ini, [%(key)s] parameter must be a float (not %(value)s)") % {"key": key, "value": value}
+            ) from None
         else:
             return value
 
@@ -139,7 +147,8 @@ def get_conf_value(section: str, key: str, val_type: Optional[type] = None) -> A
             value = ast.literal_eval(value)
         except (ValueError, TypeError, SyntaxError, NameError):
             raise TypeError(
-                _("In config.ini, [%s] parameter must be a list of floats (not %s)") % (key, value)
+                _("In config.ini, [%(key)s] parameter must be a list of floats (not %(value)s)")
+                % {"key": key, "value": value}
             ) from None
         else:
             return value

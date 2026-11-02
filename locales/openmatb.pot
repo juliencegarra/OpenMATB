@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenMATB\n"
-"POT-Creation-Date: 2026-11-02 22:16+0100\n"
+"POT-Creation-Date: 2026-11-02 22:29+0100\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -74,11 +74,11 @@ msgstr ""
 msgid "held"
 msgstr ""
 
-#: core/scenario.py:91
+#: core/scenario.py:93
 msgid "No error"
 msgstr ""
 
-#: core/scenario.py:95
+#: core/scenario.py:97
 #, python-format
 msgid "There were some errors in the scenario. See the %s file."
 msgstr ""
@@ -90,82 +90,82 @@ msgstr ""
 
 #: core/scenario.py:76
 #, python-format
-msgid "Scenario error: %s is not a valid plugin name (l. %s)"
+msgid "Scenario error: %(plugin)s is not a valid plugin name (l. %(line)s)"
 msgstr ""
 
-#: core/scenario.py:118
+#: core/scenario.py:121
 #, python-format
-msgid "Line %s: '%s' is deprecated and will be ignored"
+msgid "Line %(line)s: '%(event)s' is deprecated and will be ignored"
 msgstr ""
 
-#: core/scenario.py:166
+#: core/scenario.py:171
 #, python-format
 msgid "The (%s) plugin does not have a start command."
 msgstr ""
 
-#: core/scenario.py:213
+#: core/scenario.py:226
 #, python-format
 msgid "Error on line %s. This event does not trigger any command."
 msgstr ""
 
 #: core/scenario.py:60
 #, python-format
-msgid "Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)"
+msgid "Scenario error: line %(line)s is not formatted as H:MM:SS;plugin;command (%(text)s)"
 msgstr ""
 
-#: core/scenario.py:197 core/scenario.py:208
+#: core/scenario.py:203 core/scenario.py:219
 #, python-format
-msgid "Error on line %s. Invalid system command: %s"
+msgid "Error on line %(line)s. Invalid system command: %(command)s"
 msgstr ""
 
-#: core/scenario.py:217
+#: core/scenario.py:230
 #, python-format
 msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
 msgstr ""
 
-#: core/scenario.py:173
+#: core/scenario.py:178
 #, python-format
 msgid "The (%s) plugin does not have a stop command."
 msgstr ""
 
-#: core/scenario.py:199
+#: core/scenario.py:207
 #, python-format
 msgid "Error on line %s. Agent command requires a name argument"
 msgstr ""
 
-#: core/scenario.py:189
+#: core/scenario.py:194
 #, python-format
 msgid "The (%s) plugin has a start command without a preceding filename command."
 msgstr ""
 
-#: core/scenario.py:202
+#: core/scenario.py:211
 #, python-format
-msgid "Error on line %s. Unknown agent: %s"
+msgid "Error on line %(line)s. Unknown agent: %(agent)s"
 msgstr ""
 
-#: core/scenario.py:224
+#: core/scenario.py:237
 #, python-format
-msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
+msgid "Error on line %(line)s. Method (%(method)s) is not available for the plugin (%(plugin)s)"
 msgstr ""
 
-#: core/scenario.py:206
+#: core/scenario.py:216
 #, python-format
 msgid "Error on line %s. mousecontrol command requires True/False argument"
 msgstr ""
 
-#: core/scenario.py:271
+#: core/scenario.py:288
 #, python-format
-msgid "Error on line %s. The %s plugin does not have a %s parameter"
+msgid "Error on line %(line)s. The %(plugin)s plugin does not have a %(parameter)s parameter"
 msgstr ""
 
-#: core/scenario.py:245
+#: core/scenario.py:258
 #, python-format
-msgid "Warning on line %s. Parameter (%s) has no verification method"
+msgid "Warning on line %(line)s. Parameter (%(parameter)s) has no verification method"
 msgstr ""
 
-#: core/scenario.py:263
+#: core/scenario.py:277
 #, python-format
-msgid "Error on line %s. %s "
+msgid "Error on line %(line)s. %(parameter)s "
 msgstr ""
 
 #: core/selector.py:166
@@ -198,25 +198,25 @@ msgstr ""
 
 #: core/utils.py:113
 #, python-format
-msgid "In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False"
+msgid "In config.ini, [%(key)s] parameter must be a boolean (true or false, not %(value)s). Defaulting to False"
 msgstr ""
 
-#: core/utils.py:123
+#: core/utils.py:127
 #, python-format
-msgid "In config.ini, [%s] parameter must be an integer (not %s)"
+msgid "In config.ini, [%(key)s] parameter must be an integer (not %(value)s)"
 msgstr ""
 
-#: core/utils.py:132
+#: core/utils.py:139
 #, python-format
-msgid "In config.ini, [%s] parameter must be a float (not %s)"
+msgid "In config.ini, [%(key)s] parameter must be a float (not %(value)s)"
 msgstr ""
 
-#: core/utils.py:142
+#: core/utils.py:150
 #, python-format
-msgid "In config.ini, [%s] parameter must be a list of floats (not %s)"
+msgid "In config.ini, [%(key)s] parameter must be a list of floats (not %(value)s)"
 msgstr ""
 
-#: core/utils.py:154
+#: core/utils.py:163
 msgid "In config.ini, the specified font is not available. A default font will be used."
 msgstr ""
 
@@ -225,22 +225,22 @@ msgstr ""
 msgid "should be a natural (0 included) integer (not %s)."
 msgstr ""
 
-#: core/validation.py:97
+#: core/validation.py:96
 #, python-format
 msgid "should be a positive float (not %s)"
 msgstr ""
 
-#: core/validation.py:216
+#: core/validation.py:221
 #, python-format
 msgid "should be a float between 0 and 1 (included) (not %s)"
 msgstr ""
 
-#: core/validation.py:167 core/validation.py:163
+#: core/validation.py:169 core/validation.py:165
 #, python-format
 msgid "should be an acceptable joystick key value (not %s). See documentation."
 msgstr ""
 
-#: core/validation.py:179
+#: core/validation.py:181
 #, python-format
 msgid "should be an acceptable (keyboard or joystick) key value (not %s). See documentation."
 msgstr ""
@@ -255,27 +255,27 @@ msgstr ""
 msgid "should be a positive (0 excluded) integer (not %s)."
 msgstr ""
 
-#: core/validation.py:130
+#: core/validation.py:129
 #, python-format
-msgid "should be comprised in %s (not %s)"
+msgid "should be comprised in %(accepted)s (not %(value)s)"
 msgstr ""
 
-#: core/validation.py:147
+#: core/validation.py:149
 #, python-format
 msgid "should be an acceptable keyboard key value (not %s). See documentation."
 msgstr ""
 
-#: core/validation.py:197
+#: core/validation.py:199
 #, python-format
-msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
+msgid "should be composed of letters [a-z] or digits [0-9] (not %(characters)s in %(value)s)"
 msgstr ""
 
-#: core/validation.py:212
+#: core/validation.py:217
 #, python-format
 msgid "should be composed of valid callsigns (not %s)"
 msgstr ""
 
-#: core/validation.py:235
+#: core/validation.py:240
 #, python-format
 msgid "should be available either in the Instruction or Questionnaire folder (not %s)"
 msgstr ""
@@ -285,17 +285,17 @@ msgstr ""
 msgid "should be a boolean (not %s)."
 msgstr ""
 
-#: core/validation.py:137
+#: core/validation.py:139
 #, python-format
 msgid "should be a valid regex expression (not %s)"
 msgstr ""
 
 #: core/validation.py:78
 #, python-format
-msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
+msgid "must be a color name (%(colors)s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %(value)s)"
 msgstr ""
 
-#: core/validation.py:92
+#: core/validation.py:91
 #, python-format
 msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
 msgstr ""

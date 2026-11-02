@@ -66,6 +66,12 @@ def test_format_flags(tmp_path):
     assert build.read_fuzzy(po) == {"%s was not found": "%s introuvable"}
 
 
+def test_placeholders_are_named_when_several():
+    """A message with several placeholders names them, %(line)s, so that a translation can change their order."""
+    for message in POT_MESSAGES:
+        assert message.replace("%%", "").count("%s") <= 1, message
+
+
 def test_pot_flags_the_placeholders():
     """Every message of the .pot with a placeholder is flagged (python locales/build.py pot after a change)."""
     text: str = build.POT.read_text(encoding="utf-8")
@@ -129,7 +135,8 @@ class TestCatalogs:
             if not msgstr:
                 continue
             assert msgstr.count("%s") == msgid.count("%s"), msgid
-            assert re.findall(r"%[^s]", msgstr.replace("%%", "")) == re.findall(r"%[^s]", msgid.replace("%%", ""))
+            assert sorted(re.findall(r"%\(\w+\)s", msgstr)) == sorted(re.findall(r"%\(\w+\)s", msgid)), msgid
+            assert re.findall(r"%[^s(]", msgstr.replace("%%", "")) == re.findall(r"%[^s(]", msgid.replace("%%", ""))
             assert sorted(re.findall(r"\{\w+\}", msgstr)) == sorted(re.findall(r"\{\w+\}", msgid)), msgid
             assert msgstr.count("\t") == msgid.count("\t"), msgid
             assert msgstr.startswith(" ") == msgid.startswith(" "), msgid
@@ -138,7 +145,10 @@ class TestCatalogs:
     def test_messages_can_be_formatted(self, catalog):
         _, _, translations = catalog
         for msgid, msgstr in translations.items():
-            if msgstr and "%s" in msgid:
+            names: list[str] = re.findall(r"%\((\w+)\)s", msgid)
+            if msgstr and names:
+                msgstr % dict.fromkeys(names, "x")
+            elif msgstr and "%s" in msgid:
                 msgstr % tuple("x" * msgid.count("%s"))
             if msgstr and "{error}" in msgid:
                 msgstr.format(error="x")

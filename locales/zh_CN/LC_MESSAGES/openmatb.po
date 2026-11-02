@@ -79,11 +79,11 @@ msgstr "键盘历史："
 msgid "held"
 msgstr "按住"
 
-#: core/scenario.py:91
+#: core/scenario.py:93
 msgid "No error"
 msgstr "无错误"
 
-#: core/scenario.py:95
+#: core/scenario.py:97
 #, python-format
 msgid "There were some errors in the scenario. See the %s file."
 msgstr "场景中存在错误。请查看文件 %s。"
@@ -95,83 +95,83 @@ msgstr "未找到 %s"
 
 #: core/scenario.py:76
 #, python-format
-msgid "Scenario error: %s is not a valid plugin name (l. %s)"
-msgstr "场景错误：%s 不是有效的插件名称（第 %s 行）"
+msgid "Scenario error: %(plugin)s is not a valid plugin name (l. %(line)s)"
+msgstr "场景错误：%(plugin)s 不是有效的插件名称（第 %(line)s 行）"
 
-#: core/scenario.py:118
+#: core/scenario.py:121
 #, python-format
-msgid "Line %s: '%s' is deprecated and will be ignored"
-msgstr "第 %s 行：'%s' 已弃用，将被忽略"
+msgid "Line %(line)s: '%(event)s' is deprecated and will be ignored"
+msgstr "第 %(line)s 行：'%(event)s' 已弃用，将被忽略"
 
-#: core/scenario.py:166
+#: core/scenario.py:171
 #, python-format
 msgid "The (%s) plugin does not have a start command."
 msgstr "插件 (%s) 没有 start 命令。"
 
-#: core/scenario.py:213
+#: core/scenario.py:226
 #, python-format
 msgid "Error on line %s. This event does not trigger any command."
 msgstr "第 %s 行出错。此事件不触发任何命令。"
 
 #: core/scenario.py:60
 #, python-format
-msgid "Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)"
-msgstr "场景错误：第 %s 行的格式不是 H:MM:SS;插件;命令 (%s)"
+msgid "Scenario error: line %(line)s is not formatted as H:MM:SS;plugin;command (%(text)s)"
+msgstr "场景错误：第 %(line)s 行的格式不是 H:MM:SS;插件;命令 (%(text)s)"
 
-#: core/scenario.py:197 core/scenario.py:208
+#: core/scenario.py:203 core/scenario.py:219
 #, python-format
-msgid "Error on line %s. Invalid system command: %s"
-msgstr "第 %s 行出错。无效的系统命令：%s"
+msgid "Error on line %(line)s. Invalid system command: %(command)s"
+msgstr "第 %(line)s 行出错。无效的系统命令：%(command)s"
 
-#: core/scenario.py:217
+#: core/scenario.py:230
 #, python-format
 msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
 msgstr "第 %s 行出错。一个事件最多包含 2 个元素（参数;值）。"
 
-#: core/scenario.py:173
+#: core/scenario.py:178
 #, python-format
 msgid "The (%s) plugin does not have a stop command."
 msgstr "插件 (%s) 没有 stop 命令。"
 
-#: core/scenario.py:199
+#: core/scenario.py:207
 #, python-format
 msgid "Error on line %s. Agent command requires a name argument"
 msgstr "第 %s 行出错。agent 命令需要一个名称参数"
 
-#: core/scenario.py:189
+#: core/scenario.py:194
 #, python-format
 msgid "The (%s) plugin has a start command without a preceding filename command."
 msgstr "插件 (%s) 的 start 命令之前没有 filename 命令。"
 
-#: core/scenario.py:202
+#: core/scenario.py:211
 #, python-format
-msgid "Error on line %s. Unknown agent: %s"
-msgstr "第 %s 行出错。未知的代理：%s"
+msgid "Error on line %(line)s. Unknown agent: %(agent)s"
+msgstr "第 %(line)s 行出错。未知的代理：%(agent)s"
 
-#: core/scenario.py:224
+#: core/scenario.py:237
 #, python-format
-msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
-msgstr "第 %s 行出错。方法 (%s) 不适用于插件 (%s)"
+msgid "Error on line %(line)s. Method (%(method)s) is not available for the plugin (%(plugin)s)"
+msgstr "第 %(line)s 行出错。方法 (%(method)s) 不适用于插件 (%(plugin)s)"
 
-#: core/scenario.py:206
+#: core/scenario.py:216
 #, python-format
 msgid "Error on line %s. mousecontrol command requires True/False argument"
 msgstr "第 %s 行出错。mousecontrol 命令需要 True/False 参数"
 
-#: core/scenario.py:271
+#: core/scenario.py:288
 #, python-format
-msgid "Error on line %s. The %s plugin does not have a %s parameter"
-msgstr "第 %s 行出错。%s 插件没有 %s 参数"
+msgid "Error on line %(line)s. The %(plugin)s plugin does not have a %(parameter)s parameter"
+msgstr "第 %(line)s 行出错。%(plugin)s 插件没有 %(parameter)s 参数"
 
-#: core/scenario.py:245
+#: core/scenario.py:258
 #, python-format
-msgid "Warning on line %s. Parameter (%s) has no verification method"
-msgstr "第 %s 行警告。参数 (%s) 没有验证方法"
+msgid "Warning on line %(line)s. Parameter (%(parameter)s) has no verification method"
+msgstr "第 %(line)s 行警告。参数 (%(parameter)s) 没有验证方法"
 
-#: core/scenario.py:263
+#: core/scenario.py:277
 #, python-format
-msgid "Error on line %s. %s "
-msgstr "第 %s 行出错。%s "
+msgid "Error on line %(line)s. %(parameter)s "
+msgstr "第 %(line)s 行出错。%(parameter)s "
 
 #: core/selector.py:166
 msgid "Select a scenario"
@@ -203,25 +203,25 @@ msgstr "上/下：浏览"
 
 #: core/utils.py:113
 #, python-format
-msgid "In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False"
-msgstr "在 config.ini 中，参数 [%s] 必须是布尔值（true 或 false，而不是 %s）。默认为 False"
+msgid "In config.ini, [%(key)s] parameter must be a boolean (true or false, not %(value)s). Defaulting to False"
+msgstr "在 config.ini 中，参数 [%(key)s] 必须是布尔值（true 或 false，而不是 %(value)s）。默认为 False"
 
-#: core/utils.py:123
+#: core/utils.py:127
 #, python-format
-msgid "In config.ini, [%s] parameter must be an integer (not %s)"
-msgstr "在 config.ini 中，参数 [%s] 必须是整数（而不是 %s）"
+msgid "In config.ini, [%(key)s] parameter must be an integer (not %(value)s)"
+msgstr "在 config.ini 中，参数 [%(key)s] 必须是整数（而不是 %(value)s）"
 
-#: core/utils.py:132
+#: core/utils.py:139
 #, python-format
-msgid "In config.ini, [%s] parameter must be a float (not %s)"
-msgstr "在 config.ini 中，参数 [%s] 必须是浮点数（而不是 %s）"
+msgid "In config.ini, [%(key)s] parameter must be a float (not %(value)s)"
+msgstr "在 config.ini 中，参数 [%(key)s] 必须是浮点数（而不是 %(value)s）"
 
-#: core/utils.py:142
+#: core/utils.py:150
 #, python-format
-msgid "In config.ini, [%s] parameter must be a list of floats (not %s)"
-msgstr "在 config.ini 中，参数 [%s] 必须是浮点数列表（而不是 %s）"
+msgid "In config.ini, [%(key)s] parameter must be a list of floats (not %(value)s)"
+msgstr "在 config.ini 中，参数 [%(key)s] 必须是浮点数列表（而不是 %(value)s）"
 
-#: core/utils.py:154
+#: core/utils.py:163
 msgid "In config.ini, the specified font is not available. A default font will be used."
 msgstr "config.ini 中指定的字体不可用。将使用默认字体。"
 
@@ -230,22 +230,22 @@ msgstr "config.ini 中指定的字体不可用。将使用默认字体。"
 msgid "should be a natural (0 included) integer (not %s)."
 msgstr "应为自然数（包括 0）（而不是 %s）。"
 
-#: core/validation.py:97
+#: core/validation.py:96
 #, python-format
 msgid "should be a positive float (not %s)"
 msgstr "应为正浮点数（而不是 %s）"
 
-#: core/validation.py:216
+#: core/validation.py:221
 #, python-format
 msgid "should be a float between 0 and 1 (included) (not %s)"
 msgstr "应为 0 到 1 之间（含）的浮点数（而不是 %s）"
 
-#: core/validation.py:167 core/validation.py:163
+#: core/validation.py:169 core/validation.py:165
 #, python-format
 msgid "should be an acceptable joystick key value (not %s). See documentation."
 msgstr "应为有效的操纵杆按键（而不是 %s）。请参阅文档。"
 
-#: core/validation.py:179
+#: core/validation.py:181
 #, python-format
 msgid "should be an acceptable (keyboard or joystick) key value (not %s). See documentation."
 msgstr "应为有效的（键盘或操纵杆）按键（而不是 %s）。请参阅文档。"
@@ -260,27 +260,27 @@ msgstr "应为字符串（而不是 %s）。"
 msgid "should be a positive (0 excluded) integer (not %s)."
 msgstr "应为正整数（不包括 0）（而不是 %s）。"
 
-#: core/validation.py:130
+#: core/validation.py:129
 #, python-format
-msgid "should be comprised in %s (not %s)"
-msgstr "应在 %s 之中（而不是 %s）"
+msgid "should be comprised in %(accepted)s (not %(value)s)"
+msgstr "应在 %(accepted)s 之中（而不是 %(value)s）"
 
-#: core/validation.py:147
+#: core/validation.py:149
 #, python-format
 msgid "should be an acceptable keyboard key value (not %s). See documentation."
 msgstr "应为有效的键盘按键（而不是 %s）。请参阅文档。"
 
-#: core/validation.py:197
+#: core/validation.py:199
 #, python-format
-msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
-msgstr "应由字母 [a-z] 或数字 [0-9] 组成（不应包含 %s，见 %s）"
+msgid "should be composed of letters [a-z] or digits [0-9] (not %(characters)s in %(value)s)"
+msgstr "应由字母 [a-z] 或数字 [0-9] 组成（不应包含 %(characters)s，见 %(value)s）"
 
-#: core/validation.py:212
+#: core/validation.py:217
 #, python-format
 msgid "should be composed of valid callsigns (not %s)"
 msgstr "应由有效的呼号组成（而不是 %s）"
 
-#: core/validation.py:235
+#: core/validation.py:240
 #, python-format
 msgid "should be available either in the Instruction or Questionnaire folder (not %s)"
 msgstr "应位于 Instruction 或 Questionnaire 文件夹中（而不是 %s）"
@@ -290,17 +290,17 @@ msgstr "应位于 Instruction 或 Questionnaire 文件夹中（而不是 %s）"
 msgid "should be a boolean (not %s)."
 msgstr "应为布尔值（而不是 %s）。"
 
-#: core/validation.py:137
+#: core/validation.py:139
 #, python-format
 msgid "should be a valid regex expression (not %s)"
 msgstr "应为有效的正则表达式（而不是 %s）"
 
 #: core/validation.py:78
 #, python-format
-msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
-msgstr "必须是颜色名称（%s）、(R,G,B,a) 或十六进制值（例如 #00ff00）（而不是 %s）"
+msgid "must be a color name (%(colors)s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %(value)s)"
+msgstr "必须是颜色名称（%(colors)s）、(R,G,B,a) 或十六进制值（例如 #00ff00）（而不是 %(value)s）"
 
-#: core/validation.py:92
+#: core/validation.py:91
 #, python-format
 msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
 msgstr "应为 (R,G,B,a) 值，每个值介于 0 和 255 之间（而不是 %s）"

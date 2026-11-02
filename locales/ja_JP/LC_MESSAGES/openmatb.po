@@ -79,11 +79,11 @@ msgstr "キーボード履歴："
 msgid "held"
 msgstr "押下中"
 
-#: core/scenario.py:91
+#: core/scenario.py:93
 msgid "No error"
 msgstr "エラーなし"
 
-#: core/scenario.py:95
+#: core/scenario.py:97
 #, python-format
 msgid "There were some errors in the scenario. See the %s file."
 msgstr "シナリオにエラーがあります。ファイル %s を参照してください。"
@@ -95,83 +95,83 @@ msgstr "%s が見つかりません"
 
 #: core/scenario.py:76
 #, python-format
-msgid "Scenario error: %s is not a valid plugin name (l. %s)"
-msgstr "シナリオエラー：%s は有効なプラグイン名ではありません（%s 行目）"
+msgid "Scenario error: %(plugin)s is not a valid plugin name (l. %(line)s)"
+msgstr "シナリオエラー：%(plugin)s は有効なプラグイン名ではありません（%(line)s 行目）"
 
-#: core/scenario.py:118
+#: core/scenario.py:121
 #, python-format
-msgid "Line %s: '%s' is deprecated and will be ignored"
-msgstr "%s 行目：'%s' は非推奨のため無視されます"
+msgid "Line %(line)s: '%(event)s' is deprecated and will be ignored"
+msgstr "%(line)s 行目：'%(event)s' は非推奨のため無視されます"
 
-#: core/scenario.py:166
+#: core/scenario.py:171
 #, python-format
 msgid "The (%s) plugin does not have a start command."
 msgstr "プラグイン (%s) に start コマンドがありません。"
 
-#: core/scenario.py:213
+#: core/scenario.py:226
 #, python-format
 msgid "Error on line %s. This event does not trigger any command."
 msgstr "%s 行目でエラー。このイベントはどのコマンドも実行しません。"
 
 #: core/scenario.py:60
 #, python-format
-msgid "Scenario error: line %s is not formatted as H:MM:SS;plugin;command (%s)"
-msgstr "シナリオエラー：%s 行目が H:MM:SS;プラグイン;コマンド の形式ではありません (%s)"
+msgid "Scenario error: line %(line)s is not formatted as H:MM:SS;plugin;command (%(text)s)"
+msgstr "シナリオエラー：%(line)s 行目が H:MM:SS;プラグイン;コマンド の形式ではありません (%(text)s)"
 
-#: core/scenario.py:197 core/scenario.py:208
+#: core/scenario.py:203 core/scenario.py:219
 #, python-format
-msgid "Error on line %s. Invalid system command: %s"
-msgstr "%s 行目でエラー。無効なシステムコマンド：%s"
+msgid "Error on line %(line)s. Invalid system command: %(command)s"
+msgstr "%(line)s 行目でエラー。無効なシステムコマンド：%(command)s"
 
-#: core/scenario.py:217
+#: core/scenario.py:230
 #, python-format
 msgid "Error on line %s. Maximum length of an event is 2 (parameter;value)."
 msgstr "%s 行目でエラー。イベントの要素は最大 2 つです（パラメータ;値）。"
 
-#: core/scenario.py:173
+#: core/scenario.py:178
 #, python-format
 msgid "The (%s) plugin does not have a stop command."
 msgstr "プラグイン (%s) に stop コマンドがありません。"
 
-#: core/scenario.py:199
+#: core/scenario.py:207
 #, python-format
 msgid "Error on line %s. Agent command requires a name argument"
 msgstr "%s 行目でエラー。agent コマンドには名前の引数が必要です"
 
-#: core/scenario.py:189
+#: core/scenario.py:194
 #, python-format
 msgid "The (%s) plugin has a start command without a preceding filename command."
 msgstr "プラグイン (%s) の start コマンドの前に filename コマンドがありません。"
 
-#: core/scenario.py:202
+#: core/scenario.py:211
 #, python-format
-msgid "Error on line %s. Unknown agent: %s"
-msgstr "%s 行目でエラー。不明なエージェント：%s"
+msgid "Error on line %(line)s. Unknown agent: %(agent)s"
+msgstr "%(line)s 行目でエラー。不明なエージェント：%(agent)s"
 
-#: core/scenario.py:224
+#: core/scenario.py:237
 #, python-format
-msgid "Error on line %s. Method (%s) is not available for the plugin (%s)"
-msgstr "%s 行目でエラー。メソッド (%s) はプラグイン (%s) では使用できません"
+msgid "Error on line %(line)s. Method (%(method)s) is not available for the plugin (%(plugin)s)"
+msgstr "%(line)s 行目でエラー。メソッド (%(method)s) はプラグイン (%(plugin)s) では使用できません"
 
-#: core/scenario.py:206
+#: core/scenario.py:216
 #, python-format
 msgid "Error on line %s. mousecontrol command requires True/False argument"
 msgstr "%s 行目でエラー。mousecontrol コマンドには True/False の引数が必要です"
 
-#: core/scenario.py:271
+#: core/scenario.py:288
 #, python-format
-msgid "Error on line %s. The %s plugin does not have a %s parameter"
-msgstr "%s 行目でエラー。%s プラグインに %s パラメータはありません"
+msgid "Error on line %(line)s. The %(plugin)s plugin does not have a %(parameter)s parameter"
+msgstr "%(line)s 行目でエラー。%(plugin)s プラグインに %(parameter)s パラメータはありません"
 
-#: core/scenario.py:245
+#: core/scenario.py:258
 #, python-format
-msgid "Warning on line %s. Parameter (%s) has no verification method"
-msgstr "%s 行目で警告。パラメータ (%s) に検証方法がありません"
+msgid "Warning on line %(line)s. Parameter (%(parameter)s) has no verification method"
+msgstr "%(line)s 行目で警告。パラメータ (%(parameter)s) に検証方法がありません"
 
-#: core/scenario.py:263
+#: core/scenario.py:277
 #, python-format
-msgid "Error on line %s. %s "
-msgstr "%s 行目でエラー。%s "
+msgid "Error on line %(line)s. %(parameter)s "
+msgstr "%(line)s 行目でエラー。%(parameter)s "
 
 #: core/selector.py:166
 msgid "Select a scenario"
@@ -203,25 +203,25 @@ msgstr "上/下：移動"
 
 #: core/utils.py:113
 #, python-format
-msgid "In config.ini, [%s] parameter must be a boolean (true or false, not %s). Defaulting to False"
-msgstr "config.ini のパラメータ [%s] はブール値（true または false）である必要があります（%s ではなく）。False を使用します"
+msgid "In config.ini, [%(key)s] parameter must be a boolean (true or false, not %(value)s). Defaulting to False"
+msgstr "config.ini のパラメータ [%(key)s] はブール値（true または false）である必要があります（%(value)s ではなく）。False を使用します"
 
-#: core/utils.py:123
+#: core/utils.py:127
 #, python-format
-msgid "In config.ini, [%s] parameter must be an integer (not %s)"
-msgstr "config.ini のパラメータ [%s] は整数である必要があります（%s ではなく）"
+msgid "In config.ini, [%(key)s] parameter must be an integer (not %(value)s)"
+msgstr "config.ini のパラメータ [%(key)s] は整数である必要があります（%(value)s ではなく）"
 
-#: core/utils.py:132
+#: core/utils.py:139
 #, python-format
-msgid "In config.ini, [%s] parameter must be a float (not %s)"
-msgstr "config.ini のパラメータ [%s] は小数である必要があります（%s ではなく）"
+msgid "In config.ini, [%(key)s] parameter must be a float (not %(value)s)"
+msgstr "config.ini のパラメータ [%(key)s] は小数である必要があります（%(value)s ではなく）"
 
-#: core/utils.py:142
+#: core/utils.py:150
 #, python-format
-msgid "In config.ini, [%s] parameter must be a list of floats (not %s)"
-msgstr "config.ini のパラメータ [%s] は小数のリストである必要があります（%s ではなく）"
+msgid "In config.ini, [%(key)s] parameter must be a list of floats (not %(value)s)"
+msgstr "config.ini のパラメータ [%(key)s] は小数のリストである必要があります（%(value)s ではなく）"
 
-#: core/utils.py:154
+#: core/utils.py:163
 msgid "In config.ini, the specified font is not available. A default font will be used."
 msgstr "config.ini で指定されたフォントは使用できません。既定のフォントを使用します。"
 
@@ -230,22 +230,22 @@ msgstr "config.ini で指定されたフォントは使用できません。既�
 msgid "should be a natural (0 included) integer (not %s)."
 msgstr "は 0 以上の整数である必要があります（%s ではなく）。"
 
-#: core/validation.py:97
+#: core/validation.py:96
 #, python-format
 msgid "should be a positive float (not %s)"
 msgstr "は正の小数である必要があります（%s ではなく）"
 
-#: core/validation.py:216
+#: core/validation.py:221
 #, python-format
 msgid "should be a float between 0 and 1 (included) (not %s)"
 msgstr "は 0 以上 1 以下の小数である必要があります（%s ではなく）"
 
-#: core/validation.py:167 core/validation.py:163
+#: core/validation.py:169 core/validation.py:165
 #, python-format
 msgid "should be an acceptable joystick key value (not %s). See documentation."
 msgstr "は有効なジョイスティックのボタンである必要があります（%s ではなく）。ドキュメントを参照してください。"
 
-#: core/validation.py:179
+#: core/validation.py:181
 #, python-format
 msgid "should be an acceptable (keyboard or joystick) key value (not %s). See documentation."
 msgstr "は有効な（キーボードまたはジョイスティックの）キーである必要があります（%s ではなく）。ドキュメントを参照してください。"
@@ -260,27 +260,27 @@ msgstr "は文字列である必要があります（%s ではなく）。"
 msgid "should be a positive (0 excluded) integer (not %s)."
 msgstr "は正の整数（0 を除く）である必要があります（%s ではなく）。"
 
-#: core/validation.py:130
+#: core/validation.py:129
 #, python-format
-msgid "should be comprised in %s (not %s)"
-msgstr "は %s のいずれかである必要があります（%s ではなく）"
+msgid "should be comprised in %(accepted)s (not %(value)s)"
+msgstr "は %(accepted)s のいずれかである必要があります（%(value)s ではなく）"
 
-#: core/validation.py:147
+#: core/validation.py:149
 #, python-format
 msgid "should be an acceptable keyboard key value (not %s). See documentation."
 msgstr "は有効なキーボードのキーである必要があります（%s ではなく）。ドキュメントを参照してください。"
 
-#: core/validation.py:197
+#: core/validation.py:199
 #, python-format
-msgid "should be composed of letters [a-z] or digits [0-9] (not %s in %s)"
-msgstr "は英字 [a-z] または数字 [0-9] で構成する必要があります（%s を含めないでください：%s）"
+msgid "should be composed of letters [a-z] or digits [0-9] (not %(characters)s in %(value)s)"
+msgstr "は英字 [a-z] または数字 [0-9] で構成する必要があります（%(characters)s を含めないでください：%(value)s）"
 
-#: core/validation.py:212
+#: core/validation.py:217
 #, python-format
 msgid "should be composed of valid callsigns (not %s)"
 msgstr "は有効なコールサインで構成する必要があります（%s ではなく）"
 
-#: core/validation.py:235
+#: core/validation.py:240
 #, python-format
 msgid "should be available either in the Instruction or Questionnaire folder (not %s)"
 msgstr "は Instruction または Questionnaire フォルダにある必要があります（%s ではなく）"
@@ -290,17 +290,17 @@ msgstr "は Instruction または Questionnaire フォルダにある必要が�
 msgid "should be a boolean (not %s)."
 msgstr "はブール値である必要があります（%s ではなく）。"
 
-#: core/validation.py:137
+#: core/validation.py:139
 #, python-format
 msgid "should be a valid regex expression (not %s)"
 msgstr "は有効な正規表現である必要があります（%s ではなく）"
 
 #: core/validation.py:78
 #, python-format
-msgid "must be a color name (%s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %s)"
-msgstr "は色の名前（%s）、(R,G,B,a) または 16 進数（例：#00ff00）の値である必要があります（%s ではなく）"
+msgid "must be a color name (%(colors)s), (R,G,B,a) or hexadecimal (e.g., #00ff00) values (not %(value)s)"
+msgstr "は色の名前（%(colors)s）、(R,G,B,a) または 16 進数（例：#00ff00）の値である必要があります（%(value)s ではなく）"
 
-#: core/validation.py:92
+#: core/validation.py:91
 #, python-format
 msgid "should be (R,G,B,a) values each comprised between 0 and 255 (not %s)"
 msgstr "はそれぞれ 0 から 255 の (R,G,B,a) 値である必要があります（%s ではなく）"
