@@ -62,23 +62,23 @@ msgstr "Exit"
 msgid "Continue"
 msgstr "Continue"
 
-#: core/replayscheduler.py:776 core/replayscheduler.py:776 core/replayscheduler.py:776
+#: core/replayscheduler.py:776
 msgid "Mouse:"
 msgstr "Mouse:"
 
-#: core/replayscheduler.py:237 core/replayscheduler.py:237 core/replayscheduler.py:237
+#: core/replayscheduler.py:237
 msgid "Page hidden (tab change or minimized window): session paused"
 msgstr "Page hidden (tab change or minimized window): session paused"
 
-#: core/replayscheduler.py:239 core/replayscheduler.py:239 core/replayscheduler.py:239
+#: core/replayscheduler.py:239
 msgid "Session paused (pause dialog after the page was hidden)"
 msgstr "Session paused (pause dialog after the page was hidden)"
 
-#: core/replayscheduler.py:647 core/replayscheduler.py:647 core/replayscheduler.py:647
+#: core/replayscheduler.py:647
 msgid "Keyboard history:"
 msgstr "Keyboard history:"
 
-#: core/replayscheduler.py:783 core/replayscheduler.py:783 core/replayscheduler.py:783
+#: core/replayscheduler.py:783
 msgid "held"
 msgstr "held"
 
@@ -318,7 +318,7 @@ msgstr "Sound path %s does not exist. Check voiceidiom/voicegender combination."
 msgid " does not exist"
 msgstr " does not exist"
 
-#: plugins/genericscales.py:39 plugins/genericscales.py:39 plugins/genericscales.py:39
+#: plugins/genericscales.py:39
 msgid "Press SPACE to validate"
 msgstr "Press SPACE to validate"
 

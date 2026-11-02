@@ -57,23 +57,23 @@ msgstr "終了"
 msgid "Continue"
 msgstr "続ける"
 
-#: core/replayscheduler.py:776 core/replayscheduler.py:776 core/replayscheduler.py:776
+#: core/replayscheduler.py:776
 msgid "Mouse:"
 msgstr "マウス："
 
-#: core/replayscheduler.py:237 core/replayscheduler.py:237 core/replayscheduler.py:237
+#: core/replayscheduler.py:237
 msgid "Page hidden (tab change or minimized window): session paused"
 msgstr "ページが非表示になりました（タブの切り替えまたはウィンドウの最小化）：セッションを一時停止しました"
 
-#: core/replayscheduler.py:239 core/replayscheduler.py:239 core/replayscheduler.py:239
+#: core/replayscheduler.py:239
 msgid "Session paused (pause dialog after the page was hidden)"
 msgstr "セッション一時停止中（ページ非表示後の一時停止ダイアログ）"
 
-#: core/replayscheduler.py:647 core/replayscheduler.py:647 core/replayscheduler.py:647
+#: core/replayscheduler.py:647
 msgid "Keyboard history:"
 msgstr "キーボード履歴："
 
-#: core/replayscheduler.py:783 core/replayscheduler.py:783 core/replayscheduler.py:783
+#: core/replayscheduler.py:783
 msgid "held"
 msgstr "押下中"
 
@@ -313,7 +313,7 @@ msgstr "音声のパス %s は存在しません。voiceidiom/voicegender の組
 msgid " does not exist"
 msgstr " は存在しません"
 
-#: plugins/genericscales.py:39 plugins/genericscales.py:39 plugins/genericscales.py:39
+#: plugins/genericscales.py:39
 msgid "Press SPACE to validate"
 msgstr "スペースキーで確定"
 

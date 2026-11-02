@@ -57,23 +57,23 @@ msgstr "退出"
 msgid "Continue"
 msgstr "继续"
 
-#: core/replayscheduler.py:776 core/replayscheduler.py:776 core/replayscheduler.py:776
+#: core/replayscheduler.py:776
 msgid "Mouse:"
 msgstr "鼠标："
 
-#: core/replayscheduler.py:237 core/replayscheduler.py:237 core/replayscheduler.py:237
+#: core/replayscheduler.py:237
 msgid "Page hidden (tab change or minimized window): session paused"
 msgstr "页面已隐藏（切换标签页或窗口最小化）：会话已暂停"
 
-#: core/replayscheduler.py:239 core/replayscheduler.py:239 core/replayscheduler.py:239
+#: core/replayscheduler.py:239
 msgid "Session paused (pause dialog after the page was hidden)"
 msgstr "会话已暂停（页面隐藏后的暂停对话框）"
 
-#: core/replayscheduler.py:647 core/replayscheduler.py:647 core/replayscheduler.py:647
+#: core/replayscheduler.py:647
 msgid "Keyboard history:"
 msgstr "键盘历史："
 
-#: core/replayscheduler.py:783 core/replayscheduler.py:783 core/replayscheduler.py:783
+#: core/replayscheduler.py:783
 msgid "held"
 msgstr "按住"
 
@@ -313,7 +313,7 @@ msgstr "音频路径 %s 不存在。请检查 voiceidiom/voicegender 组合。"
 msgid " does not exist"
 msgstr " 不存在"
 
-#: plugins/genericscales.py:39 plugins/genericscales.py:39 plugins/genericscales.py:39
+#: plugins/genericscales.py:39
 msgid "Press SPACE to validate"
 msgstr "按空格键确认"
 

@@ -57,23 +57,23 @@ msgstr "Salir"
 msgid "Continue"
 msgstr "Continuar"
 
-#: core/replayscheduler.py:776 core/replayscheduler.py:776 core/replayscheduler.py:776
+#: core/replayscheduler.py:776
 msgid "Mouse:"
 msgstr "Ratón:"
 
-#: core/replayscheduler.py:237 core/replayscheduler.py:237 core/replayscheduler.py:237
+#: core/replayscheduler.py:237
 msgid "Page hidden (tab change or minimized window): session paused"
 msgstr "Página oculta (cambio de pestaña o ventana minimizada): sesión en pausa"
 
-#: core/replayscheduler.py:239 core/replayscheduler.py:239 core/replayscheduler.py:239
+#: core/replayscheduler.py:239
 msgid "Session paused (pause dialog after the page was hidden)"
 msgstr "Sesión en pausa (diálogo de pausa tras ocultarse la página)"
 
-#: core/replayscheduler.py:647 core/replayscheduler.py:647 core/replayscheduler.py:647
+#: core/replayscheduler.py:647
 msgid "Keyboard history:"
 msgstr "Historial del teclado:"
 
-#: core/replayscheduler.py:783 core/replayscheduler.py:783 core/replayscheduler.py:783
+#: core/replayscheduler.py:783
 msgid "held"
 msgstr "pulsado"
 
@@ -313,7 +313,7 @@ msgstr "La ruta de audio %s no existe. Compruebe la combinación voiceidiom/voic
 msgid " does not exist"
 msgstr " no existe"
 
-#: plugins/genericscales.py:39 plugins/genericscales.py:39 plugins/genericscales.py:39
+#: plugins/genericscales.py:39
 msgid "Press SPACE to validate"
 msgstr "Pulse ESPACIO para validar"
 

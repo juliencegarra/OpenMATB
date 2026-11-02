@@ -57,23 +57,23 @@ msgstr "Esci"
 msgid "Continue"
 msgstr "Continua"
 
-#: core/replayscheduler.py:776 core/replayscheduler.py:776 core/replayscheduler.py:776
+#: core/replayscheduler.py:776
 msgid "Mouse:"
 msgstr "Mouse:"
 
-#: core/replayscheduler.py:237 core/replayscheduler.py:237 core/replayscheduler.py:237
+#: core/replayscheduler.py:237
 msgid "Page hidden (tab change or minimized window): session paused"
 msgstr "Pagina nascosta (cambio di scheda o finestra ridotta a icona): sessione in pausa"
 
-#: core/replayscheduler.py:239 core/replayscheduler.py:239 core/replayscheduler.py:239
+#: core/replayscheduler.py:239
 msgid "Session paused (pause dialog after the page was hidden)"
 msgstr "Sessione in pausa (finestra di pausa dopo che la pagina è stata nascosta)"
 
-#: core/replayscheduler.py:647 core/replayscheduler.py:647 core/replayscheduler.py:647
+#: core/replayscheduler.py:647
 msgid "Keyboard history:"
 msgstr "Cronologia della tastiera:"
 
-#: core/replayscheduler.py:783 core/replayscheduler.py:783 core/replayscheduler.py:783
+#: core/replayscheduler.py:783
 msgid "held"
 msgstr "premuto"
 
@@ -313,7 +313,7 @@ msgstr "Il percorso audio %s non esiste. Verificare la combinazione voiceidiom/v
 msgid " does not exist"
 msgstr " non esiste"
 
-#: plugins/genericscales.py:39 plugins/genericscales.py:39 plugins/genericscales.py:39
+#: plugins/genericscales.py:39
 msgid "Press SPACE to validate"
 msgstr "Premere SPAZIO per confermare"
 
