@@ -13,6 +13,7 @@ import pyglet.clock
 from core import timing, validation
 from core.clock import Clock
 from core.constants import REPLAY_MODE, SYSTEM_PSEUDO_PLUGIN
+from core.environment import system_environment
 from core.error import get_errors
 from core.event import Event
 from core.joystick import joystick
@@ -41,6 +42,7 @@ class Scheduler:
     def __init__(self, scenario_path: Path | None = None) -> None:
         with open("VERSION", "r", encoding="utf-8") as f:
             get_logger().log_manual_entry(f.read().strip(), key="version")
+        get_logger().log_manual_entry("web" if IS_WEB else "desktop", key="platform")
         # The replay draws the same pseudorandom values with it: read from the file, which may be renamed
         get_logger().log_manual_entry(get_logger().session_id, key="session_id")
         if get_random_seed() is not None:  # The seeds of the draws, instead of the session number
@@ -52,6 +54,8 @@ class Scheduler:
             get_logger().log_manual_entry(f"{Window.MainWindow.width}x{Window.MainWindow.height}", key="window")
             # The texts are scaled to the window (1 in a 1920 x 1080 one)
             get_logger().log_manual_entry(f"{Window.MainWindow.font_scale:.3f}", key="font_scale")
+            for key, value in system_environment(Window.MainWindow):  # Timing depends on the screen, the card...
+                get_logger().log_manual_entry(value, key=key)
 
         self.clock: Clock = Clock("main")
         self.scenario_time: float = 0
@@ -381,6 +385,8 @@ class Scheduler:
         self._exited = True
         self.clock.unschedule(self.update)
         pyglet.clock.unschedule(get_logger().checkpoint)
+        for key, value in timing.frame_statistics():
+            get_logger().log_manual_entry(value, key=key)
         get_logger().log_manual_entry("end")
         get_logger().end_session()
         Window.MainWindow.close()  # needed for windows clean exit

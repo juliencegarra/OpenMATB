@@ -99,6 +99,16 @@ def set_mouse_cursor_visible(window: Any, visible: bool) -> None:
         window.set_mouse_visible(visible)
 
 
+def gpu_info(window: Any) -> tuple[str, str]:
+    """The graphics card drawing the window, and the OpenGL version with the version of its driver."""
+    if PYGLET_3:
+        info: Any = window.context.info
+        return info.renderer, info.version
+    from pyglet.gl import gl_info
+
+    return gl_info.get_renderer(), gl_info.get_version_string()
+
+
 def default_font_name() -> str | None:
     """The default font of the platform (None: pyglet 2 chooses it)."""
     return pyglet.font.manager.get_platform_default_name() if PYGLET_3 else None

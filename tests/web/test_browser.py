@@ -235,6 +235,16 @@ class TestSessionFile:
         assert rows["os"] != "unknown"
         assert "Mozilla/5.0" in rows["useragent"]
 
+    def test_screen_and_frames_are_logged(self, session_csv):
+        _, content = session_csv
+        rows = {r["type"]: r["value"] for r in csv.DictReader(io.StringIO(content))}
+        assert rows["platform"] == "web"
+        assert re.fullmatch(r"\d+x\d+", rows["screen_mode"])
+        assert rows["screen_scale"].startswith("scale ")
+        assert int(rows["cpu_cores"]) > 0
+        assert int(rows["frames"]) > 0
+        assert float(rows["frame_median_ms"]) > 0
+
     def test_freezes_are_logged(self, timing_run, session_csv):
         """Every pause of the page longer than 100 ms is in the session file, with its duration."""
         _, _, final = timing_run

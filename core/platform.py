@@ -272,7 +272,25 @@ def browser_environment() -> list[tuple[str, str]]:
     # logtime is performance.now() (perf_counter() in the browser), in seconds since timeOrigin, a Unix time: the
     # Unix time of a row is timeorigin + logtime (with the precision of the computer clock)
     time_origin: str = f"{float(js.performance.timeOrigin) / 1000:.4f}"
-    return [("browser", browser), ("os", system), ("useragent", user_agent), ("timeorigin", time_origin)]
+    entries: list[tuple[str, str]] = [
+        ("browser", browser),
+        ("os", system),
+        ("useragent", user_agent),
+        ("timeorigin", time_origin),
+    ]
+    # As on desktop (core.environment), with fewer details: more would identify the computer of a participant.
+    # Each one can be missing in a browser: never stop a session for them
+    details: tuple[tuple[str, Callable[[], str]], ...] = (
+        ("screen_mode", lambda: f"{int(js.window.screen.width)}x{int(js.window.screen.height)}"),
+        ("screen_scale", lambda: f"scale {float(js.window.devicePixelRatio)}"),
+        ("cpu_cores", lambda: str(int(js.navigator.hardwareConcurrency))),
+    )
+    for key, read in details:
+        try:
+            entries.append((key, read()))
+        except (AttributeError, TypeError, ValueError):
+            continue
+    return entries
 
 
 def viewport_size() -> tuple[int, int] | None:

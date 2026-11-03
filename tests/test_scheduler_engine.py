@@ -98,12 +98,16 @@ class TestInit:
         with (
             patch("core.scheduler.Clock") as clock_cls,
             patch("core.scheduler.Scenario", return_value=scenario) as scen_cls,
+            patch("core.scheduler.system_environment", return_value=[("gpu", "A card")]) as environment,
         ):
             sched = Scheduler(scenario_path="my.txt")
 
         keys = [c.kwargs["key"] for c in mock_logger.log_manual_entry.call_args_list]
         # The session ID gives the replay its seeds (the file may be renamed); the window size places the mouse
-        assert keys == ["version", "session_id", "window", "font_scale"]
+        assert keys == ["version", "platform", "session_id", "window", "font_scale", "gpu"]
+        mock_logger.log_manual_entry.assert_any_call("desktop", key="platform")
+        environment.assert_called_once_with(window)
+        mock_logger.log_manual_entry.assert_any_call("A card", key="gpu")
         mock_logger.log_manual_entry.assert_any_call("0.750", key="font_scale")
         mock_logger.log_manual_entry.assert_any_call(mock_logger.session_id, key="session_id")
         clock_cls.assert_called_once_with("main")

@@ -381,12 +381,22 @@ class TestBrowserEnvironment:
 
     def test_environment_entries(self, js):
         js.navigator.userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:156.0) Gecko/20100101 Firefox/156.0"
+        js.window.screen = SimpleNamespace(width=2560, height=1440)
+        js.window.devicePixelRatio = 1.25
+        js.navigator.hardwareConcurrency = 8
         assert platform.browser_environment() == [
             ("browser", "Firefox 156.0"),
             ("os", "Linux"),
             ("useragent", js.navigator.userAgent),
             ("timeorigin", "1790493792.7834"),  # Unix time (s) of logtime 0: performance.timeOrigin
+            ("screen_mode", "2560x1440"),
+            ("screen_scale", "scale 1.25"),
+            ("cpu_cores", "8"),
         ]
+
+    def test_details_missing_in_a_browser_do_not_stop_the_session(self, js):
+        js.navigator.userAgent = "curl/8.0"
+        assert [key for key, _ in platform.browser_environment()] == ["browser", "os", "useragent", "timeorigin"]
 
     def test_nothing_on_desktop(self):
         assert platform.browser_environment() == []
