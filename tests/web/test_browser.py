@@ -1882,6 +1882,29 @@ class TestLanguages:
         page_dir = app.page.evaluate("() => document.documentElement.dir")
         assert page_dir == ("rtl" if bidi.is_rtl_language(language) else "ltr")
 
+    @pytest.mark.parametrize(
+        "preferred, language",
+        [
+            (["en-US"], "en_EN"),
+            (["en-GB"], "en_EN"),
+            (["ko-KR"], "en_EN"),
+            (["es-AR"], "es_AR"),
+            (["es-ES"], "es_ES"),
+            (["es"], "es_ES"),
+            (["es-MX"], "es_ES"),
+            (["fr-CA"], "fr_FR"),
+            (["ko-KR", "es-AR", "fr-FR"], "es_AR"),
+        ],
+    )
+    def test_language_of_the_browser(self, page_factory, preferred, language):
+        """The exact variant of the first language translated, otherwise its default variant, otherwise English."""
+        app = page_factory()
+        languages = json.dumps(preferred)
+        app.page.add_init_script(f"Object.defineProperty(navigator, 'languages', {{ value: {languages} }});")
+        app.page.goto(f"{app.url}/index.html")
+        app.page.wait_for_selector("#lang")
+        assert app.page.input_value("#lang") == language
+
     def test_openmatb_in_arabic(self, page_factory, tmp_path):
         """The task titles and the labels of the tasks are drawn from right to left (core.rtl_labels)."""
         from core import bidi

@@ -56,15 +56,25 @@ function fillLanguageMenu() {
     }
 }
 
-// ?lang= in the URL, otherwise the first browser language OpenMATB is translated in, otherwise English
+// The variant of a language chosen for a browser in another variant of it (es-MX), when the first one of locales/
+// in alphabetical order would be too specific (es_AR)
+const DEFAULT_VARIANTS = ["es_ES"];
+
+// ?lang= in the URL, otherwise the first browser language OpenMATB is translated in (its exact variant, otherwise
+// its default variant), otherwise English
 function detectLanguage() {
     const requested = new URLSearchParams(location.search).get("lang");
     if (requested in TEXTS) {
         return requested;
     }
     for (const language of navigator.languages || [navigator.language]) {
-        const code = String(language).toLowerCase().split("-")[0];
-        const match = Object.keys(TEXTS).find((lang) => lang.toLowerCase().startsWith(code + "_"));
+        const browser = String(language).toLowerCase().replace("-", "_");
+        const code = browser.split("_")[0];
+        const variants = LANGUAGES.filter((lang) => lang.toLowerCase().split("_")[0] === code);
+        const match =
+            variants.find((lang) => lang.toLowerCase() === browser) ||
+            variants.find((lang) => DEFAULT_VARIANTS.includes(lang)) ||
+            variants[0];
         if (match) {
             return match;
         }

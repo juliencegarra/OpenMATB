@@ -227,6 +227,13 @@ class TestWebStartPage:
         listed: str = re.search(r"const RTL_LANGUAGES = \[(.*?)\];", SCRIPT).group(1)
         assert tuple(re.findall(r"\"(\w+)\"", listed)) == bidi.RTL_LANGUAGES
 
+    def test_default_variants_exist(self):
+        """The default variants used by the language detection of the page are languages of locales/."""
+        listed: str = re.search(r"const DEFAULT_VARIANTS = \[(.*?)\];", SCRIPT).group(1)
+        variants: list[str] = re.findall(r"\"(\w+)\"", listed)
+        assert variants
+        assert set(variants) <= set(LANGUAGES)
+
     def test_rtl_web_fonts_are_built(self):
         """The Arabic and Hebrew fonts loaded by the page are downloaded by web/build.py."""
         build_script: str = (ROOT / "web" / "build.py").read_text(encoding="utf-8")

@@ -26,7 +26,10 @@ English (as in OpenMATB).
    headers, translate the messages (keep `%s`, `%(line)s`, `{error}`, the tabs and the spaces at both ends), then
    `python locales/build.py mo`. Or add the language in Weblate (below).
 2. The language is then offered by OpenMATB (`language=xx_XX`) and by the start page of the web version, named in
-   its own language (`Intl.DisplayNames`), its untranslated messages in English.
+   its own language (`Intl.DisplayNames`), its untranslated messages in English. The page chooses the variant of the
+   browser language (`es-AR`: `es_AR`); for a browser in another variant (`es-MX`), the one of `DEFAULT_VARIANTS` in
+   `web/openmatb.js` if listed, otherwise the first one in alphabetical order: when adding a regional variant such
+   as `es_AR`, list the general one there.
 3. Once every message is translated, add it to `COMPLETE_LANGUAGES` of `tests/test_locales.py`: the tests then keep
    it complete. Until then, they only check its consistency (placeholders kept, `.mo` compiled...).
 4. Optionally, the instructions (`includes/instructions`), questionnaires (`includes/questionnaires`), scenarios
