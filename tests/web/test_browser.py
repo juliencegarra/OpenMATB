@@ -30,6 +30,13 @@ TIMING_SCENARIO_DURATION: int = 12
 ENGINE: str = os.environ.get("OPENMATB_BROWSER", "chromium")
 SIMULTANEOUS_AT: int = 5
 SIMULTANEOUS_COUNT: int = 10
+# Chrome on Windows without a visible window: setTimeout(8) takes about 16 ms after 4 s (8.5 ms with a window, the case
+# of a real session, even in an empty page). The updates then wake on these timers and after the frames, a bimodal
+# distribution around 0-4 and 14-18 ms: its median varies between 9 and 14 ms, so at most one update per frame is asked
+WINDOWS_HEADLESS_CHROME: bool = (
+    ENGINE == "chromium" and sys.platform == "win32" and os.environ.get("OPENMATB_BROWSER_HEADED") != "1"
+)
+UPDATE_MEDIAN_LIMIT: float = 1000 / 60 if WINDOWS_HEADLESS_CHROME else 12.5
 
 
 def _timing_scenario() -> str:
@@ -58,8 +65,8 @@ def fine_timers() -> None:
 
     It rounds setTimeout to the Windows timer resolution (15.6 ms): the loop wakes every ~31 ms, where
     Safari, Chrome and Firefox wake every ~8-10 ms. Plugin pace and the rest are still tested.
-    Chrome on Windows also rounds them in some sessions, but its loop still wakes every ~10 ms (median) and
-    these tests pass: measuring setTimeout (15.6 ms in both) would not tell the two apart.
+    Chrome on Windows also rounds them without a visible window, see UPDATE_MEDIAN_LIMIT: its loop still wakes
+    more often, also after each frame.
     """
     if ENGINE == "webkit" and sys.platform == "win32":
         pytest.skip("Playwright WebKit on Windows rounds its timers to 15.6 ms (not representative of Safari)")
@@ -104,7 +111,7 @@ class TestUpdateTiming:
         median, p95 = statistics.median(intervals), _percentile(intervals, 0.95)
         print(f"\nupdates: n={len(intervals)} median={median:.2f} p95={p95:.2f} max={max(intervals):.2f} ms")
         assert median >= 1000 / 120 - 1  # Capped at 120 Hz: no busy loop
-        assert median <= 12.5 * tolerance
+        assert median <= UPDATE_MEDIAN_LIMIT * tolerance
         assert p95 <= 20 * tolerance
 
     def test_no_long_freeze(self, timing_run, tolerance):
@@ -244,6 +251,7 @@ class TestSessionFile:
         assert int(rows["cpu_cores"]) > 0
         assert int(rows["frames"]) > 0
         assert float(rows["frame_median_ms"]) > 0
+        assert float(rows["update_median_ms"]) > 0
 
     def test_freezes_are_logged(self, timing_run, session_csv):
         """Every pause of the page longer than 100 ms is in the session file, with its duration."""

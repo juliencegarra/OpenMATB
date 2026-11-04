@@ -139,13 +139,13 @@ class TestFrameStatistics:
                 timing.flip()
 
     def test_nothing_without_two_frames(self):
-        assert timing.frame_statistics() == []
+        assert timing.timing_statistics() == []
         self._flips(1.0)
-        assert timing.frame_statistics() == []
+        assert timing.timing_statistics() == []
 
     def test_regular_frames(self):
         self._flips(*(1.0 + n * 0.01 for n in range(5)))
-        assert dict(timing.frame_statistics()) == {
+        assert dict(timing.timing_statistics()) == {
             "frames": "4",
             "frame_median_ms": "10.00",
             "frame_sd_ms": "0.00",
@@ -155,7 +155,7 @@ class TestFrameStatistics:
 
     def test_a_missed_refresh_is_late(self):
         self._flips(1.0, 1.01, 1.02, 1.03, 1.05)
-        statistics = dict(timing.frame_statistics())
+        statistics = dict(timing.timing_statistics())
         assert statistics["frame_median_ms"] == "10.00"
         assert statistics["frame_max_ms"] == "20.00"
         assert statistics["frames_late"] == "1"
@@ -163,21 +163,48 @@ class TestFrameStatistics:
     def test_a_long_interval_changes_neither_the_median_nor_the_deviation(self):
         """A pause of the page, a dialog: they stay the period and the regularity of the frames."""
         self._flips(1.0, 1.01, 1.02, 1.03, 31.0)
-        statistics = dict(timing.frame_statistics())
+        statistics = dict(timing.timing_statistics())
         assert statistics["frame_median_ms"] == "10.00"
         assert statistics["frame_sd_ms"] == "0.00"
         assert statistics["frames_late"] == "1"
 
     def test_the_deviation_of_the_frames_on_time(self):
         self._flips(1.0, 1.01, 1.022, 1.032, 1.044)  # 10, 12, 10, 12 ms
-        assert dict(timing.frame_statistics())["frame_sd_ms"] == "1.00"
+        assert dict(timing.timing_statistics())["frame_sd_ms"] == "1.00"
 
     def test_reset_with_the_scenario(self):
         """The loading of the scenario is not a late frame."""
         self._flips(1.0, 1.01)
         timing.reset()
         self._flips(9.0, 9.01)
-        assert dict(timing.frame_statistics())["frames"] == "1"
+        assert dict(timing.timing_statistics())["frames"] == "1"
+
+    @staticmethod
+    def _ticks(*times: float) -> None:
+        with patch("core.timing.perf_counter", side_effect=list(times)):
+            for _ in times:
+                timing.set_tick(0.0, running=True)
+
+    def test_the_updates_without_frames(self):
+        self._ticks(1.0, 1.01, 1.02, 1.05)
+        assert timing.timing_statistics() == [("update_median_ms", "10.00")]
+
+    def test_the_updates_after_the_frames(self):
+        self._flips(1.0, 1.01)
+        self._ticks(2.0, 2.008)
+        entries = timing.timing_statistics()
+        assert entries[0] == ("frames", "1")
+        assert entries[-1] == ("update_median_ms", "8.00")
+
+    def test_a_single_tick_gives_no_interval(self):
+        self._ticks(1.0)
+        assert timing.timing_statistics() == []
+
+    def test_the_updates_are_reset_with_the_scenario(self):
+        self._ticks(1.0, 1.5)
+        timing.reset()
+        self._ticks(9.0, 9.01)
+        assert timing.timing_statistics() == [("update_median_ms", "10.00")]
 
     def test_the_callbacks_still_get_the_time_of_the_frame(self):
         callback = MagicMock()
@@ -199,7 +226,7 @@ class TestSchedulerExit:
             patch("core.scheduler.Window"),
             patch("core.scheduler.pyglet"),
             patch("core.scheduler.notify_page"),
-            patch("core.scheduler.timing.frame_statistics", return_value=[("frames", "10")]),
+            patch("core.scheduler.timing.timing_statistics", return_value=[("frames", "10")]),
         ):
             scheduler.exit()
         calls = logger.log_manual_entry.call_args_list

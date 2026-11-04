@@ -385,7 +385,7 @@ class Scheduler:
         self._exited = True
         self.clock.unschedule(self.update)
         pyglet.clock.unschedule(get_logger().checkpoint)
-        for key, value in timing.frame_statistics():
+        for key, value in timing.timing_statistics():
             get_logger().log_manual_entry(value, key=key)
         get_logger().log_manual_entry("end")
         get_logger().end_session()

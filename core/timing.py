@@ -25,7 +25,7 @@ from core.platform import IS_WEB
 # An event timestamp older than this (seconds) is not the one being handled
 MAX_INPUT_EVENT_AGE: float = 1.0
 INPUT_EVENTS: tuple[str, ...] = ("keydown", "keyup", "mousedown", "mouseup", "pointerdown", "pointerup")
-FRAME_BINS_PER_MS: int = 100  # The intervals between frames are counted by steps of 0.01 ms
+INTERVAL_BINS_PER_MS: int = 100  # The intervals between frames and between ticks are counted by steps of 0.01 ms
 LATE_FRAME_RATIO: float = 1.5  # A frame later than this times the median interval missed at least one refresh
 
 _tick_real: float | None = None  # perf_counter() of the last tick
@@ -36,6 +36,7 @@ _flip_callbacks: list[Callable[[float], None]] = []
 _last_flip: float | None = None
 # Counted rather than kept: a session draws hundreds of thousands of frames
 _frame_intervals: Counter[int] = Counter()
+_tick_intervals: Counter[int] = Counter()
 
 
 def reset() -> None:
@@ -44,13 +45,17 @@ def reset() -> None:
     _flip_callbacks.clear()
     _last_flip = None
     _frame_intervals.clear()
+    _tick_intervals.clear()
 
 
 def set_tick(scenario_time: float, running: bool) -> None:
     """Called by the scheduler at each tick, with the scenario time and whether it advances (not paused)."""
     global _tick_real, _tick_scenario, _previous_tick_scenario, _running
+    now: float = perf_counter()
+    if _tick_real is not None:
+        _tick_intervals[_interval_bin(now - _tick_real)] += 1
     _previous_tick_scenario = _tick_scenario
-    _tick_real, _tick_scenario, _running = perf_counter(), scenario_time, running
+    _tick_real, _tick_scenario, _running = now, scenario_time, running
 
 
 def scenario_time_at(real_time: float) -> float | None:
@@ -78,6 +83,21 @@ def input_time() -> float:
     return stamp if 0 <= now - stamp < MAX_INPUT_EVENT_AGE else now
 
 
+def _interval_bin(seconds: float) -> int:
+    return round(seconds * 1000 * INTERVAL_BINS_PER_MS)
+
+
+def _median_bin(intervals: Counter[int]) -> int:
+    """The median of counted intervals (at least one)."""
+    count: int = sum(intervals.values())
+    cumulated: int = 0
+    for interval in sorted(intervals):
+        cumulated += intervals[interval]
+        if cumulated * 2 >= count:
+            return interval
+    raise ValueError("No interval")
+
+
 def call_on_flip(callback: Callable[[float], None]) -> None:
     """Call callback(perf_counter time) when the next frame is drawn."""
     _flip_callbacks.append(callback)
@@ -88,7 +108,7 @@ def flip() -> None:
     global _last_flip
     now: float = perf_counter()
     if _last_flip is not None:
-        _frame_intervals[round((now - _last_flip) * 1000 * FRAME_BINS_PER_MS)] += 1
+        _frame_intervals[_interval_bin(now - _last_flip)] += 1
     _last_flip = now
     if not _flip_callbacks:
         return
@@ -98,20 +118,23 @@ def flip() -> None:
         callback(now)
 
 
-def frame_statistics() -> list[tuple[str, str]]:
-    """(key, value) entries on the regularity of the frames since the start of the scenario, for the session file.
-    What is really displayed: the rate of the screen and the vertical sync are only the settings asked for."""
+def timing_statistics() -> list[tuple[str, str]]:
+    """(key, value) entries on the frames and the updates since the start of the scenario, for the session file."""
+    entries: list[tuple[str, str]] = _frame_statistics()
+    if _tick_intervals:
+        # Not given by the frames, which follow the screen. Chrome on Windows can round its timers (about 16 ms instead
+        # of 8.5 without a visible window): the scenario events are then executed later
+        entries.append(("update_median_ms", f"{_median_bin(_tick_intervals) / INTERVAL_BINS_PER_MS:.2f}"))
+    return entries
+
+
+def _frame_statistics() -> list[tuple[str, str]]:
+    """What is really displayed: the rate of the screen and the vertical sync are only the settings asked for."""
     count: int = sum(_frame_intervals.values())
     if count == 0:
         return []
     bins: list[int] = sorted(_frame_intervals)
-    cumulated: int = 0
-    median: int = bins[-1]
-    for interval in bins:
-        cumulated += _frame_intervals[interval]
-        if cumulated * 2 >= count:
-            median = interval
-            break
+    median: int = _median_bin(_frame_intervals)
     # The deviation of the frames on time: a single long pause (a dialog, a file loaded) would make it meaningless.
     # The others are given by frames_late and frame_max_ms
     on_time: list[int] = [interval for interval in bins if interval <= LATE_FRAME_RATIO * median]
@@ -121,8 +144,8 @@ def frame_statistics() -> list[tuple[str, str]]:
     late: int = count - on_time_count
     return [
         ("frames", str(count)),
-        ("frame_median_ms", f"{median / FRAME_BINS_PER_MS:.2f}"),
-        ("frame_sd_ms", f"{sqrt(variance) / FRAME_BINS_PER_MS:.2f}"),
-        ("frame_max_ms", f"{bins[-1] / FRAME_BINS_PER_MS:.2f}"),
+        ("frame_median_ms", f"{median / INTERVAL_BINS_PER_MS:.2f}"),
+        ("frame_sd_ms", f"{sqrt(variance) / INTERVAL_BINS_PER_MS:.2f}"),
+        ("frame_max_ms", f"{bins[-1] / INTERVAL_BINS_PER_MS:.2f}"),
         ("frames_late", str(late)),
     ]
