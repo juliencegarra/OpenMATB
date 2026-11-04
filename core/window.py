@@ -42,6 +42,7 @@ from core.platform import (
     on_fullscreen_exit,
     on_page_resize,
     on_visibility_change,
+    page_hidden,
     request_fullscreen,
     viewport_size,
 )
@@ -174,6 +175,12 @@ class Window(Window):
         get_logger().log_manual_entry("hidden" if hidden else "visible", key="visibility")
         if hidden and not REPLAY_MODE and not self.selector_visible and self.modal_dialog is None:
             self.pause_prompt()
+
+    def pause_if_hidden(self) -> None:
+        """At the start of a session: a page already hidden sends no change of visibility, and the scenario ran at the
+        pace of its throttled timers (one update per second)."""
+        if page_hidden():
+            self.on_visibility_change(True)
 
     def on_fullscreen_exit(self) -> None:
         get_logger().log_manual_entry("exit", key="fullscreen")  # Dropped after the end of the session

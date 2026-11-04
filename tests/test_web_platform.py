@@ -466,6 +466,14 @@ class TestPageHelpers:
         listener(object())
         callback.assert_called_once_with(hidden)
 
+    @pytest.mark.parametrize("state,hidden", [("hidden", True), ("visible", False)])
+    def test_page_hidden(self, js, state, hidden):
+        js.document.visibilityState = state
+        assert platform.page_hidden() is hidden
+
+    def test_page_never_hidden_on_desktop(self):
+        assert platform.page_hidden() is False
+
     @pytest.mark.parametrize("element,called", [(None, True), (object(), False)])
     def test_fullscreen_exit(self, js, element, called):
         """Only when the page leaves fullscreen, not when it enters it."""
@@ -646,6 +654,25 @@ class TestHiddenTab:
             win = self._window()
             win.on_visibility_change(True)
         win.pause_prompt.assert_not_called()
+
+    def test_a_page_hidden_at_the_start_pauses_the_scenario(self, mock_logger):
+        """It sends no change of visibility: the scenario ran at the pace of the throttled timers."""
+        from core.window import Window
+
+        win = self._window()
+        with patch("core.window.page_hidden", return_value=True):
+            Window.pause_if_hidden(win)
+        win.pause_prompt.assert_called_once()
+        mock_logger.log_manual_entry.assert_called_once_with("hidden", key="visibility")
+
+    def test_a_visible_page_at_the_start_logs_nothing(self, mock_logger):
+        from core.window import Window
+
+        win = self._window()
+        with patch("core.window.page_hidden", return_value=False):
+            Window.pause_if_hidden(win)
+        win.pause_prompt.assert_not_called()
+        mock_logger.log_manual_entry.assert_not_called()
 
 
 # ── Window: leaving fullscreen ──────────────────────────────────────────────

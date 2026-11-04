@@ -114,6 +114,7 @@ class TestInit:
         clock_cls.return_value.schedule.assert_called_once_with(sched.update)
         scen_cls.assert_called_once_with(None, scenario_path="my.txt")
         window.display_session_id.assert_called_once()
+        window.pause_if_hidden.assert_called_once()
         assert sched.scenario_time == 0
 
     def test_the_random_seed_is_logged(self, mock_logger, window):

@@ -323,6 +323,31 @@ class TestHiddenTab:
         assert later["running"]
         assert later["scenario_time"] == pytest.approx(paused["scenario_time"], abs=0.02)
 
+    def test_a_page_hidden_at_the_start_starts_paused(self, page_factory):
+        """No change of visibility is sent: the scenario ran at the pace of the throttled timers."""
+        app = page_factory()
+        app.prepare(LONG_SCENARIO.replace("0:05:00", "0:00:02"))
+        app.page.evaluate(
+            """() => Object.defineProperty(document, "visibilityState", {value: "hidden", configurable: true})"""
+        )
+        app.page.click("#start")
+        paused = app.wait_until(lambda s: s["started"] and s["modal"], timeout=30)
+        app.page.wait_for_timeout(1500)
+        assert app.state()["scenario_time"] == pytest.approx(paused["scenario_time"], abs=0.02)
+        assert paused["scenario_time"] < 0.1
+
+        app.page.evaluate(
+            """() => {
+                Object.defineProperty(document, "visibilityState", {value: "visible", configurable: true});
+                document.dispatchEvent(new Event("visibilitychange"));
+            }"""
+        )
+        app.page.focus("#pygletCanvas")
+        app.page.keyboard.press("Space")  # Close the pause dialog: the scenario runs to its end
+        app.page.wait_for_selector("#end:not([hidden])", timeout=30_000)
+        rows = list(csv.DictReader(io.StringIO(app.session_download().path().read_text(encoding="utf-8"))))
+        assert [r["value"] for r in rows if r["type"] == "visibility"] == ["hidden", "visible"]
+
 
 @pytest.fixture(scope="module")
 def keyboard_app(page_factory):

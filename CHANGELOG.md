@@ -15,6 +15,7 @@ The main changes of each version of OpenMATB. The releases and their files are o
   - The session file records whether it comes from the desktop or the web version (`platform`), the computer at its start (screen model, resolution and refresh rate, graphics card and driver, vertical sync, processor, memory, audio driver, power settings; in the browser, the screen and the number of processor cores) and the regularity of the frames at its end (`frames`, `frame_median_ms`, `frame_sd_ms`, `frame_max_ms`, `frames_late`) and of the updates (`update_median_ms`). No computer or user name, no serial number
 
   **Bug Fixes**
+  - Fix a browser session started while its page was hidden: not paused, it ran at the pace of the throttled timers (one update per second). It now starts with the pause prompt, as when the page is hidden during a session
   - Fix a hidden communications task heard: a prompt cut by a pause was played again when the task was resumed while still hidden (guided tours). A hidden task is now silent, in the replay too
   - Fix the guided tours: the communications prompt was cut before its frequency, and the French tour had the English voice; fix the demo prompt cut by the end
   - Fix the communications radios on desktop: the name and the frequency were glued ("NAV 1135.7"), their digits even overlapped with pyglet 3 (a tab has no width in a single-line label)

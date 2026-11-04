@@ -70,6 +70,8 @@ class Scheduler:
         self.set_scenario()
 
         Window.MainWindow.display_session_id()
+        if not REPLAY_MODE:
+            Window.MainWindow.pause_if_hidden()
 
     def set_scenario(self, events: list[str] | None = None) -> None:
         scenario_path: Path | None = self.scenario_path if events is None else None
