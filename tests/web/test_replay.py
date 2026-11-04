@@ -122,11 +122,11 @@ def recorded(page_factory) -> dict[str, Any]:
     pump_1 = _wait(state, lambda s: s["st"] >= 10.5, 20, "scenario time 10.5")["pump_1"]
 
     page.wait_for_selector("#end:not([hidden])", timeout=30_000)
-    rows = list(csv.DictReader(io.StringIO(session.downloads[0].path().read_text(encoding="utf-8"))))
+    rows = list(csv.DictReader(io.StringIO(session.session_download().path().read_text(encoding="utf-8"))))
     perf = [r for r in rows if r["type"] == "performance"]
     return {
         "app": session,
-        "id": int(session.downloads[0].suggested_filename.split("_")[0]),
+        "id": int(session.session_download().suggested_filename.split("_")[0]),
         "rows": rows,
         "sysmon_detections": [
             r["value"] for r in perf if r["module"] == "sysmon" and r["address"] == "signal_detection"

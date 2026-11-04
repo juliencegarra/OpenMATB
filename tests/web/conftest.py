@@ -170,6 +170,16 @@ class OpenMATBPage:
                 raise AssertionError(f"Timeout; last state: running={state['running']} time={state['scenario_time']}")
             time.sleep(0.1)
 
+    def session_download(self, timeout: float = 10) -> Any:
+        """The downloaded session file. The end screen is shown before it is downloaded (web/openmatb.js keeps it in
+        the browser first): reading the downloads as soon as the screen is shown can find none."""
+        deadline = time.monotonic() + timeout
+        while not self.downloads:
+            if time.monotonic() > deadline:
+                raise AssertionError(f"The session file was not downloaded within {timeout} s")
+            self.page.wait_for_timeout(50)  # Playwright delivers the download events while it waits
+        return self.downloads[0]
+
     def hide_tab(self) -> None:
         """Emulate a tab switch (Playwright pages are always visible)."""
         self.page.evaluate(

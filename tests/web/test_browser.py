@@ -205,8 +205,8 @@ class TestPluginPace:
 @pytest.fixture(scope="module")
 def session_csv(timing_run):
     app, _, _ = timing_run
+    download = app.session_download()
     assert len(app.downloads) == 1
-    download = app.downloads[0]
     return download.suggested_filename, download.path().read_text(encoding="utf-8")
 
 
@@ -422,7 +422,7 @@ class TestAutomaticSolver:
         app = page_factory()
         app.start(AUTOMATIC_SCENARIO)
         app.page.wait_for_selector("#end:not([hidden])", timeout=60_000)
-        rows = list(csv.DictReader(io.StringIO(app.downloads[0].path().read_text(encoding="utf-8"))))
+        rows = list(csv.DictReader(io.StringIO(app.session_download().path().read_text(encoding="utf-8"))))
         sysmon = [r for r in rows if r["type"] == "performance" and r["module"] == "sysmon"]
         assert [r["value"] for r in sysmon if r["address"] == "signal_detection"] == ["HIT", "HIT"]
         assert {r["value"] for r in sysmon if r["address"] == "resolved_by"} == {"agent"}
@@ -472,7 +472,7 @@ class TestKeyResponses:
         assert [(key, state) for key, state, _ in pumps_after] == [(key, expected) for key, _, expected in pumps_after]
         assert len(pumps_after) == len(PUMP_PRESSES)
 
-        rows = list(csv.DictReader(io.StringIO(app.downloads[0].path().read_text(encoding="utf-8"))))
+        rows = list(csv.DictReader(io.StringIO(app.session_download().path().read_text(encoding="utf-8"))))
         sysmon = [r for r in rows if r["type"] == "performance" and r["module"] == "sysmon"]
         names = [r["value"] for r in sysmon if r["address"] == "name"]
         detections = [r["value"] for r in sysmon if r["address"] == "signal_detection"]
@@ -717,8 +717,8 @@ def replay_run(page_factory):
         session.wait_until(lambda s, at=at: s["scenario_time"] >= at, timeout=20)
         session.page.keyboard.press(key)
     session.page.wait_for_selector("#end:not([hidden])", timeout=30_000)
-    rows = list(csv.DictReader(io.StringIO(session.downloads[0].path().read_text(encoding="utf-8"))))
-    session_id = int(session.downloads[0].suggested_filename.split("_")[0])
+    rows = list(csv.DictReader(io.StringIO(session.session_download().path().read_text(encoding="utf-8"))))
+    session_id = int(session.session_download().suggested_filename.split("_")[0])
 
     replay = session.new_tab()
     replay.start_replay(session_id)
@@ -826,7 +826,7 @@ class TestReplayWithMouse:
         session.page.focus("#pygletCanvas")
         session.page.keyboard.press("Space")  # Validates the questionnaire
         session.page.wait_for_selector("#end:not([hidden])", timeout=60_000)
-        session_id = int(session.downloads[0].suggested_filename.split("_")[0])
+        session_id = int(session.session_download().suggested_filename.split("_")[0])
 
         replay = session.new_tab()
         replay.start_replay(session_id)
@@ -1390,7 +1390,7 @@ class TestCmi5:
 
 
 def _session_rows(app: OpenMATBPage) -> list[dict]:
-    return list(csv.DictReader(io.StringIO(app.downloads[0].path().read_text(encoding="utf-8"))))
+    return list(csv.DictReader(io.StringIO(app.session_download().path().read_text(encoding="utf-8"))))
 
 
 # Web Serial API of Chrome, mocked: one Arduino-like port, allowed once chosen
@@ -1690,7 +1690,7 @@ class TestStoredSessions:
         session.start(OUTPUT_SCENARIO)
         session.page.wait_for_selector("#end:not([hidden])", timeout=40_000)
         name = session.page.text_content("#end-file")
-        content = session.downloads[0].path().read_text(encoding="utf-8")
+        content = session.session_download().path().read_text(encoding="utf-8")
 
         menu = session.new_tab()
         menu.page.goto(f"{menu.url}/index.html?lang=en_EN")
