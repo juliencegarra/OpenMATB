@@ -25,7 +25,16 @@ POT_MESSAGES: list[str] = list(build.read_po(build.POT)[1])
 # is only checked for consistency (placeholders, compiled .mo...), its untranslated messages are shown in English:
 # add it here once it is complete
 COMPLETE_LANGUAGES: tuple[str, ...] = (
-    "en_EN", "fr_FR", "de_DE", "es_ES", "es_AR", "it_IT", "pt_BR", "zh_CN", "ja_JP", "ar_SA"
+    "en_EN",
+    "fr_FR",
+    "de_DE",
+    "es_ES",
+    "es_AR",
+    "it_IT",
+    "pt_BR",
+    "zh_CN",
+    "ja_JP",
+    "ar_SA",
 )
 
 
